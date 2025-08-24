@@ -1,0 +1,154 @@
+/* Tailwind base layers and custom properties for charts and animations. Cleaned and verified for usage. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .gradient-text {
+    background: linear-gradient(to right, #821D1D, #B91C1C, #DC2626);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.25;
+  }
+}
+@layer base {
+  :root {
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@keyframes scroll-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-scroll-vertical {
+  animation: scroll-vertical var(--animation-duration) linear infinite;
+}
+
+.animate-scroll-vertical-delayed {
+  animation: scroll-vertical var(--animation-duration) linear infinite;
+  animation-delay: calc(var(--animation-duration) / 2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content-placeholder:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  font-style: italic;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.styled-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background: #e11d48; /* Tailwind's red-600 */
+  border-radius: 8px;
+  min-height: 24px;
+}
+.styled-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.styled-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e11d48 transparent;
+}
+
+.glassmorphism-bg {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+html, body {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Loading spinner styles */
+.loader {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.loadingio-spinner-double-ring-6j7x6x6g8o {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: translateZ(0) scale(1);
+  backface-visibility: hidden;
+  transform-origin: 0 0;
+}
+
+.ldio-8x7x6x6g8o > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 8px solid #e11d48;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+
+.ldio-8x7x6x6g8o > div:nth-child(1) {
+  animation: ldio-8x7x6x6g8o 1s linear infinite;
+  border-color: #e11d48;
+  border-right-color: transparent;
+}
+
+.ldio-8x7x6x6g8o > div:nth-child(2) {
+  animation: ldio-8x7x6x6g8o 0.5s linear infinite reverse;
+  border-color: #dc2626;
+  border-left-color: transparent;
+}
+
+.ldio-8x7x6x6g8o > div:nth-child(3) {
+  animation: ldio-8x7x6x6g8o 1s linear infinite;
+  border-color: #b91c1c;
+  border-top-color: transparent;
+}
+
+.ldio-8x7x6x6g8o > div:nth-child(4) {
+  animation: ldio-8x7x6x6g8o 0.5s linear infinite reverse;
+  border-color: #991b1b;
+  border-right-color: transparent;
+}
+
+@keyframes ldio-8x7x6x6g8o {
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg) }
+}
+
