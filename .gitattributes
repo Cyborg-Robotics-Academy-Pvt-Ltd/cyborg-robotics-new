@@ -1,0 +1,2 @@
+public/assets/competition/ftc/*.mov filter=lfs diff=lfs merge=lfs -text
+public/assets/events/*.gif filter=lfs diff=lfs merge=lfs -text
