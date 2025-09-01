@@ -5,10 +5,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { db } from "../../../firebaseConfig";
+import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { auth } from "../../../firebaseConfig";
+import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { motion } from "framer-motion";
 import Image from "next/image";

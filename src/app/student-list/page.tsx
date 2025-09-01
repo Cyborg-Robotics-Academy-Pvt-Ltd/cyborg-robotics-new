@@ -18,7 +18,7 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { app } from "../../../firebaseConfig";
+import { app } from "../../lib/firebase";
 import {
   UsersRound,
   Search,
@@ -575,29 +575,29 @@ const Page = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight sm:text-3xl">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl">
               Student Record
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-3 text-base text-gray-600">
               Manage and view all registered students in the system
             </p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-4">
+          <div className="mt-6 sm:mt-0 sm:ml-6">
             <button
-              className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white rounded-xl shadow-lg text-sm font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white rounded-xl shadow-lg text-base font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
               onClick={handleExport}
               aria-label="Export student data to Excel"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-5 w-5 mr-3" />
               Export to Excel
             </button>
           </div>
         </div>
 
-        <div className="rounded-xl shadow-sm border border-gray-100 mb-8 p-6">
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
               <div className="relative rounded-xl shadow-sm">
@@ -724,16 +724,16 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow-xl rounded-2xl border border-[#991b1b]/20 overflow-hidden  ">
+        <div className="bg-white shadow-xl rounded-3xl border border-gray-100 overflow-hidden">
           {loading ? (
-            <div className="p-12 flex flex-col items-center justify-center">
-              <div className="animate-pulse space-y-4 w-full max-w-4xl">
-                <div className="h-8 bg-gray-100 rounded w-full"></div>
-                <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => (
+            <div className="p-16 flex flex-col items-center justify-center">
+              <div className="animate-pulse space-y-6 w-full max-w-5xl">
+                <div className="h-10 bg-gray-100 rounded w-full"></div>
+                <div className="space-y-3">
+                  {[...Array(8)].map((_, i) => (
                     <div
                       key={i}
-                      className="h-12 bg-gray-100 rounded w-full"
+                      className="h-16 bg-gray-100 rounded w-full"
                     ></div>
                   ))}
                 </div>
@@ -743,77 +743,77 @@ const Page = () => {
             <div className="overflow-x-auto overflow-visible rounded-xl shadow-lg border border-gray-200">
               <Table className="min-w-full divide-y divide-gray-200">
                 <colgroup>
-                  <col className="w-32 md:w-40" />
-                  <col className="w-32 md:w-48" />
-                  <col className="w-48 md:w-64" />
-                  <col className="w-32 md:w-48" />
-                  {activeTab === "hold" && <col className="w-32 md:w-48" />}
-                  <col className="w-32 md:w-48" />
-                  <col className="w-20 md:w-24" />
+                  <col className="w-36 md:w-44" />
+                  <col className="w-36 md:w-52" />
+                  <col className="w-52 md:w-72" />
+                  <col className="w-36 md:w-52" />
+                  {activeTab === "hold" && <col className="w-36 md:w-52" />}
+                  <col className="w-36 md:w-52" />
+                  <col className="w-24 md:w-28" />
                 </colgroup>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 border-b border-[#991b1b]/20">
+                  <TableRow className="bg-gray-50 border-b border-gray-200">
                     <TableHead
-                      className="font-semibold text-gray-700 py-4 px-2 md:px-6 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
                       onClick={() => handleSort("PrnNumber")}
                     >
                       <div className="flex items-center">
                         PRN Number
                         {sortColumn === "PrnNumber" && (
                           <ChevronDown
-                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
                     <TableHead
-                      className="font-semibold text-gray-700 py-4 px-2 md:px-6 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
                       onClick={() => handleSort("username")}
                     >
                       <div className="flex items-center">
                         Student Name
                         {sortColumn === "username" && (
                           <ChevronDown
-                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
                     <TableHead
-                      className="font-semibold text-gray-700 py-4 px-2 md:px-6 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm hidden md:table-cell"
+                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base hidden md:table-cell"
                       onClick={() => handleSort("email")}
                     >
                       <div className="flex items-center">
                         Email Address
                         {sortColumn === "email" && (
                           <ChevronDown
-                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-4 px-2 md:px-6 text-xs md:text-sm">
+                    <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-sm md:text-base">
                       Courses
                     </TableHead>
                     {activeTab === "hold" && (
-                      <TableHead className="font-semibold text-gray-700 py-4 px-2 md:px-6 text-xs md:text-sm">
+                      <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-sm md:text-base">
                         Suggested Course
                       </TableHead>
                     )}
                     <TableHead
-                      className="font-semibold text-gray-700 py-4 px-2 md:px-6 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
                       onClick={() => handleSort("completedTasks")}
                     >
                       <div className="flex items-center">
                         Classes
                         {sortColumn === "completedTasks" && (
                           <ChevronDown
-                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-4 px-2 md:px-6 text-right text-xs md:text-sm sticky right-0 bg-gray-50 z-10">
+                    <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-right text-sm md:text-base sticky right-0 bg-gray-50 z-10">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -823,20 +823,20 @@ const Page = () => {
                     <TableRow
                       key={student.id}
                       className={`transition-colors duration-200 cursor-pointer ${
-                        idx % 2 === 0 ? "bg-white" : "bg-[#991b1b]/5"
-                      } hover:bg-[#991b1b]/4`}
+                        idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } hover:bg-gray-100`}
                       onClick={() => router.push(`/${student.PrnNumber}`)}
                     >
-                      <TableCell className="font-mono text-gray-800 py-4 px-2 md:px-6 text-xs md:text-sm">
+                      <TableCell className="font-mono text-gray-800 py-6 px-4 md:px-8 text-sm md:text-base">
                         {student.PrnNumber}
                       </TableCell>
-                      <TableCell className="font-medium text-gray-900 py-4 px-2 md:px-6 text-xs md:text-sm">
+                      <TableCell className="font-medium text-gray-900 py-6 px-4 md:px-8 text-sm md:text-base">
                         {student.username}
                       </TableCell>
-                      <TableCell className="text-gray-600 py-4 px-2 md:px-6 text-xs md:text-sm hidden md:table-cell">
+                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base hidden md:table-cell">
                         {student.email}
                       </TableCell>
-                      <TableCell className="text-gray-600 py-4 px-2 md:px-6 text-xs md:text-sm">
+                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
                         {student.courses && student.courses.length > 0
                           ? student.courses
                               .map((course) =>
@@ -849,22 +849,22 @@ const Page = () => {
                           : "-"}
                       </TableCell>
                       {activeTab === "hold" && (
-                        <TableCell className="text-gray-600 py-4 px-2 md:px-6 text-xs md:text-sm">
+                        <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
                           <div className="flex items-center space-x-2">
-                            <span className=" text-sm font-medium">
+                            <span className="text-sm font-medium">
                               {student.nextCourse || "No next course assigned"}
                             </span>
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className="text-gray-600 py-4 px-2 md:px-6 text-xs md:text-sm">
-                        <div className="space-y-2">
+                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
+                        <div className="space-y-3">
                           <span
                             className={`${
                               student.completedTasks > 15
                                 ? "bg-gradient-to-r from-[#991b1b]/10 to-[#7f1d1d]/10 text-[#991b1b] shadow"
                                 : "bg-green-100 text-green-700"
-                            } px-2 py-1 rounded-full text-xs font-semibold tracking-wide`}
+                            } px-3 py-2 rounded-full text-sm font-semibold tracking-wide`}
                           >
                             Completed: {student.completedTasks}
                           </span>
@@ -881,7 +881,7 @@ const Page = () => {
                             .map((task, i) => (
                               <div
                                 key={i}
-                                className="text-xs text-gray-500 mt-1 hidden md:block"
+                                className="text-sm text-gray-500 mt-2 hidden md:block"
                               >
                                 Latest Completed: {task.course} - {task.task}
                               </div>
@@ -889,21 +889,21 @@ const Page = () => {
                         </div>
                       </TableCell>
                       <TableCell
-                        className="text-right py-4 px-2 md:px-6  sticky right-0 bg-white z-10"
+                        className="text-right py-6 px-4 md:px-8 sticky right-0 bg-white z-10"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           ref={(el) => {
                             actionBtnRefs.current[student.id] = el;
                           }}
-                          className="text-gray-500 hover:text-gray-700 focus:outline-none p-1.5 md:p-2 rounded-full transition-colors dropdown-trigger shadow-xl"
+                          className="text-gray-500 hover:text-gray-700 focus:outline-none p-2 md:p-3 rounded-full transition-colors dropdown-trigger shadow-xl"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleDropdown(student.id, e);
                           }}
                           aria-label={`More actions for ${student.username}`}
                         >
-                          <MoreHorizontal className="h-4 w-4 md:h-5 md:w-5" />
+                          <MoreHorizontal className="h-5 w-5 md:h-6 md:w-6" />
                         </button>
                         {actionBtnRefs.current[student.id] &&
                           (() => {

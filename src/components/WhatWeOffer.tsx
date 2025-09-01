@@ -1,165 +1,121 @@
-"use client"; // Use client-side rendering for interactivity
+"use client";
 
-import { LucideArrowLeft, LucideArrowRight } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  FaBook,
-  FaLaptopCode,
-  FaClock,
-  FaChalkboardTeacher,
-  FaCertificate,
-} from "react-icons/fa";
-
-const offerings = [
-  {
-    icon: <FaClock size={24} className="mx-auto" />,
-    title: "Free Trial",
-    description: "Experience our courses with a free trial.",
-  },
-  {
-    icon: <FaBook className="mx-auto" size={24} color="" />,
-    title: "Comprehensive Courses",
-    description: "Access a wide range of courses designed by experts.",
-  },
-  {
-    icon: <FaLaptopCode size={24} className="mx-auto" />,
-    title: "Interactive Learning",
-    description: "Engage with quizzes and hands-on projects.",
-  },
-  {
-    icon: <FaClock size={24} className="mx-auto" />,
-    title: "Flexible Scheduling",
-    description: "Learn at your own pace with flexible scheduling.",
-  },
-  {
-    icon: <FaChalkboardTeacher size={24} className="mx-auto" />,
-    title: "Expert Instructors",
-    description: "Learn from industry professionals.",
-  },
-
-  {
-    icon: <FaCertificate size={24} className="mx-auto" />,
-    title: "Provide Certificate",
-    description:
-      "Receive a certificate upon course completion to enhance your career prospects.",
-  },
-];
+import { FaEye, FaUsers, FaFlag } from "react-icons/fa";
 
 export default function WhatWeOffer() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const sliderRef = useRef(null);
-
-  // Determine slides to show based on screen size
-  const slidesToShow = () => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth >= 1024) return 3; // Desktop
-      if (window.innerWidth >= 640) return 2; // Tablet
-      return 1; // Mobile
-    }
-    return 3; // Default for SSR
-  };
-
-  const totalSlides = offerings.length;
-  const visibleSlides = slidesToShow();
-
-  // Handle next slide
-  const nextSlide = useCallback(() => {
-    if (currentSlide < totalSlides - visibleSlides) {
-      setCurrentSlide((prev) => prev + 1);
-    } else {
-      setCurrentSlide(0); // Loop back to start
-    }
-  }, [currentSlide, totalSlides, visibleSlides]);
-
-  // Handle previous slide
-  const prevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide((prev) => prev - 1);
-    } else {
-      setCurrentSlide(totalSlides - visibleSlides); // Loop to end
-    }
-  };
-
-  // Go to specific slide via dots
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
-
-  // Auto-slide effect
-  useEffect(() => {
-    const autoSlide = setInterval(() => {
-      nextSlide(); // Automatically go to the next slide
-    }, 3000); // Change slide every 3 seconds (adjust as needed)
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(autoSlide);
-  }, [currentSlide, totalSlides, visibleSlides, nextSlide]); // Added nextSlide to dependencies
-
   return (
-    <section className="py-8 px-4 sm:px-6 lg:px-8 text-center md:mt-6">
-      <h2 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-8">
-        What <span className="text-red-800">We Offer ?</span>
-      </h2>
+    <>
+      {/* Who Are We Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-4">
+            Who <span className="text-red-800">Are We?</span>
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
+            Discover our vision, mission, and commitment to empowering the next
+            generation of innovators through cutting-edge robotics education
+          </p>
 
-      {/* Carousel Container */}
-      <div className="relative max-w-6xl mx-auto">
-        {/* Slides */}
-        <div className="overflow-hidden">
-          <div
-            ref={sliderRef}
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${
-                currentSlide * (100 / visibleSlides)
-              }%)`,
-            }}
-          >
-            {offerings.map((offer, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-4 mx-auto"
-              >
-                <div className="bg-white border border-gray-200 rounded-3xl shadow-md p-8 h-full">
-                  <div className="text-4xl text-red-700 mb-4">{offer.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {offer.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">{offer.description}</p>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Vision Container */}
+            <div className="group relative bg-white border border-gray-200 rounded-3xl shadow-lg p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-2 hover:border-red-300 overflow-hidden">
+              {/* Robotics-themed animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-transparent to-blue-50/30 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-3xl"></div>
+
+              {/* Circuit pattern overlay */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-l-2 border-red-300 rounded-tl-lg"></div>
+                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-r-2 border-blue-300 rounded-br-lg"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400 rounded-full"></div>
               </div>
-            ))}
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="text-4xl text-red-700 mr-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:text-red-600">
+                    <FaEye />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 group-hover:text-red-700 transition-colors duration-300">
+                    Our Vision
+                  </h3>
+                </div>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 text-center">
+                  To be the leading robotics education platform that empowers
+                  students with cutting-edge technology skills, fostering
+                  innovation and creativity for the future workforce.
+                </p>
+              </div>
+
+              {/* Hover glow effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10 blur-xl"></div>
+            </div>
+
+            {/* About Us Container */}
+            <div className="group relative bg-white border border-gray-200 rounded-3xl shadow-lg p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-2 hover:border-red-300 overflow-hidden">
+              {/* Robotics-themed animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-transparent to-blue-50/30 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-3xl"></div>
+
+              {/* Circuit pattern overlay */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-l-2 border-red-300 rounded-tl-lg"></div>
+                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-r-2 border-blue-300 rounded-br-lg"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400 rounded-full"></div>
+              </div>
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="text-4xl text-red-700 mr-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:text-red-600">
+                    <FaUsers />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 group-hover:text-red-700 transition-colors duration-300">
+                    About Us
+                  </h3>
+                </div>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 text-center">
+                  Cyborg Robotics Academy is a premier educational institution
+                  dedicated to teaching robotics, coding, and STEM skills to
+                  students of all ages through hands-on learning experiences.
+                </p>
+              </div>
+
+              {/* Hover glow effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10 blur-xl"></div>
+            </div>
+
+            {/* Mission Container */}
+            <div className="group relative bg-white border border-gray-200 rounded-3xl shadow-lg p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-2 hover:border-red-300 overflow-hidden">
+              {/* Robotics-themed animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-transparent to-blue-50/30 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-3xl"></div>
+
+              {/* Circuit pattern overlay */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-l-2 border-red-300 rounded-tl-lg"></div>
+                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-r-2 border-blue-300 rounded-br-lg"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-400 rounded-full"></div>
+              </div>
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="text-4xl text-red-700 mr-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:text-red-600">
+                    <FaFlag />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 group-hover:text-red-700 transition-colors duration-300">
+                    Our Mission
+                  </h3>
+                </div>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 text-center">
+                  To provide accessible, high-quality robotics education that
+                  inspires students to explore, create, and innovate while
+                  building essential 21st-century skills for tomorrow&apos;s
+                  challenges.
+                </p>
+              </div>
+
+              {/* Hover glow effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10 blur-xl"></div>
+            </div>
           </div>
         </div>
-
-        {/* Navigation Buttons */}
-        <button
-          onClick={prevSlide}
-          className="absolute bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white  text-sm font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all hidden sm:block -left-3 lg:-left-10 top-1/2 transform -translate-y-1/2  p-2 rounded-full shadow-lg"
-        >
-          <LucideArrowLeft /> {/* Left arrow icon */}
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white  text-sm font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all hidden sm:block -right-2 lg:-right-10 top-1/2 transform -translate-y-1/2  p-2 rounded-full shadow-lg"
-        >
-          <LucideArrowRight /> {/* Right arrow icon */}
-        </button>
-
-        {/* Dots */}
-        <div className="flex justify-center mt-4 space-x-2">
-          {Array.from({ length: totalSlides - visibleSlides + 1 }).map(
-            (_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full ${
-                  currentSlide === index ? "bg-red-700" : "bg-gray-300"
-                }`}
-              />
-            )
-          )}
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

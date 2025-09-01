@@ -1,5 +1,4 @@
 "use client";
-import Footer from "@/components/Footer";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import {
   Send,
@@ -12,16 +11,10 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  Users,
-  School,
-  PenTool,
-  HelpCircle,
 } from "lucide-react";
 
-import Testimonials from "@/components/ui/accordion";
 import Link from "next/link";
 import Image from "next/image";
-import Head from "next/head";
 
 interface FormData {
   name: string;
@@ -126,64 +119,22 @@ const Page = () => {
       }
     }
   };
-  const faqItems = [
-    {
-      icon: <Users className="text-blue-500" />,
-      question: "What programs do you offer?",
-      answer:
-        "We offer a variety of robotics programs for different age groups, from beginners to advanced levels. Our curriculum is designed to be both educational and engaging, focusing on practical skills and creative problem-solving.",
-    },
-    {
-      icon: <School className="text-green-500" />,
-      question: "Do you provide training for schools?",
-      answer:
-        "Yes, we offer specialized robotics training programs for educational institutions. These can be customized to fit your school's curriculum, schedule and specific educational goals.",
-    },
-    {
-      icon: <PenTool className="text-purple-500" />,
-      question: "How can I enroll my child?",
-      answer:
-        "You can enroll by contacting us through this form or by calling our office directly. We'll guide you through the process and help find the perfect program based on your child's age, interests and experience level.",
-    },
-    {
-      icon: <HelpCircle className="text-orange-500" />,
-      question: "Are there any prerequisites?",
-      answer:
-        "No prior experience is needed for our beginner courses. We welcome students of all skill levels. Our instructors are trained to work with children at various stages of learning and will ensure everyone keeps pace with the curriculum.",
-    },
-  ];
   return (
     <>
-      <Head>
-        <title>Contact Us | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Contact Cyborg Robotics Academy for inquiries about courses, programs, and more."
-        />
-        <meta
-          property="og:title"
-          content="Contact Us | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Contact Cyborg Robotics Academy for inquiries about courses, programs, and more."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Contact Us Page"
-        className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 md:mt-[90px]"
+        className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 "
       >
         {/* Hero Section */}
         <div
-          className={`relative overflow-hidden bg-[#8D0F11] text-white py-2 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-in-out ${animateIn ? "opacity-100" : "opacity-0"}`}
+          className={`relative overflow-hidden bg-[#8D0F11] text-white py-1 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-in-out ${animateIn ? "opacity-100" : "opacity-0"}`}
         >
           <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center leading-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center leading-tight mb-2">
               Get in <span className="text-yellow-300">Touch</span>
             </h1>
-            <p className="text-base sm:text-lg max-w-2xl text-center text-gray-200 mb-4">
+            <p className="text-base sm:text-md max-w-2xl text-center text-gray-200 mb-2">
               Have questions about our robotics programs? We&apos;re here to
               help.
             </p>
@@ -505,23 +456,6 @@ const Page = () => {
                 </div>
               </div>
             </div>
-
-            {/* FAQ or Additional Info */}
-            <div
-              className={`mt-16 transition-all duration-1000 delay-300 ease-in-out ${animateIn ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
-            >
-              <h2 className="text-2xl font-bold text-center mb-10">
-                <span className="text-[#8D0F11]">Frequently</span> Asked
-                Questions
-              </h2>
-              <Testimonials
-                testimonials={faqItems.map((item) => ({
-                  id: `item-${item.question}`,
-                  title: item.question,
-                  subtitle: [item.answer],
-                }))}
-              />
-            </div>
           </div>
         </div>
       </main>
@@ -543,10 +477,6 @@ const Page = () => {
         }
       `}</style>
 
-      {/* Footer */}
-      <div className="mt-10">
-        <Footer />
-      </div>
       <div className="fixed bottom-0 -right-2 p-4">
         <Link
           href="https://www.linkedin.com/in/shrikant11/"

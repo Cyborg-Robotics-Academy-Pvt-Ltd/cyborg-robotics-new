@@ -13,7 +13,7 @@ import { AlertTriangle, BookOpen, Trophy } from "lucide-react";
 import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
-import { auth } from "../../../firebaseConfig";
+import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 
 interface CourseData {

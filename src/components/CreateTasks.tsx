@@ -32,7 +32,7 @@ import {
 
 import { Search, Trash, Edit, PlusCircle } from "lucide-react";
 import courses from "../../utils/courses";
-import { app, auth } from "../../firebaseConfig";
+import { app, auth } from "../lib/firebase";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -380,7 +380,7 @@ const CreateTasks = () => {
   const groupedTasks = groupTasksByDate(filteredTasks);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-6 md:pt-8 mt-20 ">
       <Toaster
         position="top-center"
         toastOptions={{

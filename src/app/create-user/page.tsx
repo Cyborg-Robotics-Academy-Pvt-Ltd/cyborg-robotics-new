@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../../../firebaseConfig";
+import { auth, db } from "../../lib/firebase";
 import {
   doc,
   setDoc,
@@ -363,9 +363,9 @@ const CreateUser = () => {
       <main
         role="main"
         aria-label="Create User Page"
-        className="min-h-screen bg-white"
+        className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
       >
-        <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 md:mt-14">
+        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 md:mt-14">
           <Toaster
             position="top-center"
             reverseOrder={false}
@@ -394,13 +394,13 @@ const CreateUser = () => {
             }}
           />
 
-          <div className="max-w-2xl w-full space-y-8 bg-white p-8 rounded-3xl shadow-2xl transition-all duration-500 border border-gray-100 hover:shadow-3xl">
-            {/* Header Section */}
-            <div className="text-center transform transition-all duration-500 ">
+          {/* Header Section */}
+          <div className="max-w-7xl mx-auto mb-12">
+            <div className="text-center transform transition-all duration-500">
               {/* Logo */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-8">
                 <div className="relative">
-                  <div className="relative  p-3">
+                  <div className="relative p-3">
                     <Image
                       src="/assets/logo.png"
                       alt="Cyborg Robotics Academy Logo"
@@ -414,38 +414,40 @@ const CreateUser = () => {
               </div>
 
               {/* Main Icon */}
-
-              <h2 className="text-4xl font-bold text-gray-900 tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-2">
+              <h2 className="text-5xl font-bold text-gray-900 tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-4">
                 Create New User
               </h2>
 
               {userRole === "trainer" && (
-                <div className="mt-4 inline-flex items-center space-x-2 bg-gradient-to-r from-[#AB2F30]/10 to-[#8B1A1B]/10 py-3 px-4 rounded-2xl border border-[#AB2F30]/20 animate-pulse">
-                  <Star className="h-5 w-5 text-[#AB2F30]" />
-                  <span className="text-sm text-[#AB2F30] font-medium">
+                <div className="mt-6 inline-flex items-center space-x-2 bg-gradient-to-r from-[#AB2F30]/10 to-[#8B1A1B]/10 py-4 px-6 rounded-2xl border border-[#AB2F30]/20 animate-pulse">
+                  <Star className="h-6 w-6 text-[#AB2F30]" />
+                  <span className="text-base text-[#AB2F30] font-medium">
                     Trainer Mode: You can only create student accounts
                   </span>
                 </div>
               )}
             </div>
+          </div>
 
-            <form className="mt-8 space-y-8" onSubmit={handleSignup}>
+          {/* Form Container */}
+          <div className="max-w-6xl mx-auto">
+            <form className="space-y-12" onSubmit={handleSignup}>
               {/* Basic Information Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-2 rounded-xl">
-                    <Users className="h-5 w-5 text-white" />
+              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <div className="flex items-center space-x-4 mb-8">
+                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-3 rounded-xl">
+                    <Users className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <h3 className="text-2xl font-semibold text-gray-800">
                     Basic Information
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="group">
                     <label
                       htmlFor="username"
-                      className="block text-sm font-semibold text-gray-700 mb-2 "
+                      className="block text-base font-semibold text-gray-700 mb-3"
                     >
                       {role === "student"
                         ? "Student Name *"
@@ -480,7 +482,7 @@ const CreateUser = () => {
                   <div className="group">
                     <label
                       htmlFor="email-address"
-                      className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-[#AB2F30] transition-colors duration-200"
+                      className="block text-base font-semibold text-gray-700 mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
                     >
                       Email Address *
                     </label>
@@ -510,14 +512,14 @@ const CreateUser = () => {
                 </div>
 
                 {/* Password Section */}
-                <div className="group">
+                <div className="mt-8 group">
                   <label
                     htmlFor="password"
-                    className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-[#AB2F30] transition-colors duration-200"
+                    className="block text-base font-semibold text-gray-700 mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
                   >
                     Password *
                   </label>
-                  <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                  <div className="relative transform transition-all duration-300 hover:scale-[1.02] max-w-2xl">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                       <Lock className="h-5 w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
                     </div>
@@ -558,12 +560,12 @@ const CreateUser = () => {
                   </div>
 
                   {/* Password Strength Indicator */}
-                  <div className="mt-3 space-y-2">
-                    <div className="flex gap-1">
+                  <div className="mt-4 space-y-3 max-w-2xl">
+                    <div className="flex gap-2">
                       {[...Array(4)].map((_, i) => (
                         <div
                           key={i}
-                          className={`h-2 w-full rounded-full transition-all duration-500 ${
+                          className={`h-3 w-full rounded-full transition-all duration-500 ${
                             i < passwordStrength
                               ? passwordStrength === 1
                                 ? "bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B]"
@@ -579,11 +581,11 @@ const CreateUser = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <p
-                        className={`text-sm font-medium ${getPasswordStrengthColor()}`}
+                        className={`text-base font-medium ${getPasswordStrengthColor()}`}
                       >
                         Password strength: {getPasswordStrengthText()}
                       </p>
-                      <div className="flex items-center space-x-1 text-xs text-gray-500">
+                      <div className="flex items-center space-x-2 text-sm text-gray-500">
                         <span>8+ chars</span>
                         <span>•</span>
                         <span>Uppercase</span>
@@ -598,17 +600,17 @@ const CreateUser = () => {
               </div>
 
               {/* Role and Additional Information Section */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-2 rounded-xl">
-                    <ShieldCheckIcon className="h-5 w-5 text-white" />
+              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <div className="flex items-center space-x-4 mb-8">
+                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-3 rounded-xl">
+                    <ShieldCheckIcon className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <h3 className="text-2xl font-semibold text-gray-800">
                     Role & Permissions
                   </h3>
                 </div>
 
-                <div className="group">
+                <div className="group max-w-md">
                   <Dropdown
                     options={
                       userRole === "admin"
@@ -626,20 +628,20 @@ const CreateUser = () => {
                 </div>
 
                 {role === "student" && (
-                  <div className="space-y-6">
-                    <div className="flex items-center space-x-3 mb-6">
-                      <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-2 rounded-xl">
-                        <BookOpen className="h-5 w-5 text-white" />
+                  <div className="mt-8 space-y-8">
+                    <div className="flex items-center space-x-4 mb-8">
+                      <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-3 rounded-xl">
+                        <BookOpen className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-800">
+                      <h3 className="text-2xl font-semibold text-gray-800">
                         Student Details
                       </h3>
                     </div>
 
-                    <div className="group">
+                    <div className="group max-w-md">
                       <label
                         htmlFor="prn-number"
-                        className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-red-600 transition-colors duration-200"
+                        className="block text-base font-semibold text-gray-700 mb-3 group-hover:text-red-600 transition-colors duration-200"
                       >
                         PRN Number *
                       </label>
@@ -673,19 +675,19 @@ const CreateUser = () => {
                         </div>
                       </div>
                       {prnChecking && (
-                        <p className="mt-2 text-sm text-yellow-600 flex items-center space-x-1">
+                        <p className="mt-3 text-sm text-yellow-600 flex items-center space-x-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           <span>Checking PRN availability...</span>
                         </p>
                       )}
                       {prnExists && (
-                        <p className="mt-2 text-sm text-[#AB2F30] flex items-center space-x-1">
+                        <p className="mt-3 text-sm text-[#AB2F30] flex items-center space-x-2">
                           <XCircle className="h-4 w-4" />
                           <span>This PRN number is already registered</span>
                         </p>
                       )}
                       {PrnNumber && !prnExists && !prnChecking && (
-                        <p className="mt-2 text-sm text-green-600 flex items-center space-x-1">
+                        <p className="mt-3 text-sm text-green-600 flex items-center space-x-2">
                           <CheckCircle className="h-4 w-4" />
                           <span>PRN number is available</span>
                         </p>
@@ -696,17 +698,17 @@ const CreateUser = () => {
                     <div className="group">
                       <label
                         htmlFor="course"
-                        className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-[#AB2F30] transition-colors duration-200"
+                        className="block text-base font-semibold text-gray-700 mb-4 group-hover:text-[#AB2F30] transition-colors duration-200"
                       >
                         Enroll in Courses *
                       </label>
-                      <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
-                        <div className="max-h-48 overflow-y-auto border-2 border-gray-200 rounded-2xl p-4 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="relative transform transition-all duration-300 ">
+                        <div className="max-h-64 overflow-y-auto border-2 border-gray-200 rounded-2xl p-6 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {courses.map((courseName) => (
                               <div
                                 key={courseName}
-                                className="flex items-center space-x-3 p-1 hover:bg-gray-50 rounded-xl transition-colors duration-200"
+                                className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-xl transition-colors duration-200"
                               >
                                 <input
                                   type="checkbox"
@@ -753,21 +755,21 @@ const CreateUser = () => {
 
                       {/* Selected Courses Details */}
                       {selectedCourses.length > 0 && (
-                        <div className="mt-6 space-y-4">
-                          <h4 className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
-                            <BookOpen className="h-4 w-4" />
+                        <div className="mt-8 space-y-6">
+                          <h4 className="text-lg font-semibold text-gray-700 flex items-center space-x-3">
+                            <BookOpen className="h-5 w-5" />
                             <span>
                               Course Details ({selectedCourses.length} selected)
                             </span>
                           </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {selectedCourses.map((courseName) => (
                               <div
                                 key={courseName}
-                                className="p-4 border-2 border-gray-200 rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-sm hover:shadow-md transition-all duration-300"
+                                className="p-6 border-2 border-gray-200 rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-sm hover:shadow-md transition-all duration-300"
                               >
-                                <div className="flex justify-between items-start mb-3">
-                                  <h5 className="text-sm font-semibold text-gray-800">
+                                <div className="flex justify-between items-start mb-4">
+                                  <h5 className="text-base font-semibold text-gray-800">
                                     {courseName}
                                   </h5>
                                   <button
@@ -782,12 +784,12 @@ const CreateUser = () => {
                                         return newState;
                                       });
                                     }}
-                                    className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#AB2F30]/10 focus:outline-none transition-colors duration-200"
+                                    className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-[#AB2F30]/10 focus:outline-none transition-colors duration-200"
                                   >
-                                    <XCircle className="h-4 w-4 text-gray-500 hover:text-[#AB2F30]" />
+                                    <XCircle className="h-5 w-5 text-gray-500 hover:text-[#AB2F30]" />
                                   </button>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 w-full">
+                                <div className="grid grid-cols-3 gap-3 w-full">
                                   <Dropdown
                                     options={[
                                       { value: "1", label: "Level 1" },
@@ -825,7 +827,7 @@ const CreateUser = () => {
                                       }))
                                     }
                                     placeholder="Class #"
-                                    className="w-full px-2 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
                                   />
                                   <Dropdown
                                     options={[
@@ -861,14 +863,14 @@ const CreateUser = () => {
 
               {/* Error Display */}
               {error && (
-                <div className="text-[#AB2F30] text-sm bg-gradient-to-r from-[#AB2F30]/10 to-[#8B1A1B]/10 p-4 rounded-2xl border-2 border-[#AB2F30]/20 flex items-start space-x-3 animate-pulse">
-                  <XCircle className="h-5 w-5 text-[#AB2F30] mt-0.5 flex-shrink-0" />
+                <div className="text-[#AB2F30] text-base bg-gradient-to-r from-[#AB2F30]/10 to-[#8B1A1B]/10 p-6 rounded-2xl border-2 border-[#AB2F30]/20 flex items-start space-x-4 animate-pulse">
+                  <XCircle className="h-6 w-6 text-[#AB2F30] mt-0.5 flex-shrink-0" />
                   <span className="font-medium">{error}</span>
                 </div>
               )}
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-8 text-center">
                 <button
                   type="submit"
                   disabled={
@@ -876,13 +878,13 @@ const CreateUser = () => {
                     passwordStrength < 2 ||
                     (role === "student" && prnExists)
                   }
-                  className="group relative w-1/2 mx-auto flex justify-center py-4 px-6 border border-transparent rounded-2xl text-white bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-lg shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
+                  className="group relative w-full max-w-md mx-auto flex justify-center py-5 px-8 border border-transparent rounded-2xl text-white bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-xl shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
                 >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-6">
+                  <span className="absolute left-0 inset-y-0 flex items-center pl-8">
                     {isLoading ? (
-                      <Loader2 className="animate-spin h-6 w-6 text-white/80" />
+                      <Loader2 className="animate-spin h-7 w-7 text-white/80" />
                     ) : (
-                      <UserPlusIcon className="h-6 w-6 text-white/80 group-hover:text-white transition-colors duration-200" />
+                      <UserPlusIcon className="h-7 w-7 text-white/80 group-hover:text-white transition-colors duration-200" />
                     )}
                   </span>
                   {isLoading ? "Creating User..." : "Create User Account"}
@@ -891,12 +893,12 @@ const CreateUser = () => {
             </form>
 
             {/* Back Button */}
-            <div className="flex justify-center pt-6">
+            <div className="flex justify-center pt-8">
               <button
                 onClick={() => router.back()}
-                className="text-sm text-gray-600 hover:text-[#AB2F30] transition-all duration-300 flex items-center space-x-2 group transform hover:scale-105 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:border-[#AB2F30]/50 hover:shadow-md"
+                className="text-base text-gray-600 hover:text-[#AB2F30] transition-all duration-300 flex items-center space-x-3 group transform hover:scale-105 bg-white px-6 py-3 rounded-xl border border-gray-200 hover:border-[#AB2F30]/50 hover:shadow-md"
               >
-                <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform duration-300" />
+                <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform duration-300" />
                 <span className="font-medium">Go back</span>
               </button>
             </div>

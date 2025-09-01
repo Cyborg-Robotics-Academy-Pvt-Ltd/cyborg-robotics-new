@@ -386,7 +386,7 @@ const Page = () => {
         </div>
 
         {/* About Section */}
-        <div className=" container mx-auto px-4 lg:px-8">
+        <div id="what-we-offer" className="container mx-auto px-4 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div
               ref={aboutLeftRef}
@@ -480,7 +480,11 @@ const Page = () => {
         </div>
 
         {/* Features Section - Enhanced with better visuals */}
-        <div ref={featuresSectionRef} className="py-20 bg-gray-50">
+        <div
+          id="why-learn-robotics"
+          ref={featuresSectionRef}
+          className="py-20 bg-gray-50"
+        >
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <motion.h2
@@ -580,6 +584,26 @@ const Page = () => {
             <InfiniteCertificateImages items={testimonials} />
           </div>
         </motion.div>
+
+        {/* Vision & Mission Section */}
+        <div id="vision-mission" className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-[#991b1b]">
+                Vision & Mission
+              </h2>
+              <div className="w-24 h-1 bg-[#991b1b] mx-auto mb-6"></div>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+                Our vision is to empower the next generation with the skills and
+                mindset to innovate, solve problems, and lead in a
+                technology-driven world. Our mission is to provide hands-on,
+                engaging, and age-appropriate robotics and technology education
+                to students, fostering creativity, critical thinking, and
+                lifelong learning.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* CTA Section - Enhanced with card design */}
         <motion.div

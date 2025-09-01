@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { auth, db } from "../../../firebaseConfig";
+import { auth, db } from "@/lib/firebase";
 import {
   setDoc,
   serverTimestamp,

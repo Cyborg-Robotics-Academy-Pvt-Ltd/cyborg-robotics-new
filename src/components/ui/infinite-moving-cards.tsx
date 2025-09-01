@@ -100,9 +100,19 @@ export const InfiniteMovingCards = ({
       >
         {items.map((item) => (
           <li
-            className="w-[200px] max-w-full relative rounded-[2rem] border border-white/30 h-auto flex-shrink-0    md:w-[200px] md:mx-4 bg-white/30 backdrop-blur-lg  duration-300 hover:scale-105 shadow-md"
+            className="group w-[200px] max-w-full relative rounded-[2rem] border border-white/30 h-auto flex-shrink-0 md:w-[200px] md:mx-4 bg-white/30 backdrop-blur-lg transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20 hover:border-red-300 overflow-hidden"
             key={item.title}
           >
+            {/* Robotics-themed hover background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-red-50/40 via-transparent to-blue-50/40 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[2rem]"></div>
+
+            {/* Circuit pattern overlay */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none">
+              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-l-2 border-red-400 rounded-tl-lg"></div>
+              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-r-2 border-blue-400 rounded-br-lg"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-red-400 rounded-full"></div>
+            </div>
+
             <blockquote>
               <div
                 aria-hidden="true"
@@ -110,21 +120,28 @@ export const InfiniteMovingCards = ({
               ></div>
 
               <div className="relative z-20 mt-1 flex flex-col items-center">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  width={200}
-                  height={200}
-                  className=" rounded-tl-3xl rounded-tr-3xl object-cover w-full h-44"
-                  priority={true}
-                  loading="eager"
-                  quality={75}
-                />
-                <span className="text-base  text-center leading-[1.6] p-3 text-black font-medium">
+                <div className="relative overflow-hidden rounded-tl-3xl rounded-tr-3xl">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    width={200}
+                    height={200}
+                    className="object-cover w-full h-44 transition-transform duration-700 group-hover:scale-110"
+                    priority={true}
+                    loading="eager"
+                    quality={75}
+                  />
+                  {/* Image overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </div>
+                <span className="text-base text-center leading-[1.6] p-3 text-black font-medium group-hover:text-red-700 transition-colors duration-300">
                   {item.title}
                 </span>
               </div>
             </blockquote>
+
+            {/* Hover glow effect */}
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-red-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10 blur-xl"></div>
           </li>
         ))}
       </ul>

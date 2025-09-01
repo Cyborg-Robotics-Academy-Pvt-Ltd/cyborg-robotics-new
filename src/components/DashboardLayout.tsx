@@ -15,7 +15,7 @@ import Image from "next/image";
 import logo from "../../public/assets/logo1.png";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "../../firebaseConfig";
+import { auth } from "@/lib/firebase";
 import { CalendarCheck, Clapperboard, LogOut, NotepadText } from "lucide-react";
 
 type Role = "admin" | "trainer" | "student";
