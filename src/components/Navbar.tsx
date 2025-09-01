@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "../../public/assets/logo.png";
 import Link from "next/link";
-import { auth } from "../../firebaseConfig";
+import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { menuItems } from "../../utils/MenuItemsData";

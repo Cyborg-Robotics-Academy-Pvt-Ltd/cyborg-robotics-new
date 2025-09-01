@@ -8,7 +8,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../../../../firebaseConfig";
+import { db } from "@/lib/firebase";
 import { useAuth } from "../../../lib/auth-context";
 import {
   PieChart,

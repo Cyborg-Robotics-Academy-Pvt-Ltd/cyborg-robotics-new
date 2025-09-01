@@ -3,7 +3,7 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { db } from "../../../../firebaseConfig";
+import { db } from "../../../lib/firebase";
 import {
   User,
   Calendar,

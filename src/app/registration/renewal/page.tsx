@@ -2,7 +2,7 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
-import { db } from "../../../../firebaseConfig";
+import { db } from "../../../lib/firebase";
 import { User, Phone } from "lucide-react";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";

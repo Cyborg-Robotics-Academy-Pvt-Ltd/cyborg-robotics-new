@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React from "react";
 import Footer from "@/components/Footer";
-import { Testimonials } from "@/components/ui/accordion";
+
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -430,16 +430,6 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
         </div>
       </motion.div>
 
-      {/* Testimonials */}
-      <motion.div
-        className="mt-16 sm:mt-20 mx-2 sm:mx-4 lg:mx-8"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-      >
-        <Testimonials testimonials={curriculumData} />
-      </motion.div>
       {/* NEW: Additional CTA Section for Course Journey */}
       <motion.div
         className="mt-12 sm:mt-16 mx-2 sm:mx-4 lg:mx-8 p-4 sm:p-8 bg-red-50 rounded-2xl text-center relative overflow-hidden"

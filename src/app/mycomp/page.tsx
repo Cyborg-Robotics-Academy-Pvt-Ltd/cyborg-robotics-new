@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-export default function HeroSection() {
+const MyComp = () => {
   const statsContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -219,7 +219,11 @@ export default function HeroSection() {
             </div>
           </motion.div>
         </div>
+        <div className="">
+          <div className=""></div>
+        </div>
       </section>
     </>
   );
-}
+};
+export default MyComp;

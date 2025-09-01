@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPinHouse, PhoneCall } from "lucide-react";
@@ -35,6 +35,56 @@ const Footer: React.FC<FooterProps> = () => {
     margin: "-100px",
   });
 
+  const [dailyQuote, setDailyQuote] = useState<string>("");
+
+  useEffect(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const cacheKey = `dailyQuote-${y}-${m}-${d}`;
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setDailyQuote(cached);
+        return;
+      }
+    } catch {
+      // ignore storage errors
+    }
+
+    const controller = new AbortController();
+    const fetchQuote = async () => {
+      try {
+        const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
+        const res = await fetch("/api/generate-blog", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        let text: string = (data?.generated || "").trim();
+        if (!text) return;
+        // sanitize to one line and keep it short
+        text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
+        setDailyQuote(text);
+        try {
+          localStorage.setItem(cacheKey, text);
+        } catch {
+          // ignore storage errors
+        }
+      } catch {
+        // network/API failure -> keep as empty or cached
+      }
+    };
+
+    fetchQuote();
+    return () => controller.abort();
+  }, []);
+
   return (
     <footer className="bg-white mt-9 md:my-20">
       <hr className="border-t border-gray-300 my-4 w-[90%] mx-auto" />
@@ -49,10 +99,7 @@ const Footer: React.FC<FooterProps> = () => {
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <motion.div
-              whileHover={{ scale: 1.08, rotate: 8 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+            <motion.div>
               <Image
                 src="/assets/logo.png"
                 width={150}
@@ -208,28 +255,18 @@ const Footer: React.FC<FooterProps> = () => {
 
           {/* Section 4: Download App Links */}
           <motion.div
-            className="space-y-4 animate-pulse"
+            className="space-y-4"
             ref={sectionRefs.current[3]}
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
             transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
           >
             <h3 className="text-lg font-medium text-black text-shadow-md">
-              Download the App
+              Daily Inspiration
             </h3>
-            <div className="flex gap-4 items-center cursor-pointer hover:scale-110 transition-transform duration-150">
-              <Link target="_blank" href="#">
-                <Image
-                  alt="Google Play Store"
-                  loading="lazy"
-                  width={30}
-                  height={30}
-                  src="/assets/logo1.png"
-                  className="w-16 h-auto hover:opacity-80 transition-opacity rotate-3d"
-                />
-              </Link>
+            <div className="flex items-center">
               <h2 className="text-xl font-semibold text-red-500 gradient-text">
-                Coming Soon
+                {dailyQuote || "Coming Soon"}
               </h2>
             </div>
           </motion.div>

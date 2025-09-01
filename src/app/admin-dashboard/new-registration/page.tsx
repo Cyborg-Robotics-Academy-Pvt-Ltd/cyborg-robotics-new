@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { collection, getDocs, getFirestore } from "firebase/firestore";
-import { app } from "../../../../firebaseConfig";
+import { app } from "@/lib/firebase";
 import {
   Table,
   TableBody,

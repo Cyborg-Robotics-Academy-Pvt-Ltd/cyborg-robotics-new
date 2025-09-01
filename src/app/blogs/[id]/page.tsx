@@ -2,10 +2,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { db } from "../../../../firebaseConfig";
+import { db } from "@/lib/firebase";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import Link from "next/link";
-import { auth } from "../../../../firebaseConfig";
+import { auth } from "@/lib/firebase";
 import Image from "next/image";
 import Head from "next/head";
 

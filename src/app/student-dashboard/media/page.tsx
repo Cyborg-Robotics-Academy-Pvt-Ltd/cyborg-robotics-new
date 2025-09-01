@@ -1,7 +1,7 @@
 "use client";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useState, useEffect, useCallback } from "react";
-import { db } from "../../../../firebaseConfig";
+import { db } from "@/lib/firebase";
 import { ArrowLeft, ArrowRight, Download, XCircle } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
