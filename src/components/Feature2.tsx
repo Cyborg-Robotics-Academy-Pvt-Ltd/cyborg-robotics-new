@@ -30,12 +30,21 @@ const Feature2: React.FC = React.memo(() => {
   );
 
   return (
-    <div className="bg-white text-black md:my-8">
-      <h1 className="text-center font-bold text-2xl  md:text-3xl mt-4 ">
-        Why {""}
-        <span className="text-[#8D0F11]">Learn Robotics ?</span>
-      </h1>
-      <AnimatedTestimonials testimonials={testimonials} />
+    <div className="bg-white text-black py-8 md:py-12">
+      <div className="max-w-5xl mx-auto px-4">
+        <h1 className="text-center font-bold text-3xl md:text-4xl leading-tight tracking-tight">
+          Why {""}
+          <span className="gradient-text">Learn Robotics?</span>
+        </h1>
+
+        <p className="text-center text-gray-500 text-sm md:text-base mt-3 max-w-3xl mx-auto">
+          Hands-on projects in engineering and coding—get future‑ready.
+        </p>
+        <div className="mx-auto mt-5 h-1 w-16 rounded-full bg-[#8D0F11]/80" />
+        <div className="mt-6 md:mt-8">
+          <AnimatedTestimonials testimonials={testimonials} />
+        </div>
+      </div>
     </div>
   );
 });

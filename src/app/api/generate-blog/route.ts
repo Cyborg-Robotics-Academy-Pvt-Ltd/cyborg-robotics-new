@@ -12,13 +12,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'API key not set' }, { status: 500 });
     }
 
+    // Add randomness to the prompt to get different responses
+    const randomElements = [
+      'focus on creativity',
+      'emphasize perseverance', 
+      'highlight innovation',
+      'stress teamwork',
+      'encourage curiosity',
+      'promote problem-solving',
+      'inspire learning',
+      'motivate students',
+      'celebrate technology',
+      'foster growth mindset'
+    ];
+    
+    const randomElement = randomElements[Math.floor(Math.random() * randomElements.length)];
+    const enhancedPrompt = `${prompt} ${randomElement}. Make it unique and different from previous responses.`;
+
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: enhancedPrompt }] }]
       }),
     });
 

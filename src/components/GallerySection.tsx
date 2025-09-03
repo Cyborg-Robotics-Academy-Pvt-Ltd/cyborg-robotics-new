@@ -10,8 +10,11 @@ const GallerySection = () => {
   return (
     <div className="w-full h-full pt-10 md:mt-4">
       <h1 className="text-center font-bold text-2xl md:text-3xl    ">
-        Our <span className="text-[#8D0F11]">Gallery</span>
+        Our <span className="gradient-text">Gallery</span>
       </h1>
+      <p className="text-center text-sm md:text-base text-gray-600 mt-2">
+        Explore moments from our programs and events
+      </p>
       <Carousel items={cards} />
     </div>
   );
@@ -20,12 +23,12 @@ const GallerySection = () => {
 const data = [
   {
     id: "1",
-    src: "/assets/gallery/gallery (37).jpg",
+    src: "/assets/gallery/gallery (81).jpg",
   },
 
   {
     id: "2",
-    src: "/assets/gallery/gallery (61).jpg",
+    src: "/assets/gallery/gallery (81).jpg",
   },
   {
     id: "3",
@@ -33,7 +36,7 @@ const data = [
   },
   {
     id: "4",
-    src: "/assets/gallery/gallery (43).jpg",
+    src: "/assets/gallery/gallery (81).jpg",
   },
 ];
 

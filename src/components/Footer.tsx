@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPinHouse, PhoneCall } from "lucide-react";
+import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 
 interface FooterProps {
@@ -36,6 +36,7 @@ const Footer: React.FC<FooterProps> = () => {
   });
 
   const [dailyQuote, setDailyQuote] = useState<string>("");
+  const [isLoadingQuote, setIsLoadingQuote] = useState<boolean>(false);
 
   useEffect(() => {
     const now = new Date();
@@ -84,6 +85,31 @@ const Footer: React.FC<FooterProps> = () => {
     fetchQuote();
     return () => controller.abort();
   }, []);
+
+  const fetchNewQuote = async () => {
+    if (isLoadingQuote) return;
+
+    setIsLoadingQuote(true);
+    try {
+      const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
+      const res = await fetch("/api/generate-blog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      let text: string = (data?.generated || "").trim();
+      if (!text) return;
+      // sanitize to one line and keep it short
+      text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
+      setDailyQuote(text);
+    } catch {
+      // network/API failure -> keep current quote
+    } finally {
+      setIsLoadingQuote(false);
+    }
+  };
 
   return (
     <footer className="bg-white mt-9 md:my-20">
@@ -264,10 +290,23 @@ const Footer: React.FC<FooterProps> = () => {
             <h3 className="text-lg font-medium text-black text-shadow-md">
               Daily Inspiration
             </h3>
-            <div className="flex items-center">
-              <h2 className="text-xl font-semibold text-red-500 gradient-text">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-red-500 gradient-text flex-1">
                 {dailyQuote || "Coming Soon"}
               </h2>
+              <motion.button
+                onClick={fetchNewQuote}
+                disabled={isLoadingQuote}
+                className="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <RefreshCw
+                  size={16}
+                  className={`transition-transform duration-300 ${isLoadingQuote ? "animate-spin" : ""}`}
+                />
+              </motion.button>
             </div>
           </motion.div>
         </div>

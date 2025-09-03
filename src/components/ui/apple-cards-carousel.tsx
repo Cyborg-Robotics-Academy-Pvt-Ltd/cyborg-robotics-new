@@ -5,7 +5,6 @@ import React, {
   useState,
   createContext,
   useContext,
-  JSX,
   useCallback,
 } from "react";
 import {
@@ -19,7 +18,7 @@ import Image, { ImageProps } from "next/image";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
 interface CarouselProps {
-  items: JSX.Element[];
+  items: React.ReactNode[];
   initialScroll?: number;
 }
 
@@ -81,22 +80,22 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
 
   const handleScrollLeft = () => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? 230 : 384;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
       carouselRef.current.scrollBy({ left: -cardWidth, behavior: "smooth" });
     }
   };
 
   const handleScrollRight = () => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? 230 : 384;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
       carouselRef.current.scrollBy({ left: cardWidth, behavior: "smooth" });
     }
   };
 
   const handleCardClose = (index: number) => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? 230 : 384;
-      const gap = isMobile() ? 4 : 8;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
+      const gap = isMobile() ? 6 : 8;
       const scrollPosition = (cardWidth + gap) * (index + 1);
       carouselRef.current.scrollTo({
         left: scrollPosition,
@@ -107,7 +106,7 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
   };
 
   const isMobile = () => {
-    return window && window.innerWidth < 768;
+    return typeof window !== "undefined" && window.innerWidth < 768;
   };
 
   return (
@@ -115,9 +114,11 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
       value={{ onCardClose: handleCardClose, currentIndex }}
     >
       <div className="relative w-full">
+        {/* Carousel */}
         <div
           className={cn(
             "flex w-full overflow-x-scroll overscroll-x-auto py-10 scroll-smooth [scrollbar-width:none]",
+            "snap-x snap-mandatory", // ✅ snapping behavior
             isDragging && "cursor-grabbing"
           )}
           ref={carouselRef}
@@ -129,21 +130,13 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
         >
           <div
             className={cn(
-              "absolute right-0 z-[1000] h-full w-[5%] overflow-hidden bg-gradient-to-l from-white dark:from-neutral-900 to-transparent"
-            )}
-          ></div>
-          <div
-            className={cn(
-              "flex flex-row justify-start gap-4 pl-4",
+              "flex flex-row justify-start gap-8 pl-8",
               "max-w-7xl mx-auto"
             )}
           >
             {items.map((item, index) => (
               <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{
                   opacity: 1,
                   y: 0,
@@ -154,18 +147,20 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
                   },
                 }}
                 key={"card" + index}
-                className="last:pr-[5%] md:last:pr-[33%] rounded-3xl"
+                className="last:pr-[5%] md:last:pr-[33%] rounded-3xl snap-center flex-shrink-0"
               >
                 {item}
               </motion.div>
             ))}
           </div>
         </div>
-        <div className="flex justify-end gap-2 mr-10 sm:mr-20">
+
+        {/* Navigation Arrows */}
+        <div className="flex justify-center gap-2 mt-4 md:mt-0">
           <button
             className={cn(
-              "relative z-40 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center transition-all duration-200",
-              "hover:bg-gray-300 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white rounded-full shadow-lg text-sm font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              "relative z-40 h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
+              "text-white shadow-lg font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             )}
             onClick={handleScrollLeft}
             disabled={!canScrollLeft}
@@ -174,8 +169,8 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
           </button>
           <button
             className={cn(
-              "relative bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-lg text-sm font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl z-40 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center transition-all duration-200",
-              "hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              "relative z-40 h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
+              "text-white shadow-lg font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             )}
             onClick={handleScrollRight}
             disabled={!canScrollRight}
@@ -250,11 +245,11 @@ export const Card = ({
               transition={{
                 type: "tween",
                 duration: 0.5,
-                ease: [0.22, 1, 0.36, 1], // easeOutCubic
+                ease: [0.22, 1, 0.36, 1],
               }}
               ref={containerRef}
               layoutId={layout ? `card-${card.id}` : undefined}
-              className="max-w-5xl mx-auto mt-20 h-fit dark:bg-neutral-900/30 z-[60] rounded-3xl font-sans relative  "
+              className="max-w-5xl mx-auto mt-20 h-fit dark:bg-neutral-900/30 z-[60] font-sans relative"
             >
               <button
                 className="sticky top-4 h-8 w-8 right-0 ml-auto bg-black dark:bg-white rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-110 hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-md"
@@ -265,7 +260,10 @@ export const Card = ({
               </button>
               <div
                 className="relative w-full max-w-4xl mx-auto"
-                style={{ maxHeight: "90vh", minHeight: "300px" }}
+                style={{
+                  maxHeight: "90vh",
+                  minHeight: "500px",
+                }}
               >
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -276,7 +274,7 @@ export const Card = ({
                     src={card.src}
                     alt={`Card ${card.id}`}
                     fill
-                    className="object-contain rounded-lg"
+                    className="object-contain rounded-2xl border-2 border-white/60 shadow-2xl"
                     style={{ maxHeight: "90vh", minHeight: "300px" }}
                   />
                 </motion.div>
@@ -288,13 +286,16 @@ export const Card = ({
       <motion.button
         layoutId={layout ? `card-${card.id}` : undefined}
         onClick={handleOpen}
-        className="relative h-[150px] sm:h-[200px] md:h-[300px] w-[200px] sm:w-[300px] md:w-[450px] overflow-hidden rounded-3xl"
+        className="relative aspect-[9/16] 
+                   h-[70vh] sm:h-[300px] md:h-[400px] 
+                   w-[90vw] sm:w-[250px] md:w-[280px] 
+                   overflow-hidden rounded-3xl snap-center"
       >
         <BlurImage
           src={card.src}
           alt={`Card ${card.id}`}
           fill
-          className="object-cover"
+          className="object-cover rounded-2xl border-2 border-white/60 shadow-lg"
         />
       </motion.button>
     </>
