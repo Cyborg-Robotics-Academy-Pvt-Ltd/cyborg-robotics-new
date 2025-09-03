@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import FeedBack from "./FeedBack";
+import Testimonials from "./Testimonials/Testimonials";
 import GallerySection from "./GallerySection";
 import Feature2 from "./Feature2";
 import ScrollButton from "./ScrollButton";
@@ -274,6 +274,16 @@ const HomePage: React.FC = () => {
           <VisionSection />
         </motion.div>
         <motion.div
+          ref={feedbackRef}
+          initial={{ opacity: 0, y: 60 }}
+          animate={
+            isFeedbackInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
+          }
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <Testimonials />
+        </motion.div>
+        <motion.div
           id="gallery"
           className="scroll-offset"
           ref={gallerySectionRef}
@@ -284,16 +294,6 @@ const HomePage: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <GallerySection />
-        </motion.div>
-        <motion.div
-          ref={feedbackRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isFeedbackInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <FeedBack />
         </motion.div>
 
         {/* WhatsApp Floating Button */}

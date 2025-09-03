@@ -16,7 +16,11 @@ const poppins = Poppins({
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={poppins.variable}>
-      <head></head>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/assets/logo.png" />
+        <meta name="theme-color" content="#dc2626" />
+      </head>
       <body className="font-body antialiased">
         <AuthProvider>
           <div className="flex min-h-screen w-full flex-col">
