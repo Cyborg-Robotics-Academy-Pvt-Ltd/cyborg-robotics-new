@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/layout/header";
 import { ReactNode } from "react";
 import Footer from "@/components/Footer";
+import WhatsAppWidget from "@/components/WhatsAppWidget";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <main className="flex-1 pt-16">{children}</main>
             <Footer />
           </div>
+          <WhatsAppWidget />
         </AuthProvider>
       </body>
     </html>

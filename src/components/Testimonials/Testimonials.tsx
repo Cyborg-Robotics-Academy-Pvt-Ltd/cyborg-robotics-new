@@ -13,13 +13,23 @@ const Testimonials = () => {
         Hear from parents and students about their learning journeys with us.
       </h2>
 
-      <div className="w-[90%] max-w-6xl grid md:grid-cols-2 grid-cols-1 gap-6 md:gap-8">
+      <div className="w-[90%] max-w-6xl grid md:grid-cols-2 grid-cols-1 gap-5 md:gap-6 lg:gap-6">
         <div className="flex-1">
           <Parents />
         </div>
         <div className="flex-1">
           <Students />
         </div>
+      </div>
+
+      <div className="mt-8">
+        <a
+          href="/registration"
+          className="inline-flex items-center gap-2 rounded-full bg-red-900 text-white px-5 py-2 text-sm sm:text-base shadow-lg hover:bg-red-800 hover:shadow-xl active:scale-95 transition"
+        >
+          <span>Join our programs</span>
+          <span aria-hidden>→</span>
+        </a>
       </div>
     </div>
   );

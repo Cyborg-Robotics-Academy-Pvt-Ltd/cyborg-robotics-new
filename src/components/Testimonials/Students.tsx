@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const Students = () => {
   const studentTestimonials = [
@@ -67,6 +67,28 @@ const Students = () => {
 
   const { quote, name, image, course } = studentTestimonials[currentIndex];
 
+  // Touch swipe handlers for mobile
+  const touchStartXRef = useRef<number | null>(null);
+  const touchEndXRef = useRef<number | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchEndXRef.current = null;
+    touchStartXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchEndXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (touchStartXRef.current === null || touchEndXRef.current === null)
+      return;
+    const distance = touchStartXRef.current - touchEndXRef.current;
+    const swipeThreshold = 40; // px
+    if (distance > swipeThreshold) handleNext();
+    if (distance < -swipeThreshold) handlePrev();
+  };
+
   const handleKeyNav = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") handlePrev();
     if (event.key === "ArrowRight") handleNext();
@@ -89,11 +111,14 @@ const Students = () => {
         aria-roledescription="carousel"
         aria-label="Student stories"
         tabIndex={0}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {/* Left Button */}
         <button
           onClick={handlePrev}
-          className="relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow flex items-center justify-center text-lg sm:text-2xl mr-2 sm:mr-4 hover:bg-red-800 focus:outline-none   "
+          className="hidden sm:flex relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-2xl mr-2 sm:mr-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none focus:ring-2"
           aria-label="Previous testimonial"
         >
           &lt;
@@ -107,9 +132,18 @@ const Students = () => {
           flex flex-row items-center justify-center transition-transform duration-300 ease-out hover:-translate-y-1"
         >
           <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-red-100 via-white to-transparent" />
+          <Image
+            src={image}
+            alt={name}
+            width={120}
+            height={160}
+            className="w-[84px] h-[112px] sm:w-[110px] sm:h-[150px] md:w-[130px] md:h-[170px]
+                       rounded-2xl bg-[#f1f1f1]
+                       object-cover mr-4 sm:mr-6 shadow-md"
+          />
           <div className="flex flex-col justify-center flex-1">
             <div className="flex items-center justify-between mb-1">
-              <p className="font-semibold text-red-900 text-left text-sm sm:text-base">
+              <p className="font-medium text-red-900 text-left text-sm sm:text-base">
                 {name}
               </p>
             </div>
@@ -120,21 +154,12 @@ const Students = () => {
               {course}
             </p>
           </div>
-          <Image
-            src={image}
-            alt={name}
-            width={120}
-            height={160}
-            className="w-[84px] h-[112px] sm:w-[110px] sm:h-[150px] md:w-[130px] md:h-[170px]
-                       rounded-2xl bg-[#f1f1f1]
-                       object-cover ml-4 sm:ml-6 shadow-md"
-          />
         </div>
 
         {/* Right Button */}
         <button
           onClick={handleNext}
-          className="relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow flex items-center justify-center text-lg sm:text-2xl ml-2 sm:ml-4 hover:bg-red-800 focus:outline-none   "
+          className="hidden sm:flex relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-2xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none focus:ring-2"
           aria-label="Next testimonial"
         >
           &gt;

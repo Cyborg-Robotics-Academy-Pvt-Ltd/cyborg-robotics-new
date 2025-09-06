@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
 import {
   collection,
   getDocs,
@@ -273,6 +274,7 @@ const Page = ({
 }: {
   params: Promise<{ prn: string; sub: string }>;
 }) => {
+  // Resolve params synchronously not available; add a quick guard when available
   const { userRole } = useAuth();
   const [resolvedParams, setResolvedParams] = useState<{
     prn: string;
@@ -314,6 +316,15 @@ const Page = ({
   }, []);
 
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
+
+  // Not found guards once params are resolved
+  if (resolvedParams) {
+    const { prn, sub } = resolvedParams;
+    // PRN must be numeric and sub must resolve to a non-empty course name
+    if (!/^\d+$/.test(prn) || !sub || !courseName) {
+      notFound();
+    }
+  }
 
   const handleCompletedChange = async (checked: boolean | "indeterminate") => {
     if (!student) return;
@@ -832,15 +843,7 @@ const Page = ({
     );
   }
   if (error || !student) {
-    return (
-      <main
-        role="main"
-        aria-label="Course Not Found"
-        className="min-h-screen bg-gray-50 flex items-center justify-center"
-      >
-        {/* TODO: Add error message and better feedback. */}
-      </main>
-    );
+    notFound();
   }
   return (
     <>

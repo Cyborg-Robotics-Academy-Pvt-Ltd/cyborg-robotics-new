@@ -296,55 +296,7 @@ const HomePage: React.FC = () => {
           <GallerySection />
         </motion.div>
 
-        {/* WhatsApp Floating Button */}
-        {/*  */}
-        <div className="fixed w-full bottom-2 right-4 items-center z-50 flex justify-end">
-          {shouldShowButtons && (
-            <motion.div
-              className="md:mr-28 mr-8"
-              ref={whatsappBtnRef}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-            >
-              <Link
-                href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div>
-                  <Image
-                    src="/assets/whatsapp.png"
-                    alt="WhatsApp Logo"
-                    width={60}
-                    height={60}
-                    loading="lazy"
-                    className="transition-opacity duration-300"
-                  />
-                </div>
-              </Link>
-            </motion.div>
-          )}
-
-          <ScrollButton />
-          <div className="fixed bottom-0 -right-2 p-4">
-            <Link
-              href="https://www.linkedin.com/in/shrikant11/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                src="/mylogo.png"
-                alt="Company Logo"
-                width={20}
-                height={20}
-                loading="lazy"
-                quality={75}
-                className="opacity-20"
-              />
-            </Link>
-          </div>
-        </div>
+        <ScrollButton />
       </div>
     </>
   );
