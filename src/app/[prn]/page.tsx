@@ -1,5 +1,6 @@
 "use client";
 import React, { use } from "react";
+import { notFound } from "next/navigation";
 import {
   collection,
   query,
@@ -111,6 +112,11 @@ function getLevelLabel(level: string) {
 
 export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const { prn } = use(params);
+
+  // Guard: only numeric PRN is valid; otherwise show 404
+  if (!/^\d+$/.test(prn)) {
+    notFound();
+  }
   const [student, setStudent] = React.useState<Student | null>(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [userChecked, setUserChecked] = React.useState(false);

@@ -274,7 +274,7 @@ export const Card = ({
                     src={card.src}
                     alt={`Card ${card.id}`}
                     fill
-                    className="object-contain rounded-2xl border-2 border-white/60 shadow-2xl"
+                    className="object-contain rounded-2xl "
                     style={{ maxHeight: "90vh", minHeight: "300px" }}
                   />
                 </motion.div>
