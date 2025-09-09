@@ -1,6 +1,6 @@
 "use client";
 
-import GalleryVideos from "@/components/GalleryVideos";
+import GalleryVideos from "@/components/gallery/GalleryVideos";
 import Head from "next/head";
 
 const Page = () => {

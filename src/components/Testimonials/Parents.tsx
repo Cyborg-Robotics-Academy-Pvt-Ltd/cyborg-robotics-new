@@ -134,7 +134,7 @@ const Parents = () => {
           w-full max-w-[280px] sm:max-w-[420px] md:max-w-[520px]
           flex flex-row items-center justify-center transition-transform duration-300 ease-out hover:-translate-y-1"
         >
-          <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-red-100 via-white to-transparent" />
+          <div className="absolute inset-0 -z-10 rounded-2xl " />
           <Image
             src={image}
             alt={name}

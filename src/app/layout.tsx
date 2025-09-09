@@ -4,7 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/layout/header";
 import { ReactNode } from "react";
 import Footer from "@/components/Footer";
-import WhatsAppWidget from "@/components/WhatsAppWidget";
+import WhatsAppWidget from "@/components/widgets/WhatsAppWidget";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({

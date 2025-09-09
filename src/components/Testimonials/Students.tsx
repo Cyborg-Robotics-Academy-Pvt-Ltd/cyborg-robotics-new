@@ -131,14 +131,14 @@ const Students = () => {
           w-full max-w-[280px] sm:max-w-[420px] md:max-w-[520px]
           flex flex-row items-center justify-center transition-transform duration-300 ease-out hover:-translate-y-1"
         >
-          <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-red-100 via-white to-transparent" />
+          <div className="absolute inset-0 -z-10 rounded-2xl  " />
           <Image
             src={image}
             alt={name}
             width={120}
             height={160}
             className="w-[84px] h-[112px] sm:w-[110px] sm:h-[150px] md:w-[130px] md:h-[170px]
-                       rounded-2xl bg-[#f1f1f1]
+                       rounded-2xl bg-[#f1f1f1] 
                        object-cover mr-4 sm:mr-6 shadow-md"
           />
           <div className="flex flex-col justify-center flex-1">

@@ -1,5 +1,5 @@
 "use client";
-import MediaSection from "@/components/MediaSection";
+import MediaSection from "@/components/gallery/MediaSection";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
