@@ -40,7 +40,6 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
-import { motion } from "framer-motion";
 // import ExcelJS from "exceljs";
 // import { saveAs } from "file-saver";
 
@@ -285,7 +284,6 @@ const Page = ({
   const [showNextCourseModal, setShowNextCourseModal] = useState(false);
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
-  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     params.then(setResolvedParams);
@@ -757,41 +755,12 @@ const Page = ({
         setStudent({ ...student, courses: updatedCourses });
       }
     }
-  }, [
-    assignedClasses,
-    completedTasks.length,
-    student,
-    courseName,
-    setIsCourseCompleted,
-  ]);
+  }, [assignedClasses, completedTasks.length, student, courseName]);
 
   const remainingClasses = Math.max(
     0,
     (Number(classNumber) || 0) - completedTasks.length
   );
-
-  const exportToExcel = async () => {
-    setExporting(true);
-    try {
-      const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
-        import("exceljs"),
-        import("file-saver"),
-      ]);
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Completed Classes");
-      worksheet.columns = [
-        { header: "Date", key: "dateTime", width: 22 },
-        { header: "Task", key: "task", width: 40 },
-        { header: "Status", key: "status", width: 15 },
-        { header: "Course", key: "course", width: 30 },
-      ];
-      completedTasks.forEach((t) => worksheet.addRow(t));
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), "Completed-Classes.xlsx");
-    } finally {
-      setExporting(false);
-    }
-  };
 
   if (loading) {
     return (
