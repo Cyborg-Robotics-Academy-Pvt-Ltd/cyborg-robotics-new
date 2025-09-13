@@ -44,7 +44,7 @@ export default function WhatWeOffer() {
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 overflow-hidden">
+      <section className="relative py-20 px-4 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
         {/* Enhanced decorative background with floating elements */}
         <div
           aria-hidden="true"

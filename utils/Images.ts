@@ -31,10 +31,7 @@ export const GalleryImageData = [
 
   export const FeaturesImages = [
   
-    {
-      title: "Learning Beyond the Classroom",
-      imageUrl: "/assets/gallery/gallery (70).jpg",
-    },
+
     {
       title: "Empowering Minds for the Future",
       imageUrl: "/assets/gallery/gallery (71).jpg",

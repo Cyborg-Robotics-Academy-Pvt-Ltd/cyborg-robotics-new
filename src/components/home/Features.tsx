@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { InfiniteMovingCards } from "./ui/infinite-moving-cards";
-import { FeaturesImages } from "../../utils/Images";
+import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+import { FeaturesImages } from "../../../utils/Images";
 
 const Features: React.FC = React.memo(() => {
   return (

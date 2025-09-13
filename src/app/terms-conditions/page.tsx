@@ -1,5 +1,5 @@
 "use client";
-import Footer from "@/components/Footer";
+import Footer from "@/components/home/Footer";
 import React from "react";
 import Head from "next/head";
 
