@@ -818,13 +818,7 @@ const Page = ({
         setStudent({ ...student, courses: updatedCourses });
       }
     }
-  }, [
-    assignedClasses,
-    completedTasks.length,
-    student,
-    courseName,
-    setIsCourseCompleted,
-  ]);
+  }, [assignedClasses, completedTasks.length, student, courseName]);
 
   const remainingClasses = Math.max(
     0,

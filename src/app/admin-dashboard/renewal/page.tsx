@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import Image from "next/image";
 
 interface Registration {
   id: string;
@@ -354,9 +355,11 @@ const Page = () => {
                         className="text-center py-10 text-slate-500"
                       >
                         <div className="flex flex-col items-center gap-2">
-                          <img
+                          <Image
                             src="/no-data.svg"
                             alt="No data"
+                            width={96}
+                            height={96}
                             className="h-24"
                           />
                           <p>No registrations found.</p>
