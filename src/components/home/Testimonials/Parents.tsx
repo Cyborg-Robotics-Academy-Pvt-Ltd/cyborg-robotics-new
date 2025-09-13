@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 
 const Parents = () => {
   const parentTestimonials = [
@@ -98,7 +99,13 @@ const Parents = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <motion.div
+      className="w-full flex flex-col items-center"
+      initial={{ opacity: 0, x: -60 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ type: "tween", duration: 1.2, ease: "easeOut" }}
+    >
       <h2 className="mb-3">
         <span className="text-2xl font-bold gradient-text">Parent</span>
         <span className="text-2xl font-bold text-black"> Stories</span>
@@ -181,7 +188,7 @@ const Parents = () => {
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

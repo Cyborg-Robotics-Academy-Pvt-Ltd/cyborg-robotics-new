@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { GalleryImageData } from "../../utils/Images";
+import { GalleryImageData } from "../../../utils/Images";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS_PER_PAGE = 6;

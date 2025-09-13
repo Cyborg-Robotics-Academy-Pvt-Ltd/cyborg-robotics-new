@@ -1,4 +1,4 @@
-import Footer from "@/components/Footer";
+import Footer from "@/components/home/Footer";
 import React from "react";
 import { Shield, Cookie, FileText, Clock, Mail } from "lucide-react";
 import Head from "next/head";

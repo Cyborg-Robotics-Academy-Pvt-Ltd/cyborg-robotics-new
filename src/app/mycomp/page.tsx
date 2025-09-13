@@ -1,229 +1,82 @@
-"use client";
-import Script from "next/script";
+import React from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  animate,
-  Variants,
-} from "framer-motion";
-import { useEffect, useState } from "react";
 
-declare global {
-  interface Window {
-    particlesJS?: (tagId: string, params: unknown) => void;
-  }
-}
+const MENTOR = {
+  name: "Dr. Sarah Johnson",
+  photo: "/assets/parents/t1.jpg",
+  linkedin: "https://www.linkedin.com/in/your-profile",
+  role: "Principal Mentor",
+  bio: "15+ years in software development. Specializing in full-stack architecture and team leadership.",
+};
 
-const MyComp = () => {
-  const statsContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 },
-    },
-  };
-
-  const statItemVariants: Variants = {
-    hidden: { opacity: 0, y: 24, scale: 0.96 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { type: "spring", stiffness: 120, damping: 14 },
-    },
-  };
-
-  const StatCard = ({
-    icon,
-    target,
-    label,
-    suffix = "+",
-  }: {
-    icon: string;
-    target: number;
-    label: string;
-    suffix?: string;
-  }) => {
-    const count = useMotionValue(0);
-    const rounded = useTransform(count, (latest) => Math.round(latest));
-    const formatted = useTransform(rounded, (v) => v.toLocaleString());
-    const [display, setDisplay] = useState<string>("0");
-
-    useEffect(() => {
-      const unsubscribe = formatted.on("change", (v) => setDisplay(String(v)));
-      return () => unsubscribe();
-    }, [formatted]);
-
-    return (
-      <motion.div
-        variants={statItemVariants}
-        whileHover={{ y: -4, scale: 1.03 }}
-        whileTap={{ scale: 0.98 }}
-        viewport={{ once: true, amount: 0.6 }}
-        onViewportEnter={() => {
-          animate(count, target, { duration: 1.6, ease: "easeOut" });
-        }}
-        className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 flex items-center gap-4 shadow-lg"
-      >
-        <span className="text-red-500 text-4xl">{icon}</span>
-        <div>
-          <h3 className="text-2xl font-bold text-white">
-            {display} {suffix}
-          </h3>
-          <p className="text-gray-200 text-sm">{label}</p>
-        </div>
-      </motion.div>
-    );
-  };
-
+const Page = () => {
   return (
-    <>
-      <Script
-        src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          window.particlesJS?.("particles-js", {
-            particles: {
-              number: {
-                value: 120,
-                density: { enable: true, value_area: 800 },
-              },
-              color: { value: "#ffffff" },
-              shape: { type: "circle" },
-              opacity: { value: 0.4 },
-              size: { value: 3, random: true },
-              line_linked: {
-                enable: true,
-                distance: 150,
-                color: "#ffffff",
-                opacity: 0.3,
-                width: 1,
-              },
-              move: { enable: true, speed: 3, out_mode: "out" },
-            },
-            interactivity: {
-              events: {
-                onhover: { enable: true, mode: "repulse" },
-                onclick: { enable: true, mode: "push" },
-              },
-            },
-            retina_detect: true,
-          });
-        }}
-      />
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-[#7A1C1E] via-[#A84C4C] to-[#3F1213]">
-        <div id="particles-js" className="absolute inset-0 z-0"></div>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="group w-[320px] h-[320px] bg-white rounded-[36px] p-[4px] relative shadow-[rgba(183,45,53,0.15)_0px_25px_50px_-12px] transition-all duration-700 ease-in-out hover:shadow-[rgba(183,45,53,0.25)_0px_35px_60px_-12px] hover:scale-105 hover:rounded-tl-[65px]">
+        {/* Image container */}
+        <div className="absolute w-[calc(100%-8px)] h-[calc(100%-8px)] top-[4px] left-[4px] rounded-[32px] z-10 border-0 overflow-hidden transition-all duration-700 ease-in-out delay-200 group-hover:w-[110px] group-hover:h-[110px] group-hover:aspect-square group-hover:top-[12px] group-hover:left-[12px] group-hover:rounded-full group-hover:z-30  group-hover:border-[#B72D35] group-hover:shadow-[rgba(183,45,53,0.3)_0px_8px_16px_0px] group-hover:delay-0">
+          <div className="relative w-full h-full">
+            <Image
+              src={MENTOR.photo}
+              alt={`${MENTOR.name} photo`}
+              fill
+              sizes="320px"
+              className="object-cover object-center transition-all duration-700 ease-in-out group-hover:scale-110"
+            />
+            {/* Overlay gradient on hover */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#B72D35]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          </div>
+        </div>
 
-        <div className="relative z-10 w-full px-6">
-          <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center py-16">
-            {/* Left content */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center md:text-left text-white"
-            >
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                className="font-headline text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight drop-shadow-lg"
-              >
-                Build the Future,{" "}
-                <span className="text-yellow-300">One Robot</span> at a Time
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
-                className="mt-6 max-w-2xl mx-auto md:mx-0 text-lg text-gray-200 leading-relaxed"
-              >
-                Cyborg Robotics Academy in Pune offers hands-on courses in
-                robotics, coding, and more. Our{" "}
-                <span className="italic font-semibold">
-                  &quot;Learning by Doing&quot;
-                </span>{" "}
-                approach prepares students for the future of technology.
-              </motion.p>
-              <div className="mt-8 flex flex-wrap justify-center md:justify-start gap-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    asChild
-                    size="lg"
-                    className="bg-yellow-400 rounded-xl text-black font-semibold hover:bg-yellow-300 transition-all duration-300 shadow-lg"
-                  >
-                    <Link href="/courses">Explore Courses</Link>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.55, ease: "easeOut" }}
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="border-yellow-300 rounded-xl text-yellow-300 hover:bg-yellow-300 hover:text-black transition-all duration-300"
-                  >
-                    <Link href="/contact">Book a Free Trial</Link>
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Right image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="hidden md:block"
-            >
-              <div className="relative group">
-                <Image
-                  src="https://placehold.co/600x400.png"
-                  width={600}
-                  height={400}
-                  alt="Robotics hero image"
-                  className="rounded-2xl shadow-2xl border-4 border-yellow-300 transition-transform duration-500"
-                />
-              </div>
-            </motion.div>
+        {/* Main content area */}
+        <div className="absolute bottom-[4px] left-[4px] right-[4px] bg-gradient-to-br from-[#B72D35] to-[#8B2229] top-[82%] rounded-[32px] z-20 shadow-[inset_0px_8px_16px_rgba(0,0,0,0.1)] overflow-visible transition-all duration-700 ease-[cubic-bezier(0.645,0.045,0.355,1)] group-hover:top-[28%] group-hover:rounded-[90px_32px_32px_32px] group-hover:delay-200">
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 right-4 w-20 h-20 border border-white/30 rounded-full"></div>
+            <div className="absolute bottom-8 right-8 w-12 h-12 border border-white/20 rounded-full"></div>
           </div>
 
-          {/* Stats Section */}
-          <motion.div
-            variants={statsContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="relative z-10 w-full mt-12"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-              <StatCard icon="⚙️" target={50} label="Robotics Kits" />
-              <StatCard icon="👩‍🎓" target={1000} label="Students" />
-              <StatCard icon="📚" target={20} label="Unique Courses" />
-              <StatCard icon="📅" target={100} label="Events Hosted" />
+          {/* Content wrapper */}
+          <div className="relative h-full p-6">
+            {/* Name and Role (always visible) */}
+            <div className="absolute bottom-20 left-6 right-6">
+              <h2 className="text-xl font-bold text-white leading-tight mb-1">
+                {MENTOR.name}
+              </h2>
+              <p className="text-sm text-white/90 font-medium">{MENTOR.role}</p>
             </div>
-          </motion.div>
+
+            {/* Bio (visible on hover) */}
+            <div className="absolute top-6 left-6 right-6 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-300">
+              <p className="text-sm text-white/95 leading-relaxed">
+                {MENTOR.bio}
+              </p>
+            </div>
+
+            {/* Connect button */}
+            <div className="absolute bottom-4 left-6 right-6">
+              <a
+                href={MENTOR.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Connect on LinkedIn"
+                className="inline-flex items-center justify-center gap-1.5 bg-white text-[#B72D35] border-0 rounded-full text-xs font-semibold px-3 py-1.5 shadow-[0_3px_8px_rgba(0,0,0,0.12)] hover:bg-[#B72D35] hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_5px_14px_rgba(0,0,0,0.2)]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 448 512"
+                  className="h-3.5 w-3.5 fill-current"
+                >
+                  <path d="M100.28 448H7.4V148.9h92.88zm-46.44-340C24.2 108 0 83.77 0 54.64A53.36 53.36 0 0 1 53.84 0c29.51 0 53.37 24.2 53.37 54.36 0 29.13-23.86 53.28-53.37 53.28zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.26-79.2-48.3 0-55.7 37.7-55.7 76.6V448h-92.7V148.9h88.9v40.8h1.3c12.4-23.5 42.7-48.2 87.9-48.2 94 0 111.3 61.9 111.3 142.3V448z" />
+                </svg>
+                Connect
+              </a>
+            </div>
+          </div>
         </div>
-        <div className="">
-          <div className=""></div>
-        </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 };
-export default MyComp;
+
+export default Page;

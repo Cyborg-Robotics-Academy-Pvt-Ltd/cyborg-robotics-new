@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React from "react";
-import Footer from "@/components/Footer";
+import Footer from "@/components/home/Footer";
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";

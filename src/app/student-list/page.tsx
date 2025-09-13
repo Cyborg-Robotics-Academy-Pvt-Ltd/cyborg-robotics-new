@@ -40,8 +40,9 @@ import courses from "../../../utils/courses";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver"; // You may need to install file-saver as well
+// Remove heavy ESM imports from initial bundle and lazy-load them in handler
+// import ExcelJS from "exceljs";
+// import { saveAs } from "file-saver"; // You may need to install file-saver as well
 
 const Page = () => {
   interface Task {
@@ -270,6 +271,11 @@ const Page = () => {
   };
 
   const handleExport = async () => {
+    const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
+      import("exceljs"),
+      import("file-saver"),
+    ]);
+
     const isOngoing = (student: Student) =>
       student.courses.length > 0 &&
       student.courses.some(

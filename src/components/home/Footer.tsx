@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import VisitorCounter from "../VisitorCounter";
 
 interface FooterProps {
   [key: string]: unknown;
@@ -292,7 +293,7 @@ const Footer: React.FC<FooterProps> = () => {
             </h3>
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-red-500 gradient-text flex-1">
-                {dailyQuote || "Coming Soon"}
+                {dailyQuote || "Loading...."}
               </h2>
               <motion.button
                 onClick={fetchNewQuote}
@@ -314,10 +315,13 @@ const Footer: React.FC<FooterProps> = () => {
         {/* Copyright Section */}
         <hr className="border-t border-gray-300" />
         <div className="py-6 text-center">
-          <p className="text-xs md:text-sm text-black">
-            © Copyright All Rights Reserved by Cyborg Robotics Academy Private
-            Limited
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-xs md:text-sm text-black">
+              © Copyright All Rights Reserved by Cyborg Robotics Academy
+              Private Limited
+            </p>
+            <VisitorCounter />
+          </div>
         </div>
       </div>
     </footer>

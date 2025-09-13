@@ -1,6 +1,7 @@
 import React from "react";
 import Parents from "./Parents";
 import Students from "./Students";
+import Link from "next/link";
 
 const Testimonials = () => {
   return (
@@ -23,13 +24,13 @@ const Testimonials = () => {
       </div>
 
       <div className="mt-8">
-        <a
+        <Link
           href="/registration"
           className="inline-flex items-center gap-2 rounded-full bg-red-900 text-white px-5 py-2 text-sm sm:text-base shadow-lg hover:bg-red-800 hover:shadow-xl active:scale-95 transition"
         >
           <span>Join our programs</span>
           <span aria-hidden>→</span>
-        </a>
+        </Link>
       </div>
     </div>
   );

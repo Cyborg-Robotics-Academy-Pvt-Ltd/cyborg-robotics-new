@@ -1,25 +1,40 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import VisionSection from "./VisionSection";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRef } from "react";
+import dynamic from "next/dynamic";
+
 import { motion, useInView } from "framer-motion";
-import Testimonials from "../Testimonials/Testimonials";
-import GallerySection from "../gallery/GallerySection";
-import Feature2 from "./Feature2";
 import ScrollButton from "../widgets/ScrollButton";
-import { useScrollDirection } from "../../hooks/useScrollDirection";
-import WhatWeOffer from "./WhatWeOffer";
 import HeroSection from "./HeroSection";
 
+// Lazy-load heavier sections to reduce initial bundle and TTI
+const Features = dynamic(() => import("./Features"), {
+  loading: () => <div className="h-40" />,
+});
+const Feature2 = dynamic(() => import("./Feature2"), {
+  loading: () => <div className="h-40" />,
+});
+const WhatWeOffer = dynamic(() => import("./WhatWeOffer"), {
+  loading: () => <div className="h-40" />,
+});
+const VisionSection = dynamic(() => import("./VisionSection"), {
+  loading: () => <div className="h-40" />,
+});
+const GallerySection = dynamic(() => import("../gallery/GallerySection"), {
+  ssr: false,
+  loading: () => <div className="h-64" />,
+});
+const Testimonials = dynamic(() => import("./Testimonials/Testimonials"), {
+  ssr: false,
+  loading: () => <div className="h-64" />,
+});
+
 const HomePage: React.FC = () => {
-  const { scrollDirection } = useScrollDirection();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
 
   // Refs for each section
+  const featuresRef = useRef(null);
   const feature2Ref = useRef(null);
   const whatWeOfferRef = useRef(null);
   const visionSectionRef = useRef(null);
@@ -27,10 +42,13 @@ const HomePage: React.FC = () => {
   const feedbackRef = useRef(null);
 
   // Animate floating buttons for smooth entrance
-  const whatsappBtnRef = useRef(null);
-
-  const shouldShowButtons = isInitialLoad || scrollDirection === "down";
-
+  // const whatsappBtnRef = useRef(null);
+  // const shouldShowButtons = isInitialLoad || scrollDirection === "down";
+  // Check if sections are in view
+  const isFeaturesInView = useInView(featuresRef, {
+    once: true,
+    margin: "-100px",
+  });
   // Check if sections are in view
   const isFeature2InView = useInView(feature2Ref, {
     once: true,
@@ -53,34 +71,29 @@ const HomePage: React.FC = () => {
     margin: "-100px",
   });
 
-  useEffect(() => {
-    // Set initial load to false after 2 seconds
-    const timer = setTimeout(() => {
-      setIsInitialLoad(false);
-    }, 2000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
   // Handle scroll detection and modal timing
   useEffect(() => {
+    let modalTimerId: number | null = null;
+
     const handleScroll = () => {
       if (window.scrollY > 100 && !hasScrolled) {
         setHasScrolled(true);
-
-        // Show modal 10 seconds after user scrolls
-        const modalTimer = setTimeout(() => {
-          setShowModal(true);
-        }, 5000);
-
-        return () => clearTimeout(modalTimer);
+        if (modalTimerId === null) {
+          modalTimerId = window.setTimeout(() => {
+            setShowModal(true);
+          }, 5000);
+        }
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Use passive listener and only need the first trigger
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll as EventListener);
+      if (modalTimerId !== null) {
+        clearTimeout(modalTimerId);
+      }
+    };
   }, [hasScrolled]);
 
   const closeModal = () => {
@@ -227,7 +240,7 @@ const HomePage: React.FC = () => {
         </StickyBanner>
         <DummyContent /> */}
         <HeroSection />
-        {/* <motion.div
+        <motion.div
           ref={featuresRef}
           initial={{ opacity: 0, y: 60 }}
           animate={
@@ -236,7 +249,7 @@ const HomePage: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <Features />
-        </motion.div> */}
+        </motion.div>
         <motion.div
           id="why-learn-robotics"
           className="scroll-offset"

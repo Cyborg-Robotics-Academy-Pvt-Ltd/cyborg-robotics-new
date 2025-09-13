@@ -3,9 +3,11 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/layout/header";
 import { ReactNode } from "react";
-import Footer from "@/components/Footer";
+import Footer from "@/components/home/Footer";
 import WhatsAppWidget from "@/components/widgets/WhatsAppWidget";
 import { Poppins } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -30,6 +32,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Footer />
           </div>
           <WhatsAppWidget />
+          <Analytics />
+          <SpeedInsights />
         </AuthProvider>
       </body>
     </html>
