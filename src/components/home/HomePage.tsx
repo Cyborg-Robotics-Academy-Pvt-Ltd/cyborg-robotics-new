@@ -76,18 +76,15 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     let modalTimerId: NodeJS.Timeout | null = null;
     let scrollTimeout: NodeJS.Timeout | null = null;
+    let hasTriggered = false; // Local flag to prevent multiple triggers
 
     const handleScroll = () => {
       const scrollY = window.scrollY || document.documentElement.scrollTop;
 
-      console.log(
-        "Scroll event fired:",
-        scrollY,
-        "hasScrolled:",
-        hasScrolled,
-        "showModal:",
-        showModal
-      );
+      // If already triggered, don't process further
+      if (hasTriggered) {
+        return;
+      }
 
       // Clear any existing scroll timeout
       if (scrollTimeout) {
@@ -96,8 +93,8 @@ const HomePage: React.FC = () => {
 
       // Debounce scroll events
       scrollTimeout = setTimeout(() => {
-        if (scrollY > 50 && !hasScrolled && !showModal) {
-          console.log("Setting hasScrolled to true and starting timer");
+        if (scrollY > 50 && !hasTriggered) {
+          hasTriggered = true; // Set local flag immediately
           setHasScrolled(true);
 
           // Clear any existing modal timer
@@ -106,25 +103,25 @@ const HomePage: React.FC = () => {
           }
 
           modalTimerId = setTimeout(() => {
-            console.log("Timer completed - setting showModal to true");
             setShowModal(true);
           }, 500);
         }
       }, 100); // Debounce for 100ms
     };
 
-    console.log("Setting up scroll listener");
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     // Check initial scroll position
     const initialScrollY = window.scrollY || document.documentElement.scrollTop;
-    console.log("Initial scroll position:", initialScrollY);
-    if (initialScrollY > 50 && !hasScrolled && !showModal) {
-      handleScroll();
+    if (initialScrollY > 50 && !hasTriggered) {
+      hasTriggered = true;
+      setHasScrolled(true);
+      modalTimerId = setTimeout(() => {
+        setShowModal(true);
+      }, 500);
     }
 
     return () => {
-      console.log("Cleaning up scroll listener");
       window.removeEventListener("scroll", handleScroll);
       if (modalTimerId) {
         clearTimeout(modalTimerId);
@@ -133,17 +130,7 @@ const HomePage: React.FC = () => {
         clearTimeout(scrollTimeout);
       }
     };
-  }, []); // Empty dependency array to avoid recreation
-
-  // Debug effect to monitor state changes
-  useEffect(() => {
-    console.log(
-      "State changed - hasScrolled:",
-      hasScrolled,
-      "showModal:",
-      showModal
-    );
-  }, [hasScrolled, showModal]);
+  }, []); // Empty dependency array is fine now since we use local flag
 
   const closeModal = () => {
     setShowModal(false);
