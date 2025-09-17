@@ -34,6 +34,19 @@ const HomePage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
 
+  // Debug function to test modal - remove this in production
+  const testModal = () => {
+    console.log("Testing modal");
+    setShowModal(true);
+  };
+
+  // Debug function to reset state - remove this in production
+  const resetState = () => {
+    console.log("Resetting state");
+    setShowModal(false);
+    setHasScrolled(false);
+  };
+
   // Refs for each section
   const featuresRef = useRef(null);
   const feature2Ref = useRef(null);
@@ -74,28 +87,76 @@ const HomePage: React.FC = () => {
 
   // Handle scroll detection and modal timing
   useEffect(() => {
-    let modalTimerId: number | null = null;
+    let modalTimerId: NodeJS.Timeout | null = null;
+    let scrollTimeout: NodeJS.Timeout | null = null;
 
     const handleScroll = () => {
-      if (window.scrollY > 100 && !hasScrolled) {
-        setHasScrolled(true);
-        if (modalTimerId === null) {
-          modalTimerId = window.setTimeout(() => {
-            setShowModal(true);
-          }, 5000);
-        }
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+      console.log(
+        "Scroll event fired:",
+        scrollY,
+        "hasScrolled:",
+        hasScrolled,
+        "showModal:",
+        showModal
+      );
+
+      // Clear any existing scroll timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
       }
+
+      // Debounce scroll events
+      scrollTimeout = setTimeout(() => {
+        if (scrollY > 50 && !hasScrolled && !showModal) {
+          console.log("Setting hasScrolled to true and starting timer");
+          setHasScrolled(true);
+
+          // Clear any existing modal timer
+          if (modalTimerId) {
+            clearTimeout(modalTimerId);
+          }
+
+          modalTimerId = setTimeout(() => {
+            console.log("Timer completed - setting showModal to true");
+            setShowModal(true);
+          }, 2000);
+        }
+      }, 100); // Debounce for 100ms
     };
 
-    // Use passive listener and only need the first trigger
+    console.log("Setting up scroll listener");
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Check initial scroll position
+    const initialScrollY = window.scrollY || document.documentElement.scrollTop;
+    console.log("Initial scroll position:", initialScrollY);
+    if (initialScrollY > 50 && !hasScrolled && !showModal) {
+      handleScroll();
+    }
+
     return () => {
-      window.removeEventListener("scroll", handleScroll as EventListener);
-      if (modalTimerId !== null) {
+      console.log("Cleaning up scroll listener");
+      window.removeEventListener("scroll", handleScroll);
+      if (modalTimerId) {
         clearTimeout(modalTimerId);
       }
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
     };
-  }, [hasScrolled]);
+  }, []); // Empty dependency array to avoid recreation
+
+  // Debug effect to monitor state changes
+  useEffect(() => {
+    console.log(
+      "State changed - hasScrolled:",
+      hasScrolled,
+      "showModal:",
+      showModal
+    );
+  }, [hasScrolled, showModal]);
 
   const closeModal = () => {
     setShowModal(false);
@@ -103,6 +164,29 @@ const HomePage: React.FC = () => {
 
   return (
     <>
+      {/* Debug buttons - remove in production */}
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+        <button
+          onClick={testModal}
+          className="bg-red-500 text-white px-4 py-2 rounded text-sm"
+          style={{ zIndex: 10000 }}
+        >
+          Test Modal
+        </button>
+        <button
+          onClick={resetState}
+          className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
+          style={{ zIndex: 10000 }}
+        >
+          Reset State
+        </button>
+        <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs">
+          Scrolled: {hasScrolled ? "Yes" : "No"}
+          <br />
+          Modal: {showModal ? "Visible" : "Hidden"}
+        </div>
+      </div>
+
       {/* Template Image Modal */}
       {showModal && (
         <motion.div
