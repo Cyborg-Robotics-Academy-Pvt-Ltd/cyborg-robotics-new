@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
 import { motion, useInView } from "framer-motion";
-import VisitorCounter from "../VisitorCounter";
 
 interface FooterProps {
   [key: string]: unknown;
@@ -320,7 +319,6 @@ const Footer: React.FC<FooterProps> = () => {
               © Copyright All Rights Reserved by Cyborg Robotics Academy
               Private Limited
             </p>
-            <VisitorCounter />
           </div>
         </div>
       </div>
