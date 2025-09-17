@@ -34,19 +34,6 @@ const HomePage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
 
-  // Debug function to test modal - remove this in production
-  const testModal = () => {
-    console.log("Testing modal");
-    setShowModal(true);
-  };
-
-  // Debug function to reset state - remove this in production
-  const resetState = () => {
-    console.log("Resetting state");
-    setShowModal(false);
-    setHasScrolled(false);
-  };
-
   // Refs for each section
   const featuresRef = useRef(null);
   const feature2Ref = useRef(null);
@@ -121,7 +108,7 @@ const HomePage: React.FC = () => {
           modalTimerId = setTimeout(() => {
             console.log("Timer completed - setting showModal to true");
             setShowModal(true);
-          }, 2000);
+          }, 500);
         }
       }, 100); // Debounce for 100ms
     };
@@ -164,29 +151,6 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      {/* Debug buttons - remove in production */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-        <button
-          onClick={testModal}
-          className="bg-red-500 text-white px-4 py-2 rounded text-sm"
-          style={{ zIndex: 10000 }}
-        >
-          Test Modal
-        </button>
-        <button
-          onClick={resetState}
-          className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
-          style={{ zIndex: 10000 }}
-        >
-          Reset State
-        </button>
-        <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs">
-          Scrolled: {hasScrolled ? "Yes" : "No"}
-          <br />
-          Modal: {showModal ? "Visible" : "Hidden"}
-        </div>
-      </div>
-
       {/* Template Image Modal */}
       {showModal && (
         <motion.div
