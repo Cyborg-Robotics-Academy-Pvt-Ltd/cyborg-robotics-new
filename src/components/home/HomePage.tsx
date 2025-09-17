@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
 import ScrollButton from "../widgets/ScrollButton";
 import HeroSection from "./HeroSection";
+import NewsLetter from "./NewsLetter";
 
 // Lazy-load heavier sections to reduce initial bundle and TTI
 const Features = dynamic(() => import("./Features"), {
@@ -310,6 +311,10 @@ const HomePage: React.FC = () => {
         </motion.div>
 
         <ScrollButton />
+        <div className="">
+          {/* newsletter */}
+          <NewsLetter />
+        </div>
       </div>
     </>
   );

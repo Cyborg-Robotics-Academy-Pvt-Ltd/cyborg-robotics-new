@@ -10,7 +10,7 @@ const GallerySection = () => {
   return (
     <div className="w-full h-full pt-10 md:mt-4">
       <h1 className="text-center font-bold text-2xl md:text-3xl    ">
-        Our <span className="gradient-text">Gallery</span>
+        Celebrating <span className="gradient-text">Learning</span>
       </h1>
       <p className="text-center text-sm md:text-base text-gray-600 mt-2">
         Explore moments from our programs and events
