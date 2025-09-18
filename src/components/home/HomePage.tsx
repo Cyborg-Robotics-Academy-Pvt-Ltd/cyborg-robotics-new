@@ -2,13 +2,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-
 import { motion, useInView } from "framer-motion";
 import ScrollButton from "../widgets/ScrollButton";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 
-// Lazy-load heavier sections to reduce initial bundle and TTI
+// Lazy-load heavier sections
 const Features = dynamic(() => import("./Features"), {
   loading: () => <div className="h-40" />,
 });
@@ -32,7 +31,6 @@ const Testimonials = dynamic(() => import("./Testimonials/Testimonials"), {
 
 const HomePage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
 
   // Refs for each section
   const featuresRef = useRef(null);
@@ -42,15 +40,11 @@ const HomePage: React.FC = () => {
   const gallerySectionRef = useRef(null);
   const feedbackRef = useRef(null);
 
-  // Animate floating buttons for smooth entrance
-  // const whatsappBtnRef = useRef(null);
-  // const shouldShowButtons = isInitialLoad || scrollDirection === "down";
-  // Check if sections are in view
+  // InView animations
   const isFeaturesInView = useInView(featuresRef, {
     once: true,
     margin: "-100px",
   });
-  // Check if sections are in view
   const isFeature2InView = useInView(feature2Ref, {
     once: true,
     margin: "-100px",
@@ -72,69 +66,39 @@ const HomePage: React.FC = () => {
     margin: "-100px",
   });
 
-  // Handle scroll detection and modal timing
+  // Show modal only once when user scrolls more
   useEffect(() => {
-    let modalTimerId: NodeJS.Timeout | null = null;
-    let scrollTimeout: NodeJS.Timeout | null = null;
-    let hasTriggered = false; // Local flag to prevent multiple triggers
+    let hasTriggered = false;
+    let timeoutId: NodeJS.Timeout;
 
     const handleScroll = () => {
+      if (hasTriggered) return;
       const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollPercentage =
+        (scrollY / (documentHeight - windowHeight)) * 100;
 
-      // If already triggered, don't process further
-      if (hasTriggered) {
-        return;
+      // Trigger when user scrolls more than 20% of the page or 400px, whichever comes first
+      if (scrollY > 800 || scrollPercentage > 20) {
+        hasTriggered = true;
+        // Add a small delay to make it feel more natural
+        timeoutId = setTimeout(() => {
+          setShowModal(true);
+        }, 500);
+        window.removeEventListener("scroll", handleScroll);
       }
-
-      // Clear any existing scroll timeout
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-
-      // Debounce scroll events
-      scrollTimeout = setTimeout(() => {
-        if (scrollY > 50 && !hasTriggered) {
-          hasTriggered = true; // Set local flag immediately
-          setHasScrolled(true);
-
-          // Clear any existing modal timer
-          if (modalTimerId) {
-            clearTimeout(modalTimerId);
-          }
-
-          modalTimerId = setTimeout(() => {
-            setShowModal(true);
-          }, 500);
-        }
-      }, 100); // Debounce for 100ms
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Check initial scroll position
-    const initialScrollY = window.scrollY || document.documentElement.scrollTop;
-    if (initialScrollY > 50 && !hasTriggered) {
-      hasTriggered = true;
-      setHasScrolled(true);
-      modalTimerId = setTimeout(() => {
-        setShowModal(true);
-      }, 500);
-    }
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (modalTimerId) {
-        clearTimeout(modalTimerId);
-      }
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []); // Empty dependency array is fine now since we use local flag
+  }, []);
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
+  const closeModal = () => setShowModal(false);
 
   return (
     <>
@@ -165,11 +129,7 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.8, rotate: -180 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 0.8, rotate: 180 }}
-              transition={{
-                duration: 0.4,
-                ease: "easeOut",
-                delay: 0.4,
-              }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
               whileHover={{
                 scale: 1.15,
                 rotate: 90,
@@ -197,7 +157,7 @@ const HomePage: React.FC = () => {
               </motion.svg>
             </motion.button>
 
-            {/* Image Container with Glow Effect */}
+            {/* Image */}
             <motion.div
               initial={{
                 opacity: 0,
@@ -227,54 +187,21 @@ const HomePage: React.FC = () => {
               }}
               className="relative"
             >
-              {/* Glow Effect */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: [0, 0.5, 0],
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  duration: 3,
-                  delay: 1,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="absolute inset-0  rounded-2xl blur-xl -z-10"
+              <Image
+                src="/assets/Template.jpg"
+                alt="Cyborg Robotics Academy Template"
+                width={800}
+                height={600}
+                className="w-full h-auto max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+                priority
               />
-
-              {/* Image */}
-              <motion.div
-                whileHover={{
-                  scale: 1.02,
-                  transition: { duration: 0.3 },
-                }}
-                className="relative"
-              >
-                <Image
-                  src="/assets/Template.jpg"
-                  alt="Cyborg Robotics Academy Template"
-                  width={800}
-                  height={600}
-                  className="w-full h-auto max-h-[90vh] object-contain rounded-2xl shadow-2xl"
-                  priority
-                />
-              </motion.div>
             </motion.div>
           </motion.div>
         </motion.div>
       )}
 
+      {/* Page Content */}
       <div className="bg-white text-black">
-        {/* <StickyBanner className="bg-gradient-to-b from-blue-500 to-blue-600">
-          <p className="mx-0 max-w-[90%] text-white drop-shadow-md">
-            Announcing $10M seed funding from project mayhem ventures.{" "}
-            <a href="#" className="transition duration-200 hover:underline">
-              Read announcement
-            </a>
-          </p>
-        </StickyBanner>
-        <DummyContent /> */}
         <HeroSection />
         <motion.div
           ref={featuresRef}
@@ -346,22 +273,10 @@ const HomePage: React.FC = () => {
         </motion.div>
 
         <ScrollButton />
-        <div className="">
-          {/* newsletter */}
-          <NewsLetter />
-        </div>
+        <NewsLetter />
       </div>
     </>
   );
 };
 
-// const DummyContent = () => {
-//   return (
-//     <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 py-8">
-//       <div className="h-96 w-full animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800" />
-//       <div className="h-96 w-full animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800" />
-//       <div className="h-96 w-full animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800" />
-//     </div>
-//   );
-// };
 export default HomePage;
