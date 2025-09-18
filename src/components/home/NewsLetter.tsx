@@ -40,7 +40,7 @@ export default function NewsletterSignup() {
       const formData = new FormData();
       formData.append("EMAIL", email);
 
-      const response = await fetch(
+      await fetch(
         "https://f169c0e5.sibforms.com/serve/MUIFAM4LPnfV2EMOYZCSpcO6nK2-pzZSXufUL9HmbXFa6tMCRA-GyfeTkcC2St_fa-jwzNBtkZ3cfu1hgvGi3DxGMTvYz2ePIk4Bx4lNDEyS-HeqNQ77q_IsEQch9D1DPs8atrnaWN_0M4dqk1L94iTO5iQgJuWdCwseIRDyRUFAnGumCJuQ-_9FAsrpT3uGPCZkyoL9Iz9PWfe_",
         {
           method: "POST",
