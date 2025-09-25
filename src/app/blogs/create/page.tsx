@@ -29,9 +29,9 @@ const CreateBlogPage = () => {
 
   // Cloudinary config
   const CLOUDINARY_UPLOAD_PRESET =
-    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "shrikant";
+    process.env.CLOUDINARY_UPLOAD_PRESET || "shrikant";
   const CLOUDINARY_CLOUD_NAME =
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dz8enfjtx";
+    process.env.CLOUDINARY_CLOUD_NAME || "dz8enfjtx";
 
   const router = useRouter();
 

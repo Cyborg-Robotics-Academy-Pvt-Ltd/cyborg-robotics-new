@@ -51,7 +51,7 @@ export default function WhatsAppWidget({
   }, [autoOpenAfter, hasAutoOpened]);
 
   const resolvedPhone = useMemo(() => {
-    const fromEnv = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").trim();
+    const fromEnv = (process.env.WHATSAPP_NUMBER || "").trim();
     return (phoneNumber || fromEnv).replace(/[^\d]/g, "");
   }, [phoneNumber]);
 
