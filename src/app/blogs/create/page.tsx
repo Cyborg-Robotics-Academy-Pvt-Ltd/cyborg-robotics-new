@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { db, auth } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 import {
   collection,
   addDoc,
@@ -33,11 +34,11 @@ const CreateBlogPage = () => {
   const CLOUDINARY_CLOUD_NAME =
     process.env.CLOUDINARY_CLOUD_NAME || "dz8enfjtx";
 
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const user = auth.currentUser;
       if (!user) {
         setIsAdmin(false);
         router.push("/login");
@@ -81,14 +82,25 @@ const CreateBlogPage = () => {
         setLoading(false);
         return;
       }
-      await addDoc(collection(db, "blogs"), {
-        title,
-        content,
-        author,
-        date: new Date().toISOString().split("T")[0],
-        imageUrl,
-        createdAt: serverTimestamp(),
+      
+      const response = await fetch('/api/blogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          author,
+          date: new Date().toISOString().split("T")[0],
+          imageUrl,
+        }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create blog');
+      }
+      
       router.push("/blogs");
     } catch {
       setError("Failed to create blog. Try again.");
