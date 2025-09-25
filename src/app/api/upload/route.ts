@@ -1,4 +1,4 @@
-import { ref as dbRef, set, getDatabase } from "firebase/database";
+import { adminRTDB } from '@/lib/firebase-admin';
 
 
 // Check for required Cloudinary environment variables
@@ -56,12 +56,9 @@ export async function POST(req: Request) {
     const timestamp = Date.now();
     const fileId = `${file.name.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}`;
 
-    // Create a reference to the Firebase database path
-    const db = getDatabase();
-    const dbRefPath = dbRef(db, `images/${fileId}`);
-
-    // Store the image URL in Firebase
-    await set(dbRefPath, { imageUrl });
+    // Create a reference to the Firebase database path and store the image URL
+    const dbRef = adminRTDB.ref(`images/${fileId}`);
+    await dbRef.set({ imageUrl });
 
     // Return the image URL in the response
     return new Response(JSON.stringify({ imageUrl }), { status: 200 });
