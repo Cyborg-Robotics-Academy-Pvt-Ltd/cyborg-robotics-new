@@ -82,11 +82,11 @@ const CreateBlogPage = () => {
         setLoading(false);
         return;
       }
-      
-      const response = await fetch('/api/blogs', {
-        method: 'POST',
+
+      const response = await fetch("/api/blogs", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           title,
@@ -96,11 +96,11 @@ const CreateBlogPage = () => {
           imageUrl,
         }),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to create blog');
+        throw new Error("Failed to create blog");
       }
-      
+
       router.push("/blogs");
     } catch {
       setError("Failed to create blog. Try again.");
