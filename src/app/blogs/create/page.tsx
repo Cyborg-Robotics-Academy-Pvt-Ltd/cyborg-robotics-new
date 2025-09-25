@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { db } from "@/lib/firebase";
-import { useAuth } from "@/lib/auth-context";
+import { db, auth } from "@/lib/firebase";
 import {
   collection,
   addDoc,
@@ -30,15 +29,15 @@ const CreateBlogPage = () => {
 
   // Cloudinary config
   const CLOUDINARY_UPLOAD_PRESET =
-    process.env.CLOUDINARY_UPLOAD_PRESET || "shrikant";
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "shrikant";
   const CLOUDINARY_CLOUD_NAME =
-    process.env.CLOUDINARY_CLOUD_NAME || "dz8enfjtx";
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dz8enfjtx";
 
-  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     const checkAdmin = async () => {
+      const user = auth.currentUser;
       if (!user) {
         setIsAdmin(false);
         router.push("/login");
@@ -82,25 +81,14 @@ const CreateBlogPage = () => {
         setLoading(false);
         return;
       }
-
-      const response = await fetch("/api/blogs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          content,
-          author,
-          date: new Date().toISOString().split("T")[0],
-          imageUrl,
-        }),
+      await addDoc(collection(db, "blogs"), {
+        title,
+        content,
+        author,
+        date: new Date().toISOString().split("T")[0],
+        imageUrl,
+        createdAt: serverTimestamp(),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create blog");
-      }
-
       router.push("/blogs");
     } catch {
       setError("Failed to create blog. Try again.");
