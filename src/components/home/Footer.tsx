@@ -112,7 +112,7 @@ const Footer: React.FC<FooterProps> = () => {
   };
 
   return (
-    <footer className="bg-white mt-9 md:my-20">
+    <footer className="bg-white mt-7 md:my-10">
       <hr className="border-t border-gray-300 my-4 w-[90%] mx-auto" />
       <div className="max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Grid layout with responsive columns */}

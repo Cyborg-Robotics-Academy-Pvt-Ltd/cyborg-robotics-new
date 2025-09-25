@@ -65,10 +65,6 @@ export default function NewsletterSignup() {
   return (
     <section className="relative bg-white py-20 px-4 overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-72 h-72 bg-red-100 rounded-full opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-red-50 rounded-full opacity-40 animate-pulse delay-1000"></div>
-      </div>
 
       <div className="relative max-w-7xl mx-auto">
         {/* Section Header */}
@@ -99,7 +95,7 @@ export default function NewsletterSignup() {
             }`}
           >
             <div className="relative w-full max-w-lg">
-              <div className="relative z-10 transform hover:scale-105 transition-transform duration-300">
+              <div className="relative z-10   ">
                 <Image
                   src="/assets/newsletter.png"
                   alt="Newsletter subscription illustration"

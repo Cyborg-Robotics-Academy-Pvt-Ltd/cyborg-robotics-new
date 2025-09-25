@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
-import ScrollButton from "../widgets/ScrollButton";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 
@@ -272,7 +271,6 @@ const HomePage: React.FC = () => {
           <GallerySection />
         </motion.div>
 
-        <ScrollButton />
         <NewsLetter />
       </div>
     </>
