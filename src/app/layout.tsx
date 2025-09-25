@@ -8,6 +8,7 @@ import WhatsAppWidget from "@/components/widgets/WhatsAppWidget";
 import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import ScrollButton from "@/components/widgets/ScrollButton";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,6 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Footer />
           </div>
           <WhatsAppWidget />
+          <ScrollButton />
+
           <Analytics />
           <SpeedInsights />
         </AuthProvider>

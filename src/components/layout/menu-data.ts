@@ -51,7 +51,7 @@ const mainMenu: MenuItem[] = [
     ],
   },
   {
-    title: 'Class Clicks | Behind',
+    title: 'Class Clicks | Behind Scenes',
     icon: Camera,
     children: [
         { title: 'Student Certificate', href: '#', icon: Award },
