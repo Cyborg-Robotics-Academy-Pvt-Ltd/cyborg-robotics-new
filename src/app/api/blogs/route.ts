@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, content, author, date, imageUrl } = await req.json();
+    const { title, content } = await req.json();
     if (!title || !content) {
       return NextResponse.json({ error: 'Title and content are required.' }, { status: 400 });
     }
 
-    const docRef = await adminDb.collection('blogs').add({
+    const docRef = await addDoc(collection(db, 'blogs'), {
       title,
       content,
-      author: author || 'Anonymous',
-      date: date || new Date().toISOString().split('T')[0],
-      imageUrl: imageUrl || '',
-      createdAt: FieldValue.serverTimestamp(),
+      createdAt: serverTimestamp(),
     });
 
     return NextResponse.json({ success: true, id: docRef.id });

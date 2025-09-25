@@ -1,9 +1,9 @@
-import { adminRTDB } from '@/lib/firebase-admin';
+import { ref as dbRef, set, getDatabase } from "firebase/database";
 
 
 // Check for required Cloudinary environment variables
-if (!process.env.CLOUDINARY_CLOUD_NAME || 
-    !process.env.CLOUDINARY_UPLOAD_PRESET) {
+if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 
+    !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
   throw new Error('Missing required Cloudinary environment variables');
 }
 
@@ -23,13 +23,13 @@ export async function POST(req: Request) {
     const fileBlob = new Blob([fileArrayBuffer], { type: file.type });
 
     // Construct the Cloudinary upload URL
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`;
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
 
     // Prepare form data for Cloudinary upload
     const cloudFormData = new FormData();
     cloudFormData.append("file", fileBlob);
     // Ensure the upload preset is defined before appending
-    cloudFormData.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET!);
+    cloudFormData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
 
     // Send the file to Cloudinary
     const cloudinaryResponse = await fetch(cloudinaryUrl, {
@@ -56,9 +56,12 @@ export async function POST(req: Request) {
     const timestamp = Date.now();
     const fileId = `${file.name.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}`;
 
-    // Create a reference to the Firebase database path and store the image URL
-    const dbRef = adminRTDB.ref(`images/${fileId}`);
-    await dbRef.set({ imageUrl });
+    // Create a reference to the Firebase database path
+    const db = getDatabase();
+    const dbRefPath = dbRef(db, `images/${fileId}`);
+
+    // Store the image URL in Firebase
+    await set(dbRefPath, { imageUrl });
 
     // Return the image URL in the response
     return new Response(JSON.stringify({ imageUrl }), { status: 200 });
