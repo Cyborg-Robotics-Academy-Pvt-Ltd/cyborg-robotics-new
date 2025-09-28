@@ -4,11 +4,13 @@ import DashboardLayout from "@/components/DashboardLayout";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-const Page = () => {
+const MediaPage = () => {
   const router = useRouter();
   const [canRender, setCanRender] = useState(false);
-  const { user, userRole } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, userRole, loading } = useAuth();
 
   const name =
     user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
@@ -18,19 +20,40 @@ const Page = () => {
       : "student";
 
   useEffect(() => {
+    // Wait for auth to complete
+    if (loading) return;
+
+    // Check if user is authenticated and has proper role
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     const userRole =
       typeof window !== "undefined" ? localStorage.getItem("userRole") : null;
+
     if (userRole !== "admin" && userRole !== "trainer") {
       router.push("/login");
-    } else {
-      setCanRender(true);
+      return;
     }
-  }, [router]);
 
+    setCanRender(true);
+    setIsLoading(false);
+  }, [user, loading, router]);
+
+  // Show loading while auth is being determined
+  if (loading || isLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner />
+      </main>
+    );
+  }
+
+  // Show skeleton while redirecting or auth check fails
   if (!canRender) {
     return (
       <main className="min-h-screen bg-gray-50">
-        {/* Show skeleton content instead of loading message */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
@@ -58,4 +81,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default MediaPage;
