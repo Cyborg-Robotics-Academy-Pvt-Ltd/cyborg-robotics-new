@@ -34,10 +34,10 @@ const mainMenu: MenuItem[] = [
     title: 'About Us',
     icon: Building2,
     children: [
-      { title: 'Brand Stories', href: '#', icon: Sparkles },
-      { title: 'Meet the Team', href: '#', icon: Users },
-      { title: 'Meet the Founder', href: '#', icon: PersonStanding },
-      { title: 'Join Us', href: '#', icon: HandHelping },
+      { title: 'Brand Stories', href: '/about#story', icon: Sparkles },
+      { title: 'Meet the Team', href: '/about#team', icon: Users },
+      { title: 'Meet the Founder', href: '/about#founders', icon: PersonStanding },
+      { title: 'Join Us', href: '', icon: HandHelping },
     ],
   },
   {

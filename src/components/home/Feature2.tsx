@@ -32,7 +32,7 @@ const Feature2: React.FC = React.memo(() => {
   return (
     <div className="bg-white text-black py-8 md:py-12">
       <div className="max-w-5xl mx-auto px-4">
-        <h1 className="text-center font-bold text-3xl md:text-4xl leading-tight tracking-tight">
+        <h1 className="text-center font-bold text-lg md:text-3xl mt-4 md:mt-6 mx-2">
           Why {""}
           <span className="gradient-text">Learn Robotics?</span>
         </h1>

@@ -45,22 +45,28 @@ export default function InteractiveStorySection() {
       initial={{ opacity: 0, y: 30 }}
       animate={storyInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="max-w-6xl mx-auto mb-8"
+      className="max-w-6xl mx-auto mb-2 sm:mb-4 pt-2 sm:pt-4 px-2 sm:px-4"
     >
       <motion.h2
         ref={titleRef}
-        className="text-3xl md:text-4xl font-bold text-center mb-6 bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent"
+        className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 sm:mb-4 bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent"
         initial={{ opacity: 0, y: 20 }}
         animate={titleInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <span className="gradient-text">Our Story</span>
+        <motion.div
+          className="w-16 sm:w-24 h-1 bg-gradient-to-r from-red-600 to-red-800 mx-auto rounded-full mb-4 sm:mb-8"
+          initial={{ width: 0 }}
+          animate={tabsInView ? { width: "7%" } : { width: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        />
       </motion.h2>
 
       {/* Interactive Tabs */}
       <motion.div
         ref={tabsRef}
-        className="flex flex-wrap justify-center gap-2 mb-2"
+        className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-1 sm:mb-2 px-2"
         initial={{ opacity: 0, y: 20 }}
         animate={tabsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
@@ -71,7 +77,7 @@ export default function InteractiveStorySection() {
             <motion.button
               key={tab.id}
               onClick={() => setCurrentTab(tab.id)}
-              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-1 sm:gap-2 text-sm sm:text-base ${
                 currentTab === tab.id
                   ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg scale-105"
                   : "bg-white text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200"
@@ -88,7 +94,7 @@ export default function InteractiveStorySection() {
                 delay: index * 0.05,
               }}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
               {tab.label}
             </motion.button>
           );
@@ -104,18 +110,18 @@ export default function InteractiveStorySection() {
       >
         <Card className="border-0 drop-shadow-xl bg-gradient-to-br rounded-2xl from-white via-gray-50 to-red-50/50 backdrop-blur-sm relative overflow-hidden">
           {/* Background decorative element - removed for performance */}
-          <CardContent className="p-8 md:p-12 ">
+          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-12">
             <motion.div
               key={currentTab}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="text-gray-700 leading-relaxed"
+              className="text-gray-700 leading-relaxed text-sm sm:text-base"
             >
               {currentTab === 0 && (
                 <div className="space-y-6">
-                  <p className="text-lg">
+                  <p className="text-base sm:text-lg">
                     In 2018,{" "}
                     <strong className="text-red-700">Shikha Virmani</strong> and{" "}
                     <strong className="text-red-700">Lokesh Malik</strong>{" "}
@@ -126,12 +132,12 @@ export default function InteractiveStorySection() {
                     with a simple belief: technology should be learned by
                     creating, not memorizing.
                   </p>
-                  <p className="font-semibold text-red-700 text-lg">
+                  <p className="font-semibold text-red-700 text-base sm:text-lg">
                     But the journey began long before that.
                   </p>
 
-                  <div className="bg-white/70 rounded-xl p-6 border border-red-100">
-                    <h4 className="text-xl font-bold text-red-700 mb-4">
+                  <div className="bg-white/70 rounded-xl p-3 sm:p-4 md:p-6 border border-red-100">
+                    <h4 className="text-lg sm:text-xl font-bold text-red-700 mb-3 sm:mb-4">
                       Shikha&apos;s Journey
                     </h4>
                     <p className="mb-4">
@@ -200,16 +206,16 @@ export default function InteractiveStorySection() {
 
               {currentTab === 1 && (
                 <div className="space-y-6">
-                  <div className="relative bg-white rounded-2xl p-8 md:p-12   overflow-hidden">
+                  <div className="relative bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 overflow-hidden">
                     {/* Mission icon */}
                     <div className="flex justify-center mb-6">
-                      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Target className="w-8 h-8 text-white" />
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </div>
                     </div>
 
                     {/* Mission title */}
-                    <h3 className="text-2xl md:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
                       Our Mission
                     </h3>
 
@@ -219,8 +225,8 @@ export default function InteractiveStorySection() {
                         className="absolute inset-0
                        rounded-xl transform rotate-1"
                       ></div>
-                      <div className="relative bg-white/80 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-red-200/50 shadow-lg">
-                        <p className="text-lg md:text-xl text-center leading-relaxed text-gray-700 font-medium">
+                      <div className="relative bg-white/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 md:p-6 lg:p-8 border border-red-200/50 shadow-lg">
+                        <p className="text-base sm:text-lg md:text-xl text-center leading-relaxed text-gray-700 font-medium">
                           To{" "}
                           <span className="text-red-700 font-bold">
                             transform the way
@@ -252,24 +258,24 @@ export default function InteractiveStorySection() {
 
               {currentTab === 2 && (
                 <div className="space-y-6">
-                  <div className="relative bg-white rounded-2xl p-8 md:p-12   overflow-hidden">
+                  <div className="relative bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 overflow-hidden">
                     {/* Vision icon */}
                     <div className="flex justify-center mb-6">
-                      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Rocket className="w-8 h-8 text-white" />
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Rocket className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </div>
                     </div>
 
                     {/* Vision title */}
-                    <h3 className="text-2xl md:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
                       Our Vision
                     </h3>
 
                     {/* Vision statement */}
                     <div className="relative">
                       <div className="absolute inset-0  transform rotate-1"></div>
-                      <div className="relative bg-white/80 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-red-200/50 shadow-lg">
-                        <p className="text-lg md:text-xl text-center leading-relaxed text-gray-700 font-medium">
+                      <div className="relative bg-white/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 md:p-6 lg:p-8 border border-red-200/50 shadow-lg">
+                        <p className="text-base sm:text-lg md:text-xl text-center leading-relaxed text-gray-700 font-medium">
                           To be a{" "}
                           <span className="text-red-700 font-bold">
                             leading global academy
@@ -301,25 +307,25 @@ export default function InteractiveStorySection() {
 
               {currentTab === 3 && (
                 <div className="space-y-6">
-                  <p className="text-lg font-semibold text-red-700">
+                  <p className="text-base sm:text-lg font-semibold text-red-700">
                     Our Core Beliefs
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center p-4 bg-white/70 rounded-xl border border-red-100">
-                      <Lightbulb className="w-8 h-8 text-red-600 mx-auto mb-3" />
-                      <p className="font-semibold text-red-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="text-center p-3 sm:p-4 bg-white/70 rounded-xl border border-red-100">
+                      <Lightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mx-auto mb-3" />
+                      <p className="font-semibold text-red-700 text-sm sm:text-base">
                         Every child is an innovator
                       </p>
                     </div>
-                    <div className="text-center p-4 bg-white/70 rounded-xl border border-red-100">
-                      <Trophy className="w-8 h-8 text-red-600 mx-auto mb-3" />
-                      <p className="font-semibold text-red-700">
+                    <div className="text-center p-3 sm:p-4 bg-white/70 rounded-xl border border-red-100">
+                      <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mx-auto mb-3" />
+                      <p className="font-semibold text-red-700 text-sm sm:text-base">
                         Quality builds confidence
                       </p>
                     </div>
-                    <div className="text-center p-4 bg-white/70 rounded-xl border border-red-100">
-                      <Zap className="w-8 h-8 text-red-600 mx-auto mb-3" />
-                      <p className="font-semibold text-red-700">
+                    <div className="text-center p-3 sm:p-4 bg-white/70 rounded-xl border border-red-100">
+                      <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mx-auto mb-3" />
+                      <p className="font-semibold text-red-700 text-sm sm:text-base">
                         Learning must be hands-on
                       </p>
                     </div>

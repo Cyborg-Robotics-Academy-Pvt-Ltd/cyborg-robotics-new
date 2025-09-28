@@ -45,14 +45,14 @@ export default function HeroSection() {
       initial="hidden"
       animate={heroInView ? "visible" : "hidden"}
       variants={containerVariants}
-      className="relative text-center py-6 px-4 sm:px-6 lg:px-8 bg-white"
+      className="relative text-center px-2 sm:px-4 lg:px-8 bg-white pb-2 sm:pb-4"
       aria-label="About Us Hero Section"
     >
       {/* Breadcrumb */}
       <motion.nav
         variants={itemVariants}
         aria-label="Breadcrumb"
-        className="flex items-center justify-center mb-6"
+        className="flex items-center justify-center "
       >
         <div className="flex items-center px-4 py-1.5 bg-white/70 backdrop-blur-md border border-gray-100 rounded-full text-sm">
           <Link
@@ -70,11 +70,11 @@ export default function HeroSection() {
       </motion.nav>
 
       {/* Heading */}
-      <motion.div variants={itemVariants} className="mb-6">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900">
+      <motion.div variants={itemVariants} className="">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900">
           <span className="gradient-text">About Us</span>
         </h1>
-        <div className="mt-4 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+        <div className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2 sm:px-0">
           Empowering the next generation of{" "}
           <FlipWords words={flipWords} className="text-red-600 font-semibold" />{" "}
           through hands-on robotics and technology education.

@@ -77,11 +77,12 @@ export default function WhatWeOffer() {
           {/* Enhanced header section */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center mr-4 shadow-lg">
-                <FaRobot className="text-white text-xl" />
-              </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900">
-                Who <span className="gradient-text">Are We?</span>
+              <h2 className="text-center font-bold flex  text-lg md:text-3xl mt-4 md:mt-6 mx-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center mr-4 shadow-lg">
+                  <FaRobot className="text-white text-xl" />
+                  {"  "}
+                </div>
+                Who <span className="gradient-text"> Are We?</span>
               </h2>
             </div>
 

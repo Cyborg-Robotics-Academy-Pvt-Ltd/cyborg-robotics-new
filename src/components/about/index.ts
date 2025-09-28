@@ -7,3 +7,5 @@ export { default as GlobalReachSection } from './GlobalReachSection';
 export { default as CompetitionsSection } from './ProjectsSection';
 export { default as PhilosophySection } from './PhilosophySection';
 export { default as ImpactSection } from './ImpactSection';
+export { default as AboutNavigation } from './AboutNavigation';
+
