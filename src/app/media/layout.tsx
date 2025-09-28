@@ -1,24 +1,16 @@
-"use client";
 import React from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import { useAuth } from "@/lib/auth-context";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Media Section | Cyborg Robotics Academy",
+  description:
+    "Access media resources for admins and trainers at Cyborg Robotics Academy.",
+};
 
 export default function MediaLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, userRole } = useAuth();
-  const name =
-    user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
-  const role =
-    userRole === "admin" || userRole === "trainer" || userRole === "student"
-      ? userRole
-      : "student";
-
-  return (
-    <DashboardLayout role={role} name={name}>
-      {children}
-    </DashboardLayout>
-  );
+  return <>{children}</>;
 }
