@@ -1,12 +1,21 @@
 "use client";
 import MediaSection from "@/components/gallery/MediaSection";
+import DashboardLayout from "@/components/DashboardLayout";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Head from "next/head";
+import { useAuth } from "@/lib/auth-context";
 
 const Page = () => {
   const router = useRouter();
   const [canRender, setCanRender] = useState(false);
+  const { user, userRole } = useAuth();
+
+  const name =
+    user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
+  const role =
+    userRole === "admin" || userRole === "trainer" || userRole === "student"
+      ? userRole
+      : "student";
 
   useEffect(() => {
     const userRole =
@@ -37,23 +46,7 @@ const Page = () => {
   }
 
   return (
-    <>
-      <Head>
-        <title>Media Section | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Access media resources for admins and trainers at Cyborg Robotics Academy."
-        />
-        <meta
-          property="og:title"
-          content="Media Section | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Access media resources for admins and trainers at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
+    <DashboardLayout role={role} name={name}>
       <main
         role="main"
         aria-label="Media Section"
@@ -61,7 +54,7 @@ const Page = () => {
       >
         <MediaSection />
       </main>
-    </>
+    </DashboardLayout>
   );
 };
 
