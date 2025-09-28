@@ -1,75 +1,73 @@
 "use client";
-import MediaSection from "@/components/gallery/MediaSection";
-import DashboardLayout from "@/components/DashboardLayout";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-const MediaPage = () => {
-  const router = useRouter();
-  const [canRender, setCanRender] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user, userRole, loading } = useAuth();
+// Dynamically import components to avoid SSR issues
+import dynamic from "next/dynamic";
 
-  const name =
-    user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
-  const role =
-    userRole === "admin" || userRole === "trainer" || userRole === "student"
-      ? userRole
-      : "student";
+const MediaSection = dynamic(
+  () => import("@/components/gallery/MediaSection"),
+  {
+    ssr: false,
+    loading: () => <LoadingSpinner message="Loading media section..." />,
+  }
+);
+
+const DashboardLayout = dynamic(() => import("@/components/DashboardLayout"), {
+  ssr: false,
+  loading: () => <LoadingSpinner message="Loading dashboard..." />,
+});
+
+export default function MediaPage() {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Wait for auth to complete
-    if (loading) return;
+    // Client-side authorization check
+    const checkAuth = () => {
+      try {
+        const userRole = localStorage.getItem("userRole");
 
-    // Check if user is authenticated and has proper role
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+        if (userRole === "admin" || userRole === "trainer") {
+          setIsAuthorized(true);
+        } else {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        router.push("/login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const userRole =
-      typeof window !== "undefined" ? localStorage.getItem("userRole") : null;
+    // Delay to ensure proper client-side hydration
+    const timer = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timer);
+  }, [router]);
 
-    if (userRole !== "admin" && userRole !== "trainer") {
-      router.push("/login");
-      return;
-    }
-
-    setCanRender(true);
-    setIsLoading(false);
-  }, [user, loading, router]);
-
-  // Show loading while auth is being determined
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
-      </main>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner message="Checking permissions..." />
+      </div>
     );
   }
 
-  // Show skeleton while redirecting or auth check fails
-  if (!canRender) {
+  if (!isAuthorized) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl text-gray-600">Redirecting to login...</h2>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout role={role} name={name}>
+    <DashboardLayout role="admin" name="User">
       <main
         role="main"
         aria-label="Media Section"
@@ -79,6 +77,4 @@ const MediaPage = () => {
       </main>
     </DashboardLayout>
   );
-};
-
-export default MediaPage;
+}
