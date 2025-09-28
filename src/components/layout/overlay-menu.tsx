@@ -3,6 +3,8 @@
 import { Dispatch, SetStateAction } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Users, BookOpen, Heart, Globe } from "lucide-react";
 // Social icons now use images from public/assets/social-icons
 
 import { menuData, type MenuItem } from "./menu-data";
@@ -17,7 +19,38 @@ import Image from "next/image";
 interface OverlayMenuProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  activeSection?: string;
+  scrollToSection?: (sectionId: string) => void;
 }
+
+// About page navigation items
+const aboutNavigationItems = [
+  {
+    id: "hero",
+    label: "About Us",
+    icon: Users,
+  },
+  {
+    id: "story",
+    label: "Our Story",
+    icon: BookOpen,
+  },
+  {
+    id: "founders",
+    label: "Meet Our Founders",
+    icon: Heart,
+  },
+  {
+    id: "team",
+    label: "Our Team",
+    icon: Users,
+  },
+  {
+    id: "global-reach",
+    label: "Global Reach",
+    icon: Globe,
+  },
+];
 
 // Animation variants for staggered effect
 const listVariants = {
@@ -152,7 +185,24 @@ const MenuList = ({
   );
 };
 
-export default function OverlayMenu({ isOpen, setIsOpen }: OverlayMenuProps) {
+export default function OverlayMenu({
+  isOpen,
+  setIsOpen,
+  activeSection,
+  scrollToSection,
+}: OverlayMenuProps) {
+  const pathname = usePathname();
+  const isAboutPage = pathname === "/about";
+
+  const handleAboutNavClick = (sectionId: string) => {
+    // Special handling for About (hero) section - navigate to /about
+    if (sectionId === "hero") {
+      window.location.href = "/about";
+    } else if (scrollToSection) {
+      scrollToSection(sectionId);
+    }
+    setIsOpen(false);
+  };
   return (
     <AnimatePresence>
       {isOpen && (
@@ -182,94 +232,157 @@ export default function OverlayMenu({ isOpen, setIsOpen }: OverlayMenuProps) {
               </div>
             </header>
             <main className="flex-1 overflow-y-auto  no-scrollbar flex mt-14 justify-center">
-              <div className="grid grid-cols-1 w-screen gap-32 md:grid-cols-2 items-start">
-                {/* Left: existing menu */}
-                <div className="">
-                  <MenuList items={menuData.mainMenu} setIsOpen={setIsOpen} />
-                </div>
+              {isAboutPage ? (
+                // About page navigation
+                <div className="flex flex-col w-full max-w-md space-y-4">
+                  <h2 className="text-xl font-semibold text-center mb-4">
+                    Navigate Sections
+                  </h2>
+                  {aboutNavigationItems.map((item, index) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <motion.button
+                        key={item.id}
+                        onClick={() => handleAboutNavClick(item.id)}
+                        className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-200 ${
+                          activeSection === item.id
+                            ? "bg-[#b92423] text-white shadow-lg"
+                            : "bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-600"
+                        }`}
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: index * 0.1 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                        <span className="font-medium">{item.label}</span>
+                        {activeSection === item.id && (
+                          <motion.div
+                            className="ml-auto w-2 h-2 bg-white rounded-full"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        )}
+                      </motion.button>
+                    );
+                  })}
 
-                {/* Right: privacy/support/social */}
-                <div className="flex flex-col justify-between self-start space-y-8">
-                  {/* Privacy Notice */}
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    We care about your data. Read our{" "}
-                    <Link
-                      href="/privacy-policy"
-                      className="underline font-medium hover:text-foreground hover:tracking-wide transition"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-
-                  {/* Questions Section */}
-                  <div className="space-y-3 border-t pt-4">
-                    <h3 className="text-base font-semibold tracking-wide">
-                      Questions?
+                  {/* Quick links for About page */}
+                  <div className="border-t pt-6 mt-6 space-y-3">
+                    <h3 className="text-base font-semibold text-center">
+                      Quick Links
                     </h3>
                     <div className="flex flex-col space-y-2">
                       <Link
-                        href="/faqs"
-                        className="text-sm text-muted-foreground hover:text-foreground hover:underline transition"
+                        href="/"
+                        className="text-center p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
                         onClick={() => setIsOpen(false)}
                       >
-                        FAQs
+                        Back to Home
                       </Link>
                       <Link
                         href="/contact-us"
-                        className="text-sm text-muted-foreground hover:text-foreground hover:underline transition"
+                        className="text-center p-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
                         onClick={() => setIsOpen(false)}
                       >
                         Contact Us
                       </Link>
                     </div>
                   </div>
+                </div>
+              ) : (
+                // Default menu for other pages
+                <div className="grid grid-cols-1 w-screen gap-32 md:grid-cols-2 items-start">
+                  {/* Left: existing menu */}
+                  <div className="">
+                    <MenuList items={menuData.mainMenu} setIsOpen={setIsOpen} />
+                  </div>
 
-                  {/* Social Media Section */}
-                  <div className="space-y-3 border-t pt-4">
-                    <h3 className="text-base font-semibold tracking-wide">
-                      Connect with us
-                    </h3>
-                    <div className="flex items-center gap-4">
-                      {[
-                        {
-                          href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
-                          src: "/assets/social-icons/instagram.webp",
-                          alt: "Instagram",
-                        },
-                        {
-                          href: "https://www.facebook.com/cyborgrobotics/",
-                          src: "/assets/social-icons/facebook.webp",
-                          alt: "Facebook",
-                        },
-                        {
-                          href: "https://youtube.com/@cyborgroboticsacademy2270?si=aQjTThVhESGN_bQ9",
-                          src: "/assets/social-icons/youtube.png",
-                          alt: "YouTube",
-                        },
-                      ].map(({ href, src, alt }, i) => (
+                  {/* Right: privacy/support/social */}
+                  <div className="flex flex-col justify-between self-start space-y-8">
+                    {/* Privacy Notice */}
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      We care about your data. Read our{" "}
+                      <Link
+                        href="/privacy-policy"
+                        className="underline font-medium hover:text-foreground hover:tracking-wide transition"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Privacy Policy
+                      </Link>
+                      .
+                    </p>
+
+                    {/* Questions Section */}
+                    <div className="space-y-3 border-t pt-4">
+                      <h3 className="text-base font-semibold tracking-wide">
+                        Questions?
+                      </h3>
+                      <div className="flex flex-col space-y-2">
                         <Link
-                          key={i}
-                          href={href}
-                          aria-label={alt}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 rounded-xl bg-muted hover:bg-foreground transition transform hover:scale-110"
+                          href="/faqs"
+                          className="text-sm text-muted-foreground hover:text-foreground hover:underline transition"
+                          onClick={() => setIsOpen(false)}
                         >
-                          <Image
-                            src={src}
-                            alt={alt}
-                            width={32}
-                            height={32}
-                            className="h-8 w-8 rounded-xl object-contain"
-                          />
+                          FAQs
                         </Link>
-                      ))}
+                        <Link
+                          href="/contact-us"
+                          className="text-sm text-muted-foreground hover:text-foreground hover:underline transition"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Contact Us
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Social Media Section */}
+                    <div className="space-y-3 border-t pt-4">
+                      <h3 className="text-base font-semibold tracking-wide">
+                        Connect with us
+                      </h3>
+                      <div className="flex items-center gap-4">
+                        {[
+                          {
+                            href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
+                            src: "/assets/social-icons/instagram.webp",
+                            alt: "Instagram",
+                          },
+                          {
+                            href: "https://www.facebook.com/cyborgrobotics/",
+                            src: "/assets/social-icons/facebook.webp",
+                            alt: "Facebook",
+                          },
+                          {
+                            href: "https://youtube.com/@cyborgroboticsacademy2270?si=aQjTThVhESGN_bQ9",
+                            src: "/assets/social-icons/youtube.png",
+                            alt: "YouTube",
+                          },
+                        ].map(({ href, src, alt }, i) => (
+                          <Link
+                            key={i}
+                            href={href}
+                            aria-label={alt}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-xl bg-muted hover:bg-foreground transition transform hover:scale-110"
+                          >
+                            <Image
+                              src={src}
+                              alt={alt}
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 rounded-xl object-contain"
+                            />
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </main>
 
             {/* Footer CTAs on mobile menu

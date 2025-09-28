@@ -35,10 +35,75 @@ const nextConfig = {
         pathname: "/**",
       },
     ],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 31536000, // 1 year cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   experimental: {
-    optimizePackageImports: ["lodash-es", "date-fns"],
+    optimizePackageImports: [
+      "lodash-es", 
+      "date-fns",
+      "framer-motion",
+      "lucide-react",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-navigation-menu",
+      "react-icons",
+      "@tabler/icons-react"
+    ],
   },
+  // Enhanced performance optimizations
+  webpack: (config) => {
+    // Optimize chunk splitting for better caching
+    config.optimization.splitChunks = {
+      ...config.optimization.splitChunks,
+      chunks: 'all',
+      minSize: 20000,
+      maxSize: 244000,
+      cacheGroups: {
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+        vendor: {
+          test: /[\/]node_modules[\/]/,
+          name: 'vendors',
+          priority: -10,
+          chunks: 'all',
+          maxSize: 244000,
+        },
+        common: {
+          name: 'common',
+          minChunks: 2,
+          chunks: 'all',
+          priority: -20,
+          maxSize: 244000,
+        },
+        framerMotion: {
+          test: /[\/]node_modules[\/]framer-motion[\/]/,
+          name: 'framer-motion',
+          chunks: 'all',
+          priority: 10,
+        },
+        radixUI: {
+          test: /[\/]node_modules[\/]@radix-ui[\/]/,
+          name: 'radix-ui',
+          chunks: 'all',
+          priority: 10,
+        },
+      },
+    };
+    return config;
+  },
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Performance optimizations
+  poweredByHeader: false,
+  compress: true,
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

@@ -77,12 +77,12 @@ export default function NewsletterSignup() {
             <Mail className="w-4 h-4" />
             Newsletter
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Stay{" "}
-            <span style={{ color: "#b92423" }} className="font-bold">
+          <h2 className="text-center font-bold text-lg md:text-3xl mt-4 md:mt-6 mx-2">
+            Stay {""}
+            <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
               Updated
             </span>
-          </h1>
+          </h2>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -224,38 +224,6 @@ export default function NewsletterSignup() {
                   <br />
                   <span className="font-medium">We respect your privacy.</span>
                 </p>
-
-                {/* Social Proof */}
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 rounded-full border-2 border-white"
-                        style={{
-                          backgroundColor:
-                            i === 1
-                              ? "#b92423"
-                              : i === 2
-                                ? "#d73027"
-                                : i === 3
-                                  ? "#e85d75"
-                                  : "#f4a6a3",
-                        }}
-                      ></div>
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    Join{" "}
-                    <span
-                      className="font-semibold"
-                      style={{ color: "#b92423" }}
-                    >
-                      5,000+
-                    </span>{" "}
-                    subscribers
-                  </span>
-                </div>
               </div>
             </div>
           </div>

@@ -6,26 +6,49 @@ import { motion, useInView } from "framer-motion";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 
-// Lazy-load heavier sections
+// Immediate load - critical above the fold content
 const Features = dynamic(() => import("./Features"), {
-  loading: () => <div className="h-40" />,
+  loading: () => (
+    <div className="h-40 bg-gray-50 animate-pulse rounded-lg mx-4 my-8" />
+  ),
 });
+
+// Progressive load - below the fold content with better loading states
 const Feature2 = dynamic(() => import("./Feature2"), {
-  loading: () => <div className="h-40" />,
+  loading: () => (
+    <div className="h-64 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg mx-4 my-8" />
+  ),
 });
+
 const WhatWeOffer = dynamic(() => import("./WhatWeOffer"), {
-  loading: () => <div className="h-40" />,
+  loading: () => (
+    <div className="h-96 bg-gray-50 animate-pulse rounded-lg mx-4 my-8" />
+  ),
 });
+
 const VisionSection = dynamic(() => import("./VisionSection"), {
-  loading: () => <div className="h-40" />,
+  loading: () => (
+    <div className="h-64 bg-gradient-to-r from-red-50 to-red-100 animate-pulse rounded-lg mx-4 my-8" />
+  ),
 });
+
+// Defer heavy interactive components
 const GallerySection = dynamic(() => import("../gallery/GallerySection"), {
   ssr: false,
-  loading: () => <div className="h-64" />,
+  loading: () => (
+    <div className="h-96 bg-gray-100 animate-pulse rounded-lg mx-4 my-8 flex items-center justify-center">
+      <div className="text-gray-400 text-lg">Loading Gallery...</div>
+    </div>
+  ),
 });
+
 const Testimonials = dynamic(() => import("./Testimonials/Testimonials"), {
   ssr: false,
-  loading: () => <div className="h-64" />,
+  loading: () => (
+    <div className="h-80 bg-gradient-to-r from-gray-50 to-gray-100 animate-pulse rounded-lg mx-4 my-8 flex items-center justify-center">
+      <div className="text-gray-400 text-lg">Loading Testimonials...</div>
+    </div>
+  ),
 });
 
 const HomePage: React.FC = () => {
@@ -65,28 +88,34 @@ const HomePage: React.FC = () => {
     margin: "-100px",
   });
 
-  // Show modal only once when user scrolls more
+  // Show modal only once when user scrolls more - optimized version
   useEffect(() => {
     let hasTriggered = false;
     let timeoutId: NodeJS.Timeout;
+    let ticking = false;
 
     const handleScroll = () => {
-      if (hasTriggered) return;
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollPercentage =
-        (scrollY / (documentHeight - windowHeight)) * 100;
+      if (hasTriggered || ticking) return;
 
-      // Trigger when user scrolls more than 20% of the page or 400px, whichever comes first
-      if (scrollY > 800 || scrollPercentage > 20) {
-        hasTriggered = true;
-        // Add a small delay to make it feel more natural
-        timeoutId = setTimeout(() => {
-          setShowModal(true);
-        }, 500);
-        window.removeEventListener("scroll", handleScroll);
-      }
+      ticking = true;
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollPercentage =
+          (scrollY / (documentHeight - windowHeight)) * 100;
+
+        // Trigger when user scrolls more than 20% of the page or 400px, whichever comes first
+        if (scrollY > 800 || scrollPercentage > 20) {
+          hasTriggered = true;
+          // Add a small delay to make it feel more natural
+          timeoutId = setTimeout(() => {
+            setShowModal(true);
+          }, 500);
+          window.removeEventListener("scroll", handleScroll);
+        }
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

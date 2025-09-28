@@ -20,12 +20,18 @@ const Page = () => {
 
   if (!canRender) {
     return (
-      <main
-        role="main"
-        aria-label="Loading Media Section"
-        className="min-h-screen flex items-center justify-center bg-gray-50"
-      >
-        {/* TODO: Add loading spinner and better feedback. */}
+      <main className="min-h-screen bg-gray-50">
+        {/* Show skeleton content instead of loading message */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        </div>
       </main>
     );
   }

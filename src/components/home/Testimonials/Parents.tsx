@@ -128,7 +128,7 @@ const Parents = () => {
         {/* Left Button */}
         <button
           onClick={handlePrev}
-          className="hidden sm:flex relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-2xl mr-2 sm:mr-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none focus:ring-2 "
+          className="hidden sm:flex relative z-10 w-12 h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
           aria-label="Previous testimonial"
         >
           &lt;
@@ -169,7 +169,7 @@ const Parents = () => {
         {/* Right Button */}
         <button
           onClick={handleNext}
-          className="hidden sm:flex relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-2xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none  "
+          className="hidden sm:flex relative z-10 w-12 h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
           aria-label="Next testimonial"
         >
           &gt;
