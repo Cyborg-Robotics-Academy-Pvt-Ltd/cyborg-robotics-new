@@ -1,7 +1,5 @@
 /* Tailwind base layers and custom properties for charts and animations. Cleaned and verified for usage. */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Add global overflow handling to prevent content overflow */
 html, body {
