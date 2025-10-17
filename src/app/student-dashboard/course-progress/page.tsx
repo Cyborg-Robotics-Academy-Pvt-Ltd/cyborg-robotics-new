@@ -298,6 +298,47 @@ const Page = ({
     });
   }, []);
 
+  // Auto-complete logic: mark course as completed if assignedClasses === completedTasks.length
+  useEffect(() => {
+    if (!student || !student.courses) return;
+    const assignedNum = Number(assignedClasses);
+    if (assignedNum > 0 && completedTasks.length === assignedNum) {
+      const courseIdx = student.courses.findIndex((c) => {
+        if (!c.name) return false;
+
+        // Extract course name and level from URL
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        // Compare course names and levels
+        const courseNameMatches =
+          c.name.toLowerCase().trim() ===
+          currentCourseName.toLowerCase().trim();
+        const levelMatches = c.level === currentLevel;
+
+        return courseNameMatches && levelMatches;
+      });
+
+      if (courseIdx !== -1 && !student.courses[courseIdx].completed) {
+        // Update Firestore and local state
+        const updatedCourses = student.courses.map((course, idx) => {
+          if (idx === courseIdx) {
+            return {
+              ...course,
+              completed: true,
+            };
+          }
+          return course;
+        });
+        const studentRef = doc(db, "students", student.id);
+        updateDoc(studentRef, { courses: updatedCourses });
+        setIsCourseCompleted(true);
+        // Optionally update student state if needed
+        setStudent({ ...student, courses: updatedCourses });
+      }
+    }
+  }, [assignedClasses, student, resolvedParams?.sub, completedTasks.length]);
+
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
 
   const handleCompletedChange = async (checked: boolean | "indeterminate") => {
@@ -714,48 +755,7 @@ const Page = ({
       }
     };
     fetchStudent();
-  }, [resolvedParams, courseName]);
-
-  // Auto-complete logic: mark course as completed if assignedClasses === completedTasks.length
-  useEffect(() => {
-    if (!student || !student.courses) return;
-    const assignedNum = Number(assignedClasses);
-    if (assignedNum > 0 && completedTasks.length === assignedNum) {
-      const courseIdx = student.courses.findIndex((c) => {
-        if (!c.name) return false;
-
-        // Extract course name and level from URL
-        const { courseName: currentCourseName, level: currentLevel } =
-          extractCourseAndLevel(courseName);
-
-        // Compare course names and levels
-        const courseNameMatches =
-          c.name.toLowerCase().trim() ===
-          currentCourseName.toLowerCase().trim();
-        const levelMatches = c.level === currentLevel;
-
-        return courseNameMatches && levelMatches;
-      });
-
-      if (courseIdx !== -1 && !student.courses[courseIdx].completed) {
-        // Update Firestore and local state
-        const updatedCourses = student.courses.map((course, idx) => {
-          if (idx === courseIdx) {
-            return {
-              ...course,
-              completed: true,
-            };
-          }
-          return course;
-        });
-        const studentRef = doc(db, "students", student.id);
-        updateDoc(studentRef, { courses: updatedCourses });
-        setIsCourseCompleted(true);
-        // Optionally update student state if needed
-        setStudent({ ...student, courses: updatedCourses });
-      }
-    }
-  }, [assignedClasses, completedTasks.length, student, courseName]);
+  }, [resolvedParams, resolvedParams?.sub, completedTasks.length]);
 
   const remainingClasses = Math.max(
     0,
@@ -1257,9 +1257,15 @@ const Page = ({
                               innerRadius={60}
                               fill="#8884d8"
                               dataKey="value"
-                              label={({ name, percent }) =>
-                                `${name}: ${(percent * 100).toFixed(0)}%`
-                              }
+                              label={(props) => {
+                                // Safely extract name and percent from props
+                                const name = props.name as string;
+                                const percent =
+                                  typeof props.percent === "number"
+                                    ? props.percent
+                                    : 0;
+                                return `${name}: ${(percent * 100).toFixed(0)}%`;
+                              }}
                               paddingAngle={5}
                             >
                               {statusData.map((entry, index) => (

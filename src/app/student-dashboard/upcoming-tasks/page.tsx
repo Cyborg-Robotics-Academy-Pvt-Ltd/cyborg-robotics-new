@@ -22,6 +22,17 @@ type Task = {
   status: string; // New property for task status
 };
 
+// Define a type for the student data
+type StudentData = {
+  email: string;
+  tasks: Task[];
+  // Instead of using [key: string]: any, let's define specific properties we might need
+  id?: string;
+  name?: string;
+  createdAt?: string;
+  // Add other specific properties as needed, but avoid the any type
+};
+
 const Page = () => {
   // Changed from 'page' to 'Page' - component name starts with uppercase
   const [tasks, setTasks] = useState<Task[]>([]); // Step 1: State for tasks with type
@@ -45,14 +56,14 @@ const Page = () => {
       const querySnapshot = await getDocs(q); // Await the promise
       const allTasks: Task[] = []; // Step 2: Array to hold all tasks with type
       querySnapshot.forEach((doc) => {
-        const studentData = doc.data();
+        const studentData = doc.data() as StudentData;
         allTasks.push(...studentData.tasks); // Collect tasks
       });
       setTasks(allTasks); // Update state with tasks
     };
 
     fetchStudents(); // Call the async function
-  }, [q, user]); // Dependency array to re-run effect if 'q' or 'user' changes
+  }, [q, user, router]); // Dependency array to re-run effect if 'q', 'user', or 'router' changes
 
   return (
     <>
