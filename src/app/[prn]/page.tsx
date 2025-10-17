@@ -36,6 +36,22 @@ function isValidPrn(prn: string): boolean {
   return /^\d+$/.test(prn);
 }
 
+// Early validation to prevent conflicts with static routes
+export function generateMetadata({
+  params,
+}: {
+  params: Promise<{ prn: string }>;
+}) {
+  const { prn } = React.use(params);
+  // If it's not a valid PRN, return null to let Next.js handle it as a 404
+  if (!isValidPrn(prn)) {
+    return notFound();
+  }
+  return {
+    title: `Student Profile - ${prn}`,
+  };
+}
+
 async function getStudentData(prn: string) {
   // Only attempt to fetch data for valid numeric PRNs
   if (!isValidPrn(prn)) {
@@ -207,7 +223,39 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   }
 
   if (student === null) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-800/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-800/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full text-center border border-gray-200">
+          <div
+            className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+            style={{
+              background: "#991b1b",
+            }}
+          >
+            <AlertTriangle className="w-12 h-12 text-white animate-bounce" />
+          </div>
+          <h2 className="text-3xl font-bold mb-3" style={{ color: "#991b1b" }}>
+            Invalid PRN Format
+          </h2>
+          <p className="text-gray-600 text-lg">
+            The PRN must be a numeric value. You entered: {prn}
+          </p>
+          <div className="mt-6">
+            <Link href="/student-list">
+              <button className="px-6 py-3 bg-red-700 text-white font-semibold rounded-xl hover:bg-red-800 transition-colors">
+                Back to Student List
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!student) {
@@ -234,6 +282,13 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
           <p className="text-gray-600 text-lg">
             No student found with PRN: {prn}
           </p>
+          <div className="mt-6">
+            <Link href="/student-list">
+              <button className="px-6 py-3 bg-red-700 text-white font-semibold rounded-xl hover:bg-red-800 transition-colors">
+                Back to Student List
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );
