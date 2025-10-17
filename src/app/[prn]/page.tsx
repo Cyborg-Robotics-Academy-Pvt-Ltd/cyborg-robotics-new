@@ -34,7 +34,17 @@ interface Student {
   };
 }
 
+// Add a function to validate if a string is a valid PRN (numeric)
+function isValidPrn(prn: string): boolean {
+  return /^\d+$/.test(prn);
+}
+
 async function getStudentData(prn: string) {
+  // Only attempt to fetch data for valid numeric PRNs
+  if (!isValidPrn(prn)) {
+    return null;
+  }
+
   const studentsRef = collection(db, "students");
   const q = query(studentsRef, where("PrnNumber", "==", prn));
   const querySnapshot = await getDocs(q);
@@ -113,10 +123,13 @@ function getLevelLabel(level: string) {
 export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const { prn } = use(params);
 
-  // Guard: only numeric PRN is valid; otherwise show 404
-  if (!/^\d+$/.test(prn)) {
+  // For non-numeric PRNs, we should not render this page at all
+  // This prevents conflicts with other static routes like /about
+  if (!isValidPrn(prn)) {
     notFound();
+    return null; // This line will never be reached, but added for type safety
   }
+
   const [student, setStudent] = React.useState<Student | null>(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [userChecked, setUserChecked] = React.useState(false);

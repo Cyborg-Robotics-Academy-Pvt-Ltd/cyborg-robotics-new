@@ -269,6 +269,11 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "#6366F1",
 };
 
+// Add a function to validate if a string is a valid PRN (numeric)
+function isValidPrn(prn: string): boolean {
+  return /^\d+$/.test(prn);
+}
+
 const Page = ({
   params,
 }: {
@@ -321,7 +326,7 @@ const Page = ({
   if (resolvedParams) {
     const { prn, sub } = resolvedParams;
     // PRN must be numeric and sub must resolve to a non-empty course name
-    if (!/^\d+$/.test(prn) || !sub || !courseName) {
+    if (!isValidPrn(prn) || !sub || !courseName) {
       notFound();
     }
   }
