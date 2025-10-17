@@ -80,21 +80,21 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
 
   const handleScrollLeft = () => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       carouselRef.current.scrollBy({ left: -cardWidth, behavior: "smooth" });
     }
   };
 
   const handleScrollRight = () => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       carouselRef.current.scrollBy({ left: cardWidth, behavior: "smooth" });
     }
   };
 
   const handleCardClose = (index: number) => {
     if (carouselRef.current) {
-      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 300;
+      const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       const gap = isMobile() ? 6 : 8;
       const scrollPosition = (cardWidth + gap) * (index + 1);
       carouselRef.current.scrollTo({
@@ -259,23 +259,23 @@ export const Card = ({
                 <IconX className="h-6 w-6 text-neutral-100 dark:text-neutral-900" />
               </button>
               <div
-                className="relative w-full max-w-4xl mx-auto"
+                className="relative w-full max-w-4xl mx-auto aspect-[9/16]"
                 style={{
                   maxHeight: "90vh",
-                  minHeight: "500px",
                 }}
               >
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
+                  className="w-full h-full"
                 >
                   <BlurImage
                     src={card.src}
                     alt={`Card ${card.id}`}
                     fill
-                    className="object-contain rounded-2xl "
-                    style={{ maxHeight: "90vh", minHeight: "300px" }}
+                    className="object-contain rounded-2xl"
+                    sizes="(max-width: 768px) 90vw, (max-width: 1024px) 50vw, 40vw"
                   />
                 </motion.div>
               </div>
@@ -287,9 +287,9 @@ export const Card = ({
         layoutId={layout ? `card-${card.id}` : undefined}
         onClick={handleOpen}
         className="relative aspect-[9/16] 
-                   h-[70vh] sm:h-[300px] md:h-[400px] 
                    w-[90vw] sm:w-[250px] md:w-[280px] 
-                   overflow-hidden rounded-3xl snap-center"
+                   overflow-hidden rounded-3xl snap-center
+                   max-h-[70vh]"
       >
         <BlurImage
           src={card.src}
@@ -302,14 +302,7 @@ export const Card = ({
   );
 };
 
-export const BlurImage = ({
-  height,
-  width,
-  src,
-  className,
-  alt,
-  ...rest
-}: ImageProps) => {
+export const BlurImage = ({ src, className, alt, ...rest }: ImageProps) => {
   const [isLoading, setLoading] = useState(true);
   return (
     <Image
@@ -320,8 +313,8 @@ export const BlurImage = ({
       )}
       onLoad={() => setLoading(false)}
       src={src}
-      width={width}
-      height={height}
+      fill
+      sizes="(max-width: 768px) 90vw, (max-width: 1024px) 250px, 280px"
       loading="lazy"
       decoding="async"
       blurDataURL={typeof src === "string" ? src : undefined}

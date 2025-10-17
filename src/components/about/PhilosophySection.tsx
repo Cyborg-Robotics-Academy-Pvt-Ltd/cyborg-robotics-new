@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, Suspense, useMemo, lazy } from "react";
-import { motion, useInView } from "framer-motion";
+import { Suspense, useMemo, lazy } from "react";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 // Lazy load the AnimatedTestimonials component
@@ -12,12 +11,6 @@ const AnimatedTestimonials = lazy(() =>
 );
 
 export default function PhilosophySection() {
-  const philosophyRef = useRef(null);
-  const philosophyInView = useInView(philosophyRef, {
-    once: true,
-    margin: "-50px",
-  });
-
   const testimonials = useMemo(
     () => [
       {
@@ -40,28 +33,12 @@ export default function PhilosophySection() {
   );
 
   return (
-    <motion.section
-      ref={philosophyRef}
-      initial={{ opacity: 0, y: 50 }}
-      animate={philosophyInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="max-w-6xl mx-auto mb-20"
-    >
-      <motion.h2
-        className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={philosophyInView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ delay: 0.8, duration: 0.6 }}
-      >
+    <section className="max-w-6xl mx-auto mb-20">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
         Our Philosophy
-      </motion.h2>
+      </h2>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={philosophyInView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ delay: 1, duration: 0.8 }}
-        className="bg-gradient-to-br from-white via-green-50/30 to-gray-50 rounded-3xl p-8 shadow-2xl border border-green-100"
-      >
+      <div className="bg-gradient-to-br from-white via-green-50/30 to-gray-50 rounded-3xl p-8 shadow-2xl border border-green-100">
         <Suspense
           fallback={
             <LoadingSkeleton height="h-48" message="Loading Philosophy..." />
@@ -69,7 +46,7 @@ export default function PhilosophySection() {
         >
           <AnimatedTestimonials testimonials={testimonials} autoplay={true} />
         </Suspense>
-      </motion.div>
-    </motion.section>
+      </div>
+    </section>
   );
 }

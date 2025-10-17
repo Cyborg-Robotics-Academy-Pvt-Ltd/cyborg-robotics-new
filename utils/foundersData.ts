@@ -10,11 +10,7 @@ export interface FounderData {
     label: string;
     color: 'red' | 'blue' | 'green' | 'purple' | 'yellow' | 'indigo';
   }>;
-  achievements: Array<{
-    icon: any;
-    text: string;
-    iconColor: string;
-  }>;
+
   linkedinUrl: string;
   gradientColors: {
     card: string;
@@ -31,33 +27,12 @@ export const foundersData: FounderData[] = [
   name: "Shikha Virmani",
   title: "Founder & CEO",
   image: "/assets/certificate.png",
-  description: "I’m a passionate advocate for experiential STEM learning with over 12 years of experience in robotics education. I’ve mentored 50+ teams in competitions like WRO, FLL, WSRO, and IRO, coaching students who represented India at WRO 2015 in Qatar and FLL 2016 in Denmark. Before founding Cyborg Robotics Academy, I served as Senior Technical Trainer and Head Coach with the National Organizing Body of WRO India.",
+  description: "Founder & CEO with 12+ years in robotics education. B.Tech in Electronics and Communication. Coached students to international success at WRO & FLL. Advocates for hands-on STEM learning that builds technical skills and critical thinking.",
   skills: [
     { label: "EdTech Expert", color: "red" },
-    { label: "Robotics Mentor", color: "blue" },
-    { label: "12+ Years", color: "green" }
-  ],
-  achievements: [
-    {
-      icon: Users,
-      text: "Trained 10,000+ students",
-      iconColor: "text-red-500"
-    },
-    {
-      icon: Trophy,
-      text: "Mentored 50+ competition teams",
-      iconColor: "text-red-500"
-    },
-    {
-      icon: Target,
-      text: "Represented India at WRO & FLL",
-      iconColor: "text-red-500"
-    },
-    {
-      icon: BookOpen,
-      text: "Designed scalable STEM curricula",
-      iconColor: "text-red-500"
-    }
+    { label: "12+ Years", color: "green" },
+    
+
   ],
   linkedinUrl: "https://www.linkedin.com/in/shikha-virmani-31576442/", // replace with real link
   gradientColors: {
@@ -72,36 +47,14 @@ export const foundersData: FounderData[] = [
 {
   id: "lokesh",
   name: "Lokesh Malik",
-  title: "Co-Founder & CTO",
-  image: "/assets/certificate.png",
-  description: "With 12+ years in robotics and STEM education, I am a passionate mentor and strategist driving innovation at Cyborg Robotics Academy. Alongside training 10,000+ students and mentoring 50+ teams at competitions like WRO, FLL, and IRO, I bring diverse professional expertise from aviation, insurance, infrastructure, and entrepreneurship. Holding an MBA in International Business, my career spans leadership roles at VFS Dubai, Air India, and ICICI, as well as delivering critical projects with PWD, MES, and Pune Municipal Corporation. At Cyborg, I merge business strategy with technology, empowering the next generation through hands-on STEM learning and global exposure.",
+  title: "Director of Operations",
+  image: "/assets/Founders/lokesh1.png",
+  description: "Director of Operations with diverse industry experience. MBA in International Business. Formerly with Air India and VFS Global. Led specialized projects and managed government contracts. Brings strategic vision and operational excellence to STEM education.",
   skills: [
     { label: "Tech Strategist", color: "blue" },
-    { label: "Innovation", color: "purple" },
-    { label: "Mentor", color: "green" }
+    { label: "Strategic Thinking", color: "yellow" },
   ],
-  achievements: [
-    {
-      icon: Target,
-      text: "Strategic Planning",
-      iconColor: "text-blue-500"
-    },
-    {
-      icon: BookOpen,
-      text: "Curriculum Design",
-      iconColor: "text-blue-500"
-    },
-    {
-      icon: Trophy,
-      text: "Led government & infrastructure projects",
-      iconColor: "text-blue-500"
-    },
-    {
-      icon: Users,
-      text: "Scaled ventures as investor & advisor",
-      iconColor: "text-blue-500"
-    }
-  ],
+  
   linkedinUrl: "https://www.linkedin.com/in/lokesh-malik-670700250/", // replace with his real profile
   gradientColors: {
     card: "from-white via-gray-50 to-blue-50/50",

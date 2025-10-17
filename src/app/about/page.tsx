@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   HeroSection,
   InteractiveStorySection,
@@ -8,12 +9,11 @@ import {
   AboutNavigation,
 } from "@/components/about";
 import ScrollButton from "@/components/widgets/ScrollButton";
+import { useInView } from "react-intersection-observer";
+import AwardSection from "@/components/about/AwardSection";
 
 // Lazy load below-the-fold components for better performance
 const TeamSection = React.lazy(() => import("@/components/about/TeamSection"));
-const GlobalReachSection = React.lazy(
-  () => import("@/components/about/GlobalReachSection")
-);
 
 // Simple loading component with proper height to prevent layout shift
 const SectionLoader = () => (
@@ -23,6 +23,22 @@ const SectionLoader = () => (
 );
 
 export default function AboutPage() {
+  // Set up intersection observers for scroll animations
+  const [heroRef, heroInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const [storyRef, storyInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const [foundersRef, foundersInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
   useEffect(() => {
     // Add about-page class for smooth scrolling
     document.documentElement.classList.add("about-page");
@@ -32,40 +48,78 @@ export default function AboutPage() {
       document.documentElement.classList.remove("about-page");
     };
   }, []);
+
   return (
     <>
       {/* About-specific navigation */}
       <AboutNavigation />
 
-      <main className="bg-white text-[#8C2D2D] relative overflow-hidden">
-        <div className="px-4 sm:px-6 md:px-12 lg:px-20">
+      <main className="bg-white text-[#a63534] relative overflow-hidden">
+        {/* Changed from empty div to w-full for full container width */}
+        <div className="w-full">
           {/* Hero Section - add top margin for fixed header */}
-          <div id="hero" className="about-section pt-20">
+          <motion.div
+            id="hero"
+            className="about-section pt-20"
+            ref={heroRef}
+            initial={{ opacity: 0, y: 30 }}
+            animate={heroInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
             <HeroSection />
-          </div>
-          <div id="story" className="about-section">
+          </motion.div>
+
+          <motion.div
+            id="story"
+            className="about-section"
+            ref={storyRef}
+            initial={{ opacity: 0, y: 30 }}
+            animate={storyInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             <InteractiveStorySection />
-          </div>
-          <div id="founders" className="about-section">
+          </motion.div>
+
+          <motion.div
+            id="founders"
+            className="about-section"
+            ref={foundersRef}
+            initial={{ opacity: 0, y: 30 }}
+            animate={foundersInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             <FoundersSection />
-          </div>
+          </motion.div>
 
           {/* Below-the-fold sections with lazy loading */}
           <Suspense fallback={<SectionLoader />}>
             {/* Team Section */}
-            <div id="team" className="about-section">
+            <motion.div
+              id="team"
+              className="about-section"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
               <TeamSection />
-            </div>
+            </motion.div>
           </Suspense>
 
           <Suspense fallback={<SectionLoader />}>
-            {/* Global Reach Section */}
-            <div id="global-reach" className="about-section">
-              <GlobalReachSection />
-            </div>
+            {/* Award  Section */}
+            <motion.div
+              id="global-reach"
+              className="about-section"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <AwardSection />
+            </motion.div>
           </Suspense>
         </div>
-
         {/* Floating Scroll Button with pulse animation for improved navigation */}
         <ScrollButton />
       </main>

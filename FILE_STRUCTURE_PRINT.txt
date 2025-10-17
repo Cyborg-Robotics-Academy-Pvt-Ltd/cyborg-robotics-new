@@ -1,0 +1,310 @@
+Cyborg Robotics - Detailed Project File Structure
+===============================================
+
+Root Directory
+├── .git/ (Git version control repository)
+│   ├── HEAD, config, index files
+│   ├── objects/ (Git objects storage)
+│   └── refs/ (Branch and tag references)
+├── .vscode/ (Visual Studio Code settings)
+│   └── settings.json (Workspace-specific settings)
+├── public/ (Publicly accessible assets - served at root URL)
+│   ├── assets/ (Images, videos, and media files)
+│   │   ├── certificates/ (Certificate templates)
+│   │   ├── classroom-course/ (Classroom course images)
+│   │   ├── courses/ (Course-related images)
+│   │   ├── gallery/ (Photo/video gallery content)
+│   │   ├── online-course/ (Online course images)
+│   │   ├── parents/ (Parent-related images)
+│   │   ├── pdf/ (PDF documents)
+│   │   ├── social-icons/ (Social media icons)
+│   │   ├── Education.png, Hero.mov, Template.jpg
+│   │   ├── certificate.png, intro.mp4, logo.png
+│   │   └── newsletter.png, visionmission.png
+│   ├── favicon.ico (Website favicon)
+│   ├── mylogo.png (Main logo)
+│   └── intro.mp4 (Introductory video)
+├── src/ (Source code - TypeScript/React components)
+│   ├── app/ (Next.js App Router - file-based routing)
+│   │   ├── [prn]/ (Dynamic route for PRN-based pages)
+│   │   │   ├── [sub]/ (Sub-route parameter)
+│   │   │   │   └── page.tsx (Dynamic sub-page)
+│   │   │   ├── layout.tsx (Dynamic route layout)
+│   │   │   └── page.tsx (Dynamic route page)
+│   │   ├── about/ (About Us page)
+│   │   │   └── page.tsx (About page component)
+│   │   ├── admin-dashboard/ (Administrator dashboard)
+│   │   │   ├── create-task/ (Task creation interface)
+│   │   │   ├── new-registration/ (New student registration)
+│   │   │   ├── renewal/ (Registration renewal)
+│   │   │   ├── layout.tsx (Admin dashboard layout)
+│   │   │   └── page.tsx (Admin dashboard page)
+│   │   ├── api/ (API routes - server-side functions)
+│   │   │   ├── blogs/ (Blog management API)
+│   │   │   │   └── route.ts (Blog CRUD operations)
+│   │   │   ├── generate-blog/ (AI blog generation)
+│   │   │   │   └── route.ts (Blog generation endpoint)
+│   │   │   ├── monthly-analytics/ (Analytics reporting)
+│   │   │   │   └── route.ts (Monthly analytics data)
+│   │   │   ├── send-email/ (Email service)
+│   │   │   │   └── route.ts (Email sending endpoint)
+│   │   │   ├── upload/ (File upload service)
+│   │   │   │   └── route.ts (File upload handler)
+│   │   │   └── subscribe/ (Newsletter subscription)
+│   │   ├── blogs/ (Blog system)
+│   │   │   ├── [id]/ (Dynamic blog post)
+│   │   │   │   └── page.tsx (Individual blog page)
+│   │   │   ├── create/ (Blog creation interface)
+│   │   │   │   └── page.tsx (Create blog page)
+│   │   │   └── page.tsx (Blog listing page)
+│   │   ├── classroom-courses/ (In-person course pages)
+│   │   │   ├── 3d-printing/
+│   │   │   │   └── page.tsx (3D Printing course page)
+│   │   │   ├── android-studio/
+│   │   │   │   └── page.tsx (Android Studio course page)
+│   │   │   ├── animation-coding/
+│   │   │   │   └── page.tsx (Animation Coding course page)
+│   │   │   ├── app-designing/
+│   │   │   │   └── page.tsx (App Designing course page)
+│   │   │   ├── app-lab/
+│   │   │   │   └── page.tsx (App Lab course page)
+│   │   │   ├── arduino/
+│   │   │   │   └── page.tsx (Arduino course page)
+│   │   │   ├── artificial-intelligence/
+│   │   │   │   └── page.tsx (AI course page)
+│   │   │   ├── bambino-coding/
+│   │   │   │   └── page.tsx (Bambino Coding course page)
+│   │   │   ├── early-simple-machines/
+│   │   │   │   └── page.tsx (Early Simple Machines course page)
+│   │   │   ├── electronics/
+│   │   │   │   └── page.tsx (Electronics course page)
+│   │   │   ├── iot/
+│   │   │   │   └── page.tsx (IoT course page)
+│   │   │   ├── java/
+│   │   │   │   └── page.tsx (Java course page)
+│   │   │   ├── machine-learning/
+│   │   │   │   └── page.tsx (Machine Learning course page)
+│   │   │   ├── python-language/
+│   │   │   │   └── page.tsx (Python course page)
+│   │   │   ├── robotics-ev3/
+│   │   │   │   └── page.tsx (Robotics EV3 course page)
+│   │   │   ├── simple-powered-machines/
+│   │   │   │   └── page.tsx (Simple Powered Machines course page)
+│   │   │   ├── spike-pneumatics/
+│   │   │   │   └── page.tsx (Spike Pneumatics course page)
+│   │   │   ├── spike-prime/
+│   │   │   │   └── page.tsx (Spike Prime course page)
+│   │   │   └── web-designing/
+│   │   │       └── page.tsx (Web Designing course page)
+│   │   ├── contact-us/ (Contact form page)
+│   │   │   └── page.tsx (Contact form component)
+│   │   ├── create-user/ (User creation page)
+│   │   │   ├── layout.tsx (User creation layout)
+│   │   │   └── page.tsx (User creation form)
+│   │   ├── events/ (Events page)
+│   │   │   └── page.tsx (Events listing)
+│   │   ├── gallery/ (Media gallery)
+│   │   │   ├── photo/ (Photo gallery)
+│   │   │   │   └── page.tsx (Photo gallery page)
+│   │   │   ├── video/ (Video gallery)
+│   │   │   │   └── page.tsx (Video gallery page)
+│   │   ├── login/ (Authentication page)
+│   │   │   └── page.tsx (Login form)
+│   │   ├── media/ (Media section)
+│   │   │   ├── layout.tsx (Media layout)
+│   │   │   ├── page.tsx (Media page)
+│   │   │   └── simple-page.tsx (Simple media page)
+│   │   ├── online-courses/ (Online course pages)
+│   │   │   ├── animation-coding/
+│   │   │   │   └── page.tsx (Online Animation Coding)
+│   │   │   ├── app-designing/
+│   │   │   │   └── page.tsx (Online App Designing)
+│   │   │   ├── artificial-intelligence/
+│   │   │   │   └── page.tsx (Online AI course)
+│   │   │   ├── bambino-coding/
+│   │   │   │   └── page.tsx (Online Bambino Coding)
+│   │   │   ├── java/
+│   │   │   │   └── page.tsx (Online Java course)
+│   │   │   ├── machine-learning/
+│   │   │   │   └── page.tsx (Online ML course)
+│   │   │   ├── python-language/
+│   │   │   │   └── page.tsx (Online Python course)
+│   │   │   └── web-designing/
+│   │   │       └── page.tsx (Online Web Designing)
+│   │   ├── privacy-policy/ (Privacy policy page)
+│   │   │   └── page.tsx (Privacy policy content)
+│   │   ├── registration/ (Student registration system)
+│   │   │   ├── new/ (New registration)
+│   │   │   │   └── page.tsx (New registration form)
+│   │   │   └── renewal/ (Registration renewal)
+│   │   │       └── page.tsx (Renewal form)
+│   │   ├── student-dashboard/ (Student dashboard)
+│   │   │   ├── course-progress/ (Course progress tracking)
+│   │   │   ├── media/ (Student media access)
+│   │   │   ├── upcoming-tasks/ (Upcoming assignments)
+│   │   │   ├── layout.tsx (Student dashboard layout)
+│   │   │   └── page.tsx (Student dashboard page)
+│   │   ├── student-list/ (Student directory)
+│   │   │   ├── layout.tsx (Student list layout)
+│   │   │   └── page.tsx (Student list page)
+│   │   ├── terms-conditions/ (Terms and conditions)
+│   │   │   └── page.tsx (Terms page)
+│   │   ├── trainer-dashboard/ (Trainer dashboard)
+│   │   │   ├── create-task/ (Task creation)
+│   │   │   │   └── page.tsx (Task creation page)
+│   │   │   ├── layout.tsx (Trainer dashboard layout)
+│   │   │   └── page.tsx (Trainer dashboard page)
+│   │   ├── globals.css (Global CSS styles)
+│   │   ├── layout.tsx (Root layout - wraps all pages)
+│   │   ├── not-found.tsx (404 error page)
+│   │   └── page.tsx (Homepage)
+│   ├── components/ (Reusable UI components)
+│   │   ├── about/ (About page components)
+│   │   │   ├── AboutNavigation.tsx (Navigation for about section)
+│   │   │   ├── FoundersSection.tsx (Founders information)
+│   │   │   ├── GlobalReachSection.tsx (Global reach display)
+│   │   │   ├── HeroSection.tsx (Hero section component)
+│   │   │   ├── ImpactSection.tsx (Impact statistics)
+│   │   │   ├── InteractiveStorySection.tsx (Interactive story)
+│   │   │   ├── PhilosophySection.tsx (Philosophy section)
+│   │   │   ├── ProjectsSection.tsx (Projects showcase)
+│   │   │   ├── TeamSection.tsx (Team members display)
+│   │   │   └── index.ts (Export file)
+│   │   ├── courses/ (Course-specific components)
+│   │   │   ├── AndroidStudio.tsx
+│   │   │   ├── AnimationCoding.tsx
+│   │   │   ├── AppDesigning.tsx
+│   │   │   ├── AppLab.tsx
+│   │   │   ├── Arduino.tsx
+│   │   │   ├── ArtificialIntelligence.tsx
+│   │   │   ├── BambinoCoding.tsx
+│   │   │   ├── EarlySimpleMachines.tsx
+│   │   │   ├── Electronics.tsx
+│   │   │   ├── Iot.tsx
+│   │   │   ├── Java.tsx
+│   │   │   ├── MachineLearning.tsx
+│   │   │   ├── Printing3d.tsx
+│   │   │   ├── Python.tsx
+│   │   │   ├── RoboticsEv3.tsx
+│   │   │   ├── SimplePoweredMachines.tsx
+│   │   │   ├── SpikePneumatics.tsx
+│   │   │   ├── SpikePrime.tsx
+│   │   │   └── WebDesigning.tsx
+│   │   ├── gallery/ (Gallery components)
+│   │   │   ├── Gallery.tsx
+│   │   │   ├── PhotoGallery.tsx
+│   │   │   └── VideoGallery.tsx
+│   │   ├── home/ (Homepage components)
+│   │   │   ├── AchievementsSection.tsx
+│   │   │   ├── CoursesSection.tsx
+│   │   │   ├── EventsSection.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── HeroSection.tsx
+│   │   │   ├── HomePage.tsx
+│   │   │   ├── TestimonialsSection.tsx
+│   │   │   └── WhatWeOffer.tsx
+│   │   ├── hooks/ (Custom component hooks)
+│   │   │   ├── useCourseData.ts
+│   │   │   └── useMediaQuery.ts
+│   │   ├── layout/ (Layout components)
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── MobileMenu.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── lib/ (Component utilities)
+│   │   │   ├── utils.ts
+│   │   │   └── helpers.ts
+│   │   ├── lightswind/ (Lightswind components)
+│   │   │   ├── Button.tsx
+│   │   │   └── Card.tsx
+│   │   ├── ui/ (Atomic UI components)
+│   │   │   ├── accordion.tsx
+│   │   │   ├── animated-testimonials.tsx
+│   │   │   ├── apple-cards-carousel.tsx
+│   │   │   ├── aspect-ratio.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── carousel.tsx
+│   │   │   ├── chart.tsx
+│   │   │   ├── checkbox.tsx
+│   │   │   ├── dropdown.tsx
+│   │   │   ├── flip-words.tsx
+│   │   │   ├── infinite-moving-cards.tsx
+│   │   │   ├── inifinite-moving-certificate.tsx
+│   │   │   ├── inifinite-moving-images.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── loading-skeleton.tsx
+│   │   │   ├── mouse-follower-circle-dot-optimized.tsx
+│   │   │   ├── mouse-follower-circle-dot.tsx
+│   │   │   ├── mouse-follower.tsx
+│   │   │   ├── navbar-menu.tsx
+│   │   │   ├── navigation-menu.tsx
+│   │   │   ├── pagination.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── radio-group.tsx
+│   │   │   ├── robotics-button.tsx
+│   │   │   ├── robotics-card.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   ├── sticky-banner.tsx
+│   │   │   ├── table.tsx
+│   │   │   └── world-map.tsx
+│   │   ├── widgets/ (Specialized widgets)
+│   │   │   ├── AnalyticsWidget.tsx
+│   │   │   └── CalendarWidget.tsx
+│   │   ├── AuthLoadingSpinner.tsx (Authentication loading indicator)
+│   │   ├── CourseCard.tsx (Course preview card)
+│   │   ├── CourseTemplate.tsx (Course page template)
+│   │   ├── CreateTasks.tsx (Task creation form)
+│   │   ├── DashboardLayout.tsx (Dashboard layout wrapper)
+│   │   ├── EmailComposition.ts (Email composition utility)
+│   │   ├── LoadingSpinner.tsx (General loading indicator)
+│   │   ├── Mycomp.tsx (Custom component)
+│   │   ├── Navbar.tsx (Main navigation bar)
+│   │   ├── NavbarMenu.module.css (Navbar styles)
+│   │   ├── NavbarMenu.tsx (Navbar menu component)
+│   │   ├── lightswind.css (Lightswind styles)
+│   │   └── login-form.tsx (Login form component)
+│   ├── hooks/ (Custom React hooks)
+│   │   ├── use-outside-click.ts (Click outside detection)
+│   │   ├── useScrollAnimation.ts (Scroll animation hook)
+│   │   └── useScrollDirection.ts (Scroll direction detection)
+│   └── lib/ (Core application libraries)
+│       ├── auth-context.tsx (Authentication context)
+│       ├── courseData.ts (Course data management)
+│       ├── firebase.ts (Firebase configuration)
+│       └── utils.ts (General utilities)
+├── utils/ (Utility functions and data)
+│   ├── Images.ts (Image paths and management)
+│   ├── MenuItemsData.ts (Navigation menu data)
+│   ├── competitionsData.ts (Competitions information)
+│   ├── courses.ts (Course metadata)
+│   ├── curriculum.ts (Curriculum details)
+│   └── foundersData.ts (Founder information)
+├── ABOUT_PAGE_OPTIMIZATIONS.md (About page improvements)
+├── README.md (Project documentation)
+├── components.json (Component configuration)
+├── eslint.config.mjs (ESLint configuration)
+├── next.config.js (Next.js configuration)
+├── package-lock.json (Dependency lock file)
+├── package.json (Project dependencies and scripts)
+├── postcss.config.mjs (PostCSS configuration)
+├── tailwind.config.ts (Tailwind CSS configuration)
+├── tailwindcss.d.ts (Tailwind CSS types)
+├── text.txt (Text file)
+└── tsconfig.json (TypeScript configuration)
+
+Technology Stack:
+- Next.js 15+ (React framework with App Router)
+- TypeScript (Type safety)
+- Tailwind CSS (Utility-first styling)
+- Firebase (Backend services - Auth, Firestore)
+- Framer Motion (Animations)
+- React Three Fiber (3D graphics)
+- Clerk (Authentication)
+- Brevo (Email services)
+- Cloudinary (Media management)

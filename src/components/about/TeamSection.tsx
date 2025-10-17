@@ -1,241 +1,339 @@
 "use client";
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Users, ExternalLink } from "lucide-react";
+import { Users } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 // Type definitions
 interface TeamMember {
+  id: string;
   name: string;
-  role: string;
-  bio: string;
-  photo: string;
-  linkedin: string;
+  title: string;
+  department: string;
+  image: string;
+  linkedin?: string;
 }
 
 interface TeamCardProps {
   member: TeamMember;
-  index: number;
-  onHover: (index: number) => void;
-  onLeave: () => void;
 }
 
-export default function EnhancedTeamSection() {
-  const [, setHoveredTeam] = useState<number | null>(null);
+const teamMembers: TeamMember[] = [
+  {
+    id: "Pratima",
+    name: "Ms. Pratima Thakur",
+    title: "Project Manager ",
+    department:
+      "Space Scientist | Architect of India's Liquid Propulsion Program | Technology & Innovation Leader",
+    image: "assets/team/pratima.png",
+    linkedin: "https://www.linkedin.com/in/pratimathakur/",
+  },
+  {
+    id: "Omkar",
+    name: "Mr. Omkar Shinde",
+    title: "Head of  Programming Instructor",
+    department:
+      "STEM Education | Robotics Curriculum Development | Coding & Innovation Mentor",
+    image: "assets/team/omkar.png",
+    linkedin: "https://www.linkedin.com/in/omkarshinde711/",
+  },
 
-  const teamMembers = [
-    {
-      name: "Dr. Sarah Johnson",
-      role: "Tech Lead",
-      bio: "AI development expert specializing in robotics and machine learning.",
-      photo:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-      linkedin: "https://www.linkedin.com/in/your-profile",
-    },
-    {
-      name: "Prof. Michael Chen",
-      role: "Senior Mentor",
-      bio: "Electronics expert in circuit design and embedded systems.",
-      photo:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-      linkedin: "https://www.linkedin.com/in/shrikant11",
-    },
-    {
-      name: "Dr. Emily Rodriguez",
-      role: "Project Coordinator",
-      bio: "Innovation strategist focused on educational technology.",
-      photo:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-      linkedin: "https://www.linkedin.com/in/your-profile",
-    },
-    {
-      name: "Lisa Thompson",
-      role: "Student Success",
-      bio: "Student success expert in educational psychology and mentorship.",
-      photo:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-      linkedin: "https://www.linkedin.com/in/your-profile",
-    },
-  ];
+  {
+    id: "Shrikant",
+    name: "Mr. Shrikant Gaikwad",
+    title: "Full Stack Web Developer",
+    department:
+      "Web Development & System Architecture | Defence Research & Technology | Full Stack Solutions, UI/UX, APIs, DevOps",
+    image: "assets/team/shrikant.png",
+    linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
+  },
 
-  const TeamCard = ({ member, index, onHover, onLeave }: TeamCardProps) => {
-    return (
-      <motion.div
-        className="relative group cursor-pointer block"
-        onMouseEnter={() => onHover(index)}
-        onMouseLeave={onLeave}
-        initial={{ scale: 1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-          mass: 0.8,
-        }}
-        style={{
-          transformOrigin: "center",
-          willChange: "transform",
-        }}
-      >
-        <Link
-          href={member.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block h-full"
-        >
-          {/* Enhanced Card Background with Multi-Layer Effects */}
-          <div className="relative p-[3px] rounded-3xl bg-gradient-to-br from-[#BF2121] via-[#BF2121]/80 to-[#BF2121]/90 shadow-lg transform-gpu">
-            {/* Outer Glow Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-br from-[#BF2121]/30 via-[#BF2121]/20 to-[#BF2121]/40 rounded-3xl blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+  {
+    id: "Sirjana",
+    name: "Ms. Sirjana Vishwakrma ",
+    title: "Head Of Trainer  ",
+    department:
+      "Retired Joint Director, Ministry of Defence | Expert in Armament Technology, Product Innovation & Scientific Research",
+    image: "assets/team/sirjana.png",
+    linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
+  },
+  {
+    id: "Nikita",
+    name: "Ms. Nikita Mangale",
+    title: "Rtd. Senior Scientist, DRDO ",
+    department: "Retired Senior Scientist, DRDO ",
+    image: "assets/team/nikita.png",
+    linkedin: "https://www.linkedin.com/in/nikita-mangle-drdo/",
+  },
+  {
+    id: "Nilesh",
+    name: "Mr. Nilesh Jaiswar",
+    title: "Rtd. Senior Scientist, DRDO ",
+    department:
+      "Retired Senior Scientist, DRDO | Ex-Chairman, Institute of Defence Scientists and Technologists",
+    image: "assets/team/nilesh.png",
+    linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
+  },
+  {
+    id: "Anchal",
+    name: "Ms. Anchal Mishra ",
+    title: "Head Of 3d department ",
+    department:
+      "Retired Joint Director, Ministry of Defence | Expert in Armament Technology, Product Innovation & Scientific Research",
+    image: "assets/team/anchal.png",
+    linkedin: "https://www.linkedin.com/in/anchalmishra1/",
+  },
+];
 
-            {/* Glass Morphism Background */}
-            <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden h-[320px] sm:h-[340px] md:h-[360px] flex flex-col transform-gpu border border-white/20">
-              {/* Decorative Corner Elements */}
-              <div className="absolute top-0 left-0 w-16 h-16 bg-gradient-to-br from-[#BF2121]/20 to-transparent rounded-br-3xl" />
-              <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-[#BF2121]/20 to-transparent rounded-tl-3xl" />
+function TeamCard({ member }: TeamCardProps) {
+  const [isFlipped, setIsFlipped] = useState(false);
 
-              {/* Animated Background Pattern */}
-              <div className="absolute inset-0 opacity-30">
-                <div className="absolute top-4 right-8 w-2 h-2 bg-[#BF2121] rounded-full animate-pulse" />
-                <div className="absolute top-12 right-4 w-1 h-1 bg-[#BF2121]/70 rounded-full animate-pulse delay-300" />
-                <div className="absolute bottom-8 left-6 w-1.5 h-1.5 bg-[#BF2121]/50 rounded-full animate-pulse delay-700" />
-              </div>
-              {/* Enhanced Image Section */}
-              <div className="relative h-44 sm:h-48 md:h-52 overflow-hidden rounded-t-3xl">
-                {/* Image Frame Enhancement */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30 z-10 pointer-events-none" />
-                <motion.img
-                  src={member.photo}
-                  alt={member.name}
-                  className="w-full h-full object-cover transform-gpu"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{
-                    duration: 0.4,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                  }}
-                  style={{
-                    transformOrigin: "center",
-                    willChange: "transform",
-                  }}
-                />
-                {/* Enhanced Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-[#BF2121]/20 to-transparent z-20" />
-
-                {/* Enhanced External Link Indicator */}
-                <motion.div
-                  className="absolute top-3 sm:top-4 right-3 sm:right-4 p-1.5 sm:p-2 bg-black/80 backdrop-blur-md rounded-full text-white border border-white/20 shadow-md z-40"
-                  initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                  whileHover={{ opacity: 1, scale: 1.1, y: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25,
-                    duration: 0.3,
-                  }}
-                >
-                  <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </motion.div>
-
-                {/* Enhanced LinkedIn Indicator */}
-                <motion.div
-                  className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 p-1.5 sm:p-2 bg-gradient-to-br from-[#BF2121] to-[#BF2121]/80 backdrop-blur-md rounded-full text-white border border-white/30 shadow-md z-40"
-                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                  whileHover={{ opacity: 1, scale: 1.1, y: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25,
-                    duration: 0.3,
-                    delay: 0.1,
-                  }}
-                >
-                  <svg
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </motion.div>
-              </div>
-
-              {/* Enhanced Content Section */}
-              <div className="relative p-4 sm:p-5 md:p-6 flex-1 flex flex-col justify-between">
-                {/* Enhanced Content Background Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-sm rounded-b-3xl border-t border-white/30" />
-
-                {/* Content Container */}
-                <div className="relative z-10">
-                  <div className="flex-1">
-                    {/* Enhanced Name with Gradient */}
-                    <h3 className="text-base sm:text-lg font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent mb-2 cursor-default select-none drop-shadow-sm">
-                      {member.name}
-                    </h3>
-
-                    {/* Enhanced Role with Badge Style */}
-                    <div className="inline-flex items-center gap-2 mb-2 sm:mb-3">
-                      <div className="w-2 h-2 bg-gradient-to-r from-[#BF2121] to-[#BF2121]/80 rounded-full shadow-sm" />
-                      <p className="text-[#BF2121] font-semibold text-sm sm:text-base cursor-default select-none">
-                        {member.role}
-                      </p>
-                    </div>
-
-                    {/* Enhanced Bio with Better Typography */}
-                    <p
-                      className="text-gray-700 text-xs sm:text-sm leading-relaxed cursor-default select-none font-medium"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        maxHeight: "2.6em",
-                        lineHeight: "1.3em",
-                      }}
-                    >
-                      {member.bio}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
-      </motion.div>
-    );
+  const handleCardClick = () => {
+    if (isFlipped && member.linkedin) {
+      // Open LinkedIn profile in new tab
+      window.open(member.linkedin, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2">
-      {/* Header Section */}
-      <div className="text-center mb-12 sm:mb-16">
-        <div className="inline-flex items-center gap-2 bg-[#BF2121]/10 text-[#BF2121] px-4 py-2 rounded-full text-sm font-medium mb-4 cursor-default select-none">
-          <Users size={16} />
+    <div className="h-72 w-[70%]  md:h-80 md:w-[100%] mx-auto mb-8 ">
+      <div
+        className="relative w-full h-full cursor-pointer"
+        style={{ perspective: "1000px" }}
+        onMouseEnter={() => setIsFlipped(true)}
+        onMouseLeave={() => setIsFlipped(false)}
+      >
+        <div
+          className="relative w-full h-full transition-transform duration-500"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
+        >
+          {/* Front */}
+          <div
+            className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl "
+            style={{ backfaceVisibility: "hidden" }}
+          >
+            <div className="w-full h-56 relative">
+              <Image
+                src={`/${member.image}`}
+                alt={member.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 bg-white to-transparent py-7 px-3 ">
+              <h4 className="text-black font-extrabold text-sm mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                {member.name}
+              </h4>
+              <p className="text-black/90 text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                {member.title}
+              </p>
+              {/* LinkedIn Icon */}
+              {member.linkedin && (
+                <div className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow-md hover:bg-blue-50 transition-colors">
+                  <Link
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Back - Enhanced UI with Logo */}
+          <div
+            className="absolute inset-0 rounded-3xl mx-2 overflow-hidden shadow-2xl"
+            style={{
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+            }}
+            onClick={handleCardClick}
+          >
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-900"></div>
+
+            {/* Animated Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
+            </div>
+
+            {/* Content Container */}
+            <div className="relative z-10 h-full flex flex-col justify-center items-center px-3 py-4 text-white">
+              {/* Logo in White Circle Container - Top */}
+              <div className="mb-2 flex items-center justify-center">
+                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2 border-2 border-white/30">
+                  <Image
+                    src="/assets/logo.png"
+                    alt="Logo"
+                    width={100}
+                    height={100}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Decorative Top Line */}
+              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mb-2"></div>
+
+              {/* Name */}
+              <h4 className="font-bold text-base text-center leading-tight mb-1 px-2 whitespace-nowrap overflow-hidden text-ellipsis">
+                {member.name}
+              </h4>
+
+              {/* Title Badge */}
+              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2 py-0.5 mb-2">
+                <p className="text-[10px] font-semibold text-center text-white/90 whitespace-nowrap overflow-hidden text-ellipsis">
+                  {member.title}
+                </p>
+              </div>
+
+              {/* Divider */}
+              <div className="w-6 h-0.5 bg-gradient-to-r from-white/30 to-white/30 rounded-full mb-2"></div>
+
+              {/* Department Description */}
+              <p className="text-[9px] text-center leading-relaxed text-white/85 font-medium px-2 mb-2 line-clamp-3">
+                {member.department}
+              </p>
+
+              {/* Decorative Bottom Line */}
+              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mt-1 mb-2"></div>
+
+              {/* LinkedIn CTA */}
+              {member.linkedin && (
+                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 hover:bg-white/20 transition-all">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="text-white"
+                  >
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                  <span className="text-[10px] font-semibold text-white">
+                    View Profile
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function EnhancedTeamSection() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* Header Section - Minimal spacing */}
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center mb-2 gap-2 px-2 py-[6px] bg-gradient-to-r from-red-50 to-blue-50 rounded-full border border-red-100">
+          <Users size={15} />
           Our Team
         </div>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 cursor-default select-none">
+
+        <h2 className="text-2xl sm:text-3xl md:text-xl lg:text-4xl font-bold text-gray-900 mb-4">
           Meet the{" "}
-          <span className="bg-gradient-to-r from-[#BF2121] to-[#BF2121]/80 bg-clip-text text-transparent">
-            Experts
+          <span className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
+            Team
           </span>
         </h2>
-
-        <div className="w-16 sm:w-20 md:w-24 h-1 bg-gradient-to-r from-[#BF2121] to-[#BF2121]/80 mx-auto rounded-full mt-6 sm:mt-8" />
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="w-12 h-1 bg-gradient-to-r from-transparent to-red-600 rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
+          <div className="w-12 h-1 bg-gradient-to-r from-red-800 to-transparent rounded-full"></div>
+        </div>
       </div>
 
       {/* Team Members Section */}
-      <div className="mb-12 sm:mb-16 md:mb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {teamMembers.map((member, index) => (
-            <TeamCard
-              key={index}
-              member={member}
-              index={index}
-              onHover={setHoveredTeam}
-              onLeave={() => setHoveredTeam(null)}
-            />
+      <div className="mt-8 ">
+        {/* Desktop - Show all cards in grid */}
+        <div className="hidden lg:grid lg:grid-cols-4 gap-1 w-[80%] mx-auto">
+          {teamMembers.map((member) => (
+            <TeamCard key={member.id} member={member} />
           ))}
+        </div>
+
+        {/* Mobile & Tablet - Swiper Slider */}
+        <div className="lg:hidden">
+          <style jsx global>{`
+            .team-swiper .swiper-button-prev,
+            .team-swiper .swiper-button-next {
+              background: white;
+              width: 28px;
+              height: 28px;
+              border-radius: 50%;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+            .team-swiper .swiper-button-prev:after,
+            .team-swiper .swiper-button-next:after {
+              font-size: 12px;
+              color: #1e40af;
+              font-weight: bold;
+            }
+            .team-swiper .swiper-pagination-bullet {
+              background: #cbd5e1;
+              opacity: 1;
+              width: 5px;
+              height: 5px;
+            }
+            .team-swiper .swiper-pagination-bullet-active {
+              background: #2563eb;
+              width: 16px;
+              border-radius: 4px;
+            }
+          `}</style>
+
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={8}
+            slidesPerView={1}
+            navigation
+            pagination={{ clickable: true }}
+            className="team-swiper"
+            breakpoints={{
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 12,
+              },
+              768: {
+                slidesPerView: 3,
+                spaceBetween: 14,
+              },
+            }}
+          >
+            {teamMembers.map((member) => (
+              <SwiperSlide key={member.id}>
+                <TeamCard member={member} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
     </div>

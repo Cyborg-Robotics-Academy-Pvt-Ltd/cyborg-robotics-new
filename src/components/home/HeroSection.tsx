@@ -13,7 +13,10 @@ const Carousel = () => {
           playsInline
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         >
-          <source src="/assets/Hero.mov" type="video/mp4" />
+          <source
+            src="https://res.cloudinary.com/dz8enfjtx/video/upload/v1759653436/cyborg_1_nspmur.mp4"
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
       </div>

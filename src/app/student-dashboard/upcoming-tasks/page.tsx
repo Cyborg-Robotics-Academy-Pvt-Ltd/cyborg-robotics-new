@@ -12,6 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Head from "next/head";
+import { useRouter } from "next/navigation";
 
 // Define a type for the task
 type Task = {
@@ -31,11 +32,12 @@ const Page = () => {
   const q = loginEmail
     ? query(studentsRef, where("email", "==", loginEmail))
     : null; // Check if loginEmail is defined
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) {
       // Redirect to login page if user is not logged in
-      window.location.href = "/login"; // Adjust the path as necessary
+      router.push("/login"); // Adjust the path as necessary
     }
 
     const fetchStudents = async () => {

@@ -131,35 +131,37 @@ const Students = () => {
           &lt;
         </button>
 
-        {/* Testimonial Card */}
-        <div
-          className="group relative bg-white/70 backdrop-blur rounded-2xl shadow-lg border border-white/40 
-          px-4 py-6 sm:px-6 sm:py-6 md:px-8 md:py-8
-          w-full max-w-[280px] sm:max-w-[420px] md:max-w-[520px]
-          flex flex-row items-center justify-center transition-transform duration-300 ease-out hover:-translate-y-1"
-        >
-          <div className="absolute inset-0 -z-10 rounded-2xl  " />
-          <Image
-            src={image}
-            alt={name}
-            width={120}
-            height={160}
-            className="w-[84px] h-[112px] sm:w-[110px] sm:h-[150px] md:w-[130px] md:h-[170px]
-                       rounded-2xl bg-[#f1f1f1] 
-                       object-cover mr-4 sm:mr-6 shadow-md"
-          />
-          <div className="flex flex-col justify-center flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <p className="font-medium text-red-900 text-left text-sm sm:text-base">
-                {name}
+        {/* Testimonial Card without Glowing Effect */}
+        <div className="relative">
+          <div
+            className="group relative bg-white/70 backdrop-blur rounded-2xl shadow-lg border border-white/40 
+            px-4 py-6 sm:px-6 sm:py-6 md:px-8 md:py-8
+            w-full max-w-[280px] sm:max-w-[420px] md:max-w-[520px]
+            flex flex-row items-center justify-center transition-transform duration-300 ease-out hover:-translate-y-1"
+          >
+            <div className="absolute inset-0 -z-10 rounded-2xl  " />
+            <Image
+              src={image}
+              alt={name}
+              width={120}
+              height={160}
+              className="w-[84px] h-[112px] sm:w-[110px] sm:h-[150px] md:w-[130px] md:h-[170px]
+                         rounded-2xl bg-[#f1f1f1] 
+                         object-cover mr-4 sm:mr-6 shadow-md"
+            />
+            <div className="flex flex-col justify-center flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-medium text-red-900 text-left text-sm sm:text-base">
+                  {name}
+                </p>
+              </div>
+              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-3">
+                &quot;{quote}&quot;
+              </p>
+              <p className="text-gray-500 text-left mt-3 text-xs sm:text-sm">
+                {course}
               </p>
             </div>
-            <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-3">
-              &quot;{quote}&quot;
-            </p>
-            <p className="text-gray-500 text-left mt-3 text-xs sm:text-sm">
-              {course}
-            </p>
           </div>
         </div>
 
