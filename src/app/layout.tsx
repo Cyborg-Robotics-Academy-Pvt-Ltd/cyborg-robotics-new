@@ -41,15 +41,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Performance meta tags */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
         />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
       </head>
-      <body className="font-body antialiased" suppressHydrationWarning={true}>
+      <body
+        className="font-body antialiased overflow-x-hidden"
+        suppressHydrationWarning={true}
+      >
         <AuthProvider>
-          <div className="flex min-h-screen w-full flex-col">
+          <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
             <Header />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
             <Footer />
           </div>
           <WhatsAppWidget />

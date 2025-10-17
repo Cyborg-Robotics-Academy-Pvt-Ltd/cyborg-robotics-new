@@ -9,9 +9,9 @@ export interface MenuItem {
 }
 
 const offlineCourseChildren: MenuItem[] = [
-    { title: 'Age 5–7', href: '#' },
-    { title: 'Age 7–10', href: '#' },
-    { title: 'Age 10–12', href: '#' },
+    { title: 'Age 5–7', href: '/classroom-courses/bambino-coding' },
+    { title: 'Age 7–10', href: '/classroom-courses/animation-coding' },
+    { title: 'Age 10–12', href: '/classroom-courses/robotics-ev3' },
 ];
 
 const competitionChildren: MenuItem[] = [
@@ -25,14 +25,15 @@ const mainMenu: MenuItem[] = [
    title: 'Courses',
     icon: BookOpen,
     children: [
-      { title: 'Online Course', href: '#', icon: BookCopy },
-      { title: 'Offline Course', href: '#', icon: PersonStanding, children: offlineCourseChildren },
+      { title: 'Online Course', href: '/online-courses', icon: BookCopy },
+      { title: 'Offline Course', href: '/classroom-courses', icon: PersonStanding, children: offlineCourseChildren },
       { title: 'Soft Skills', href: '#', icon: HandHelping },
     ],
   },
   {
     title: 'About Us',
     icon: Building2,
+    href: '/about',
     children: [
       { title: 'Brand Stories', href: '/about#story', icon: Sparkles },
       { title: 'Meet the Team', href: '/about#team', icon: Users },
@@ -51,7 +52,7 @@ const mainMenu: MenuItem[] = [
     ],
   },
   {
-    title: 'Class Clicks | Behind Scenes',
+    title: 'Behind Scenes',
     icon: Camera,
     children: [
         { title: 'Student Certificate', href: '#', icon: Award },
@@ -62,12 +63,12 @@ const mainMenu: MenuItem[] = [
   {
     title: 'Blogs + Newsletter',
     icon: FileText,
-    href: '#',
+    href: '/blogs',
   },
   {
     title: 'Contact Us',
     icon: Phone,
-    href: 'contact-us',
+    href: '/contact-us',
   },
 ];
 

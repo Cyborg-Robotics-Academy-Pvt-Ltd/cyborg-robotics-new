@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
-import { motion, useInView } from "framer-motion";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,11 +14,6 @@ import {
 import { ExternalLink } from "lucide-react";
 
 export default function CompetitionsSection() {
-  const competitionsRef = useRef(null);
-  const competitionsInView = useInView(competitionsRef, {
-    once: true,
-    margin: "-50px",
-  });
   const [activeCategory, setActiveCategory] = useState("All Competitions");
 
   const filteredCompetitions = useMemo(() => {
@@ -31,20 +26,9 @@ export default function CompetitionsSection() {
   }, [activeCategory]);
 
   return (
-    <motion.section
-      ref={competitionsRef}
-      initial={{ opacity: 0, y: 50 }}
-      animate={competitionsInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="max-w-7xl mx-auto mb-20"
-    >
+    <section className="max-w-7xl mx-auto mb-20">
       {/* Header */}
-      <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={competitionsInView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ delay: 0.7, duration: 0.6 }}
-      >
+      <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
           Global Robotics Competitions
         </h2>
@@ -53,15 +37,10 @@ export default function CompetitionsSection() {
           WSRO. Challenge yourself, showcase your skills, and compete on the
           global stage.
         </p>
-      </motion.div>
+      </div>
 
       {/* Category Filter */}
-      <motion.div
-        className="flex flex-wrap justify-center gap-2 mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={competitionsInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 1.0, duration: 0.6 }}
-      >
+      <div className="flex flex-wrap justify-center gap-2 mb-8">
         {competitionCategories.map((category) => (
           <button
             key={category}
@@ -75,23 +54,15 @@ export default function CompetitionsSection() {
             {category}
           </button>
         ))}
-      </motion.div>
+      </div>
 
       {/* Competitions Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={competitionsInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {filteredCompetitions.map((competition, index) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCompetitions.map((competition) => {
           const IconComponent = competition.icon;
           return (
             <motion.div
               key={competition.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={competitionsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1.3 + index * 0.1, duration: 0.5 }}
               whileHover={{ y: -5, scale: 1.02 }}
               className="group"
             >
@@ -190,19 +161,15 @@ export default function CompetitionsSection() {
             </motion.div>
           );
         })}
-      </motion.div>
+      </div>
 
       {filteredCompetitions.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
+        <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
             No competitions found in this category.
           </p>
-        </motion.div>
+        </div>
       )}
-    </motion.section>
+    </section>
   );
 }

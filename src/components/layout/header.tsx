@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 
 import Link from "next/link";
 import OverlayMenu from "./overlay-menu";
-import AnimatedHamburgerButton from "./animated-hamburger-button";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
+import HamburgerButton from "./hamburger-button";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const router = useRouter();
   const pathname = usePathname();
   const isAboutPage = pathname === "/about";
@@ -31,10 +32,82 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHomePage]);
 
-  // Don't render header and hamburger menu on about page
-  if (isAboutPage) {
-    return null;
-  }
+  // Track active section on home page
+  useEffect(() => {
+    if (!isHomePage) return;
+
+    const sections = [
+      "why-learn-robotics",
+      "what-we-offer",
+      "vision-mission",
+      "gallery",
+    ];
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100;
+
+      // Find the current section based on scroll position
+      let currentSection = "";
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const height = element.offsetHeight;
+
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + height
+          ) {
+            currentSection = sectionId;
+            break;
+          }
+        }
+      }
+
+      setActiveSection(currentSection);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Call once to set initial state
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHomePage]);
+
+  // Track active section on about page
+  useEffect(() => {
+    if (!isAboutPage) return;
+
+    const sections = ["hero", "story", "founders", "team", "global-reach"];
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100;
+
+      // Find the current section based on scroll position
+      let currentSection = "";
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const height = element.offsetHeight;
+
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + height
+          ) {
+            currentSection = sectionId;
+            break;
+          }
+        }
+      }
+
+      setActiveSection(currentSection);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Call once to set initial state
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isAboutPage]);
 
   // Helper to handle scroll or navigation
   const handleNavClick = (
@@ -45,7 +118,16 @@ export default function Header() {
     if (window.location.pathname === "/") {
       const el = document.getElementById(sectionId);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+        // Calculate position accounting for fixed header
+        const headerHeight = 80; // Approximate header height
+        const elementPosition =
+          el.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
       }
     } else {
       router.push(`/#${sectionId}`);
@@ -58,7 +140,7 @@ export default function Header() {
     if (element) {
       // Calculate viewport and element dimensions for better positioning
       const viewportHeight = window.innerHeight;
-      const headerHeight = 20;
+      const headerHeight = 80; // Updated header height
       const elementRect = element.getBoundingClientRect();
       const elementTop = elementRect.top + window.pageYOffset;
 
@@ -97,18 +179,25 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
-  // Don't render header and hamburger menu on about page
-  if (isAboutPage) {
-    return null;
-  }
+  // Navigation items for main navbar
+  const navItems = [
+    {
+      id: "why-learn-robotics",
+      label: "Why Robotics",
+      href: "#why-learn-robotics",
+    },
+    { id: "what-we-offer", label: "We Offer", href: "#what-we-offer" },
+    { id: "vision-mission", label: "Our Vision", href: "#vision-mission" },
+    { id: "gallery", label: "Photo Hub", href: "#gallery" },
+  ];
 
   return (
     <div>
       {/* Temporary transparent navbar - always visible on home page */}
       {isHomePage && !isScrolled && (
         <header className="fixed top-0 left-0 right-0 z-40 bg-transparent">
-          <div className="container mx-auto flex h-16 items-center justify-between px-2 md:px-2 relative">
-            <Link href="/" className="flex items-center gap-2 ml-10">
+          <div className="flex h-16 items-center w-full justify-between ">
+            <Link href="/" className="flex items-center gap-2 ">
               <Image
                 src="/assets/logo.png"
                 alt="Cyborg Logo"
@@ -121,67 +210,61 @@ export default function Header() {
 
             {/* Transparent navigation */}
             <nav className="hidden lg:flex gap-8 items-center justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <Link
-                href="#why-learn-robotics"
-                className="animated-underline text-sm font-medium hover:font-semibold transition-colors text-white hover:text-red-300"
-                onClick={(e) => handleNavClick(e, "why-learn-robotics")}
-              >
-                Why Robotics
-              </Link>
-              <Link
-                href="#what-we-offer"
-                className="animated-underline text-sm font-medium hover:font-semibold transition-colors text-white hover:text-red-300"
-                onClick={(e) => handleNavClick(e, "what-we-offer")}
-              >
-                We Offer
-              </Link>
-              <Link
-                href="#vision-mission"
-                className="animated-underline text-sm font-medium hover:font-semibold transition-colors text-white hover:text-red-300"
-                onClick={(e) => handleNavClick(e, "vision-mission")}
-              >
-                Our Vision
-              </Link>
-              <Link
-                href="#gallery"
-                className="animated-underline text-sm font-medium hover:font-semibold transition-colors text-white hover:text-red-300"
-                onClick={(e) => handleNavClick(e, "gallery")}
-              >
-                Photo Hub
-              </Link>
+              {navItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
+                    activeSection === item.id
+                      ? "text-red-300 font-semibold"
+                      : "text-white hover:text-red-300"
+                  }`}
+                  onClick={(e) => handleNavClick(e, item.id)}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
 
-            {/* Transparent CTA buttons */}
-            <div className="hidden md:flex items-center gap-4 absolute lg:right-2 md:right-4 xl:right-2 max-md: 2xl:right-14 top-1/2 -translate-y-1/2">
-              <Link href="/login">
-                <Button
-                  size="sm"
-                  className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
-                >
-                  Login
-                </Button>
-              </Link>
-              <Link href="/enquire">
-                <motion.div
-                  initial={{ y: 0 }}
-                  animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    ease: "easeInOut",
-                    delay: 0.1,
-                  }}
-                  className="mr-10"
-                >
+            {/* Transparent CTA buttons and menu */}
+            <div className="flex items-center gap-4 absolute top-4 right-4">
+              <div className="hidden lg:flex items-center gap-4">
+                <Link href="/login">
                   <Button
                     size="sm"
-                    className="bg-[#b92423] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
+                    className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
                   >
-                    Enquire Now
+                    Login
                   </Button>
-                </motion.div>
-              </Link>
+                </Link>
+                <Link href="/enquire">
+                  <motion.div
+                    initial={{ y: 0 }}
+                    animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      ease: "easeInOut",
+                      delay: 0.1,
+                    }}
+                  >
+                    <Button
+                      size="sm"
+                      className="bg-[#b92423] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
+                    >
+                      Enquire Now
+                    </Button>
+                  </motion.div>
+                </Link>
+              </div>
+              {/* Menu button - visible on all screens */}
+              <div className="p-1 rounded-md bg-red-800 text-white">
+                <HamburgerButton
+                  isOpen={isMenuOpen}
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -214,8 +297,8 @@ export default function Header() {
             : "transform translate-y-0 shadow-sm shadow-black/10"
         } ${isMenuOpen ? "z-30" : "z-50"}`}
       >
-        <div className="container mx-auto flex h-16 items-center justify-between px-2 md:px-2 relative">
-          <Link href="/" className="flex items-center gap-2 ml-10">
+        <div className=" flex h-16 items-center justify-between  relative">
+          <Link href="/" className="flex items-center gap-2 ">
             <Image
               src="/assets/logo.png"
               alt="Cyborg Logo"
@@ -228,62 +311,30 @@ export default function Header() {
 
           {/* Default navigation for all pages */}
           <nav className="hidden lg:flex gap-8 items-center justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <Link
-              href="#why-learn-robotics"
-              className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
-                isHomePage && !isScrolled
-                  ? "text-white hover:text-red-300"
-                  : "text-gray-900 hover:text-red-800"
-              }`}
-              onClick={(e) => handleNavClick(e, "why-learn-robotics")}
-            >
-              Why Robotics
-            </Link>
-            <Link
-              href="#what-we-offer"
-              className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
-                isHomePage && !isScrolled
-                  ? "text-white hover:text-red-300"
-                  : "text-gray-900 hover:text-red-800"
-              }`}
-              onClick={(e) => handleNavClick(e, "what-we-offer")}
-            >
-              We Offer
-            </Link>
-            <Link
-              href="#vision-mission"
-              className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
-                isHomePage && !isScrolled
-                  ? "text-white hover:text-red-300"
-                  : "text-gray-900 hover:text-red-800"
-              }`}
-              onClick={(e) => handleNavClick(e, "vision-mission")}
-            >
-              Our Vision
-            </Link>
-            <Link
-              href="#gallery"
-              className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
-                isHomePage && !isScrolled
-                  ? "text-white hover:text-red-300"
-                  : "text-gray-900 hover:text-red-800"
-              }`}
-              onClick={(e) => handleNavClick(e, "gallery")}
-            >
-              Photo Hub
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
+                  activeSection === item.id
+                    ? "text-red-800 font-semibold"
+                    : isHomePage && !isScrolled
+                      ? "text-white hover:text-red-300"
+                      : "text-gray-900 hover:text-red-800"
+                }`}
+                onClick={(e) => handleNavClick(e, item.id)}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Desktop CTA buttons */}
-          <div className="hidden md:flex items-center gap-4 absolute lg:right-2 md:right-4 xl:right-2 max-md: 2xl:right-14 top-1/2 -translate-y-1/2">
+          {/* Desktop CTA buttons and menu */}
+          <div className="hidden lg:flex items-center gap-4 absolute top-4 right-4">
             <Link href="/login">
               <Button
                 size="sm"
-                className={`border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in ${
-                  isHomePage && !isScrolled
-                    ? "border-white text-white hover:bg-white hover:text-[#b92423]"
-                    : "border-[#b92423] text-[#b92423] hover:bg-[#b92423] hover:text-white"
-                }`}
+                className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#b92423]"
               >
                 Login
               </Button>
@@ -299,32 +350,41 @@ export default function Header() {
                   ease: "easeInOut",
                   delay: 0.1,
                 }}
-                className="mr-10"
               >
                 <Button
                   size="sm"
-                  className="bg-[#b92423] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
+                  className="bg-[#ab2623] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
                 >
                   Enquire Now
                 </Button>
               </motion.div>
             </Link>
+            {/* Menu button next to Enquire button */}
+            <div className="p-1 rounded-md bg-red-800 text-white">
+              <HamburgerButton
+                isOpen={isMenuOpen}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              />
+            </div>
+          </div>
+
+          {/* Mobile menu button - visible on mobile only */}
+          <div className="lg:hidden absolute top-4 right-4 z-50">
+            <div className="p-1 rounded-md bg-red-800 text-white">
+              <HamburgerButton
+                isOpen={isMenuOpen}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              />
+            </div>
           </div>
         </div>
       </header>
-
-      {/* Button is positioned absolutely to stay on top */}
-      <div className="fixed top-4 right-4 sm:right md:right-10 lg:right-4 xl:right-6  2xl:right-7 z-50    ">
-        <AnimatedHamburgerButton
-          isOpen={isMenuOpen}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        />
-      </div>
 
       <OverlayMenu
         isOpen={isMenuOpen}
         setIsOpen={setIsMenuOpen}
         scrollToSection={scrollToSection}
+        activeSection={activeSection}
       />
     </div>
   );

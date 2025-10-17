@@ -98,7 +98,7 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [addVariablesForColors, require("tailwindcss-animate")],
+  plugins: [addVariablesForColors, require("tailwindcss-animate"),require('lightswind/plugin')],
 };
 
 export default config;

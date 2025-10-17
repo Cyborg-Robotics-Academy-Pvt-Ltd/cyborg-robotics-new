@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add global overflow handling to prevent content overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 @layer components {
   .gradient-text {
     background: linear-gradient(to right, #821D1D, #B91C1C, #DC2626);
@@ -104,6 +110,18 @@ html, body {
   font-family: var(--font-poppins), sans-serif;
 }
 
+/* Custom text selection colors */
+::selection {
+  background-color: #AC2E31; /* Red background for selected text */
+  color: white; /* White text for better contrast */
+}
+
+/* For Firefox */
+::-moz-selection {
+  background-color: #AC2E31;
+  color: white;
+}
+
 /* Loading spinner styles */
 .loader {
   display: inline-block;
@@ -160,7 +178,7 @@ html, body {
 }
 
 .scroll-offset {
-  scroll-margin-top: 64px;
+  scroll-margin-top: 80px;
 }
 
 .animated-underline {

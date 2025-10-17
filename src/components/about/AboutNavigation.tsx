@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Button } from "../ui/button";
-import AnimatedHamburgerButton from "../layout/animated-hamburger-button";
+import HamburgerButton from "../layout/hamburger-button";
 import OverlayMenu from "../layout/overlay-menu";
 
 interface AboutNavigationProps {
@@ -15,16 +14,16 @@ interface AboutNavigationProps {
 const aboutNavItems = [
   { id: "hero", label: "About Us" },
   { id: "story", label: "Our Story" },
-  { id: "founders", label: "Meet Founders" },
+  { id: "founders", label: "Meet Our Founders" },
   { id: "team", label: "Our Team" },
   { id: "global-reach", label: "Global Reach" },
 ];
 
 export default function AboutNavigation({
-  activeSection,
+  activeSection: propActiveSection,
 }: AboutNavigationProps) {
   const [currentActiveSection, setCurrentActiveSection] = useState(
-    activeSection || "hero"
+    propActiveSection || "hero"
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -115,7 +114,7 @@ export default function AboutNavigation({
               onClick={() => scrollToSection(item.id)}
               className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-md ${
                 currentActiveSection === item.id
-                  ? "text-white bg-[#b92423] font-semibold rounded-xl"
+                  ? "text-white bg-red-800 font-semibold rounded-xl"
                   : "text-gray-700 hover:text-[#b92423] hover:bg-red-50 rounded-xl"
               }`}
             >
@@ -137,56 +136,22 @@ export default function AboutNavigation({
           ))}
         </nav>
 
-        {/* Desktop CTA buttons */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link href="/">
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-2 border-[#b92423] text-[#b92423] hover:bg-[#b92423] hover:text-white font-semibold rounded-[7px] transition-all duration-200"
-            >
-              Back to Home
-            </Button>
-          </Link>
-          <Link href="/contact-us">
-            <motion.div
-              initial={{ y: 0 }}
-              animate={{ y: [0, -3, 0, -3, 0] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatType: "loop",
-                ease: "easeInOut",
-              }}
-            >
-              <Button
-                size="sm"
-                className="bg-[#b92423] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg"
-              >
-                Contact Us
-              </Button>
-            </motion.div>
-          </Link>
+        {/* Hamburger menu button - visible on all screens now */}
+        <div className="p-1 rounded-md bg-red-800 text-white">
+          <HamburgerButton
+            isOpen={isMenuOpen}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          />
         </div>
-
-        {/* Mobile Navigation - Hamburger menu only */}
-        <div className="lg:hidden">{/* Empty space to maintain layout */}</div>
       </div>
 
-      {/* Mobile Hamburger Button */}
-      <div className="fixed top-4 right-4 z-50 lg:hidden">
-        <AnimatedHamburgerButton
-          isOpen={isMenuOpen}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        />
-      </div>
-
-      {/* Overlay Menu for Mobile */}
+      {/* Overlay Menu */}
       <OverlayMenu
         isOpen={isMenuOpen}
         setIsOpen={setIsMenuOpen}
         activeSection={currentActiveSection}
         scrollToSection={scrollToSection}
+        // Removed showAboutNavigation prop to use standard navigation overlay
       />
     </header>
   );

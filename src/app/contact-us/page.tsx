@@ -128,7 +128,7 @@ const Page = () => {
       >
         {/* Hero Section */}
         <div
-          className={`relative overflow-hidden bg-[#8D0F11] text-white py-1 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-in-out ${animateIn ? "opacity-100" : "opacity-0"}`}
+          className={`relative overflow-hidden bg-[#8D0F11] mt-16 text-white py-1 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-in-out ${animateIn ? "opacity-100" : "opacity-0"}`}
         >
           <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center leading-tight mb-2">
