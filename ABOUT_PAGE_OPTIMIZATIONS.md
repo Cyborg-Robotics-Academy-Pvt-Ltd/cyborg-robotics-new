@@ -106,7 +106,6 @@ The About page was experiencing slow loading times due to multiple performance b
 ## Testing Recommendations
 
 1. **Performance Testing**:
-
    - Test on slow 3G network
    - Measure First Contentful Paint (FCP)
    - Check Largest Contentful Paint (LCP)
@@ -120,7 +119,6 @@ The About page was experiencing slow loading times due to multiple performance b
 ## Next Steps (Optional)
 
 1. **Further Optimization**:
-
    - Implement image preloading for critical images
    - Add service worker for caching
    - Consider using next/dynamic for more granular code splitting

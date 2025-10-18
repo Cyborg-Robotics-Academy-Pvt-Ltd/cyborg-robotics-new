@@ -161,7 +161,7 @@ export const AnimatedTestimonials = ({
       </div>
       {/* Button Section */}
       <div className="hidden md:block text-start ">
-  <Link href="/about-us">
+        <Link href="/about-us">
           <button className="relative group border-none bg-transparent p-0 outline-none cursor-pointer font-light uppercase text-base">
             <span className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 rounded-xl transform translate-y-0.5 transition duration-400 ease-\[cubic-bezier\(0.3,0.7,0.4,1\)\] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
 
