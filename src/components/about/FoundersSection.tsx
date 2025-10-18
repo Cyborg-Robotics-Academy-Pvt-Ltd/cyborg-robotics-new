@@ -9,7 +9,7 @@ import {
   foundersData,
   getSkillColorClasses,
 } from "../../../utils/foundersData";
-import { Linkedin, Sparkles, Award } from "lucide-react";
+import { Linkedin, Sparkles, Award, Crown } from "lucide-react";
 
 export default function FoundersSection() {
   const [sectionRef, inView] = useInView({
@@ -21,15 +21,8 @@ export default function FoundersSection() {
   return (
     <section
       ref={sectionRef}
-      className="w-full mx-auto relative overflow-hidden bg-white to-gray-50 sm:py-6"
+      className="w-full mx-auto relative overflow-hidden bg-white to-gray-50 sm:py-3"
     >
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
-
       {/* Header with enhanced animation */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -53,24 +46,23 @@ export default function FoundersSection() {
 
         <h2 className="text-2xl sm:text-3xl md:text-xl lg:text-5xl font-bold text-gray-900 mb-4">
           Meet the{" "}
-          <span className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
-            Visionaries
+          <span className="bg-gradient-to-r from-[#b92423] via-[#9d2723] to-[#7f2823] bg-clip-text text-transparent">
+            Founders
           </span>
         </h2>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-12 h-1 bg-gradient-to-r from-transparent to-red-600 rounded-full"></div>
-          <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
-          <div className="w-12 h-1 bg-gradient-to-r from-red-800 to-transparent rounded-full"></div>
+          <div className="w-12 h-1 bg-gradient-to-r from-transparent to-[#b92423] rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#b92423] to-[#9d2723] rounded-full"></div>
+          <div className="w-12 h-1 bg-gradient-to-r from-[#9d2723] to-transparent rounded-full"></div>
         </div>
         {/* Improved paragraph with better line height and alignment */}
-        <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg mt-6 leading-relaxed text-left">
-          The visionary leaders behind Cyborg Robotics Academy, driving
-          innovation and excellence in robotics education
+        <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base mt-4 leading-relaxed text-center">
+          Visionary leaders driving innovation in robotics education
         </p>
       </motion.div>
 
       {/* Grid layout for founders */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0 max-w-[1450px] mx-auto">
         {foundersData.map((founder, index) => {
           const isFounder = founder.id === "shikha";
 
@@ -82,36 +74,57 @@ export default function FoundersSection() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.15 * (index + 1) }}
             >
-              <div className="relative  shadow-lg rounded-3xl p-4 sm:p-6 transition-all duration-500 hover:shadow-xl">
-                <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
-                  {/* Image Section - Left */}
+              {/* Enhanced card with gradient background and improved shadow */}
+              <div
+                className="relative bg-white shadow-sm rounded-3xl p-5 sm:p-6 transition-all duration-500 hover:shadow-xl border border-gray-100"
+                style={{ boxShadow: "0 10px 30px rgba(37,46,67,0.15)" }}
+              >
+                <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-7">
+                  {/* Image Section - Left with enhanced styling */}
                   <div className="flex-shrink-0 w-full sm:w-2/5">
-                    <div className="relative w-full bg-transparent pb-[125%] rounded-2xl overflow-hidden border-4 border-none ">
-                      <Image
-                        src={founder.image}
-                        alt={founder.name}
-                        fill
-                        className="object-cover"
-                        loading="lazy"
-                        sizes="(max-width: 740px) 100vw, (max-width: 868px) 50vw, 33vw"
-                        quality={100}
-                      />
+                    <div className="relative w-full pb-[125%] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                      {/* Gradient border container */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#b94243] via-[#ab2623] to-[#9d0272] p-1">
+                        <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+                          <Image
+                            src={founder.image}
+                            alt={founder.name}
+                            fill
+                            className="object-cover rounded-xl"
+                            loading="lazy"
+                            sizes="(max-width: 740px) 100vw, (max-width: 868px) 50vw, 33vw"
+                            quality={100}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Soft glow effect on hover */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     </div>
                   </div>
 
-                  {/* Content Section - Right */}
-                  <div className="flex-1 text-center sm:text-left w-full sm:w-3/5 space-y-3">
+                  {/* Content Section - Right with improved spacing and typography */}
+                  <div className="flex-1 text-center sm:text-left w-full sm:w-3/5 space-y-4">
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={inView ? { opacity: 1, x: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.2 * (index + 1) }}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      {/* Name and tagline section */}
+                      <div className="mb-3">
+                        <h3 className="text-xl sm:text-2xl font-bold text-[#252e43] mb-1">
                           {founder.name}
                         </h3>
+                        {/* Tagline under name */}
+                        <p className="text-sm text-[#252e43]/70 italic mb-3">
+                          {isFounder
+                            ? "Visionary Leader | STEM Education Pioneer"
+                            : "Strategic Leader | STEM Education Advocate"}
+                        </p>
+                      </div>
 
-                        {/* Role badge */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                        {/* Enhanced role badge with brand palette */}
                         <motion.div
                           initial={{ scale: 0, rotate: -180 }}
                           animate={inView ? { scale: 1, rotate: 0 } : {}}
@@ -119,58 +132,35 @@ export default function FoundersSection() {
                             duration: 0.6,
                             delay: 0.3 * (index + 1),
                           }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-600 via-red-700 to-red-800 rounded-full shadow-lg`}
+                          className={`flex items-center gap-1.5 w-32 px-3 py-1.5 bg-gradient-to-r from-[#b92423] via-[#9d2723] to-[#7f2823] rounded-full shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105`}
                         >
-                          <Award className="w-3.5 h-3.5 text-white" />
+                          {isFounder ? (
+                            <Crown className="w-3.5 h-3.5 text-white" />
+                          ) : (
+                            <Award className="w-3.5 h-3.5 text-white" />
+                          )}
                           <span className="text-xs font-bold text-white">
                             {isFounder ? "FOUNDER" : "CO-FOUNDER"}
                           </span>
                         </motion.div>
-                      </div>
 
-                      <div
-                        className={`inline-block px-3 py-1.5 bg-gradient-to-r ${isFounder ? "from-red-50 to-red-100" : "from-blue-50 to-blue-100"} rounded-full border ${isFounder ? "border-[#a63534]" : "border-blue-200"} mb-2`}
-                      >
-                        <p
-                          className={`${isFounder ? "text-red-700" : "text-blue-700"} font-semibold text-sm`}
+                        {/* Title badge with improved styling */}
+                        <div
+                          className={`inline-block px-3 py-1.5 bg-[#252e43] rounded-full border border-[#252e43]/20`}
                         >
-                          {founder.title}
-                        </p>
+                          <p
+                            className={`text-[#e0e3eb] font-semibold text-sm w-40 mx-auto text-center`}
+                          >
+                            {founder.title}
+                          </p>
+                        </div>
                       </div>
                     </motion.div>
 
-                    {/* Skills badges */}
+                    {/* Enhanced description with better readability */}
                     <motion.div
-                      className="flex flex-wrap justify-center sm:justify-start gap-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={inView ? { opacity: 1, y: 0 } : {}}
-                      transition={{ duration: 0.5, delay: 0.3 * (index + 1) }}
-                    >
-                      {founder.skills.map((skill, skillIndex) => (
-                        <motion.span
-                          key={skillIndex}
-                          className={`px-3 py-1.5 ${getSkillColorClasses(skill.color)} rounded-full text-xs font-semibold shadow-sm transition-all duration-300 cursor-default relative overflow-hidden group/skill`}
-                          whileHover={{ scale: 1.05, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={inView ? { opacity: 1, scale: 1 } : {}}
-                          transition={{
-                            duration: 0.3,
-                            delay: 0.1 * skillIndex,
-                            type: "spring",
-                            stiffness: 300,
-                          }}
-                        >
-                          <span className="relative z-10">{skill.label}</span>
-                          <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover/skill:scale-x-100 transition-transform duration-300 origin-left"></div>
-                        </motion.span>
-                      ))}
-                    </motion.div>
-
-                    {/* Description */}
-                    <motion.div
-                      className="text-gray-600 leading-relaxed text-sm"
-                      style={{ textAlign: "left" }}
+                      className="text-[#252e43] leading-relaxed text-sm max-w-prose bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl relative border border-gray-100"
+                      style={{ textAlign: "left", lineHeight: "1.6" }}
                       initial={{ opacity: 0, y: 10 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{
@@ -178,18 +168,20 @@ export default function FoundersSection() {
                         delay: 0.35 * (index + 1),
                       }}
                     >
-                      {founder.description}
+                      <span className="relative z-10">
+                        {founder.description}
+                      </span>
                     </motion.div>
 
                     <motion.div
-                      className="flex justify-center sm:justify-start pt-1"
+                      className="flex justify-center sm:justify-start pt-2"
                       initial={{ opacity: 0, y: 10 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.4 * (index + 1) }}
                     >
                       <Button
                         asChild
-                        className={`bg-gradient-to-r ${isFounder ? " from-red-600 via-red-700 to-red-800" : "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"} text-white px-4 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg text-sm font-semibold group/btn relative overflow-hidden`}
+                        className={`bg-gradient-to-r from-[#b92423] to-[#ab2623] hover:from-[#ab2623] hover:to-[#9d2723] text-white px-4 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg text-sm font-semibold group/btn relative overflow-hidden`}
                       >
                         <Link href={founder.linkedinUrl} target="_blank">
                           <div className="relative z-10 flex items-center gap-1.5">

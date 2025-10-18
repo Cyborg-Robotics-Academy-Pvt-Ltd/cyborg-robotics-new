@@ -16,7 +16,7 @@ const aboutNavItems = [
   { id: "story", label: "Our Story" },
   { id: "founders", label: "Meet Our Founders" },
   { id: "team", label: "Our Team" },
-  { id: "global-reach", label: "Global Reach" },
+  { id: "awards", label: "Awards" },
 ];
 
 export default function AboutNavigation({
@@ -93,7 +93,7 @@ export default function AboutNavigation({
 
   return (
     <header className="fixed top-0 left-0 right-0 transition-all duration-300 bg-white shadow-lg border-b border-gray-200 z-50">
-      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-1 lg:px-1 ">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -107,31 +107,18 @@ export default function AboutNavigation({
         </Link>
 
         {/* Desktop Navigation - About specific sections */}
-        <nav className="hidden lg:flex gap-6 items-center justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <nav className="hidden lg:flex gap-6 items-center    sm:hidden md:hidden justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {aboutNavItems.map((item) => (
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-md ${
+              className={`relative px-2 py-3 text-sm font-medium transition-colors duration-200 rounded-md ${
                 currentActiveSection === item.id
                   ? "text-white bg-red-800 font-semibold rounded-xl"
                   : "text-gray-700 hover:text-[#b92423] hover:bg-red-50 rounded-xl"
               }`}
             >
               {item.label}
-              {/* Active indicator */}
-              {currentActiveSection === item.id && (
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
-                  layoutId="activeIndicator"
-                  initial={false}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                  }}
-                />
-              )}
             </button>
           ))}
         </nav>

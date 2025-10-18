@@ -51,7 +51,7 @@ export default function HeroSection() {
         >
           <blockquote className="text-sm sm:text-base italic text-gray-700 border-l-4 border-red-600 pl-4 mx-4">
             &quot;The best way to predict the future is to create it. We believe
-            every child has the potential to be an innovator, and our mission is
+            every child has the potential to be an innovator and our mission is
             to unlock that potential through practical, engaging learning
             experiences.&quot;
           </blockquote>

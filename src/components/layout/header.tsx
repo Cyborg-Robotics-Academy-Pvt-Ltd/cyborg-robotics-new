@@ -77,7 +77,7 @@ export default function Header() {
   useEffect(() => {
     if (!isAboutPage) return;
 
-    const sections = ["hero", "story", "founders", "team", "global-reach"];
+    const sections = ["hero", "story", "founders", "team", "awards"];
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;

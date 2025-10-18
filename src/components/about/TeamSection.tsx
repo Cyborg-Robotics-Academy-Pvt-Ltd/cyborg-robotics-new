@@ -29,64 +29,63 @@ const teamMembers: TeamMember[] = [
   {
     id: "Pratima",
     name: "Ms. Pratima Thakur",
-    title: "Project Manager ",
+    title: "Project Manager",
     department:
-      "Space Scientist | Architect of India's Liquid Propulsion Program | Technology & Innovation Leader",
+      "Project Leadership | Space Science & Technology | Innovation and Strategic Planning",
     image: "assets/team/pratima.png",
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
   },
   {
     id: "Omkar",
     name: "Mr. Omkar Shinde",
-    title: "Head of  Programming Instructor",
+    title: "Head of Programming Instructor",
     department:
-      "STEM Education | Robotics Curriculum Development | Coding & Innovation Mentor",
+      "STEM Education | Robotics & Programming Curriculum Design | Coding & Innovation Training",
     image: "assets/team/omkar.png",
     linkedin: "https://www.linkedin.com/in/omkarshinde711/",
   },
-
   {
     id: "Shrikant",
     name: "Mr. Shrikant Gaikwad",
     title: "Full Stack Web Developer",
     department:
-      "Web Development & System Architecture | Defence Research & Technology | Full Stack Solutions, UI/UX, APIs, DevOps",
+      "Web Development | System Architecture | UI/UX Design | API & DevOps Integration",
     image: "assets/team/shrikant.png",
     linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
   },
-
   {
     id: "Sirjana",
-    name: "Ms. Sirjana Vishwakrma ",
-    title: "Head Of Trainer  ",
+    name: "Ms. Sirjana Vishwakrma",
+    title: "Head of Trainer",
     department:
-      "Retired Joint Director, Ministry of Defence | Expert in Armament Technology, Product Innovation & Scientific Research",
+      "Training & Development | Educational Leadership | Robotics & Scientific Research Mentorship",
     image: "assets/team/sirjana.png",
     linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
   },
   {
     id: "Nikita",
     name: "Ms. Nikita Mangale",
-    title: "Rtd. Senior Scientist, DRDO ",
-    department: "Retired Senior Scientist, DRDO ",
+    title: "Robotics Trainer",
+    department:
+      "Robotics Education | STEM Facilitation | Hands-on Learning & Innovation Programs",
     image: "assets/team/nikita.png",
     linkedin: "https://www.linkedin.com/in/nikita-mangle-drdo/",
   },
   {
     id: "Nilesh",
     name: "Mr. Nilesh Jaiswar",
-    title: "Rtd. Senior Scientist, DRDO ",
+    title: "3D Department R&D",
     department:
-      "Retired Senior Scientist, DRDO | Ex-Chairman, Institute of Defence Scientists and Technologists",
+      "3D Modeling & Research | Product Design | Robotics Prototyping & Innovation",
     image: "assets/team/nilesh.png",
     linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
     id: "Anchal",
-    name: "Ms. Anchal Mishra ",
-    title: "Head Of 3d department ",
+    name: "Ms. Anchal Mishra",
+    title: "Head of 3D Department",
     department:
-      "Retired Joint Director, Ministry of Defence | Expert in Armament Technology, Product Innovation & Scientific Research",
+      "3D Visualization & Design | R&D Leadership | Product Innovation & Educational Technology",
     image: "assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },

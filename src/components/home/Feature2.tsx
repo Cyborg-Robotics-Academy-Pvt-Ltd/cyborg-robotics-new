@@ -9,35 +9,31 @@ const Feature2: React.FC = React.memo(() => {
     () => [
       {
         title: "Creative Learning",
-        quote:
-          "Exploring robotics has been a journey of creativity and innovation. It merges imagination with technology, bringing ideas to life through hands-on projects and engineering thinking.",
+        quote: "Hands-on projects that turn ideas into working creations.",
         icon: Lightbulb,
-        glowColor: "#8D0F11", // Brand color for glowing effect
+        glowColor: "#8D0F11",
         backgroundImage: "/assets/whoarewe/creative.jpg",
       },
       {
         title: "Simplified Education",
-        quote:
-          "Robotics education has never been this simple and engaging. The structured teaching approach makes complex ideas easy to grasp and enjoyable to learn step by step.",
+        quote: "Clear, step-by-step lessons that make robotics accessible.",
         icon: BookOpen,
-        glowColor: "#8D0F11", // Brand color for glowing effect
+        glowColor: "#8D0F11",
         backgroundImage: "/assets/whoarewe/simplifiededucation.jpg",
       },
       {
         title: "Latest Technology",
-        quote:
-          "Learning robotics connects you with cutting-edge tools — from AI-driven automation to modern programming — giving real-world technological experience and confidence.",
+        quote: "Practical experience with modern tools like AI and automation.",
         icon: Cpu,
-        glowColor: "#8D0F11", // Brand color for glowing effect
-        backgroundImage: "",
+        glowColor: "#8D0F11",
+        backgroundImage: "/assets/whoarewe/latesttechnology.jpg",
       },
       {
         title: "Futuristic Vision",
-        quote:
-          "Robotics opens doors to a world where intelligent machines collaborate with humans. It empowers learners to lead in tomorrow's AI-powered industries.",
+        quote: "Preparing learners for AI-driven industries of the future.",
         icon: Eye,
-        glowColor: "#8D0F11", // Brand color for glowing effect
-        backgroundImage: "/assets/futuristic.png",
+        glowColor: "#8D0F11",
+        backgroundImage: "/assets/whoarewe/futuristicvision.jpg",
       },
     ],
     []
@@ -71,7 +67,7 @@ const Feature2: React.FC = React.memo(() => {
           </div>
 
           <h1 className="font-extrabold text-2xl sm:text-3xl md:text-4xl">
-            Why <span className="text-[#8D0F11]">Learn Robotics?</span>
+            Why <span className="gradient-text">Learn Robotics?</span>
           </h1>
 
           <div className="flex items-center justify-center gap-1 my-3">
@@ -102,7 +98,7 @@ const Feature2: React.FC = React.memo(() => {
               <GlowingCard
                 key={index}
                 glowColor={t.glowColor}
-                className="flex flex-col items-center text-center p-6 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group relative overflow-hidden"
+                className="flex flex-col items-center text-center p-6 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group relative overflow-hidden"
               >
                 {/* Background image - shown with animation only on hover */}
                 <div
@@ -126,7 +122,7 @@ const Feature2: React.FC = React.memo(() => {
                     </div>
                   </div>
 
-                  <h2 className="font-bold text-xl text-gray-800 dark:text-white mb-3 group-hover:text-[#8D0F11] transition-colors duration-300">
+                  <h2 className="font-bold gradient-text text-2xl lg:text-xl  mb-3 group-hover:text-[#8D0F11] transition-colors duration-300">
                     {t.title}
                   </h2>
 
@@ -137,7 +133,7 @@ const Feature2: React.FC = React.memo(() => {
                     }}
                   ></div>
 
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center text-sm">
+                  <p className="text-gray-600  leading-relaxed text-center text-sm">
                     {t.quote}
                   </p>
                 </div>

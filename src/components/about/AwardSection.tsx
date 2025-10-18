@@ -19,7 +19,7 @@ const AwardSection = () => {
     { loop: true, align: "center", slidesToScroll: 1 },
     [
       Autoplay({
-        delay: 2000,
+        delay: 3000, // Changed to 3 seconds as per specification
         stopOnInteraction: false,
         stopOnMouseEnter: true,
       }),
@@ -36,53 +36,38 @@ const AwardSection = () => {
   const awards: Award[] = [
     {
       id: 1,
-      title: "Best Educational Robotics Program",
-      image: "/assets/image.png",
+      title: "World STEM & Robotics Olympiad, National (WSRO) 2025",
+      image: "/assets/awards/WSRO_National.png",
     },
     {
       id: 2,
-      title: "Excellence in AI Education",
-      image: "/assets/image.png",
+      title: "Robotex India National Championship 2025",
+      image: "/assets/awards/Robotex.png",
     },
     {
       id: 3,
-      title: "Community Impact Award",
-      image: "/assets/image.png",
+      title: "World STEM & Robotics Olympiad, Regional 2025 (WSRO)",
+      image: "/assets/awards/WSRO_Regional.png",
     },
     {
       id: 4,
-      title: "Innovative STEM Learning",
-      image: "/assets/image.png",
-    },
-    {
-      id: 5,
-      title: "Innovative STEM Learning",
-      image: "/assets/image.png",
-    },
-    {
-      id: 6,
-      title: "Innovative STEM Learning",
-      image: "/assets/image.png",
-    },
-    {
-      id: 7,
-      title: "Innovative STEM Learning",
-      image: "/assets/image.png",
+      title: "Indian Robotics Olympiad (IRO) 2024",
+      image: "/assets/awards/IRO.png",
     },
   ];
 
   return (
-    <section className="py-2 sm:py-16 md:py-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-12 sm:py-16 md:py-1 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-12 sm:mb-1"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 bg-[#BF2121]/10 text-[#BF2121] px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 bg-[#BF2121]/10 text-[#BF2121] px-4 py-2 rounded-full text-sm font-medium mb-1">
             <Trophy size={16} />
             Recognition & Awards
           </div>
@@ -126,15 +111,15 @@ const AwardSection = () => {
                 key={award.id}
                 className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] flex flex-col items-center justify-center p-4"
               >
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 flex items-center justify-center">
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-44  flex items-center justify-center">
                   <Image
                     src={award.image}
                     alt={award.title}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-2"
                   />
                 </div>
-                <h3 className="text-lg text-gray-900 mt-4 font-medium text-center">
+                <h3 className="text-lg text-gray-900 mt-4 font-medium text-center px-2">
                   {award.title}
                 </h3>
               </div>
