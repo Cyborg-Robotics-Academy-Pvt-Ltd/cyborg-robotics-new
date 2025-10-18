@@ -8,7 +8,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "../../../lib/firebase";
 import { useAuth } from "../../../lib/auth-context";
 import {
   PieChart,
@@ -40,8 +40,6 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
-// import ExcelJS from "exceljs";
-// import { saveAs } from "file-saver";
 
 // Task type
 interface Task {
@@ -297,47 +295,6 @@ const Page = ({
       dbType: typeof db,
     });
   }, []);
-
-  // Auto-complete logic: mark course as completed if assignedClasses === completedTasks.length
-  useEffect(() => {
-    if (!student || !student.courses) return;
-    const assignedNum = Number(assignedClasses);
-    if (assignedNum > 0 && completedTasks.length === assignedNum) {
-      const courseIdx = student.courses.findIndex((c) => {
-        if (!c.name) return false;
-
-        // Extract course name and level from URL
-        const { courseName: currentCourseName, level: currentLevel } =
-          extractCourseAndLevel(courseName);
-
-        // Compare course names and levels
-        const courseNameMatches =
-          c.name.toLowerCase().trim() ===
-          currentCourseName.toLowerCase().trim();
-        const levelMatches = c.level === currentLevel;
-
-        return courseNameMatches && levelMatches;
-      });
-
-      if (courseIdx !== -1 && !student.courses[courseIdx].completed) {
-        // Update Firestore and local state
-        const updatedCourses = student.courses.map((course, idx) => {
-          if (idx === courseIdx) {
-            return {
-              ...course,
-              completed: true,
-            };
-          }
-          return course;
-        });
-        const studentRef = doc(db, "students", student.id);
-        updateDoc(studentRef, { courses: updatedCourses });
-        setIsCourseCompleted(true);
-        // Optionally update student state if needed
-        setStudent({ ...student, courses: updatedCourses });
-      }
-    }
-  }, [assignedClasses, student, resolvedParams?.sub, completedTasks.length]);
 
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
 
@@ -755,7 +712,54 @@ const Page = ({
       }
     };
     fetchStudent();
-  }, [resolvedParams, resolvedParams?.sub, completedTasks.length]);
+  }, [resolvedParams, courseName]);
+
+  // Auto-complete logic: mark course as completed if assignedClasses === completedTasks.length
+  useEffect(() => {
+    if (!student || !student.courses) return;
+    const assignedNum = Number(assignedClasses);
+    if (assignedNum > 0 && completedTasks.length === assignedNum) {
+      const courseIdx = student.courses.findIndex((c) => {
+        if (!c.name) return false;
+
+        // Extract course name and level from URL
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        // Compare course names and levels
+        const courseNameMatches =
+          c.name.toLowerCase().trim() ===
+          currentCourseName.toLowerCase().trim();
+        const levelMatches = c.level === currentLevel;
+
+        return courseNameMatches && levelMatches;
+      });
+
+      if (courseIdx !== -1 && !student.courses[courseIdx].completed) {
+        // Update Firestore and local state
+        const updatedCourses = student.courses.map((course, idx) => {
+          if (idx === courseIdx) {
+            return {
+              ...course,
+              completed: true,
+            };
+          }
+          return course;
+        });
+        const studentRef = doc(db, "students", student.id);
+        updateDoc(studentRef, { courses: updatedCourses });
+        setIsCourseCompleted(true);
+        // Optionally update student state if needed
+        setStudent({ ...student, courses: updatedCourses });
+      }
+    }
+  }, [
+    assignedClasses,
+    completedTasks.length,
+    student,
+    courseName,
+    setIsCourseCompleted,
+  ]);
 
   const remainingClasses = Math.max(
     0,
@@ -1257,14 +1261,12 @@ const Page = ({
                               innerRadius={60}
                               fill="#8884d8"
                               dataKey="value"
-                              label={(props) => {
-                                // Safely extract name and percent from props
-                                const name = props.name as string;
-                                const percent =
-                                  typeof props.percent === "number"
-                                    ? props.percent
-                                    : 0;
-                                return `${name}: ${(percent * 100).toFixed(0)}%`;
+                              label={({ name, percent }) => {
+                                const p =
+                                  typeof percent === "number"
+                                    ? percent
+                                    : Number(percent || 0);
+                                return `${name}: ${(p * 100).toFixed(0)}%`;
                               }}
                               paddingAngle={5}
                             >

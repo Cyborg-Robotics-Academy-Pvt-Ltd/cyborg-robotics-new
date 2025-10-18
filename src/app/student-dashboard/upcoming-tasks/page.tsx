@@ -1,7 +1,7 @@
 "use client";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
+import { db } from "../../../lib/firebase";
 import { getAuth } from "firebase/auth";
 import {
   Table,
@@ -12,7 +12,6 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
 
 // Define a type for the task
 type Task = {
@@ -20,17 +19,6 @@ type Task = {
   task: string; // New property for task description
   dateTime: string; // New property for date and time
   status: string; // New property for task status
-};
-
-// Define a type for the student data
-type StudentData = {
-  email: string;
-  tasks: Task[];
-  // Instead of using [key: string]: any, let's define specific properties we might need
-  id?: string;
-  name?: string;
-  createdAt?: string;
-  // Add other specific properties as needed, but avoid the any type
 };
 
 const Page = () => {
@@ -43,12 +31,11 @@ const Page = () => {
   const q = loginEmail
     ? query(studentsRef, where("email", "==", loginEmail))
     : null; // Check if loginEmail is defined
-  const router = useRouter();
 
   useEffect(() => {
     if (!user) {
       // Redirect to login page if user is not logged in
-      router.push("/login"); // Adjust the path as necessary
+      window.location.href = "/login"; // Adjust the path as necessary
     }
 
     const fetchStudents = async () => {
@@ -56,14 +43,14 @@ const Page = () => {
       const querySnapshot = await getDocs(q); // Await the promise
       const allTasks: Task[] = []; // Step 2: Array to hold all tasks with type
       querySnapshot.forEach((doc) => {
-        const studentData = doc.data() as StudentData;
+        const studentData = doc.data();
         allTasks.push(...studentData.tasks); // Collect tasks
       });
       setTasks(allTasks); // Update state with tasks
     };
 
     fetchStudents(); // Call the async function
-  }, [q, user, router]); // Dependency array to re-run effect if 'q', 'user', or 'router' changes
+  }, [q, user]); // Dependency array to re-run effect if 'q' or 'user' changes
 
   return (
     <>

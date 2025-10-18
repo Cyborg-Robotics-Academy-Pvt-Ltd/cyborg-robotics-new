@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ClipboardList, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
 const StudentDashboard = () => {
   const router = useRouter();
@@ -70,27 +71,7 @@ const StudentDashboard = () => {
   }, [user, userRole, authLoading, router]);
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Show skeleton content instead of spinner */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse space-y-6">
-            {/* Header skeleton */}
-            <div className="h-12 bg-gray-200 rounded-lg w-1/3"></div>
-
-            {/* Stats cards skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
-
-            {/* Content area skeleton */}
-            <div className="h-96 bg-gray-200 rounded-lg"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AuthLoadingSpinner />;
   }
 
   // Show error if PRN doesn't match
