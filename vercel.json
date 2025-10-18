@@ -11,60 +11,7 @@
   ],
   "routes": [
     {
-      "src": "/about",
-      "dest": "/about"
-    },
-    {
-      "src": "/contact-us",
-      "dest": "/contact-us"
-    },
-    {
-      "src": "/events",
-      "dest": "/events"
-    },
-    {
-      "src": "/gallery",
-      "dest": "/gallery"
-    },
-    {
-      "src": "/login",
-      "dest": "/login"
-    },
-    {
-      "src": "/privacy-policy",
-      "dest": "/privacy-policy"
-    },
-    {
-      "src": "/terms-conditions",
-      "dest": "/terms-conditions"
-    },
-    {
-      "src": "/blogs",
-      "dest": "/blogs"
-    },
-    {
-      "src": "/student-list",
-      "dest": "/student-list"
-    },
-    {
-      "src": "/admin-dashboard",
-      "dest": "/admin-dashboard"
-    },
-    {
-      "src": "/trainer-dashboard",
-      "dest": "/trainer-dashboard"
-    },
-    {
-      "src": "/student-dashboard",
-      "dest": "/student-dashboard"
-    },
-    {
-      "src": "/create-user",
-      "dest": "/create-user"
-    },
-    {
-      "src": "/media",
-      "dest": "/media"
+      "handle": "filesystem"
     }
   ]
 }
