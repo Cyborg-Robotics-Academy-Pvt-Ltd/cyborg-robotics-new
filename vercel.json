@@ -11,6 +11,10 @@
   ],
   "routes": [
     {
+      "src": "^/about$",
+      "dest": "/api/about"
+    },
+    {
       "handle": "filesystem"
     }
   ]
