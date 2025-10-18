@@ -1,6 +1,6 @@
 export const menuItems = [
   { href: "/", label: "HOME" },
-  { href: "/about", label: "ABOUT" },
+  { href: "/about-us", label: "ABOUT" },
   {
     label: "ONLINE COURSE",
     subItems: [

@@ -12,7 +12,7 @@ const whatWeOfferItems = [
       "Our Vision is to be a leading global academy, influencing the future of robotics for kids.",
     icon: FaEye,
     glowColor: "#a63534", // rich, warm reddish-brown
-    link: "/about#story", // Add link property for Our Vision card
+  link: "/about-us#story", // Add link property for Our Vision card
   },
   {
     title: "About Us",
@@ -20,7 +20,7 @@ const whatWeOfferItems = [
       "Cyborg Robotics Academy Private Limited is one of the leading Robotics Academy in Pune offering various technical courses all under one roof.",
     icon: FaUsers,
     glowColor: "#313a49", // deep desaturated blue-gray
-    link: "/about", // Add link property for About Us card
+  link: "/about-us", // Add link property for About Us card
   },
   {
     title: "Our Mission",
@@ -28,7 +28,7 @@ const whatWeOfferItems = [
       "Our mission is to transform the way parents & children think about learning robotics technology.",
     icon: FaFlag,
     glowColor: "#a63534", // pure white
-    link: "/about#story", // Add link property for Our Mission card
+  link: "/about-us#story", // Add link property for Our Mission card
   },
 ];
 

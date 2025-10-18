@@ -31,7 +31,7 @@ Root Directory
 │   │   │   │   └── page.tsx (Dynamic sub-page)
 │   │   │   ├── layout.tsx (Dynamic route layout)
 │   │   │   └── page.tsx (Dynamic route page)
-│   │   ├── about/ (About Us page)
+│   │   ├── about-us/ (About Us page)
 │   │   │   └── page.tsx (About page component)
 │   │   ├── admin-dashboard/ (Administrator dashboard)
 │   │   │   ├── create-task/ (Task creation interface)
