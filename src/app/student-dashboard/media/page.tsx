@@ -1,11 +1,10 @@
 "use client";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useState, useEffect, useCallback } from "react";
-import { db } from "@/lib/firebase";
+import { db } from "../../../lib/firebase";
 import { ArrowLeft, ArrowRight, Download, XCircle } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
 
 type ViewMode = "grid" | "large";
 type ImageData = {
@@ -14,7 +13,6 @@ type ImageData = {
 };
 
 const Page = () => {
-  const router = useRouter();
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +151,7 @@ const Page = () => {
           <p className="text-gray-700 text-lg">{error}</p>
           <button
             className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-            onClick={() => router.refresh()}
+            onClick={() => window.location.reload()}
           >
             Try Again
           </button>
