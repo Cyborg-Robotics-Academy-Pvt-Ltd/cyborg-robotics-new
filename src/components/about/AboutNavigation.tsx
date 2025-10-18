@@ -60,10 +60,10 @@ export default function AboutNavigation({
 
   // Scroll to section function
   const scrollToSection = (sectionId: string) => {
-    // Special handling for "About Us" - navigate to clean /about URL
+    // Special handling for "About Us" - navigate to clean /about-us URL
     if (sectionId === "hero") {
       if (history.pushState) {
-        history.pushState(null, "", "/about");
+        history.pushState(null, "", "/about-us");
       }
       window.scrollTo({
         top: 0,

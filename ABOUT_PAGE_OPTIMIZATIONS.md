@@ -51,7 +51,7 @@ The About page was experiencing slow loading times due to multiple performance b
   - HeroSection
   - InteractiveStorySection
   - FoundersSection
-- **File Modified**: `src/app/about/page.tsx`
+- **File Modified**: `src/app/about-us/page.tsx`
 
 ### 3. Animation Optimization ✅
 

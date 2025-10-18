@@ -16,7 +16,7 @@ export default function Header() {
   const [activeSection, setActiveSection] = useState("");
   const router = useRouter();
   const pathname = usePathname();
-  const isAboutPage = pathname === "/about";
+  const isAboutPage = pathname === "/about-us";
   const isHomePage = pathname === "/";
 
   // Handle scroll for transparent navbar on home page
@@ -173,7 +173,7 @@ export default function Header() {
         history.pushState(null, "", `#${sectionId}`);
       } else if (sectionId === "hero" && history.pushState) {
         // Clean URL for hero section
-        history.pushState(null, "", "/about");
+        history.pushState(null, "", "/about-us");
       }
     }
     setIsMenuOpen(false);

@@ -268,7 +268,7 @@ const Footer: React.FC<FooterProps> = () => {
               <ul className="space-y-3">
                 {[
                   { href: "/", label: "Home" },
-                  { href: "/about", label: "About" },
+                  { href: "/about-us", label: "About" },
                   { href: "/gallery/photo", label: "Gallery" },
                   { href: "/contact-us", label: "Contact" },
                   {
