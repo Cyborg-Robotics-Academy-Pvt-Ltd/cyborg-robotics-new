@@ -13,6 +13,7 @@ const whatWeOfferItems = [
     icon: FaEye,
     glowColor: "#a63534", // rich, warm reddish-brown
     link: "/about-us#story", // Add link property for Our Vision card
+    backgroundImage: "/assets/whoarewe/vision.jpg",
   },
   {
     title: "About Us",
@@ -21,6 +22,7 @@ const whatWeOfferItems = [
     icon: FaUsers,
     glowColor: "#313a49", // deep desaturated blue-gray
     link: "/about-us", // Add link property for About Us card
+    backgroundImage: "/assets/logo1.png",
   },
   {
     title: "Our Mission",
@@ -29,6 +31,7 @@ const whatWeOfferItems = [
     icon: FaFlag,
     glowColor: "#a63534", // pure white
     link: "/about-us#story", // Add link property for Our Mission card
+    backgroundImage: "/assets/whoarewe/mission.jpg",
   },
 ];
 
@@ -41,29 +44,7 @@ export default function WhoAreWe() {
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 overflow-hidden"
-        >
-          {/* Main gradient orbs */}
-          <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-gradient-to-br from-red-200/40 to-pink-200/40 blur-3xl animate-pulse" />
-          <div
-            className="absolute bottom-20 -right-20 h-96 w-96 rounded-full bg-gradient-to-br from-blue-200/40 to-cyan-200/40 blur-3xl animate-pulse"
-            style={{ animationDelay: "1s" }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-gradient-to-br from-green-200/30 to-emerald-200/30 blur-3xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          />
-
-          {/* Floating tech elements */}
-
-          <div
-            className="absolute bottom-32 left-1/3 w-2 h-2 bg-green-400 rounded-full opacity-60 animate-bounce"
-            style={{ animationDelay: "2.5s" }}
-          />
-          <div
-            className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-400 rounded-full opacity-70 animate-bounce"
-            style={{ animationDelay: "3s" }}
-          />
-        </div>
+        ></div>
 
         <div className="relative max-w-7xl mx-auto">
           {/* Enhanced header section */}
@@ -106,14 +87,29 @@ export default function WhoAreWe() {
                 <GlowingCard
                   key={item.title}
                   glowColor={item.glowColor}
-                  className="flex flex-col items-center text-center p-8 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group"
+                  className="flex flex-col items-center text-center p-8 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group relative overflow-hidden"
                 >
                   {/* Use Link component inside the card for proper glow effect */}
                   {item.link ? (
                     <Link
                       href={item.link}
-                      className="w-full h-full flex flex-col items-center"
+                      className="w-full h-full flex flex-col items-center relative"
                     >
+                      {/* Background image - reveals on hover/focus using next/image for optimization */}
+                      {item.backgroundImage && (
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-30 group-focus-within:opacity-30 motion-reduce:transition-none transition-opacity duration-500">
+                            <Image
+                              src={item.backgroundImage}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 100vw, 33vw"
+                              unoptimized
+                            />
+                          </div>
+                        </div>
+                      )}
                       {/* Icon container with gradient background */}
                       <div
                         className={`relative mb-6 p-4 rounded-2xl bg-[#a63534] shadow-lg transform transition-all duration-500 group-hover:scale-110`}
@@ -122,7 +118,7 @@ export default function WhoAreWe() {
                         <Icon className="text-white text-2xl relative z-10" />
                       </div>
 
-                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-4 group-hover:text-[#a63534] transition-colors duration-300">
+                      <h3 className="text-2xl lg:text-3xl font-bold gradient-text mb-4 group-hover:text-[#a63534] transition-colors duration-300">
                         {item.title}
                       </h3>
 
@@ -133,12 +129,31 @@ export default function WhoAreWe() {
                         }}
                       ></div>
 
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center text-base lg:text-lg">
+                      <p className="text-gray-600  leading-relaxed text-center text-base lg:text-lg">
                         {item.description}
                       </p>
                     </Link>
                   ) : (
                     <>
+                      {/* Background image - reveals on hover/focus for non-link cards */}
+                      {item.backgroundImage && (
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-30 group-focus-within:opacity-30 motion-reduce:transition-none transition-opacity duration-500">
+                            <Image
+                              src={item.backgroundImage}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 100vw, 33vw"
+                              unoptimized
+                            />
+                            <div
+                              className="absolute inset-0 bg-black/30"
+                              aria-hidden="true"
+                            />
+                          </div>
+                        </div>
+                      )}
                       {/* Icon container with gradient background */}
                       <div
                         className={`relative mb-6 p-4 rounded-2xl bg-[#a63534] shadow-lg transform transition-all duration-500 group-hover:scale-110`}

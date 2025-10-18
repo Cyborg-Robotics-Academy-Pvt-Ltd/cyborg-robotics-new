@@ -133,7 +133,7 @@ const Footer: React.FC<FooterProps> = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {/* Section 1: Company Info & Social */}
             <motion.div
-              className="space-y-4 bg-white rounded-xl p-5 shadow-sm"
+              className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[0]}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
@@ -177,7 +177,7 @@ const Footer: React.FC<FooterProps> = () => {
                 ].map((item) => (
                   <motion.div
                     key={item.href}
-                    whileHover={{ scale: 1.2 }}
+                    whileHover={{ scale: 1 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                     className="relative"
                   >
@@ -189,7 +189,7 @@ const Footer: React.FC<FooterProps> = () => {
                         alt={item.alt}
                         className="rounded-xl transition-all cursor-pointer"
                       />
-                      <div className="absolute inset-0 rounded-xl bg-[#a63534] opacity-0 hover:opacity-30 transition-opacity"></div>
+                      <div className="absolute inset-0 rounded-xl"></div>
                     </Link>
                   </motion.div>
                 ))}
@@ -198,7 +198,7 @@ const Footer: React.FC<FooterProps> = () => {
 
             {/* Section 2: Contact Information */}
             <motion.div
-              className="space-y-4 bg-white rounded-xl p-5 shadow-sm"
+              className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[1]}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
@@ -258,7 +258,7 @@ const Footer: React.FC<FooterProps> = () => {
 
             {/* Section 3: Quick Links */}
             <motion.div
-              className="space-y-4 bg-white rounded-xl p-5 shadow-sm"
+              className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[2]}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
@@ -304,7 +304,7 @@ const Footer: React.FC<FooterProps> = () => {
 
             {/* Section 4: Daily Inspiration */}
             <motion.div
-              className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5 shadow-sm h-auto"
+              className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto"
               ref={sectionRefs.current[3]}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}

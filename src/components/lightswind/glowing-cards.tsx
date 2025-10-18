@@ -165,8 +165,8 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
             style={{
               // String concatenation for WebkitMask and mask
               WebkitMask:
-                "radial-gradient(var(--glow-radius) var(--glow-radius) at var(--x, 0) var(--y, 0), #000 1%, transparent 50%)",
-              mask: "radial-gradient(var(--glow-radius) var(--glow-radius) at var(--x, 0) var(--y, 0), #000 1%, transparent 50%)",
+                "radial-gradient(var(--glow-radius) var(--glow-radius) at var(--x, 0) var(--y, 0), #000 1%, transparent 60%)",
+              mask: "radial-gradient(var(--glow-radius) var(--glow-radius) at var(--x, 0) var(--y, 0), #000 1%, transparent 60%)",
               opacity: showOverlay ? "var(--opacity)" : "0",
             }}
           >

@@ -108,7 +108,7 @@ export default function AboutPage() {
           <Suspense fallback={<SectionLoader />}>
             {/* Award  Section */}
             <motion.div
-              id="global-reach"
+              id="awards"
               className="about-section"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
