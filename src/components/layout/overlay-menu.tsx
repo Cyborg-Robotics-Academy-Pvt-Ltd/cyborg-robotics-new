@@ -67,6 +67,10 @@ const MenuList = ({
         const sectionId = item.href.substring(1); // Remove the # prefix
         scrollToSection(sectionId);
       }
+      // Also check if the item has an id for direct section matching
+      else if (scrollToSection && item.id) {
+        scrollToSection(item.id);
+      }
     }
   };
 
@@ -104,12 +108,18 @@ const MenuList = ({
               key={item.title}
             >
               <AccordionTrigger
-                className={`flex w-full items-center justify-between rounded-lg ${triggerPaddingClass} transition-colors hover:bg-accent hover:no-underline`}
+                className={`flex w-full items-center justify-between rounded-lg ${triggerPaddingClass} transition-colors hover:bg-accent hover:no-underline ${
+                  activeSection === item.id ? "bg-red-800 text-white" : ""
+                }`}
               >
                 <div className={`flex items-center ${iconGapClass}`}>
                   {item.icon && (
                     <item.icon
-                      className={`${iconSizeClass} text-muted-foreground`}
+                      className={`${iconSizeClass} ${
+                        activeSection === item.id
+                          ? "text-white"
+                          : "text-muted-foreground"
+                      }`}
                     />
                   )}
                   <span>{item.title}</span>
@@ -131,10 +141,37 @@ const MenuList = ({
       )}
       {/* Render link items as usual */}
       {linkItems.map((item) => {
+        // Check if this item should be considered active
+        const isActive =
+          // Direct match with activeSection
+          activeSection === item.id ||
+          // Match based on href fragment
+          (activeSection &&
+            item.href &&
+            item.href.includes(`#${activeSection}`)) ||
+          // Special case for homepage sections
+          (activeSection === "hero" && item.href === "/about-us") ||
+          // Match based on current pathname for top-level pages
+          (typeof window !== "undefined" &&
+            item.href &&
+            window.location.pathname === item.href) ||
+          // Special handling for blog pages
+          (typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/blogs") &&
+            item.href === "/blogs");
+
         const isOfflineCourseChild = isOfflineCourseChildrenLevel;
         const linkClass = isOfflineCourseChild
-          ? `flex w-auto items-center justify-center rounded-xl my-3 ${linkPaddingClass} bg-[#b92423] text-white hover:bg-[#a51f1e]`
-          : `flex items-center justify-between rounded-lg ${linkPaddingClass} transition-colors hover:bg-accent`;
+          ? `flex w-auto items-center justify-center rounded-xl my-3 ${linkPaddingClass} ${
+              isActive
+                ? "bg-[#8a1a19] text-white"
+                : "bg-[#b92423] text-white hover:bg-[#a51f1e]"
+            }`
+          : `flex items-center justify-between rounded-lg ${linkPaddingClass} transition-colors ${
+              isActive
+                ? "bg-red-800 text-white"
+                : "hover:bg-accent text-foreground"
+            }`;
         return (
           <motion.div
             key={item.title}
@@ -152,7 +189,9 @@ const MenuList = ({
                 <div className={`flex items-center ${iconGapClass}`}>
                   {item.icon && (
                     <item.icon
-                      className={`${iconSizeClass} text-muted-foreground`}
+                      className={`${iconSizeClass} ${
+                        isActive ? "text-white" : "text-muted-foreground"
+                      }`}
                     />
                   )}
                   <span>{item.title}</span>
@@ -185,14 +224,14 @@ export default function OverlayMenu({
           {/* Close button */}
           <button
             onClick={() => setIsOpen(false)}
-            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-red-800  transition-colors"
+            className="absolute top-4 right-1 z-50 p-2 rounded-full bg-red-800  transition-colors"
             aria-label="Close menu"
           >
             <X className="h-6 w-6 text-white" />
           </button>
 
           <div className="container mx-auto justify-center flex h-full max-w-4xl flex-col px-4 md:px-6">
-            <header className="w-full py-4 border-b">
+            <header className="w-full py-4 border-b border-border/50 border-b-gray-300">
               <div className="flex items-center">
                 <Link
                   href="/"
@@ -239,7 +278,7 @@ export default function OverlayMenu({
                   </div>
 
                   {/* Questions Section */}
-                  <div className="space-y-3 border-t border-border/50 pt-4">
+                  <div className="space-y-3 border-t border-border/50 border-t-gray-300 pt-4">
                     <h3 className="text-base font-semibold tracking-wide text-foreground">
                       Questions?
                     </h3>
@@ -262,7 +301,7 @@ export default function OverlayMenu({
                   </div>
 
                   {/* Social Media Section */}
-                  <div className="space-y-3 border-t border-border/50 pt-4">
+                  <div className="space-y-3 border-t border-border/50 border-t-gray-300 pt-4">
                     <h3 className="text-base font-semibold tracking-wide text-foreground">
                       Connect with us
                     </h3>

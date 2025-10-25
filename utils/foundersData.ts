@@ -26,7 +26,7 @@ export const foundersData: FounderData[] = [
   id: "shikha",
   name: "Shikha Virmani",
   title: "Founder & CEO",
-  image: "/assets/founders/shikha1.png",
+  image: "/assets/founders/Shikha3.png",
   description: "Founder & CEO with 12+ years in robotics education. B.Tech in Electronics and Communication. Coached students to international success at WRO & FLL. Advocates for hands-on STEM learning that builds technical skills and critical thinking. Formerly with Air India and VFS Global.",
   
   linkedinUrl: "https://www.linkedin.com/in/shikha-virmani-31576442/", // replace with real link
@@ -43,7 +43,7 @@ export const foundersData: FounderData[] = [
   id: "lokesh",
   name: "Lokesh Malik",
   title: "Director of Operations",
-  image: "/assets/Founders/lokesh.png",
+  image: "/assets/Founders/Lokesh.png",
   description: "Director of Operations with diverse industry experience. MBA in International Business. Formerly with Air India and VFS Global. Led specialized projects and managed government contracts. Brings strategic vision and operational excellence to STEM education. Passionate about innovation and impact.",
   
   

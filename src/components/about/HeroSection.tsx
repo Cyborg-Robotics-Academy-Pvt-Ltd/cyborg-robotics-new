@@ -7,7 +7,7 @@ export default function HeroSection() {
   return (
     // Added w-full to ensure full width coverage
     <section
-      className="relative text-center px-0 sm:px-4 lg:px-8 bg-white w-full pb-2 sm:pb-4"
+      className="relative text-center mt-20 px-0 sm:px-4 lg:px-8 bg-white w-full pb-2 sm:pb-4"
       aria-label="About Us Hero Section"
     >
       {/* Breadcrumb */}

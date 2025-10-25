@@ -1,0 +1,1 @@
+export { default as ActiveTabs } from './active-tabs';

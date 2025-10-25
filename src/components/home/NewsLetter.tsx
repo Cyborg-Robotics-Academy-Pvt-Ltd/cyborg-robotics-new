@@ -95,9 +95,9 @@ export default function NewsletterSignup() {
             }`}
           >
             <div className="relative w-full max-w-lg">
-              <div className="relative z-10   ">
+              <div className="relative z-10 hidden md:block  ">
                 <Image
-                  src="/assets/newsletter.png"
+                  src="/assets/newsletter2.png"
                   alt="Newsletter subscription illustration"
                   width={600}
                   height={500}
