@@ -23,20 +23,27 @@ const GallerySection = () => {
 const data = [
   {
     id: "1",
-    src: "/assets/gallery/gallery (81).jpg",
+    src: "/assets/moments/IMG_2472.png",
   },
-
   {
     id: "2",
-    src: "/assets/gallery/gallery (81).jpg",
+    src: "/assets/moments/wsro_national.png",
   },
   {
     id: "3",
-    src: "/assets/gallery/gallery (67).JPG",
+    src: "/assets/moments/IMG_2470.png",
   },
   {
     id: "4",
-    src: "/assets/gallery/gallery (81).jpg",
+    src: "/assets/moments/IMG_2467.png",
+  },
+  {
+    id: "5",
+    src: "/assets/moments/IMG_2468.png",
+  },
+  {
+    id: "6",
+    src: "/assets/moments/IMG_2471.png",
   },
 ];
 

@@ -6,6 +6,7 @@ export interface MenuItem {
   icon?: LucideIcon;
   href?: string;
   children?: MenuItem[];
+  id?: string; // Added for tracking active sections
 }
 
 const offlineCourseChildren: MenuItem[] = [
@@ -35,9 +36,9 @@ const mainMenu: MenuItem[] = [
     icon: Building2,
   href: '/about-us',
     children: [
-  { title: 'Brand Stories', href: '/about-us#story', icon: Sparkles },
-  { title: 'Meet the Team', href: '/about-us#team', icon: Users },
-  { title: 'Meet the Founder', href: '/about-us#founders', icon: PersonStanding },
+  { title: 'Brand Stories', href: '/about-us#story', icon: Sparkles, id: 'story' },
+  { title: 'Meet the Team', href: '/about-us#team', icon: Users, id: 'team' },
+  { title: 'Meet the Founder', href: '/about-us#founders', icon: PersonStanding, id: 'founders' },
       { title: 'Join Us', href: '', icon: HandHelping },
     ],
   },

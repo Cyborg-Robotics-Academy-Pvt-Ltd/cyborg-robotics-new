@@ -22,7 +22,7 @@ const whatWeOfferItems = [
     icon: FaUsers,
     glowColor: "#313a49", // deep desaturated blue-gray
     link: "/about-us", // Add link property for About Us card
-    backgroundImage: "/assets/logo1.png",
+    backgroundImage: "",
   },
   {
     title: "Our Mission",

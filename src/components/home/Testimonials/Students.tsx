@@ -5,41 +5,68 @@ import { motion } from "framer-motion";
 const Students = () => {
   const studentTestimonials = [
     {
+      name: "Shivaan Sharma",
+      course: "Drone",
       quote:
-        "I built my first robot at Cyborg and now I want to become a robotics engineer!",
-      name: "Aarav S.",
-      image: "/assets/parents/t1.jpg",
-      rating: 5,
-      course: "Robotics Basics",
+        "The drone classes are fun! I learned how drones move, how motors and flight controllers work, and how forces like lift help them fly safely.",
+      mentor: "Mahvish Fatima",
+      image: "/assets/testimonials/students/ShivaanSharma.jpeg",
     },
     {
-      quote: "The classes are so much fun and I learned to code my own games!",
-      name: "Meera K.",
-      image: "/assets/parents/t2.jpeg",
-      rating: 5,
-      course: "Game Coding",
-    },
-    {
-      quote: "I love the competitions and working with my friends on projects.",
-      name: "Rohan P.",
-      image: "/assets/parents/t3.jpeg",
-      rating: 5,
-      course: "Robotics Competition",
-    },
-    {
-      quote: "The teachers explain everything so well. I never get bored!",
-      name: "Simran D.",
-      image: "/assets/parents/t4.jpg",
-      rating: 5,
-      course: "STEM Explorer",
-    },
-    {
+      name: "Arjun Anupkumar",
+      course: "Drone",
       quote:
-        "I made a smart car and showed it to my family. They were so proud!",
-      name: "Kabir T.",
-      image: "/assets/parents/t5.jpg",
-      rating: 5,
-      course: "Smart Car Project",
+        "I really enjoy drone classes! I learned how the flight controller, motors, and propellers work together to make drones fly.",
+      mentor: "Mahvish Fatima",
+      image: "/assets/testimonials/students/ArjunAnoopkumar.jpeg",
+    },
+    {
+      name: "Adish Bejgamwar",
+      course: "3D + Arduino",
+      quote:
+        "Through the 3D + Arduino course, I learned programming, creative design, and how to use components in new ways to solve problems.",
+      mentor: "Anchal Mishra and Nilesh Jaiswar",
+      image: "/assets/testimonials/students/ADISHBEJGAMWAR.jpg",
+    },
+    {
+      name: "Mihika Bole",
+      course: "Arduino",
+      quote:
+        "Arduino was so much fun! I learned to connect LEDs, motors, and sensors, and write programs to bring my projects to life.",
+      mentor: "Anchal Mishra",
+      image: "/assets/testimonials/students/MIHIKABOLE.jpg",
+    },
+    {
+      name: "Renea Ovelker",
+      course: "3D Designing and Printing",
+      quote:
+        "3D Designing was amazing! I learned to make functional models in Tinkercad and turn creative ideas into real designs.",
+      mentor: "Nilesh Jaiswar",
+      image: "/assets/testimonials/students/RENEAOVELKER.jpg",
+    },
+    {
+      name: "Sudarshan Joshi",
+      course: "3D Designing and Printing",
+      quote:
+        "I built robots with 3D Printing and Arduino! Learned coding, design, and sensors—turning my ideas into real working models.",
+      mentor: "Anchal Mishra and Nilesh Jaiswar",
+      image: "/assets/testimonials/students/SUDARSHANJOSHI.jpg",
+    },
+    {
+      name: "Moksh Garg",
+      course: "3D Designing and Printing",
+      quote:
+        "I loved 3D designing! I created my own models and felt proud to see my ideas come to life.",
+      mentor: "Nilesh Jaiswar",
+      image: "/assets/testimonials/students/MOKSHGARG.jpg",
+    },
+    {
+      name: "Viaan Petti",
+      course: "3D Designing and Printing",
+      quote:
+        "3D designing was so interesting! I learned how to make creative models and solve small design problems confidently.",
+      mentor: "Anchal Mishra",
+      image: "/assets/testimonials/students/VIAANPETTI.jpg",
     },
   ];
 
@@ -66,7 +93,8 @@ const Students = () => {
     );
   };
 
-  const { quote, name, image, course } = studentTestimonials[currentIndex];
+  const { quote, name, image, course, mentor } =
+    studentTestimonials[currentIndex];
 
   // Touch swipe handlers for mobile
   const touchStartXRef = useRef<number | null>(null);
@@ -155,12 +183,15 @@ const Students = () => {
                   {name}
                 </p>
               </div>
-              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-3">
+              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-5">
                 &quot;{quote}&quot;
               </p>
-              <p className="text-gray-500 text-left mt-3 text-xs sm:text-sm">
-                {course}
-              </p>
+              <div className="text-gray-500 text-left mt-3 text-xs sm:text-sm">
+                <p>{course}</p>
+                <p className="mt-1 text-red-800 font-medium">
+                  Mentor: {mentor}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -182,7 +213,7 @@ const Students = () => {
             key={index}
             className={
               "h-1.5 rounded-full transition-all duration-300 " +
-              (index === currentIndex ? "w-4 bg-red-600" : "w-2 bg-gray-300")
+              (index === currentIndex ? "w-4 bg-red-800" : "w-2 bg-gray-300")
             }
           />
         ))}

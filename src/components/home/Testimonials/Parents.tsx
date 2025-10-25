@@ -6,43 +6,45 @@ const Parents = () => {
   const parentTestimonials = [
     {
       quote:
-        "Cyborg Robotics has introduced my son to engineering and robotics in an engaging way. The team is knowledgeable, passionateand patient.",
-      name: "Pranoti Thakur",
-      image: "/assets/parents/t1.jpg",
-      rating: 5,
-      course: "Robotics Basics",
-    },
-    {
-      quote:
-        "Though Divit my son had an idea and knew the basics of Lego but coming to cyborg his robotics skills got enhanced and his knowledge towards AI increased. His future plans of becoming a Robotic Engineer are taking shape and this is all thanks to Team Cyborg",
+        "Divit had basic Lego knowledge before joining Cyborg, but his robotics and AI skills have grown tremendously. His dream of becoming a Robotics Engineer is now taking shape, thanks to Team Cyborg.",
       name: "Sarika Gemawat",
-      image: "/assets/parents/t2.jpeg",
-      rating: 5,
-      course: "AI for Kids",
+      image: "/assets/testimonials/parents/SarikaGemawat.jpeg",
+      course: "Early Simple Machines",
     },
     {
       quote:
-        "Ira loves her robotics classes and never wants to miss a session. Cyborg makes STEM learning exciting and fun for young kids.",
-      name: "DR.Smita",
-      image: "/assets/parents/t4.jpg",
-      rating: 5,
-      course: "STEM Explorer",
-    },
-    {
-      quote:
-        "Aaryan enjoys his robotics sessions and is progressing well in assembling and programming. Mrs. Shikha is an excellent and patient teacher.",
+        "Aaryan enjoys his robotics sessions and is improving in assembling and programming. Mrs. Shikha is an excellent and patient teacher.",
       name: "Indrani Ghosh Choudhary",
-      image: "/assets/parents/t5.jpg",
-      rating: 5,
-      course: "Robotics Advanced",
+      image: "/assets/testimonials/parents/IndraniGhoshChoudhary.png",
+      course: "Ev3 Robotics",
     },
     {
       quote:
-        "My kids love Cyborg's robotics classes! The instructors make learning fun by relating concepts to real life, ensuring better understanding and retention.",
+        "My kids love Cyborg’s robotics classes! The instructors make learning fun and connect concepts to real life for better understanding.",
       name: "Jisha Alex",
-      image: "/assets/parents/t3.jpeg",
-      rating: 5,
-      course: "Creative Robotics",
+      image: "/assets/testimonials/parents/JishaAlex.jpeg",
+      course: "Spike Prime",
+    },
+    {
+      quote:
+        "Our son has been with Cyborg for over two years and has developed not just a passion for technology but also a love for learning. The team’s creativity and innovation truly nurture each child’s growth.",
+      name: "Sahil Sankla",
+      image: "/assets/testimonials/parents/SahilSankla.jpeg",
+      course: "Peecee + Competition",
+    },
+    {
+      quote:
+        "Cyborg has brought a positive change in my son Aadit. He’s grown to love robotics, learned teamwork, and handled challenges with confidence. Thank you, Team Cyborg, for your encouragement and support.",
+      name: "Ruchika Oswal",
+      image: "/assets/testimonials/parents/RuchikaOswal.jpeg",
+      course: "3D Printing",
+    },
+    {
+      quote:
+        "Cyborg Robotics Academy has been perfect for my son’s curiosity about how things work. The hands-on projects, clear teaching, and encouraging mentors have boosted his confidence and creativity. Highly recommended!",
+      name: "Akansha Gaur",
+      image: "/assets/testimonials/parents/AkanshaGaur.png",
+      course: "Spike Essential",
     },
   ];
 
@@ -157,7 +159,7 @@ const Parents = () => {
                   {name}
                 </p>
               </div>
-              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-3">
+              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-4">
                 &quot;{quote}&quot;
               </p>
               <p className="text-gray-500 text-left mt-3 text-xs sm:text-sm">
@@ -184,7 +186,7 @@ const Parents = () => {
             key={index}
             className={
               "h-1.5 rounded-full transition-all duration-300 " +
-              (index === currentIndex ? "w-4 bg-red-600" : "w-2 bg-gray-300")
+              (index === currentIndex ? "w-4 bg-red-800" : "w-2 bg-gray-300")
             }
           />
         ))}

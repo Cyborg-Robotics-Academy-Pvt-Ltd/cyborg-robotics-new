@@ -102,7 +102,7 @@ function TeamCard({ member }: TeamCardProps) {
   };
 
   return (
-    <div className="h-72 w-[70%]  md:h-80 md:w-[100%] mx-auto mb-8 ">
+    <div className="h-78 w-[70%]  md:h-80 md:w-[100%] mx-auto mb-8 ">
       <div
         className="relative w-full h-full cursor-pointer"
         style={{ perspective: "1000px" }}
@@ -121,7 +121,7 @@ function TeamCard({ member }: TeamCardProps) {
             className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl "
             style={{ backfaceVisibility: "hidden" }}
           >
-            <div className="w-full h-56 relative">
+            <div className="w-full h-60 md:h-56 relative">
               <Image
                 src={`/${member.image}`}
                 alt={member.name}
@@ -284,16 +284,16 @@ export default function EnhancedTeamSection() {
           <style jsx global>{`
             .team-swiper .swiper-button-prev,
             .team-swiper .swiper-button-next {
-              background: white;
-              width: 28px;
-              height: 28px;
+              background: #9d2723; /* Red background */
+              width: 30px;
+              height: 30px;
               border-radius: 50%;
               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             }
             .team-swiper .swiper-button-prev:after,
             .team-swiper .swiper-button-next:after {
-              font-size: 12px;
-              color: #1e40af;
+              font-size: 10px;
+              color: white; /* White arrows */
               font-weight: bold;
             }
             .team-swiper .swiper-pagination-bullet {

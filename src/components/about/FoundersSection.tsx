@@ -25,8 +25,8 @@ export default function FoundersSection() {
     >
       {/* Header with enhanced animation */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6 }}
         className="relative z-10 text-center mb-12 sm:mb-16"
       >
@@ -62,7 +62,7 @@ export default function FoundersSection() {
       </motion.div>
 
       {/* Grid layout for founders */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0 max-w-[1450px] mx-auto">
+      <div className="grid grid-cols-1  lg:max-w-[850px]  xl:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0 xl:max-w-[1450px] mx-auto">
         {foundersData.map((founder, index) => {
           const isFounder = founder.id === "shikha";
 
@@ -82,7 +82,7 @@ export default function FoundersSection() {
                 <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-7">
                   {/* Image Section - Left with enhanced styling */}
                   <div className="flex-shrink-0 w-full sm:w-2/5">
-                    <div className="relative w-full pb-[125%] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <div className="relative w-3/4 mx-auto sm:w-full pb-[75%] sm:pb-[125%] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
                       {/* Gradient border container */}
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#b94243] via-[#ab2623] to-[#9d0272] p-1">
                         <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
@@ -90,7 +90,7 @@ export default function FoundersSection() {
                             src={founder.image}
                             alt={founder.name}
                             fill
-                            className="object-cover rounded-xl"
+                            className="object-contain rounded-xl"
                             loading="lazy"
                             sizes="(max-width: 740px) 100vw, (max-width: 868px) 50vw, 33vw"
                             quality={100}
@@ -123,11 +123,11 @@ export default function FoundersSection() {
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                      <div className="flex flex-row sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
                         {/* Enhanced role badge with brand palette */}
                         <motion.div
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={inView ? { scale: 1, rotate: 0 } : {}}
+                          initial={{ opacity: 0 }}
+                          animate={inView ? { opacity: 1 } : {}}
                           transition={{
                             duration: 0.6,
                             delay: 0.3 * (index + 1),
@@ -146,10 +146,10 @@ export default function FoundersSection() {
 
                         {/* Title badge with improved styling */}
                         <div
-                          className={`inline-block px-3 py-1.5 bg-[#252e43] rounded-full border border-[#252e43]/20`}
+                          className={`inline-block  px-3 py-1.5 bg-[#252e43] rounded-full border border-[#252e43]/20`}
                         >
                           <p
-                            className={`text-[#e0e3eb] font-semibold text-sm w-40 mx-auto text-center`}
+                            className={`text-[#e0e3eb] font-semibold text-sm text-center`}
                           >
                             {founder.title}
                           </p>
@@ -161,8 +161,8 @@ export default function FoundersSection() {
                     <motion.div
                       className="text-[#252e43] leading-relaxed text-sm max-w-prose bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl relative border border-gray-100"
                       style={{ textAlign: "left", lineHeight: "1.6" }}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={inView ? { opacity: 1, y: 0 } : {}}
+                      initial={{ opacity: 0 }}
+                      animate={inView ? { opacity: 1 } : {}}
                       transition={{
                         duration: 0.5,
                         delay: 0.35 * (index + 1),
@@ -175,8 +175,8 @@ export default function FoundersSection() {
 
                     <motion.div
                       className="flex justify-center sm:justify-start pt-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={inView ? { opacity: 1, y: 0 } : {}}
+                      initial={{ opacity: 0 }}
+                      animate={inView ? { opacity: 1 } : {}}
                       transition={{ duration: 0.5, delay: 0.4 * (index + 1) }}
                     >
                       <Button
