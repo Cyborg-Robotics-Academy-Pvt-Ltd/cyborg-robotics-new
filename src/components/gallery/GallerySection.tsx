@@ -23,7 +23,7 @@ const GallerySection = () => {
 const data = [
   {
     id: "1",
-    src: "/assets/moments/IMG_2472.png",
+    src: "/assets/moments/IMG_2472.PNG",
   },
   {
     id: "2",
@@ -31,19 +31,19 @@ const data = [
   },
   {
     id: "3",
-    src: "/assets/moments/IMG_2470.png",
+    src: "/assets/moments/IMG_2470.PNG",
   },
   {
     id: "4",
-    src: "/assets/moments/IMG_2467.png",
+    src: "/assets/moments/IMG_2467.PNG",
   },
   {
     id: "5",
-    src: "/assets/moments/IMG_2468.png",
+    src: "/assets/moments/IMG_2468.PNG",
   },
   {
     id: "6",
-    src: "/assets/moments/IMG_2471.png",
+    src: "/assets/moments/IMG_2471.PNG",
   },
 ];
 
