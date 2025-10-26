@@ -244,7 +244,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                         alt={template.alt}
                         width={500}
                         height={500}
-                        className="w-full h-auto max-h-[70vh] object-contain rounded-xl shadow-2xl"
+                        className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-2xl"
                         priority
                       />
                       {/* Title overlay for mobile */}
@@ -301,7 +301,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                         alt={template.alt}
                         width={800}
                         height={600}
-                        className="w-full h-auto max-h-[70vh] object-contain rounded-xl shadow-2xl"
+                        className="w-full h-auto max-h-[70vh] object-contain rounded-2xl shadow-2xl"
                         priority
                       />
                       {/* Title overlay for desktop */}
