@@ -289,7 +289,7 @@ export const Card = ({
         className="relative aspect-[9/16] 
                    w-[90vw] sm:w-[250px] md:w-[280px] 
                    overflow-hidden rounded-3xl snap-center
-                   max-h-[70vh]"
+                   max-h-[80vh]"
       >
         <BlurImage
           src={card.src}

@@ -58,7 +58,7 @@ const Students = () => {
       quote:
         "I loved 3D designing! I created my own models and felt proud to see my ideas come to life.",
       mentor: "Nilesh Jaiswar",
-      image: "/assets/testimonials/students/MOKSHGARG.jpg",
+      image: "/assets/testimonials/students/MOKSHGARG.JPG",
     },
     {
       name: "Viaan Petti",
@@ -183,7 +183,7 @@ const Students = () => {
                   {name}
                 </p>
               </div>
-              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-5">
+              <p className="italic text-left text-xs sm:text-sm text-gray-700 line-clamp-4">
                 &quot;{quote}&quot;
               </p>
               <div className="text-gray-500 text-left mt-3 text-xs sm:text-sm">

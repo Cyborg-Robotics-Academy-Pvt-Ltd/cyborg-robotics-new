@@ -89,6 +89,15 @@ const teamMembers: TeamMember[] = [
     image: "assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
+  {
+    id: "Mahvish",
+    name: "Ms. Mahvish Fatima",
+    title: "Head of Drone Department",
+    department:
+      "Drone Visualization & Design | R&D Leadership | Product Innovation & Educational Technology",
+    image: "assets/team/mahvish3.png",
+    linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
+  },
 ];
 
 function TeamCard({ member }: TeamCardProps) {
