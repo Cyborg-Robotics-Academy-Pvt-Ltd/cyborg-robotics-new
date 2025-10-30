@@ -1,4 +1,4 @@
-import Footer from "@/components/home/Footer";
+"use client";
 import React from "react";
 import { Shield, Cookie, FileText, Clock, Mail } from "lucide-react";
 import Head from "next/head";
@@ -150,7 +150,6 @@ const PrivacyPolicy = () => {
             </div>
           </div>
         </div>
-        <Footer />
       </main>
     </>
   );

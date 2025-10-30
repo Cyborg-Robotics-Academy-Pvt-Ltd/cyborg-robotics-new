@@ -160,6 +160,11 @@ const Footer: React.FC<FooterProps> = () => {
               <div className="flex gap-3 items-center">
                 {[
                   {
+                    href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
+                    src: "/assets/social-icons/Linkedin.png",
+                    alt: "LinkedIn",
+                  },
+                  {
                     href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
                     src: "/assets/social-icons/instagram.webp",
                     alt: "Instagram",

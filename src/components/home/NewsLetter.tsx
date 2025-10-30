@@ -119,7 +119,7 @@ export default function NewsletterSignup() {
       <div className="relative max-w-7xl mx-auto">
         {/* Section Header */}
         <div
-          className={`text-center mb-16 transition-all duration-800 delay-200 ${
+          className={`text-center mb-4  transition-all duration-800 delay-200 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
@@ -139,7 +139,7 @@ export default function NewsletterSignup() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 lg:gap-10 items-center">
           {/* Illustration */}
           <div
             className={`flex justify-center lg:justify-start order-2 lg:order-1 transition-all duration-800 delay-400 ${
@@ -155,7 +155,7 @@ export default function NewsletterSignup() {
                   alt="Newsletter subscription illustration"
                   width={600}
                   height={500}
-                  className="w-full h-auto rounded-2xl shadow-xl"
+                  className="w-full h-auto rounded-2xl "
                 />
               </div>
             </div>

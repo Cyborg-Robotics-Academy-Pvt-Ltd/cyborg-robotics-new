@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+
 import HamburgerButton from "../layout/hamburger-button";
 import OverlayMenu from "../layout/overlay-menu";
 

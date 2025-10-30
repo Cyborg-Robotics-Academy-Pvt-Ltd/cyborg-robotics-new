@@ -5,10 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import {
-  foundersData,
-  getSkillColorClasses,
-} from "../../../utils/foundersData";
+import { foundersData } from "../../../utils/foundersData";
 import { Linkedin, Sparkles, Award, Crown } from "lucide-react";
 
 export default function FoundersSection() {
@@ -21,7 +18,7 @@ export default function FoundersSection() {
   return (
     <section
       ref={sectionRef}
-      className="w-full mx-auto relative overflow-hidden bg-white to-gray-50 sm:py-3"
+      className="w-full mx-auto relative overflow-hidden bg-white to-gray-50 sm:py-4"
     >
       {/* Header with enhanced animation */}
       <motion.div
@@ -34,7 +31,7 @@ export default function FoundersSection() {
           initial={{ scale: 0 }}
           animate={inView ? { scale: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="inline-block mb-4"
+          className="inline-block mb-4 mt-4"
         >
           <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-blue-50 rounded-full border border-red-100">
             <Sparkles className="w-4 h-4 text-red-600" />
@@ -62,7 +59,7 @@ export default function FoundersSection() {
       </motion.div>
 
       {/* Grid layout for founders */}
-      <div className="grid grid-cols-1  lg:max-w-[850px]  xl:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0 xl:max-w-[1450px] mx-auto">
+      <div className="grid grid-cols-1  lg:max-w-[850px]  xl:grid-cols-2 2xl:grid-cols-2  gap-6 sm:gap-8 px-2 sm:px-0 xl:max-w-[1450px] mx-auto mb-4">
         {foundersData.map((founder, index) => {
           const isFounder = founder.id === "shikha";
 
@@ -146,7 +143,7 @@ export default function FoundersSection() {
 
                         {/* Title badge with improved styling */}
                         <div
-                          className={`inline-block  px-3 py-1.5 bg-[#252e43] rounded-full border border-[#252e43]/20`}
+                          className={`inline-block w-auto px-2 py-1 bg-[#252e43] rounded-full border border-[#252e43]/20`}
                         >
                           <p
                             className={`text-[#e0e3eb] font-semibold text-sm text-center`}
