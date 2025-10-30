@@ -16,7 +16,6 @@ interface TeamMember {
   id: string;
   name: string;
   title: string;
-  department: string;
   image: string;
   linkedin?: string;
 }
@@ -29,72 +28,56 @@ const teamMembers: TeamMember[] = [
   {
     id: "Pratima",
     name: "Ms. Pratima Thakur",
-    title: "Project Manager",
-    department:
-      "Project Leadership | Space Science & Technology | Innovation and Strategic Planning",
+    title: "Program Manager",
     image: "assets/team/pratima.png",
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
   },
   {
     id: "Omkar",
     name: "Mr. Omkar Shinde",
-    title: "Head of Programming Instructor",
-    department:
-      "STEM Education | Robotics & Programming Curriculum Design | Coding & Innovation Training",
+    title: "Lead Programming Educator",
     image: "assets/team/omkar.png",
     linkedin: "https://www.linkedin.com/in/omkarshinde711/",
   },
   {
     id: "Shrikant",
     name: "Mr. Shrikant Gaikwad",
-    title: "Full Stack Web Developer",
-    department:
-      "Web Development | System Architecture | UI/UX Design | API & DevOps Integration",
+    title: "Full Stack Developer",
     image: "assets/team/shrikant.png",
     linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
   },
   {
     id: "Sirjana",
     name: "Ms. Sirjana Vishwakrma",
-    title: "Head of Trainer",
-    department:
-      "Training & Development | Educational Leadership | Robotics & Scientific Research Mentorship",
+    title: "Lead Educator | Student Success Counsellor",
     image: "assets/team/sirjana.png",
     linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
   },
   {
     id: "Nikita",
     name: "Ms. Nikita Mangale",
-    title: "Robotics Trainer",
-    department:
-      "Robotics Education | STEM Facilitation | Hands-on Learning & Innovation Programs",
+    title: "Build-to-Learn Educator",
     image: "assets/team/nikita.png",
-    linkedin: "https://www.linkedin.com/in/nikita-mangle-drdo/",
+    linkedin: "https://www.linkedin.com/in/nikita-mangale20/",
   },
   {
     id: "Nilesh",
     name: "Mr. Nilesh Jaiswar",
-    title: "3D Department R&D",
-    department:
-      "3D Modeling & Research | Product Design | Robotics Prototyping & Innovation",
+    title: "3D Printing & Embedded Systems Educator",
     image: "assets/team/nilesh.png",
     linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
     id: "Anchal",
     name: "Ms. Anchal Mishra",
-    title: "Head of 3D Department",
-    department:
-      "3D Visualization & Design | R&D Leadership | Product Innovation & Educational Technology",
+    title: "3D Printing & Embedded Systems Educator | Technologist",
     image: "assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
   {
     id: "Mahvish",
     name: "Ms. Mahvish Fatima",
-    title: "Head of Drone Department",
-    department:
-      "Drone Visualization & Design | R&D Leadership | Product Innovation & Educational Technology",
+    title: "Aero-Electronics Educator",
     image: "assets/team/mahvish3.png",
     linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
   },
@@ -111,7 +94,7 @@ function TeamCard({ member }: TeamCardProps) {
   };
 
   return (
-    <div className="h-78 w-[70%]  md:h-80 md:w-[100%] mx-auto mb-8 ">
+    <div className="h-80 w-[70%] md:h-80 md:w-[100%] mx-auto mb-8">
       <div
         className="relative w-full h-full cursor-pointer"
         style={{ perspective: "1000px" }}
@@ -127,7 +110,7 @@ function TeamCard({ member }: TeamCardProps) {
         >
           {/* Front */}
           <div
-            className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl "
+            className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl"
             style={{ backfaceVisibility: "hidden" }}
           >
             <div className="w-full h-56 md:h-56 relative">
@@ -139,11 +122,11 @@ function TeamCard({ member }: TeamCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-white to-transparent py-7 px-3 ">
-              <h4 className="text-black font-extrabold text-sm mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="absolute bottom-0 left-0 right-0 bg-white to-transparent py-4 px-3">
+              <h4 className="text-black font-extrabold text-sm mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
                 {member.name}
               </h4>
-              <p className="text-black/90 text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="text-black/90 text-[10px] font-medium min-h-[36px] line-clamp-3">
                 {member.title}
               </p>
               {/* LinkedIn Icon */}
@@ -192,7 +175,7 @@ function TeamCard({ member }: TeamCardProps) {
             {/* Content Container */}
             <div className="relative z-10 h-full flex flex-col justify-center items-center px-3 py-4 text-white">
               {/* Logo in White Circle Container - Top */}
-              <div className="mb-2 flex items-center justify-center">
+              <div className="mb-2 flex items-center justify-center -mt-12">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2 border-2 border-white/30">
                   <Image
                     src="/assets/logo.png"
@@ -213,19 +196,11 @@ function TeamCard({ member }: TeamCardProps) {
               </h4>
 
               {/* Title Badge */}
-              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2 py-0.5 mb-2">
-                <p className="text-[10px] font-semibold text-center text-white/90 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2 py-0.5 mb-2 max-w-[90%]">
+                <p className="text-[10px] font-normal text-center text-white/90 whitespace-normal break-words line-clamp-3">
                   {member.title}
                 </p>
               </div>
-
-              {/* Divider */}
-              <div className="w-6 h-0.5 bg-gradient-to-r from-white/30 to-white/30 rounded-full mb-2"></div>
-
-              {/* Department Description */}
-              <p className="text-[9px] text-center leading-relaxed text-white/85 font-medium px-2 mb-2 line-clamp-3">
-                {member.department}
-              </p>
 
               {/* Decorative Bottom Line */}
               <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mt-1 mb-2"></div>
@@ -243,7 +218,7 @@ function TeamCard({ member }: TeamCardProps) {
                   >
                     <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
-                  <span className="text-[10px] font-semibold text-white">
+                  <span className="text-[10px] font-normal text-white whitespace-nowrap">
                     View Profile
                   </span>
                 </div>
