@@ -112,12 +112,6 @@ export default function FoundersSection() {
                         <h3 className="text-xl sm:text-2xl font-bold text-[#252e43] mb-1">
                           {founder.name}
                         </h3>
-                        {/* Tagline under name */}
-                        <p className="text-sm text-[#252e43]/70 italic mb-3">
-                          {isFounder
-                            ? "Visionary Leader | STEM Education Pioneer"
-                            : "Strategic Leader | STEM Education Advocate"}
-                        </p>
                       </div>
 
                       <div className="flex flex-row sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
