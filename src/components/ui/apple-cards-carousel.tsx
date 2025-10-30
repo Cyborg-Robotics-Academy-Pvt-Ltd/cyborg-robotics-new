@@ -159,7 +159,7 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
         <div className="flex justify-center gap-2 mt-4 md:mt-0">
           <button
             className={cn(
-              "relative z-40 h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
+              "relative   h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
               "text-white shadow-lg font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             )}
             onClick={handleScrollLeft}
@@ -169,7 +169,7 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
           </button>
           <button
             className={cn(
-              "relative z-40 h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
+              "relative  h-10 w-10 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] flex items-center justify-center transition-all duration-200",
               "text-white shadow-lg font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             )}
             onClick={handleScrollRight}

@@ -3,7 +3,7 @@ import React from "react";
 
 const Carousel = () => {
   return (
-    <div className="relative w-full overflow-hidden  -mt-8">
+    <div className="relative w-full overflow-hidden  -mt-8 md:-mt-16">
       {/* Clean Video Background */}
       <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[700px] xl:h-[640px] 2xl:h-[700px]">
         <video

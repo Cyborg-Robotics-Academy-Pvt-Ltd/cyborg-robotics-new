@@ -39,7 +39,7 @@ export default function WhoAreWe() {
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative px-4 pb-8 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
+      <section className="relative px-4 pb-1 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
         {/* Enhanced decorative background with floating elements */}
         <div
           aria-hidden="true"
@@ -48,9 +48,9 @@ export default function WhoAreWe() {
 
         <div className="relative max-w-7xl mx-auto">
           {/* Enhanced header section */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-4">
             <div className="inline-flex items-center justify-center mb-6">
-              <h2 className="text-center font-bold flex items-center text-lg md:text-3xl mt-4 md:mt-6 mx-2">
+              <h2 className="text-center font-bold flex items-center text-xl d:text-3xl mt-4 md:mt-6 mx-2">
                 Who <span className="gradient-text"> Are We?</span>
                 <div className=" rounded-full  flex items-center justify-center mr-4  mx-2">
                   <Image

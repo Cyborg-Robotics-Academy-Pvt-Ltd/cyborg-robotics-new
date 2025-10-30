@@ -1,9 +1,14 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  type Variants,
+  type Transition,
+} from "framer-motion";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { X, Shield, HelpCircle, ChevronRight, Users } from "lucide-react";
 // Social icons now use images from public/assets/social-icons
 
 import { menuData, type MenuItem } from "./menu-data";
@@ -23,7 +28,7 @@ interface OverlayMenuProps {
 }
 
 // Animation variants for staggered effect
-const listVariants = {
+const listVariants: Variants = {
   hidden: {},
   visible: {
     transition: {
@@ -32,15 +37,40 @@ const listVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
+      type: "spring" as const,
       stiffness: 300,
       damping: 24,
-    },
+    } as Transition,
+  },
+};
+
+// New animation variants for the overlay sliding down from top
+const overlayVariants: Variants = {
+  hidden: {
+    y: "-50%", // Start above the viewport
+    opacity: 0,
+  },
+  visible: {
+    y: 0, // End at the top of the viewport
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      damping: 25,
+      stiffness: 300,
+    } as Transition,
+  },
+  exit: {
+    y: "-50%", // Exit above the viewport
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+    } as Transition,
   },
 };
 
@@ -216,10 +246,10 @@ export default function OverlayMenu({
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-40 bg-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
         >
           {/* Close button */}
           <button
@@ -260,53 +290,112 @@ export default function OverlayMenu({
                   />
                 </div>
 
-                {/* Right: privacy/support/social */}
-                <div className="flex flex-col justify-between self-start space-y-8">
+                {/* Right: privacy/support/social/FAQs */}
+                <div className="flex flex-col justify-between self-start space-y-2">
                   {/* Privacy Notice */}
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      We care about your data. Read our{" "}
-                      <Link
-                        href="/privacy-policy"
-                        className="underline font-medium hover:text-foreground hover:tracking-wide transition"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Privacy Policy
-                      </Link>
-                      .
-                    </p>
+                  <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <div className="flex items-start space-x-2">
+                      <div className="mt-1 p-1.5 bg-red-100 rounded-lg">
+                        <Shield className="h-4 w-4 text-red-800" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-foreground mb-1">
+                          Privacy Notice
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          We care about your data. Read our{" "}
+                          <Link
+                            href="/privacy-policy"
+                            className="underline font-medium text-red-700 hover:text-red-900 hover:tracking-wide transition"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Privacy Policy
+                          </Link>{" "}
+                          to learn how we protect your information.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Questions Section */}
-                  <div className="space-y-3 border-t border-border/50 border-t-gray-300 pt-4">
-                    <h3 className="text-base font-semibold tracking-wide text-foreground">
-                      Questions?
-                    </h3>
-                    <div className="flex flex-col space-y-2">
+                  {/* FAQ Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <HelpCircle className="h-5 w-5 text-red-700" />
+                      <h3 className="text-lg font-semibold tracking-wide text-foreground">
+                        Frequently Asked Questions
+                      </h3>
+                    </div>
+                    <div className="ml-8 space-y-3">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        className="w-full space-y-2"
+                      >
+                        <AccordionItem
+                          value="item-1"
+                          className="border border-gray-200 rounded-lg px-3 hover:border-[#8D0F11] transition-colors"
+                        >
+                          <AccordionTrigger className="py-2 text-left text-sm font-medium text-gray-800 hover:no-underline">
+                            What age groups do you cater to?
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2 text-sm text-gray-600">
+                            Our robotics courses are designed for children aged
+                            5-18 years with specialized programs for different
+                            age groups.
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem
+                          value="item-2"
+                          className="border border-gray-200 rounded-lg px-3 hover:border-[#8D0F11] transition-colors"
+                        >
+                          <AccordionTrigger className="py-2 text-left text-sm font-medium text-gray-800 hover:no-underline">
+                            Do you offer online classes?
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2 text-sm text-gray-600">
+                            Yes, we offer both online and offline classes to
+                            accommodate different preferences and needs.
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem
+                          value="item-3"
+                          className="border border-gray-200 rounded-lg px-3 hover:border-[#8D0F11] transition-colors"
+                        >
+                          <AccordionTrigger className="py-2 text-left text-sm font-medium text-gray-800 hover:no-underline">
+                            What certifications do you provide?
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2 text-sm text-gray-600">
+                            Students receive internationally recognized
+                            certification from our partners and our own Cyborg
+                            Robotics Academy certificates.
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                       <Link
                         href="/faqs"
-                        className="text-sm text-muted-foreground hover:text-foreground hover:underline transition py-1"
+                        className="inline-flex items-center text-sm text-red-700 hover:text-red-900 hover:underline transition"
                         onClick={() => setIsOpen(false)}
                       >
-                        FAQs
-                      </Link>
-                      <Link
-                        href="/contact-us"
-                        className="text-sm text-muted-foreground hover:text-foreground hover:underline transition py-1"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Contact Us
+                        View all FAQs
+                        <ChevronRight className="h-4 w-4 ml-1" />
                       </Link>
                     </div>
                   </div>
 
                   {/* Social Media Section */}
-                  <div className="space-y-3 border-t border-border/50 border-t-gray-300 pt-4">
-                    <h3 className="text-base font-semibold tracking-wide text-foreground">
-                      Connect with us
-                    </h3>
-                    <div className="flex items-center gap-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Users className="h-5 w-5 text-red-700" />
+                      <h3 className="text-lg font-semibold tracking-wide text-foreground">
+                        Connect with us
+                      </h3>
+                    </div>
+                    <div className="flex items-center space-x-4 ml-8">
                       {[
+                        {
+                          href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
+                          src: "/assets/social-icons/Linkedin.png",
+                          alt: "LinkedIn",
+                        },
                         {
                           href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
                           src: "/assets/social-icons/instagram.webp",
@@ -314,7 +403,7 @@ export default function OverlayMenu({
                         },
                         {
                           href: "https://www.facebook.com/cyborgrobotics/",
-                          src: "/assets/social-icons/facebook.webp",
+                          src: "/assets/social-icons/Facebook.webp",
                           alt: "Facebook",
                         },
                         {
@@ -329,14 +418,14 @@ export default function OverlayMenu({
                           aria-label={alt}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 rounded-xl bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-110"
+                          className="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-all duration-300 transform hover:scale-110 group"
                         >
                           <Image
                             src={src}
                             alt={alt}
                             width={32}
                             height={32}
-                            className="h-8 w-8 rounded-xl object-contain"
+                            className="h-8 w-8 rounded-xl object-contain group-hover:opacity-90"
                           />
                         </Link>
                       ))}

@@ -130,7 +130,7 @@ function TeamCard({ member }: TeamCardProps) {
             className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl "
             style={{ backfaceVisibility: "hidden" }}
           >
-            <div className="w-full h-60 md:h-56 relative">
+            <div className="w-full h-56 md:h-56 relative">
               <Image
                 src={`/${member.image}`}
                 alt={member.name}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import Link from "next/link";
 import OverlayMenu from "./overlay-menu";
@@ -237,7 +237,7 @@ export default function Header() {
                     Login
                   </Button>
                 </Link>
-                <Link href="/enquire">
+                <Link href="https://wa.me/7020354108?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
                   <motion.div
                     initial={{ y: 0 }}
                     animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}
@@ -251,9 +251,9 @@ export default function Header() {
                   >
                     <Button
                       size="sm"
-                      className="bg-[#b92423] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
+                      className="bg-[#b92423] hover:bg-[#ab2623] text-white font-normal rounded-[7px] shadow-lg animate-fade-in"
                     >
-                      Enquire Now
+                      Book Your Free Trial
                     </Button>
                   </motion.div>
                 </Link>
@@ -339,7 +339,7 @@ export default function Header() {
                 Login
               </Button>
             </Link>
-            <Link href="/enquire">
+            <Link href="https://wa.me/7020354108?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
               <motion.div
                 initial={{ y: 0 }}
                 animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}
@@ -353,9 +353,9 @@ export default function Header() {
               >
                 <Button
                   size="sm"
-                  className="bg-[#ab2623] hover:bg-[#ab2623] text-white font-bold rounded-[7px] shadow-lg animate-fade-in"
+                  className="bg-[#ab2623] hover:bg-[#ab2623] text-white font-normal rounded-[7px] shadow-lg animate-fade-in"
                 >
-                  Enquire Now
+                  Book Your Free Trial
                 </Button>
               </motion.div>
             </Link>
