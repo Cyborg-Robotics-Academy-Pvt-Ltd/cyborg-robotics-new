@@ -33,6 +33,13 @@ const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
   },
   {
+    id: "Sirjana",
+    name: "Ms. Sirjana Vishwakrma",
+    title: "Lead Educator | Student Success Counsellor",
+    image: "assets/team/sirjana.png",
+    linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
+  },
+  {
     id: "Omkar",
     name: "Mr. Omkar Shinde",
     title: "Lead Programming Educator",
@@ -47,11 +54,25 @@ const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
   },
   {
-    id: "Sirjana",
-    name: "Ms. Sirjana Vishwakrma",
-    title: "Lead Educator | Student Success Counsellor",
-    image: "assets/team/sirjana.png",
-    linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
+    id: "Mahvish",
+    name: "Ms. Mahvish Fatima",
+    title: "Aero-Electronics Educator",
+    image: "assets/team/mahvish3.png",
+    linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
+  },
+  {
+    id: "Nilesh",
+    name: "Mr. Nilesh Jaiswar",
+    title: "3D Printing & Embedded Systems Educator | Technologist",
+    image: "assets/team/nilesh.png",
+    linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
+  },
+  {
+    id: "Anchal",
+    name: "Ms. Anchal Mishra",
+    title: "3D Printing & Embedded Systems Educator ",
+    image: "assets/team/anchal.png",
+    linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
   {
     id: "Nikita",
@@ -59,27 +80,6 @@ const teamMembers: TeamMember[] = [
     title: "Build-to-Learn Educator",
     image: "assets/team/nikita.png",
     linkedin: "https://www.linkedin.com/in/nikita-mangale20/",
-  },
-  {
-    id: "Nilesh",
-    name: "Mr. Nilesh Jaiswar",
-    title: "3D Printing & Embedded Systems Educator",
-    image: "assets/team/nilesh.png",
-    linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
-  },
-  {
-    id: "Anchal",
-    name: "Ms. Anchal Mishra",
-    title: "3D Printing & Embedded Systems Educator | Technologist",
-    image: "assets/team/anchal.png",
-    linkedin: "https://www.linkedin.com/in/anchalmishra1/",
-  },
-  {
-    id: "Mahvish",
-    name: "Ms. Mahvish Fatima",
-    title: "Aero-Electronics Educator",
-    image: "assets/team/mahvish3.png",
-    linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
   },
 ];
 
