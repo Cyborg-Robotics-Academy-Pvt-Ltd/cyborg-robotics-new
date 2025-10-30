@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useCallback, useState, memo, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -1161,7 +1160,7 @@ const FlowWithProvider = () => {
 //
 // ⚙️ MAIN COMPONENT
 //
-export default function CoursesFlow() {
+const Mycompo = () => {
   return (
     <div
       style={{
@@ -1175,4 +1174,6 @@ export default function CoursesFlow() {
       </ReactFlowProvider>
     </div>
   );
-}
+};
+
+export default Mycompo;
