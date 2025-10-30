@@ -2,6 +2,9 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({ enabled: process.e
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Add output configuration to control serverless function size
+  output: 'standalone',
+  
   images: {
     remotePatterns: [
       {
@@ -25,13 +28,11 @@ const nextConfig = {
       {
          protocol: "https",
          hostname: "placehold.co",
-         port: "",
          pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
-        port: "",
         pathname: "/**",
       },
     ],
@@ -52,7 +53,8 @@ const nextConfig = {
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-navigation-menu",
       "react-icons",
-      "@tabler/icons-react"
+      "@tabler/icons-react",
+      "@xyflow/react"
     ],
   },
   // Enhanced performance optimizations
@@ -94,6 +96,12 @@ const nextConfig = {
           name: 'radix-ui',
           chunks: 'all',
           priority: 10,
+        },
+        xyflow: {
+          test: /[\/]node_modules[\/]@xyflow[\/]/,
+          name: 'xyflow',
+          chunks: 'all',
+          priority: 15,
         },
       },
     };
