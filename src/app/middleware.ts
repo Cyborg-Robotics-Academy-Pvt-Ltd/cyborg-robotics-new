@@ -20,7 +20,6 @@ const staticRoutes = [
   '/media',
   '/media-test',
   '/mouse-demo',
-  '/mycomp',
   '/brevo-dashboard',
 ];
 
