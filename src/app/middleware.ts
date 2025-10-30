@@ -19,7 +19,6 @@ const staticRoutes = [
   '/media-test',
   '/mouse-demo',
   '/brevo-dashboard',
-  '/mycomp',
 ];
 
 // List of course-related static routes
