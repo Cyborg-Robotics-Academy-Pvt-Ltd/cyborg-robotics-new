@@ -1160,7 +1160,7 @@ const FlowWithProvider = () => {
 //
 // ⚙️ MAIN COMPONENT
 //
-const Mycomp = () => {
+export default function Page() {
   return (
     <div
       style={{
@@ -1174,6 +1174,4 @@ const Mycomp = () => {
       </ReactFlowProvider>
     </div>
   );
-};
-
-export default Mycomp;
+}
