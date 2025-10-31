@@ -11,7 +11,9 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// Type definitions
+// ==============================
+// Type Definitions
+// ==============================
 interface TeamMember {
   id: string;
   name: string;
@@ -24,6 +26,9 @@ interface TeamCardProps {
   member: TeamMember;
 }
 
+// ==============================
+// Team Members Data
+// ==============================
 const teamMembers: TeamMember[] = [
   {
     id: "Pratima",
@@ -70,7 +75,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "Anchal",
     name: "Ms. Anchal Mishra",
-    title: "3D Printing & Embedded Systems Educator ",
+    title: "3D Printing & Embedded Systems Educator",
     image: "assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
@@ -83,18 +88,20 @@ const teamMembers: TeamMember[] = [
   },
 ];
 
+// ==============================
+// TeamCard Component (Flip Animation)
+// ==============================
 function TeamCard({ member }: TeamCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleCardClick = () => {
     if (isFlipped && member.linkedin) {
-      // Open LinkedIn profile in new tab
       window.open(member.linkedin, "_blank", "noopener,noreferrer");
     }
   };
 
   return (
-    <div className="h-80 w-[70%] md:h-80 md:w-[100%] mx-auto mb-8">
+    <div className="h-80 w-[85%] sm:w-[70%] md:w-[90%] lg:w-full mx-auto mb-8">
       <div
         className="relative w-full h-full cursor-pointer"
         style={{ perspective: "1000px" }}
@@ -108,12 +115,12 @@ function TeamCard({ member }: TeamCardProps) {
             transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
-          {/* Front */}
+          {/* -------- FRONT -------- */}
           <div
-            className="absolute inset-0 rounded-2xl mx-2 overflow-hidden shadow-xl"
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl bg-white "
             style={{ backfaceVisibility: "hidden" }}
           >
-            <div className="w-full h-56 md:h-56 relative">
+            <div className="w-60 h-60  relative mx-auto">
               <Image
                 src={`/${member.image}`}
                 alt={member.name}
@@ -122,16 +129,18 @@ function TeamCard({ member }: TeamCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-white to-transparent py-4 px-3">
-              <h4 className="text-black font-extrabold text-sm mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
+
+            <div className="absolute bottom-0 left-0 right-0 bg-white py-4 px-3">
+              <h4 className="text-black font-extrabold text-sm mb-1 truncate">
                 {member.name}
               </h4>
-              <p className="text-black/90 text-[10px] font-medium min-h-[36px] line-clamp-3">
+              <p className="text-black/90 text-[11px] font-medium line-clamp-2">
                 {member.title}
               </p>
+
               {/* LinkedIn Icon */}
               {member.linkedin && (
-                <div className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow-md hover:bg-blue-50 transition-colors">
+                <div className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow-md hover:bg-blue-50 transition">
                   <Link
                     href={member.linkedin}
                     target="_blank"
@@ -154,9 +163,9 @@ function TeamCard({ member }: TeamCardProps) {
             </div>
           </div>
 
-          {/* Back - Enhanced UI with Logo */}
+          {/* -------- BACK -------- */}
           <div
-            className="absolute inset-0 rounded-3xl mx-2 overflow-hidden shadow-2xl"
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
@@ -166,16 +175,16 @@ function TeamCard({ member }: TeamCardProps) {
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-900"></div>
 
-            {/* Animated Background Pattern */}
+            {/* Glow Circles */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
             </div>
 
-            {/* Content Container */}
+            {/* Content */}
             <div className="relative z-10 h-full flex flex-col justify-center items-center px-3 py-4 text-white">
-              {/* Logo in White Circle Container - Top */}
-              <div className="mb-2 flex items-center justify-center -mt-12">
+              {/* Logo */}
+              <div className="mb-2 -mt-12">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2 border-2 border-white/30">
                   <Image
                     src="/assets/logo.png"
@@ -187,27 +196,24 @@ function TeamCard({ member }: TeamCardProps) {
                 </div>
               </div>
 
-              {/* Decorative Top Line */}
+              {/* Decorative Line */}
               <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mb-2"></div>
 
-              {/* Name */}
-              <h4 className="font-bold text-base text-center leading-tight mb-1 px-2 whitespace-nowrap overflow-hidden text-ellipsis">
+              <h4 className="font-bold text-base text-center mb-1 px-2 truncate">
                 {member.name}
               </h4>
 
-              {/* Title Badge */}
-              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2 py-0.5 mb-2 max-w-[90%]">
-                <p className="text-[10px] font-normal text-center text-white/90 whitespace-normal break-words line-clamp-3">
+              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-0.5 mb-2 max-w-[90%]">
+                <p className="text-[10px] font-normal text-center text-white/90 line-clamp-3">
                   {member.title}
                 </p>
               </div>
 
-              {/* Decorative Bottom Line */}
               <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mt-1 mb-2"></div>
 
               {/* LinkedIn CTA */}
               {member.linkedin && (
-                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 hover:bg-white/20 transition-all">
+                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1 hover:bg-white/20 transition-all">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="12"
@@ -231,94 +237,89 @@ function TeamCard({ member }: TeamCardProps) {
   );
 }
 
+// ==============================
+// Main Section
+// ==============================
 export default function EnhancedTeamSection() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      {/* Header Section - Minimal spacing */}
-      <div className="text-center mb-4">
-        <div className="inline-flex items-center mb-2 gap-2 px-2 py-[6px] bg-gradient-to-r from-red-50 to-blue-50 rounded-full border border-red-100">
-          <Users size={15} />
-          Our Team
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center mb-2 gap-2 px-3 py-1 bg-gradient-to-r from-red-50 to-blue-50 rounded-full border border-red-100">
+          <Users size={16} />
+          <span className="text-sm font-medium">Our Team</span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl md:text-xl lg:text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
           Meet the{" "}
           <span className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
             Team
           </span>
         </h2>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-12 h-1 bg-gradient-to-r from-transparent to-red-600 rounded-full"></div>
-          <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
-          <div className="w-12 h-1 bg-gradient-to-r from-red-800 to-transparent rounded-full"></div>
+
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-10 h-1 bg-gradient-to-r from-transparent to-red-600 rounded-full"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
+          <div className="w-10 h-1 bg-gradient-to-r from-red-800 to-transparent rounded-full"></div>
         </div>
       </div>
 
-      {/* Team Members Section */}
-      <div className="mt-8 ">
-        {/* Desktop - Show all cards in grid */}
-        <div className="hidden lg:grid lg:grid-cols-4 gap-1 w-[80%] mx-auto">
+      {/* Desktop Grid */}
+      <div className="hidden lg:grid lg:grid-cols-4 gap-6 w-[85%] mx-auto">
+        {teamMembers.map((member) => (
+          <TeamCard key={member.id} member={member} />
+        ))}
+      </div>
+
+      {/* Mobile/Tablet Swiper */}
+      <div className="lg:hidden">
+        <style jsx global>{`
+          .team-swiper .swiper-button-prev,
+          .team-swiper .swiper-button-next {
+            background: #9d2723;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          }
+          .team-swiper .swiper-button-prev:after,
+          .team-swiper .swiper-button-next:after {
+            font-size: 10px;
+            color: white;
+            font-weight: bold;
+          }
+          .team-swiper .swiper-pagination-bullet {
+            background: #cbd5e1;
+            opacity: 1;
+            width: 5px;
+            height: 5px;
+          }
+          .team-swiper .swiper-pagination-bullet-active {
+            background: #b92423;
+            width: 16px;
+            border-radius: 4px;
+          }
+        `}</style>
+
+        <Swiper
+          modules={[Navigation, Pagination]}
+          spaceBetween={10}
+          slidesPerView={1}
+          navigation
+          pagination={{ clickable: true }}
+          className="team-swiper"
+          breakpoints={{
+            640: { slidesPerView: 2, spaceBetween: 12 },
+            768: { slidesPerView: 3, spaceBetween: 16 },
+          }}
+        >
           {teamMembers.map((member) => (
-            <TeamCard key={member.id} member={member} />
+            <SwiperSlide key={member.id}>
+              <TeamCard member={member} />
+            </SwiperSlide>
           ))}
-        </div>
-
-        {/* Mobile & Tablet - Swiper Slider */}
-        <div className="lg:hidden">
-          <style jsx global>{`
-            .team-swiper .swiper-button-prev,
-            .team-swiper .swiper-button-next {
-              background: #9d2723; /* Red background */
-              width: 30px;
-              height: 30px;
-              border-radius: 50%;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            }
-            .team-swiper .swiper-button-prev:after,
-            .team-swiper .swiper-button-next:after {
-              font-size: 10px;
-              color: white; /* White arrows */
-              font-weight: bold;
-            }
-            .team-swiper .swiper-pagination-bullet {
-              background: #cbd5e1;
-              opacity: 1;
-              width: 5px;
-              height: 5px;
-            }
-            .team-swiper .swiper-pagination-bullet-active {
-              background: #2563eb;
-              width: 16px;
-              border-radius: 4px;
-            }
-          `}</style>
-
-          <Swiper
-            modules={[Navigation, Pagination]}
-            spaceBetween={8}
-            slidesPerView={1}
-            navigation
-            pagination={{ clickable: true }}
-            className="team-swiper"
-            breakpoints={{
-              640: {
-                slidesPerView: 2,
-                spaceBetween: 12,
-              },
-              768: {
-                slidesPerView: 3,
-                spaceBetween: 14,
-              },
-            }}
-          >
-            {teamMembers.map((member) => (
-              <SwiperSlide key={member.id}>
-                <TeamCard member={member} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+        </Swiper>
       </div>
-    </div>
+    </section>
   );
 }

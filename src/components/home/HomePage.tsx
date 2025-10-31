@@ -79,12 +79,12 @@ const HomePage: React.FC = () => {
           (scrollY / (documentHeight - windowHeight)) * 100;
 
         // Trigger when user scrolls more than 20% of the page or 400px, whichever comes first
-        if (scrollY > 800 || scrollPercentage > 20) {
+        if (scrollY > 1000 || scrollPercentage > 40) {
           hasTriggered = true;
           // Add a small delay to make it feel more natural
           timeoutId = setTimeout(() => {
             setShowModal(true);
-          }, 500);
+          }, 800);
           window.removeEventListener("scroll", handleScroll);
         }
         ticking = false;

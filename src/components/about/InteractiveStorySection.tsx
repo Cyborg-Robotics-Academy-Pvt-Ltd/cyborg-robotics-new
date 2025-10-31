@@ -177,7 +177,7 @@ export default function InteractiveStorySection() {
                       Together, we asked ourselves one powerful question:{" "}
                       <em className="text-[#a63534] font-semibold">
                         &quot;What if every child could have access to such fun,
-                        practical, and meaningful learning?&quot;
+                        practical and meaningful learning?&quot;
                       </em>
                     </p>
                     <p className="font-semibold text-[#a63534]">
@@ -209,7 +209,7 @@ export default function InteractiveStorySection() {
                     </p>
                     <p className="mb-3">
                       Then, the pandemic hit. Our entire model was built on
-                      hands-on learning with physical kits, and suddenly, we had
+                      hands-on learning with physical kits and suddenly, we had
                       to rethink everything. It was a daunting challenge, but we
                       were determined not to let our students&#39; learning
                       stop. We persevered, creatively restructured our programs,
@@ -298,7 +298,7 @@ export default function InteractiveStorySection() {
                     <p className="mb-3">
                       A movement of{" "}
                       <em className="text-[#a63534] font-semibold">
-                        curious, confident, and innovative young minds
+                        curious, confident and innovative young minds
                       </em>{" "}
                       who see a challenge not as a barrier, but as an
                       opportunity to create.
@@ -313,7 +313,7 @@ export default function InteractiveStorySection() {
                           <span className="text-gray-700">
                             {" "}
                             This brand is the place she wished she had as a
-                            child – a safe space to try, to fail, and to keep
+                            child – a safe space to try, to fail and to keep
                             going.
                           </span>
                         </div>
@@ -519,7 +519,7 @@ export default function InteractiveStorySection() {
                     >
                       <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#a63534] mx-auto mb-2" />
                       <p className="font-semibold text-[#a63534] text-sm sm:text-base">
-                        Learning should be hands-on, personal, and inspiring
+                        Learning should be hands-on, personal and inspiring
                       </p>
                     </motion.div>
                   </div>

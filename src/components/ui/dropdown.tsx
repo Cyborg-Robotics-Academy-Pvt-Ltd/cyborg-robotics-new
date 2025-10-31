@@ -148,8 +148,8 @@ const Dropdown: React.FC<DropdownProps> = ({
         aria-label={label || placeholder}
       >
         {/* Selected Value Display */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 min-w-md flex-1">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center space-x-2 flex-1">
             {multiple ? (
               <div className="flex flex-wrap gap-1">
                 {selectedValues.length > 0 ? (
@@ -207,7 +207,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-44 mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl max-h-60 overflow-hidden">
           {/* Search Input */}
           {searchable && (
             <div className="p-3 border-b border-gray-100">

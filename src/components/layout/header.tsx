@@ -234,10 +234,10 @@ export default function Header() {
                     size="sm"
                     className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
                   >
-                    Login
+                    Log In
                   </Button>
                 </Link>
-                <Link href="https://wa.me/7020354108?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
+                <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
                   <motion.div
                     initial={{ y: 0 }}
                     animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}
@@ -334,12 +334,12 @@ export default function Header() {
             <Link href="/login">
               <Button
                 size="sm"
-                className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#b92423]"
+                className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#ffffff]"
               >
-                Login
+                Log In
               </Button>
             </Link>
-            <Link href="https://wa.me/7020354108?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
+            <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
               <motion.div
                 initial={{ y: 0 }}
                 animate={{ y: [0, -6, 0, -6, 0, -6, 0] }}

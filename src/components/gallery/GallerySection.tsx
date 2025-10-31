@@ -8,11 +8,11 @@ const GallerySection = () => {
   ));
 
   return (
-    <div className="w-full h-full  md:mt-4">
+    <div className="w-full h-full mt-4  md:mt-4">
       <h1 className="text-center font-bold text-2xl md:text-3xl    ">
         Celebrating <span className="gradient-text">Learning</span>
       </h1>
-      <p className="text-center text-sm md:text-base text-gray-600 mt-2">
+      <p className="text-center text-sm md:text-base text-gray-600 mt-1">
         Explore moments from our programs and events
       </p>
       <Carousel items={cards} />

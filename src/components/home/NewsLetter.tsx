@@ -89,7 +89,7 @@ export default function NewsletterSignup() {
       formData.append("NAME", name);
 
       const response = await fetch(
-        "https://f169c0e5.sibforms.com/serve/MUIFAM4LPnfV2EMOYZCSpcO6nK2-pzZSXufUL9HmbXFa6tMCRA-GyfeTkcC2St_fa-jwzNBtkZ3cfu1hgvGi3DxGMTvYz2ePIk4Bx4lNDEyS-HeqNQ77q_IsEQch9D1DPs8atrnaWN_0M4dqk1L94iTO5iQgJuWdCwseIRDyRUFAnGumCJuQ-_9FAsrpT3uGPCZkyoL9Iz9PWfe_",
+        "https://336aa40a.sibforms.com/serve/MUIFAKDvQGoRuu0cDBIubT4L_Wx47gMM37z0htGNj8ZFQSCPGUbMfGoO14TNi0-taj4gT4Tb7o6uf9b4C2VBf8ELYGiVeloaW-g8wZ8kNLV7EQVjxoklrOmPpCKSHFdfs0A9Or1qPmDQq9AR9UEc1j8Zc-XbJS6siiA_YZzzg4N6tFg8jh47_QFr6QB28AvH6zTVWUABTIShj3IKfw==",
         {
           method: "POST",
           body: formData,
