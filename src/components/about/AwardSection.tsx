@@ -14,22 +14,34 @@ interface Award {
 }
 
 const AwardSection = () => {
-  // Initialize Embla with autoplay plugin
+  // Initialize Embla with settings for infinite movement
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center", slidesToScroll: 1 },
+    {
+      loop: true,
+      align: "center",
+      slidesToScroll: 1,
+    },
     [
       Autoplay({
-        delay: 3000, // Changed to 3 seconds as per specification
+        delay: 3000, // 3 seconds between movements
         stopOnInteraction: false,
         stopOnMouseEnter: true,
       }),
     ]
   );
 
-  // Play autoplay when component mounts
+  // Play autoplay when component mounts and handle resize
   React.useEffect(() => {
     if (emblaApi) {
       emblaApi.plugins().autoplay?.play();
+
+      // Reset position on window resize
+      const handleResize = () => {
+        emblaApi.reInit();
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [emblaApi]);
 
@@ -103,7 +115,7 @@ const AwardSection = () => {
           </div>
         </motion.div>
 
-        {/* Carousel Section */}
+        {/* Carousel Section with Infinite Movement */}
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {awards.map((award) => (

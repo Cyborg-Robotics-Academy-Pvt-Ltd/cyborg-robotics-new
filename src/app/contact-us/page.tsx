@@ -15,23 +15,29 @@ import {
 
 import Link from "next/link";
 import Image from "next/image";
+import Dropdown from "@/components/ui/dropdown";
+import { DropdownOption } from "@/components/ui/dropdown";
 
 interface FormData {
   name: string;
   email: string;
+  subject: string;
   message: string;
 }
 
 interface FormErrors {
   name?: string;
   email?: string;
+  subject?: string;
   message?: string;
+  submit?: string;
 }
 
 const Page = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
+    subject: "",
     message: "",
   });
 
@@ -63,6 +69,22 @@ const Page = () => {
     }
   };
 
+  // Handle dropdown change
+  const handleDropdownChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      subject: value,
+    }));
+
+    // Clear error when user selects an option
+    if (errors.subject) {
+      setErrors((prev) => ({
+        ...prev,
+        subject: "",
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
@@ -76,6 +98,10 @@ const Page = () => {
       newErrors.email = "Please enter a valid email";
     }
 
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required";
+    }
+
     if (!formData.message.trim()) {
       newErrors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
@@ -85,6 +111,7 @@ const Page = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -100,17 +127,34 @@ const Page = () => {
           body: JSON.stringify(formData),
         });
 
+        // Log the response for debugging
+        console.log("Email API Response:", response);
+
         if (response.ok) {
           setIsSubmitted(true);
-          setFormData({ name: "", email: "", message: "" });
+          // Reset form data
+          setFormData({ name: "", email: "", subject: "", message: "" });
           console.log(
-            `Email sent successfully to ${formData.email} from ${formData.name} with message: ${formData.message}`
+            `Email sent successfully to ${formData.email} from ${formData.name} with subject: ${formData.subject} and message: ${formData.message}`
           );
         } else {
-          console.error("Failed to send email");
+          // Log error response
+          const errorData = await response.json();
+          console.error("Failed to send email:", errorData);
+          // Show error to user
+          setErrors((prev) => ({
+            ...prev,
+            submit:
+              errorData.error || "Failed to send email. Please try again.",
+          }));
         }
       } catch (error) {
         console.error("Error:", error);
+        // Show error to user
+        setErrors((prev) => ({
+          ...prev,
+          submit: "Network error. Please check your connection and try again.",
+        }));
       } finally {
         setIsSubmitting(false);
         setTimeout(() => {
@@ -119,6 +163,18 @@ const Page = () => {
       }
     }
   };
+
+  const subjectOptions: DropdownOption[] = [
+    { value: "general-inquiry", label: "General Inquiry" },
+    { value: "course-information", label: "Course Information" },
+    { value: "registration", label: "Registration" },
+    { value: "technical-support", label: "Technical Support" },
+    { value: "billing", label: "Billing" },
+    { value: "feedback", label: "Feedback" },
+    { value: "partnership", label: "Partnership Opportunities" },
+    { value: "other", label: "Other" },
+  ];
+
   return (
     <>
       <main
@@ -388,6 +444,20 @@ const Page = () => {
                           )}
                         </div>
 
+                        {/* Subject Dropdown */}
+                        <div className="w-full">
+                          <Dropdown
+                            options={subjectOptions}
+                            value={formData.subject}
+                            onChange={handleDropdownChange}
+                            placeholder="Select a subject"
+                            label="Subject"
+                            required
+                            error={errors.subject}
+                            className="w-full"
+                          />
+                        </div>
+
                         <div>
                           <label
                             className="block text-gray-700 text-sm font-medium mb-2"
@@ -446,6 +516,29 @@ const Page = () => {
                             </>
                           )}
                         </button>
+
+                        {/* Display submit error */}
+                        {errors.submit && (
+                          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                            <p className="text-red-700 text-sm flex items-center">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-2"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                />
+                              </svg>
+                              {errors.submit}
+                            </p>
+                          </div>
+                        )}
 
                         <p className="text-center text-gray-500 text-sm mt-4">
                           We&apos;ll get back to you within 24-48 hours

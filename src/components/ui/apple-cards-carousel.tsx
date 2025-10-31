@@ -6,6 +6,7 @@ import React, {
   createContext,
   useContext,
   useCallback,
+  useMemo,
 } from "react";
 import {
   IconArrowNarrowLeft,
@@ -51,48 +52,51 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
     }
   }, [initialScroll]);
 
-  const checkScrollability = () => {
+  const checkScrollability = useCallback(() => {
     if (carouselRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
-  };
+  }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!carouselRef.current) return;
     setIsDragging(true);
     setStartX(e.pageX - carouselRef.current.offsetLeft);
     setScrollLeft(carouselRef.current.scrollLeft);
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !carouselRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - carouselRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
-    carouselRef.current.scrollLeft = scrollLeft - walk;
-  };
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging || !carouselRef.current) return;
+      e.preventDefault();
+      const x = e.pageX - carouselRef.current.offsetLeft;
+      const walk = (x - startX) * 1.5; // Reduced multiplier for smoother dragging
+      carouselRef.current.scrollLeft = scrollLeft - walk;
+    },
+    [isDragging, startX, scrollLeft]
+  );
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleScrollLeft = () => {
+  const handleScrollLeft = useCallback(() => {
     if (carouselRef.current) {
       const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       carouselRef.current.scrollBy({ left: -cardWidth, behavior: "smooth" });
     }
-  };
+  }, []);
 
-  const handleScrollRight = () => {
+  const handleScrollRight = useCallback(() => {
     if (carouselRef.current) {
       const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       carouselRef.current.scrollBy({ left: cardWidth, behavior: "smooth" });
     }
-  };
+  }, []);
 
-  const handleCardClose = (index: number) => {
+  const handleCardClose = useCallback((index: number) => {
     if (carouselRef.current) {
       const cardWidth = isMobile() ? window.innerWidth * 0.8 : 280;
       const gap = isMobile() ? 6 : 8;
@@ -103,11 +107,23 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
       });
       setCurrentIndex(index);
     }
-  };
+  }, []);
 
-  const isMobile = () => {
+  const isMobile = useCallback(() => {
     return typeof window !== "undefined" && window.innerWidth < 768;
-  };
+  }, []);
+
+  // Memoize event handlers to prevent unnecessary re-renders
+  const eventHandlers = useMemo(
+    () => ({
+      onMouseDown: handleMouseDown,
+      onMouseMove: handleMouseMove,
+      onMouseUp: handleMouseUp,
+      onMouseLeave: handleMouseUp,
+      onScroll: checkScrollability,
+    }),
+    [handleMouseDown, handleMouseMove, handleMouseUp, checkScrollability]
+  );
 
   return (
     <CarouselContext.Provider
@@ -122,15 +138,11 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
             isDragging && "cursor-grabbing"
           )}
           ref={carouselRef}
-          onScroll={checkScrollability}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          {...eventHandlers}
         >
           <div
             className={cn(
-              "flex flex-row justify-start gap-8 pl-8",
+              "flex flex-row justify-start gap-8 pl-8 ",
               "max-w-7xl mx-auto"
             )}
           >
@@ -222,22 +234,15 @@ export const Card = ({
     handleClose()
   );
 
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     setOpen(true);
-  };
+  }, []);
 
   return (
     <>
       <AnimatePresence>
         {open && (
           <div className="fixed inset-0 h-screen z-50 overflow-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="bg-black/40 backdrop-blur-[6px] h-screen w-full fixed inset-0"
-            />
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -249,7 +254,7 @@ export const Card = ({
               }}
               ref={containerRef}
               layoutId={layout ? `card-${card.id}` : undefined}
-              className="max-w-5xl mx-auto mt-20 h-fit dark:bg-neutral-900/30 z-[60] font-sans relative"
+              className="max-w-3xl mx-auto mt-16 mb-16 h-fit dark:bg-neutral-900/30 z-[60] font-sans relative"
             >
               <button
                 className="sticky top-4 h-8 w-8 right-0 ml-auto bg-black dark:bg-white rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-110 hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-md"
@@ -259,16 +264,20 @@ export const Card = ({
                 <IconX className="h-6 w-6 text-neutral-100 dark:text-neutral-900" />
               </button>
               <div
-                className="relative w-full max-w-4xl mx-auto aspect-[9/16]"
+                className="relative w-full max-w-3xl mx-auto"
                 style={{
-                  maxHeight: "90vh",
+                  maxHeight: "80vh",
                 }}
               >
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="w-full h-full"
+                  className="w-full"
+                  style={{
+                    aspectRatio: "9/16",
+                    maxHeight: "80vh",
+                  }}
                 >
                   <BlurImage
                     src={card.src}
@@ -287,9 +296,9 @@ export const Card = ({
         layoutId={layout ? `card-${card.id}` : undefined}
         onClick={handleOpen}
         className="relative aspect-[9/16] 
-                   w-[90vw] sm:w-[250px] md:w-[280px] 
+                   w-[60vw] sm:w-[150px] md:w-[180px] 
                    overflow-hidden rounded-3xl snap-center
-                   max-h-[80vh]"
+                   max-h-[50vh]"
       >
         <BlurImage
           src={card.src}

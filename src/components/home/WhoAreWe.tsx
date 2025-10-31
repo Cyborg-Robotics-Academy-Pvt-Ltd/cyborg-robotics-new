@@ -39,29 +39,30 @@ export default function WhoAreWe() {
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative px-4 pb-1 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
+      <section className="relative  px-4 pb-1 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
         {/* Enhanced decorative background with floating elements */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 overflow-hidden"
         ></div>
 
-        <div className="relative max-w-7xl mx-auto">
+        <div className="relative max-w-7xl mx-auto mt-10">
           {/* Enhanced header section */}
           <div className="text-center mb-4">
-            <div className="inline-flex items-center justify-center mb-6">
-              <h2 className="text-center font-bold flex items-center text-xl d:text-3xl mt-4 md:mt-6 mx-2">
-                Who <span className="gradient-text"> Are We?</span>
-                <div className=" rounded-full  flex items-center justify-center mr-4  mx-2">
-                  <Image
-                    src="/assets/logo1.png"
-                    alt="Cyborg Robotics Logo"
-                    width={60}
-                    height={60}
-                    unoptimized
-                  />
-                </div>
-              </h2>
+            <div className="flex  mb-3 justify-center ">
+              <h1 className="mb-10 text-center">
+                <span className="text-3xl font-bold gradient-text">Who</span>
+                <span className="text-3xl font-bold text-black"> Are We ?</span>
+              </h1>
+              <div className="">
+                <Image
+                  src="/assets/logo1.png"
+                  alt="Cyborg Robotics Logo"
+                  width={60}
+                  height={60}
+                  unoptimized
+                />
+              </div>
             </div>
 
             <p className="text-gray-600 text-lg md:text-xl text-center mb-8 max-w-4xl mx-auto leading-relaxed">
