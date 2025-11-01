@@ -68,14 +68,14 @@ const teamMembers: TeamMember[] = [
   {
     id: "Nilesh",
     name: "Mr. Nilesh Jaiswar",
-    title: "3D Printing & Embedded Systems Educator | Technologist",
+    title: "Lead 3D Printing | Technologist",
     image: "assets/team/nilesh.png",
     linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
     id: "Anchal",
     name: "Ms. Anchal Mishra",
-    title: "3D Printing & Embedded Systems Educator",
+    title: "Lead Embedded Systems Educator | Technologist",
     image: "assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
