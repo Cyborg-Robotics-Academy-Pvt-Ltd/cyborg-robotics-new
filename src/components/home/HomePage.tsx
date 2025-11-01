@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 import TemplateCarousel from "./TemplateCarousel";
@@ -26,40 +26,6 @@ const Testimonials = dynamic(() => import("./Testimonials/Testimonials"), {
 
 const HomePage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-
-  // Refs for each section
-  const featuresRef = useRef(null);
-  const feature2Ref = useRef(null);
-  const whoAreWeRef = useRef(null);
-  const visionSectionRef = useRef(null);
-  const gallerySectionRef = useRef(null);
-  const feedbackRef = useRef(null);
-
-  // InView animations
-  const isFeaturesInView = useInView(featuresRef, {
-    once: true,
-    margin: "-100px",
-  });
-  const isFeature2InView = useInView(feature2Ref, {
-    once: true,
-    margin: "-100px",
-  });
-  const isWhoAreWeInView = useInView(whoAreWeRef, {
-    once: true,
-    margin: "-100px",
-  });
-  const isVisionInView = useInView(visionSectionRef, {
-    once: true,
-    margin: "-100px",
-  });
-  const isGalleryInView = useInView(gallerySectionRef, {
-    once: true,
-    margin: "-100px",
-  });
-  const isFeedbackInView = useInView(feedbackRef, {
-    once: true,
-    margin: "-100px",
-  });
 
   // Show modal only once when user scrolls more - optimized version
   useEffect(() => {
@@ -125,11 +91,7 @@ const HomePage: React.FC = () => {
       <div className="bg-white text-black">
         <HeroSection />
         <motion.div
-          ref={featuresRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isFeaturesInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <Features />
@@ -137,11 +99,7 @@ const HomePage: React.FC = () => {
         <motion.div
           id="why-learn-robotics"
           className="scroll-offset"
-          ref={feature2Ref}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isFeature2InView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <Feature2 />
@@ -149,11 +107,7 @@ const HomePage: React.FC = () => {
         <motion.div
           id="what-we-offer"
           className="scroll-offset"
-          ref={whoAreWeRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isWhoAreWeInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <WhoAreWe />
@@ -161,21 +115,13 @@ const HomePage: React.FC = () => {
         <motion.div
           id="vision-mission"
           className="scroll-offset"
-          ref={visionSectionRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isVisionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <VisionSection />
         </motion.div>
         <motion.div
-          ref={feedbackRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isFeedbackInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <Testimonials />
@@ -183,11 +129,7 @@ const HomePage: React.FC = () => {
         <motion.div
           id="gallery"
           className="scroll-offset"
-          ref={gallerySectionRef}
-          initial={{ opacity: 0, y: 60 }}
-          animate={
-            isGalleryInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }
-          }
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <GallerySection />
