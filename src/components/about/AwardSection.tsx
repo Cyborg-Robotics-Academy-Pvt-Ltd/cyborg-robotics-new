@@ -5,6 +5,7 @@ import { Trophy } from "lucide-react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { InfiniteMovingAwards } from "../ui/infinite-moving-cards-awards";
 
 // Type definition for award data
 interface Award {
@@ -48,28 +49,44 @@ const AwardSection = () => {
   const awards: Award[] = [
     {
       id: 1,
-      title: "World STEM & Robotics Olympiad, National (WSRO) 2025",
-      image: "/assets/awards/WSRO_National.png",
+      title: "Indian Robotics Olympiad (IRO) 2024",
+      image: "/assets/awards/IRO.png",
     },
     {
       id: 2,
-      title: "Robotex India National Championship 2025",
-      image: "/assets/awards/Robotex.png",
+      title: "3rd & Judges' Awards – Jr. Line Following, Ahmedabad",
+      image: "/assets/awards/Jr.Line-following.png",
     },
     {
       id: 3,
-      title: "World STEM & Robotics Olympiad, Regional 2025 (WSRO)",
-      image: "/assets/awards/WSRO_Regional.png",
+      title: "2nd Runner Up – Jr. Robo Race, Ahmedabad",
+      image: "/assets/awards/jr.Robo-race.png",
     },
     {
       id: 4,
-      title: "Indian Robotics Olympiad (IRO) 2024",
-      image: "/assets/awards/IRO.png",
+      title: "Judge’s Award – World STEM & Robotics Olympiad",
+      image: "/assets/awards/Judges-awards.png",
+    },
+    {
+      id: 5,
+      title: "2nd (Beginner) & 3rd (National) – Lego Line Follower 2025",
+      image: "/assets/awards/Lego_Follower.png",
+    },
+    {
+      id: 6,
+      title:
+        "1st (Beginner) & 2nd (Intermediate) – Line Follower, Robotex 2025",
+      image: "/assets/awards/Line-Follower.png",
+    },
+    {
+      id: 7,
+      title: "1st & 3rd Prize – World STEM & Robotics Olympiad",
+      image: "/assets/awards/lego-line-follower.png",
     },
   ];
 
   return (
-    <section className="py-12 sm:py-16 md:py-1 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-12 sm:py-16 md:py-1 bg-white ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -116,7 +133,7 @@ const AwardSection = () => {
         </motion.div>
 
         {/* Carousel Section with Infinite Movement */}
-        <div className="overflow-hidden" ref={emblaRef}>
+        {/* <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {awards.map((award) => (
               <div
@@ -137,6 +154,9 @@ const AwardSection = () => {
               </div>
             ))}
           </div>
+        </div> */}
+        <div className="my-2">
+          <InfiniteMovingAwards awards={awards} speed="normal" />
         </div>
       </div>
     </section>

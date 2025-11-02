@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { Users } from "lucide-react";
+import { Users, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navigation, Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide, SwiperRef } from "swiper/react";
 
 // Import Swiper styles
 import "swiper/css";
@@ -27,6 +27,38 @@ interface TeamCardProps {
 }
 
 // ==============================
+// Custom Navigation Buttons Component
+// ==============================
+const CustomNavigationButton = ({
+  direction,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  onClick: () => void;
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        absolute top-[40%] z-10 flex items-center justify-center
+        w-10 h-10 rounded-full bg-red-800 text-white
+        shadow-lg transform -translate-y-1/2
+        transition-all duration-300 hover:bg-red-800 hover:scale-110
+        focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-opacity-50
+        ${direction === "prev" ? "left-1" : "right-1"}
+      `}
+      aria-label={direction === "prev" ? "Previous slide" : "Next slide"}
+    >
+      {direction === "prev" ? (
+        <ChevronLeft size={20} />
+      ) : (
+        <ChevronRight size={20} />
+      )}
+    </button>
+  );
+};
+
+// ==============================
 // Team Members Data
 // ==============================
 const teamMembers: TeamMember[] = [
@@ -36,20 +68,6 @@ const teamMembers: TeamMember[] = [
     title: "Program Manager",
     image: "assets/team/pratima.png",
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
-  },
-  {
-    id: "Sirjana",
-    name: "Ms. Sirjana Vishwakrma",
-    title: "Lead Educator | Student Success Counsellor",
-    image: "assets/team/sirjana.png",
-    linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
-  },
-  {
-    id: "Omkar",
-    name: "Mr. Omkar Shinde",
-    title: "Lead Programming Educator",
-    image: "assets/team/omkar.png",
-    linkedin: "https://www.linkedin.com/in/omkarshinde711/",
   },
   {
     id: "Shrikant",
@@ -66,6 +84,20 @@ const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
   },
   {
+    id: "Anchal",
+    name: "Ms. Anchal Mishra",
+    title: "Lead Embedded Systems Educator | Technologist",
+    image: "assets/team/anchal.png",
+    linkedin: "https://www.linkedin.com/in/anchalmishra1/",
+  },
+  {
+    id: "Omkar",
+    name: "Mr. Omkar Shinde",
+    title: "Lead Programming Educator",
+    image: "assets/team/omkar.png",
+    linkedin: "https://www.linkedin.com/in/omkarshinde711/",
+  },
+  {
     id: "Nilesh",
     name: "Mr. Nilesh Jaiswar",
     title: "Lead 3D Printing | Technologist",
@@ -73,11 +105,11 @@ const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
-    id: "Anchal",
-    name: "Ms. Anchal Mishra",
-    title: "Lead Embedded Systems Educator | Technologist",
-    image: "assets/team/anchal.png",
-    linkedin: "https://www.linkedin.com/in/anchalmishra1/",
+    id: "Sirjana",
+    name: "Ms. Sirjana Vishwakrma",
+    title: "Lead Educator | Student Success Counsellor",
+    image: "assets/team/sirjana.png",
+    linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
   },
   {
     id: "Nikita",
@@ -241,6 +273,20 @@ function TeamCard({ member }: TeamCardProps) {
 // Main Section
 // ==============================
 export default function EnhancedTeamSection() {
+  const swiperRef = React.useRef<SwiperRef>(null);
+
+  const goNext = () => {
+    if (swiperRef.current && swiperRef.current.swiper) {
+      swiperRef.current.swiper.slideNext();
+    }
+  };
+
+  const goPrev = () => {
+    if (swiperRef.current && swiperRef.current.swiper) {
+      swiperRef.current.swiper.slidePrev();
+    }
+  };
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
@@ -272,40 +318,12 @@ export default function EnhancedTeamSection() {
       </div>
 
       {/* Mobile/Tablet Swiper */}
-      <div className="lg:hidden">
-        <style jsx global>{`
-          .team-swiper .swiper-button-prev,
-          .team-swiper .swiper-button-next {
-            background: #9d2723;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          }
-          .team-swiper .swiper-button-prev:after,
-          .team-swiper .swiper-button-next:after {
-            font-size: 10px;
-            color: white;
-            font-weight: bold;
-          }
-          .team-swiper .swiper-pagination-bullet {
-            background: #cbd5e1;
-            opacity: 1;
-            width: 5px;
-            height: 5px;
-          }
-          .team-swiper .swiper-pagination-bullet-active {
-            background: #b92423;
-            width: 16px;
-            border-radius: 4px;
-          }
-        `}</style>
-
+      <div className="lg:hidden relative">
         <Swiper
+          ref={swiperRef}
           modules={[Navigation, Pagination]}
           spaceBetween={10}
           slidesPerView={1}
-          navigation
           pagination={{ clickable: true }}
           className="team-swiper"
           breakpoints={{
@@ -319,6 +337,24 @@ export default function EnhancedTeamSection() {
             </SwiperSlide>
           ))}
         </Swiper>
+
+        <CustomNavigationButton direction="prev" onClick={goPrev} />
+        <CustomNavigationButton direction="next" onClick={goNext} />
+
+        <style jsx global>{`
+          .team-swiper .swiper-pagination-bullet {
+            background: #cbd5e1;
+            opacity: 1;
+            width: 6px;
+            height: 6px;
+            transition: all 0.3s ease;
+          }
+          .team-swiper .swiper-pagination-bullet-active {
+            background: #b92423;
+            width: 18px;
+            border-radius: 4px;
+          }
+        `}</style>
       </div>
     </section>
   );
