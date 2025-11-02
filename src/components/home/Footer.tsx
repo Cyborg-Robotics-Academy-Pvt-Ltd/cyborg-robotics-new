@@ -141,7 +141,7 @@ const Footer: React.FC<FooterProps> = () => {
             >
               <motion.div>
                 <Image
-                  src="/assets/logo.png"
+                  src="/assets/Cyborg-logo.png"
                   width={150}
                   height={150}
                   alt="logo"
