@@ -94,10 +94,8 @@ const nextConfig = {
           name: 'radix-ui',
           chunks: 'all',
           priority: 10,
-  // NOTE: Removed `output: 'standalone'` to keep the default Next.js build
-  // layout that Vercel's builder expects. Standalone output can change
-  // server artifact layout and cause "Unable to find lambda for route"
-  // errors on Vercel.
+        },
+        xyflow: {
           test: /[\/]node_modules[\/]@xyflow[\/]/,
           name: 'xyflow',
           chunks: 'all',
