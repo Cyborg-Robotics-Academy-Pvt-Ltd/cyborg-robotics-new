@@ -112,7 +112,7 @@ const HorizontalNode = memo(
               width: 16,
               height: 16,
               borderRadius: "50%",
-              background: isCollapsed ? "#ef4444" : "#22c55e",
+              background: isCollapsed ? "#22c55e" : "#ef4444",
               border: "2px solid white",
               cursor: "pointer",
               zIndex: 10,
@@ -135,7 +135,7 @@ const HorizontalNode = memo(
                 background: "white",
               }}
             />
-            {!isCollapsed && (
+            {isCollapsed && (
               <div
                 style={{
                   position: "absolute",
@@ -207,19 +207,19 @@ const initialNodes: Node[] = [
   {
     id: "ROBOTICS",
     type: "horizontal",
-    position: { x: 350, y: 400 },
+    position: { x: 350, y: 600 },
     data: { label: "ROBOTICS", color: "#7e22ce", collapsible: true },
   },
   {
     id: "SKILL",
     type: "horizontal",
-    position: { x: 350, y: 900 },
+    position: { x: 350, y: 700 },
     data: { label: "SKILL BASED", color: "#7e22ce", collapsible: true },
   },
   {
     id: "WORKSHOPS",
     type: "horizontal",
-    position: { x: 350, y: 1200 },
+    position: { x: 320, y: 800 },
     data: { label: "WORKSHOPS & CAMPS", color: "#7e22ce", collapsible: true },
   },
 
@@ -229,25 +229,25 @@ const initialNodes: Node[] = [
   {
     id: "AGE46",
     type: "horizontal",
-    position: { x: 650, y: 100 },
+    position: { x: 650, y: 500 },
     data: { label: "AGE 4-6", color: "#4ade80", collapsible: true },
   },
   {
     id: "AGE69",
     type: "horizontal",
-    position: { x: 650, y: 350 },
+    position: { x: 650, y: 600 },
     data: { label: "AGE 6-9", color: "#8b5cf6", collapsible: true },
   },
   {
     id: "AGE911",
     type: "horizontal",
-    position: { x: 650, y: 600 },
+    position: { x: 650, y: 700 },
     data: { label: "AGE 9-11", color: "#8b5cf6", collapsible: true },
   },
   {
     id: "AGE1116",
     type: "horizontal",
-    position: { x: 650, y: 850 },
+    position: { x: 650, y: 800 },
     data: { label: "AGE 11-16", color: "#ed6565", collapsible: true },
   },
 
@@ -257,7 +257,7 @@ const initialNodes: Node[] = [
   {
     id: "KUBO1",
     type: "horizontal",
-    position: { x: 950, y: 50 },
+    position: { x: 950, y: 450 },
     data: {
       label: "KUBO - 2 Levels",
       color: "#4ade80",
@@ -267,7 +267,7 @@ const initialNodes: Node[] = [
   {
     id: "ESM",
     type: "horizontal",
-    position: { x: 970, y: 130 },
+    position: { x: 970, y: 510 },
     data: {
       label: "Early Simple Machine",
       color: "#4ade80",
@@ -277,7 +277,7 @@ const initialNodes: Node[] = [
   {
     id: "BAMBINO",
     type: "horizontal",
-    position: { x: 950, y: 200 },
+    position: { x: 950, y: 570 },
     data: {
       label: "Bambino Coding - 2 Levels",
       color: "#4ade80",
@@ -291,7 +291,7 @@ const initialNodes: Node[] = [
   {
     id: "KUBO2",
     type: "horizontal",
-    position: { x: 950, y: 380 },
+    position: { x: 950, y: 450 },
     data: {
       label: "KUBO - 1 Level",
       color: "#22d3ee",
@@ -301,7 +301,7 @@ const initialNodes: Node[] = [
   {
     id: "SPM",
     type: "horizontal",
-    position: { x: 950, y: 440 },
+    position: { x: 950, y: 510 },
     data: {
       label: "Simple & Powered Machines",
       color: "#22d3ee",
@@ -311,23 +311,21 @@ const initialNodes: Node[] = [
   {
     id: "CODE1",
     type: "horizontal",
-    position: { x: 950, y: 500 },
+    position: { x: 950, y: 570 },
     data: { label: "Code.org - 2 Levels", color: "#22d3ee" },
   },
   {
     id: "QUARKY1",
     type: "horizontal",
-    position: { x: 950, y: 560 },
+    position: { x: 950, y: 630 },
     data: { label: "Quarky Robotics & AI - 2 Levels", color: "#22d3ee" },
   },
 
-  //
   // AGE 6–9 ADDITIONAL COURSES (Second column)
-  //
   {
     id: "PEECEE",
     type: "horizontal",
-    position: { x: 950, y: 320 },
+    position: { x: 950, y: 690 },
     data: {
       label: "PEECEE - 2 Levels",
       color: "#22d3ee",
@@ -337,7 +335,7 @@ const initialNodes: Node[] = [
   {
     id: "SPIKE1",
     type: "horizontal",
-    position: { x: 950, y: 265 },
+    position: { x: 950, y: 750 },
     data: {
       label: "SPIKE Essential - 2 Levels",
       color: "#22d3ee",
@@ -375,13 +373,13 @@ const initialNodes: Node[] = [
   {
     id: "MECH",
     type: "horizontal",
-    position: { x: 950, y: 850 },
+    position: { x: 930, y: 730 },
     data: { label: "MECHANICAL + CODING", color: "#c084fc", collapsible: true },
   },
   {
     id: "SPRIME",
     type: "horizontal",
-    position: { x: 1300, y: 820 },
+    position: { x: 1300, y: 630 },
     data: {
       label: "SPIKE Prime - 4 Levels",
       color: "#c084fc",
@@ -391,7 +389,7 @@ const initialNodes: Node[] = [
   {
     id: "EV3",
     type: "horizontal",
-    position: { x: 1300, y: 900 },
+    position: { x: 1300, y: 690 },
     data: {
       label: "EV3 - 4 Levels",
       color: "#c084fc",
@@ -401,7 +399,7 @@ const initialNodes: Node[] = [
   {
     id: "SPYTHON",
     type: "horizontal",
-    position: { x: 1300, y: 980 },
+    position: { x: 1300, y: 750 },
     data: {
       label: "SPIKE + Python - Levels",
       color: "#c084fc",
@@ -415,13 +413,13 @@ const initialNodes: Node[] = [
   {
     id: "CODING",
     type: "horizontal",
-    position: { x: 950, y: 1100 },
+    position: { x: 950, y: 790 },
     data: { label: "CORE CODING", color: "#0891b2", collapsible: true },
   },
   {
     id: "APP",
     type: "horizontal",
-    position: { x: 1300, y: 1070 },
+    position: { x: 1300, y: 690 },
     data: {
       label: "Application Designing - 4 Levels",
       color: "#06b6d4",
@@ -431,7 +429,7 @@ const initialNodes: Node[] = [
   {
     id: "WEB",
     type: "horizontal",
-    position: { x: 1300, y: 1150 },
+    position: { x: 1300, y: 750 },
     data: {
       label: "Web Designing - 4 Levels",
       color: "#06b6d4",
@@ -441,37 +439,18 @@ const initialNodes: Node[] = [
   {
     id: "PYTHON",
     type: "horizontal",
-    position: { x: 1300, y: 1230 },
+    position: { x: 1300, y: 810 },
     data: {
       label: "Python",
       color: "#06b6d4",
       link: "/online-courses/python-language",
     },
   },
-  {
-    id: "PYBASIC",
-    type: "horizontal",
-    position: { x: 1650, y: 1200 },
-    data: {
-      label: "Basic - 3 Levels",
-      color: "#06b6d4",
-      link: "/online-courses/python-language",
-    },
-  },
-  {
-    id: "PYADVANCE",
-    type: "horizontal",
-    position: { x: 1650, y: 1280 },
-    data: {
-      label: "Advance - 2 Levels",
-      color: "#06b6d4",
-      link: "/online-courses/python-language",
-    },
-  },
+
   {
     id: "JAVA",
     type: "horizontal",
-    position: { x: 1300, y: 1350 },
+    position: { x: 1300, y: 870 },
     data: {
       label: "Java - 3 Levels",
       color: "#06b6d4",
@@ -481,7 +460,7 @@ const initialNodes: Node[] = [
   {
     id: "DSA",
     type: "horizontal",
-    position: { x: 1300, y: 1430 },
+    position: { x: 1300, y: 930 },
     data: {
       label: "DSA - 2 Levels",
       color: "#06b6d4",
@@ -495,13 +474,13 @@ const initialNodes: Node[] = [
   {
     id: "EMBEDDED",
     type: "horizontal",
-    position: { x: 950, y: 1550 },
+    position: { x: 950, y: 850 },
     data: { label: "EMBEDDED", color: "#0891b2", collapsible: true },
   },
   {
     id: "ARDUINO",
     type: "horizontal",
-    position: { x: 1300, y: 1520 },
+    position: { x: 1300, y: 810 },
     data: {
       label: "Basic Electronics + Arduino - 3 Levels",
       color: "#14b8a6",
@@ -511,14 +490,164 @@ const initialNodes: Node[] = [
   {
     id: "IOT",
     type: "horizontal",
-    position: { x: 1300, y: 1600 },
+    position: { x: 1300, y: 870 },
     data: { label: "IoT", color: "#14b8a6", link: "/classroom-courses/iot" },
   },
   {
     id: "RASP",
     type: "horizontal",
-    position: { x: 1300, y: 1680 },
+    position: { x: 1300, y: 930 },
     data: { label: "Raspberry", color: "#14b8a6" },
+  },
+  // SKILL BASED SUB-BRANCHES (ARTIFICIAL INTELLIGENCE, PBL, EMERGING TECH)
+  {
+    id: "AI_ROOT",
+    type: "horizontal",
+    position: { x: 650, y: 660 },
+    data: {
+      label: "ARTIFICIAL INTELLIGENCE",
+      color: "#f97316",
+      collapsible: true,
+    },
+  },
+  {
+    id: "QUARKY_AI",
+    type: "horizontal",
+    position: { x: 1000, y: 500 },
+    data: { label: "QUARKY", color: "#fb7185" },
+  },
+  {
+    id: "DEEP_LEARNING",
+    type: "horizontal",
+    position: { x: 1000, y: 560 },
+    data: { label: "DEEP LEARNING", color: "#fb7185" },
+  },
+  {
+    id: "MACHINE_LEARNING",
+    type: "horizontal",
+    position: { x: 1000, y: 620 },
+    data: { label: "MACHINE LEARNING", color: "#fb7185" },
+  },
+  {
+    id: "AI_GENERAL",
+    type: "horizontal",
+    position: { x: 1000, y: 680 },
+    data: { label: "AI", color: "#fb7185" },
+  },
+  {
+    id: "AI_INFUSED_ROBOTICS",
+    type: "horizontal",
+    position: { x: 1000, y: 740 },
+    data: { label: "AI INFUSED ROBOTICS", color: "#fb7185" },
+  },
+  {
+    id: "PBL",
+    type: "horizontal",
+    position: { x: 650, y: 800 },
+    data: {
+      label: "PROJECT BASED LEARNING (PBL)",
+      color: "#f59e0b",
+      collapsible: true,
+    },
+  },
+  {
+    id: "PBL_SOFTWARE",
+    type: "horizontal",
+    position: { x: 1000, y: 730 },
+    data: { label: "SOFTWARE", color: "#fbbf24", collapsible: true },
+  },
+
+  {
+    id: "PBL_HARDWARE",
+    type: "horizontal",
+    position: { x: 1000, y: 790 },
+    data: { label: "HARDWARE", color: "#fbbf24", collapsible: true },
+  },
+
+  {
+    id: "EMERGING",
+    type: "horizontal",
+    position: { x: 660, y: 730 },
+    data: { label: "EMERGING TECH", color: "#10b981", collapsible: true },
+  },
+  {
+    id: "DRONES",
+    type: "horizontal",
+    position: { x: 950, y: 660 },
+    data: { label: "DRONES - 4 LEVELS", color: "#34d399", collapsible: true },
+  },
+
+  {
+    id: "3DPRINT",
+    type: "horizontal",
+    position: { x: 950, y: 730 },
+    data: {
+      label: "3D PRINTING - 3 LEVELS",
+      color: "#60a5fa",
+      collapsible: true,
+    },
+  },
+
+  // WORKSHOPS & CAMPS children
+  {
+    id: "WORK_TECH",
+    type: "horizontal",
+    position: { x: 650, y: 740 },
+    data: { label: "TECHNICAL", color: "#06b6d4", collapsible: true },
+  },
+  {
+    id: "W_ROBOTICS_AI",
+    type: "horizontal",
+    position: { x: 950, y: 660 },
+    data: { label: "ROBOTICS & AI", color: "#06b6d4" },
+  },
+  {
+    id: "W_3DPRINT",
+    type: "horizontal",
+    position: { x: 950, y: 730 },
+    data: { label: "3D PRINTING", color: "#06b6d4" },
+  },
+  {
+    id: "W_DRONES",
+    type: "horizontal",
+    position: { x: 950, y: 790 },
+    data: { label: "DRONES", color: "#06b6d4" },
+  },
+  {
+    id: "W_POWERBI",
+    type: "horizontal",
+    position: { x: 950, y: 850 },
+    data: { label: "POWER BI & EXCEL", color: "#06b6d4" },
+  },
+  {
+    id: "WORK_NONTECH",
+    type: "horizontal",
+    position: { x: 650, y: 800 },
+    data: { label: "NON-TECHNICAL", color: "#a78bfa", collapsible: true },
+  },
+  {
+    id: "W_SOFTSKILLS",
+    type: "horizontal",
+    position: { x: 950, y: 740 },
+    data: { label: "SOFT SKILLS", color: "#c4b5fd" },
+  },
+  {
+    id: "W_DESIGN_THINKING",
+    type: "horizontal",
+    position: { x: 950, y: 800 },
+    data: { label: "DESIGN THINKING", color: "#c4b5fd" },
+  },
+  {
+    id: "W_PUBLIC_SPEAK",
+    type: "horizontal",
+    position: { x: 950, y: 860 },
+    data: { label: "PUBLIC SPEAKING", color: "#c4b5fd" },
+  },
+  {
+    id: "W_SCIENCE",
+    type: "horizontal",
+    position: { x: 950, y: 920 },
+    data: { label: "SCIENCE", color: "#c4b5fd" },
   },
 ];
 
@@ -786,6 +915,258 @@ const initialEdges: Edge[] = [
     type: "default",
     style: { stroke: "#14b8a6", strokeWidth: 2 },
   },
+  // SKILL subtree edges
+  {
+    id: "e74",
+    source: "SKILL",
+    target: "AI_ROOT",
+    type: "default",
+    animated: true,
+    style: { stroke: "#7e22ce", strokeWidth: 2.5 },
+  },
+  {
+    id: "e75",
+    source: "SKILL",
+    target: "PBL",
+    type: "default",
+    animated: true,
+    style: { stroke: "#7e22ce", strokeWidth: 2.5 },
+  },
+  {
+    id: "e76",
+    source: "SKILL",
+    target: "EMERGING",
+    type: "default",
+    animated: true,
+    style: { stroke: "#7e22ce", strokeWidth: 2.5 },
+  },
+  {
+    id: "e77",
+    source: "AI_ROOT",
+    target: "QUARKY_AI",
+    type: "default",
+    style: { stroke: "#fb7185", strokeWidth: 2 },
+  },
+  {
+    id: "e78",
+    source: "AI_ROOT",
+    target: "DEEP_LEARNING",
+    type: "default",
+    style: { stroke: "#fb7185", strokeWidth: 2 },
+  },
+  {
+    id: "e79",
+    source: "AI_ROOT",
+    target: "MACHINE_LEARNING",
+    type: "default",
+    style: { stroke: "#fb7185", strokeWidth: 2 },
+  },
+  {
+    id: "e80",
+    source: "AI_ROOT",
+    target: "AI_GENERAL",
+    type: "default",
+    style: { stroke: "#fb7185", strokeWidth: 2 },
+  },
+  {
+    id: "e81",
+    source: "AI_ROOT",
+    target: "AI_INFUSED_ROBOTICS",
+    type: "default",
+    style: { stroke: "#fb7185", strokeWidth: 2 },
+  },
+  {
+    id: "e82",
+    source: "PBL",
+    target: "PBL_SOFTWARE",
+    type: "default",
+    style: { stroke: "#fbbf24", strokeWidth: 2 },
+  },
+  {
+    id: "e83",
+    source: "PBL",
+    target: "PBL_HARDWARE",
+    type: "default",
+    style: { stroke: "#fbbf24", strokeWidth: 2 },
+  },
+  {
+    id: "e84",
+    source: "PBL_SOFTWARE",
+    target: "PBL_SW_BASIC",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e85",
+    source: "PBL_SOFTWARE",
+    target: "PBL_SW_INTERMEDIATE",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e86",
+    source: "PBL_SOFTWARE",
+    target: "PBL_SW_ADVANCE",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e87",
+    source: "PBL_HARDWARE",
+    target: "PBL_HW_BASIC",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e88",
+    source: "PBL_HARDWARE",
+    target: "PBL_HW_INTERMEDIATE",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e89",
+    source: "PBL_HARDWARE",
+    target: "PBL_HW_ADVANCE",
+    type: "default",
+    style: { stroke: "#fde68a", strokeWidth: 2 },
+  },
+  {
+    id: "e90",
+    source: "EMERGING",
+    target: "DRONES",
+    type: "default",
+    style: { stroke: "#34d399", strokeWidth: 2 },
+  },
+  {
+    id: "e91",
+    source: "EMERGING",
+    target: "3DPRINT",
+    type: "default",
+    style: { stroke: "#60a5fa", strokeWidth: 2 },
+  },
+  {
+    id: "e92",
+    source: "DRONES",
+    target: "DRONE_L1",
+    type: "default",
+    style: { stroke: "#bbf7d0", strokeWidth: 2 },
+  },
+  {
+    id: "e93",
+    source: "DRONES",
+    target: "DRONE_L2",
+    type: "default",
+    style: { stroke: "#bbf7d0", strokeWidth: 2 },
+  },
+  {
+    id: "e94",
+    source: "DRONES",
+    target: "DRONE_L3",
+    type: "default",
+    style: { stroke: "#bbf7d0", strokeWidth: 2 },
+  },
+  {
+    id: "e95",
+    source: "DRONES",
+    target: "DRONE_L4",
+    type: "default",
+    style: { stroke: "#bbf7d0", strokeWidth: 2 },
+  },
+  {
+    id: "e96",
+    source: "3DPRINT",
+    target: "3DPRINT_L1",
+    type: "default",
+    style: { stroke: "#bfdbfe", strokeWidth: 2 },
+  },
+  {
+    id: "e97",
+    source: "3DPRINT",
+    target: "3DPRINT_L2",
+    type: "default",
+    style: { stroke: "#bfdbfe", strokeWidth: 2 },
+  },
+  {
+    id: "e98",
+    source: "3DPRINT",
+    target: "3DPRINT_L3",
+    type: "default",
+    style: { stroke: "#bfdbfe", strokeWidth: 2 },
+  },
+  // WORKSHOPS connections
+  {
+    id: "e99",
+    source: "WORKSHOPS",
+    target: "WORK_TECH",
+    type: "default",
+    animated: true,
+    style: { stroke: "#7e22ce", strokeWidth: 2.5 },
+  },
+  {
+    id: "e100",
+    source: "WORKSHOPS",
+    target: "WORK_NONTECH",
+    type: "default",
+    animated: true,
+    style: { stroke: "#7e22ce", strokeWidth: 2.5 },
+  },
+  {
+    id: "e101",
+    source: "WORK_TECH",
+    target: "W_ROBOTICS_AI",
+    type: "default",
+    style: { stroke: "#06b6d4", strokeWidth: 2 },
+  },
+  {
+    id: "e102",
+    source: "WORK_TECH",
+    target: "W_3DPRINT",
+    type: "default",
+    style: { stroke: "#06b6d4", strokeWidth: 2 },
+  },
+  {
+    id: "e103",
+    source: "WORK_TECH",
+    target: "W_DRONES",
+    type: "default",
+    style: { stroke: "#06b6d4", strokeWidth: 2 },
+  },
+  {
+    id: "e104",
+    source: "WORK_TECH",
+    target: "W_POWERBI",
+    type: "default",
+    style: { stroke: "#06b6d4", strokeWidth: 2 },
+  },
+  {
+    id: "e105",
+    source: "WORK_NONTECH",
+    target: "W_SOFTSKILLS",
+    type: "default",
+    style: { stroke: "#a78bfa", strokeWidth: 2 },
+  },
+  {
+    id: "e106",
+    source: "WORK_NONTECH",
+    target: "W_DESIGN_THINKING",
+    type: "default",
+    style: { stroke: "#a78bfa", strokeWidth: 2 },
+  },
+  {
+    id: "e107",
+    source: "WORK_NONTECH",
+    target: "W_PUBLIC_SPEAK",
+    type: "default",
+    style: { stroke: "#a78bfa", strokeWidth: 2 },
+  },
+  {
+    id: "e108",
+    source: "WORK_NONTECH",
+    target: "W_SCIENCE",
+    type: "default",
+    style: { stroke: "#a78bfa", strokeWidth: 2 },
+  },
 ];
 
 // Inner component to use React Flow hooks
@@ -806,6 +1187,16 @@ const FlowWithProvider = () => {
       MECH: true,
       CODING: true,
       EMBEDDED: true,
+      // New SKILL and WORKSHOPS subtrees
+      AI_ROOT: true,
+      PBL: true,
+      PBL_SOFTWARE: true,
+      PBL_HARDWARE: true,
+      EMERGING: true,
+      DRONES: true,
+      "3DPRINT": true,
+      WORK_TECH: true,
+      WORK_NONTECH: true,
     }
   );
   const [isMobile, setIsMobile] = useState(false);
@@ -956,8 +1347,43 @@ const FlowWithProvider = () => {
               PYTHON: ["PYBASIC", "PYADVANCE"],
               JAVA: ["DSA"],
               EMBEDDED: ["ARDUINO", "IOT", "RASP"],
-              SKILL: [],
-              WORKSHOPS: [],
+              // SKILL subtree
+              SKILL: ["AI_ROOT", "PBL", "EMERGING"],
+              AI_ROOT: [
+                "QUARKY_AI",
+                "DEEP_LEARNING",
+                "MACHINE_LEARNING",
+                "AI_GENERAL",
+                "AI_INFUSED_ROBOTICS",
+              ],
+              PBL: ["PBL_SOFTWARE", "PBL_HARDWARE"],
+              PBL_SOFTWARE: [
+                "PBL_SW_BASIC",
+                "PBL_SW_INTERMEDIATE",
+                "PBL_SW_ADVANCE",
+              ],
+              PBL_HARDWARE: [
+                "PBL_HW_BASIC",
+                "PBL_HW_INTERMEDIATE",
+                "PBL_HW_ADVANCE",
+              ],
+              EMERGING: ["DRONES", "3DPRINT"],
+              DRONES: ["DRONE_L1", "DRONE_L2", "DRONE_L3", "DRONE_L4"],
+              "3DPRINT": ["3DPRINT_L1", "3DPRINT_L2", "3DPRINT_L3"],
+              // WORKSHOPS subtree
+              WORKSHOPS: ["WORK_TECH", "WORK_NONTECH"],
+              WORK_TECH: [
+                "W_ROBOTICS_AI",
+                "W_3DPRINT",
+                "W_DRONES",
+                "W_POWERBI",
+              ],
+              WORK_NONTECH: [
+                "W_SOFTSKILLS",
+                "W_DESIGN_THINKING",
+                "W_PUBLIC_SPEAK",
+                "W_SCIENCE",
+              ],
             };
 
             // Get all nodes that should be visible after expansion
@@ -1027,8 +1453,30 @@ const FlowWithProvider = () => {
       PYTHON: ["PYBASIC", "PYADVANCE"],
       JAVA: ["DSA"],
       EMBEDDED: ["ARDUINO", "IOT", "RASP"],
-      SKILL: [],
-      WORKSHOPS: [],
+      // SKILL subtree
+      SKILL: ["AI_ROOT", "PBL", "EMERGING"],
+      AI_ROOT: [
+        "QUARKY_AI",
+        "DEEP_LEARNING",
+        "MACHINE_LEARNING",
+        "AI_GENERAL",
+        "AI_INFUSED_ROBOTICS",
+      ],
+      PBL: ["PBL_SOFTWARE", "PBL_HARDWARE"],
+      PBL_SOFTWARE: ["PBL_SW_BASIC", "PBL_SW_INTERMEDIATE", "PBL_SW_ADVANCE"],
+      PBL_HARDWARE: ["PBL_HW_BASIC", "PBL_HW_INTERMEDIATE", "PBL_HW_ADVANCE"],
+      EMERGING: ["DRONES", "3DPRINT"],
+      DRONES: ["DRONE_L1", "DRONE_L2", "DRONE_L3", "DRONE_L4"],
+      "3DPRINT": ["3DPRINT_L1", "3DPRINT_L2", "3DPRINT_L3"],
+      // WORKSHOPS subtree
+      WORKSHOPS: ["WORK_TECH", "WORK_NONTECH"],
+      WORK_TECH: ["W_ROBOTICS_AI", "W_3DPRINT", "W_DRONES", "W_POWERBI"],
+      WORK_NONTECH: [
+        "W_SOFTSKILLS",
+        "W_DESIGN_THINKING",
+        "W_PUBLIC_SPEAK",
+        "W_SCIENCE",
+      ],
     };
 
     // Check each collapsed node and hide its children
