@@ -219,7 +219,7 @@ function TeamCard({ member }: TeamCardProps) {
               <div className="mb-2 -mt-12">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2 border-2 border-white/30">
                   <Image
-                    src="/assets/logo.png"
+                    src="/assets/Cyborg-logo.png"
                     alt="Logo"
                     width={100}
                     height={100}

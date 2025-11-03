@@ -97,7 +97,7 @@ export default function AboutNavigation({
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/assets/logo.png"
+            src="/assets/Cyborg-logo.png"
             alt="Cyborg Logo"
             width={80}
             height={80}

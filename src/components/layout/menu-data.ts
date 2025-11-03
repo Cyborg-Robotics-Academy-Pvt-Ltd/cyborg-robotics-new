@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, Building2, Calendar, Camera, FileText, Phone, Users, Award, BookCopy, HandHelping, PersonStanding, Drama, Trophy, Sparkles, FolderKanban } from 'lucide-react';
+import { BookOpen, Building2, Calendar, Camera, FileText, Phone, Users, Award, BookCopy, HandHelping, PersonStanding, Drama, Trophy, Sparkles, FolderKanban, Bot, Target, Tent } from 'lucide-react';
 
 export interface MenuItem {
   title: string;
@@ -26,9 +26,12 @@ const mainMenu: MenuItem[] = [
    title: 'Courses',
     icon: BookOpen,
     children: [
-      { title: 'Online Course', href: '/online-courses', icon: BookCopy },
-      { title: 'Offline Course', href: '/classroom-courses', icon: PersonStanding, children: offlineCourseChildren },
-      { title: 'Soft Skills', href: '#', icon: HandHelping },
+      { title: 'MindMap', href: '/mindmap', icon: BookCopy },
+      { title: 'Robotics', href: '/online-courses', icon: Bot },
+      { title: 'Skill Based', href: '/online-courses', icon: Target },
+      { title: 'Workshop & Camps', href: '/online-courses', icon: Tent },
+      // { title: 'Offline Course', href: '/classroom-courses', icon: PersonStanding, children: offlineCourseChildren },
+      // { title: 'Soft Skills', href: '#', icon: HandHelping },
     ],
   },
   {
