@@ -269,7 +269,7 @@ export default function OverlayMenu({
                   className="flex mx-auto"
                 >
                   <Image
-                    src="/assets/logo.png"
+                    src="/assets/Cyborg-logo.png"
                     alt="Cyborg Robotics Academy"
                     width={200}
                     height={32}
