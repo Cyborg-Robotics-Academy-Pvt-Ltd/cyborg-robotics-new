@@ -2,8 +2,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({ enabled: process.e
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
- 
-  
+
   images: {
     remotePatterns: [
       {
