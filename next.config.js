@@ -2,8 +2,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({ enabled: process.e
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add output configuration to control serverless function size
-  output: 'standalone',
+ 
   
   images: {
     remotePatterns: [
@@ -96,8 +95,10 @@ const nextConfig = {
           name: 'radix-ui',
           chunks: 'all',
           priority: 10,
-        },
-        xyflow: {
+  // NOTE: Removed `output: 'standalone'` to keep the default Next.js build
+  // layout that Vercel's builder expects. Standalone output can change
+  // server artifact layout and cause "Unable to find lambda for route"
+  // errors on Vercel.
           test: /[\/]node_modules[\/]@xyflow[\/]/,
           name: 'xyflow',
           chunks: 'all',
