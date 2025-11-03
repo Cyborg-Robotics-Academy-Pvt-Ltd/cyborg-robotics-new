@@ -4,6 +4,14 @@ import type { NextRequest } from 'next/server';
 // List of static routes that should be prioritized over dynamic routes
 const staticRoutes = [
   '/contact-us',
+  '/about-us',
+  '/careers',
+  '/faq',
+  '/testimonials',
+  '/contact',
+  '/courses',
+  '/blog',
+  '/mindmap',
   '/events',
   '/gallery',
   '/login',
