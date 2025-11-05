@@ -1,6 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
-import CourseTemplate from "@/components/CourseTemplate";
+const CourseTemplate = dynamic(() => import("@/components/CourseTemplate"), {
+  ssr: false,
+  loading: () => null,
+});
 import {
   getCourseData,
   getCurriculumByCourseId,
@@ -40,8 +44,17 @@ export default async function Page({
       </div>
     );
   }
-
-  return <CourseTemplate courseId={courseId} curriculumData={curriculum} />;
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      }
+    >
+      <CourseTemplate courseId={courseId} curriculumData={curriculum} />
+    </Suspense>
+  );
 }
 
 export function generateStaticParams() {
