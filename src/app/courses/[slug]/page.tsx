@@ -10,12 +10,11 @@ import {
 export default async function Page({
   params,
 }: {
-  params: Promise<{ slug?: string | string[] }>;
+  params: { slug?: string | string[] };
 }) {
-  const resolvedParams = await params;
-  const slugParam = Array.isArray(resolvedParams?.slug)
-    ? resolvedParams?.slug[0]
-    : resolvedParams?.slug;
+  const slugParam = Array.isArray(params?.slug)
+    ? params?.slug[0]
+    : params?.slug;
   const slug =
     typeof slugParam === "string" ? slugParam.toLowerCase() : undefined;
   if (!slug) {
