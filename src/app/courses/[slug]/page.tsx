@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 // CRITICAL: Set these export options
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-export const revalidate = false;
+export const revalidate = 0;
 
 // Generate static paths for all course slugs
 export async function generateStaticParams() {
@@ -52,6 +52,7 @@ export async function generateMetadata({
   }
 
   const courseId = slugToCourseId[slug];
+  console.log("[metadata] slug:", slug, "→ courseId:", courseId);
 
   if (!courseId) {
     return {
@@ -60,6 +61,7 @@ export async function generateMetadata({
   }
 
   const course = getCourseData(courseId);
+  console.log("[metadata] hasCourse:", Boolean(course));
 
   if (!course) {
     return {
