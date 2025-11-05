@@ -40,10 +40,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }): Promise<Metadata> {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug?.toLowerCase();
+  const slug = params.slug?.toLowerCase();
 
   if (!slug) {
     return {
@@ -52,7 +51,12 @@ export async function generateMetadata({
   }
 
   const courseId = slugToCourseId[slug];
-  console.log("[metadata] slug:", slug, "→ courseId:", courseId);
+  console.error(
+    "[courses/[slug]] [metadata] slug:",
+    slug,
+    "→ courseId:",
+    courseId
+  );
 
   if (!courseId) {
     return {
@@ -61,7 +65,7 @@ export async function generateMetadata({
   }
 
   const course = getCourseData(courseId);
-  console.log("[metadata] hasCourse:", Boolean(course));
+  console.error("[courses/[slug]] [metadata] hasCourse:", Boolean(course));
 
   if (!course) {
     return {
@@ -83,10 +87,9 @@ export async function generateMetadata({
 export default async function CoursePage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug?.toLowerCase();
+  const slug = params.slug?.toLowerCase();
 
   if (!slug) {
     notFound();
@@ -95,6 +98,7 @@ export default async function CoursePage({
   const courseId = slugToCourseId[slug];
 
   if (!courseId) {
+    console.error("[courses/[slug]] Not found: unknown slug", slug);
     notFound();
   }
 
@@ -102,6 +106,10 @@ export default async function CoursePage({
   const curriculum = getCurriculumByCourseId(courseId) || [];
 
   if (!course) {
+    console.error(
+      "[courses/[slug]] Not found: missing course for id",
+      courseId
+    );
     notFound();
   }
 

@@ -109,7 +109,8 @@ const nextConfig = {
   },
   // Compiler optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    // Preserve error/warn logs in production for debugging
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
   // Performance optimizations
   poweredByHeader: false,
