@@ -1,4 +1,5 @@
 // This file contains course data without JSX elements
+import * as curriculum from "../../utils/curriculum";
 
 export interface CourseFeature {
   title: string;
@@ -825,10 +826,8 @@ export const slugToCourseId: Record<string, string> = {
 
 // Resolve curriculum data by course id, using definitions from utils/curriculum
 export const getCurriculumByCourseId = (courseId: string): { id: string; title: string; subtitle: string[] }[] | null => {
-  // Lazy import to avoid bundling if unused
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const curriculum = require("../../utils/curriculum");
-  const map: Record<string, any[]> = {
+  // Resolve curriculum synchronously via ES module import
+  const map: Record<string, { id: string; title: string; subtitle: string[] }[]> = {
     python: curriculum.pythonCourseData,
     arduino: curriculum.ArduinoCurriculum,
     webDesigning: curriculum.WebDesignCurriculum,
