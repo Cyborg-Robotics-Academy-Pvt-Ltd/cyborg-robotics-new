@@ -20,6 +20,11 @@ export interface CourseData {
   imageAlt: string;
   keyFeatures: CourseFeature[];
   courseOverview: string;
+  // Optional commerce/UX fields
+  price?: number;
+  originalPrice?: number;
+  currency?: string; // e.g., "INR", "USD"
+  locale?: string; // e.g., "en-IN"
 }
 
 export const courseData: Record<string, CourseData> = {
@@ -35,6 +40,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "PYTHON.pdf",
     imagePath: "/assets/online-course/python.webp",
     imageAlt: "Python Programming Course",
+    price: 14999,
+    originalPrice: 24999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Core Programming",
@@ -71,6 +80,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ARDUINO.pdf",
     imagePath: "/assets/classroom-course/arduino.webp",
     imageAlt: "Arduino Course",
+    price: 8999,
+    originalPrice: 12999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Hardware Programming",
@@ -107,6 +120,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "WEB DESIGN.pdf",
     imagePath: "/assets/online-course/webdesigning.webp",
     imageAlt: "Web Designing Course",
+    price: 10999,
+    originalPrice: 15999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "HTML Fundamentals",
@@ -143,6 +160,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "JAVA.pdf",
     imagePath: "/assets/online-course/java.webp",
     imageAlt: "Java Programming Course",
+    price: 15999,
+    originalPrice: 21999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Object-Oriented Programming",
@@ -179,6 +200,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ANDROID STUDIO.pdf",
     imagePath: "/assets/classroom-course/androidstudio.png",
     imageAlt: "Android Studio Course",
+    price: 13999,
+    originalPrice: 19999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Android Development",
@@ -215,6 +240,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "MACHINE LEARNING.pdf",
     imagePath: "/assets/online-course/machine-learning.webp",
     imageAlt: "Machine Learning Course",
+    price: 18999,
+    originalPrice: 25999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "ML Fundamentals",
@@ -251,6 +280,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ARTIFICIAL INTELLIGENCE.pdf",
     imagePath: "/assets/online-course/aigif.webp",
     imageAlt: "Artificial Intelligence Course",
+    price: 19999,
+    originalPrice: 28999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "AI Fundamentals",
@@ -287,6 +320,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ROBOTICS EV3.pdf",
     imagePath: "/assets/classroom-course/ev3.webp",
     imageAlt: "Robotics EV3 Course",
+    price: 11999,
+    originalPrice: 16999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Robot Building",
@@ -323,6 +360,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "SPIKE PRIME.pdf",
     imagePath: "/assets/classroom-course/pneumatics.webp",
     imageAlt: "SPIKE Prime Course",
+    price: 9999,
+    originalPrice: 14999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Block-based Programming",
@@ -359,6 +400,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "3D PRINTING.pdf",
     imagePath: "/assets/classroom-course/printing3d.webp",
     imageAlt: "3D Printing Course",
+    price: 8999,
+    originalPrice: 13999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "3D Design",
@@ -395,6 +440,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "BAMBINO CODING.pdf",
     imagePath: "/assets/online-course/bambino.webp",
     imageAlt: "Bambino Coding Course",
+    price: 6999,
+    originalPrice: 9999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Block-based Programming",
@@ -431,6 +480,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ELECTRONICS.pdf",
     imagePath: "/assets/classroom-course/electronics.webp",
     imageAlt: "Electronics Course",
+    price: 10999,
+    originalPrice: 15999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Circuit Design",
@@ -467,6 +520,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "ANIMATION CODING.pdf",
     imagePath: "/assets/online-course/animation-coding.webp",
     imageAlt: "Animation Coding Course",
+    price: 9499,
+    originalPrice: 13999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Visual Programming",
@@ -503,6 +560,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "APP DESIGNING.pdf",
     imagePath: "/assets/online-course/appdesigning.webp",
     imageAlt: "App Designing Course",
+    price: 11999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "UI/UX Design",
@@ -539,6 +600,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "EARLY SIMPLE MACHINES.pdf",
     imagePath: "/assets/classroom-course/earlysimple.webp",
     imageAlt: "Early Simple Machines Course",
+    price: 7999,
+    originalPrice: 11999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Mechanical Principles",
@@ -575,6 +640,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "IOT.pdf",
     imagePath: "/assets/classroom-course/iot.webp",
     imageAlt: "IoT Course",
+    price: 16999,
+    originalPrice: 23999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Device Connectivity",
@@ -611,6 +680,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "Spike Essential.pdf",
     imagePath: "/assets/classroom-course/pneumatics.webp",
     imageAlt: "SPIKE Pneumatics Course",
+    price: 9499,
+    originalPrice: 13999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Pneumatic Systems",
@@ -647,6 +720,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "SIMPLE AND POWER MACHINE.pdf",
     imagePath: "/assets/classroom-course/simple-powered-machines.webp",
     imageAlt: "Simple Powered Machines Course",
+    price: 9999,
+    originalPrice: 14999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Motor Systems",
@@ -683,6 +760,10 @@ export const courseData: Record<string, CourseData> = {
     syllabusFileName: "APP LAB.pdf",
     imagePath: "/assets/classroom-course/applab.png",
     imageAlt: "App Lab Course",
+    price: 7499,
+    originalPrice: 10999,
+    currency: "INR",
+    locale: "en-IN",
     keyFeatures: [
       {
         title: "Block-based Programming",
@@ -716,4 +797,57 @@ export const getCourseData = (courseId: string): CourseData | null => {
 
 export const getAllCourseIds = (): string[] => {
   return Object.keys(courseData);
+};
+
+// Map URL slugs to internal course ids used in courseData
+export const slugToCourseId: Record<string, string> = {
+  "python": "python",
+  "python-language": "python",
+  "arduino": "arduino",
+  "web-designing": "webDesigning",
+  "java": "java",
+  "android-studio": "androidStudio",
+  "machine-learning": "machineLearning",
+  "artificial-intelligence": "artificialIntelligence",
+  "robotics-ev3": "roboticsEv3",
+  "spike-prime": "spikePrime",
+  "3d-printing": "printing3d",
+  "bambino-coding": "bambinoCoding",
+  "electronics": "electronics",
+  "animation-coding": "animationCoding",
+  "app-designing": "appDesigning",
+  "early-simple-machines": "earlySimpleMachines",
+  "iot": "iot",
+  "spike-pneumatics": "spikePneumatics",
+  "simple-powered-machines": "simplePoweredMachines",
+  "app-lab": "appLab",
+};
+
+// Resolve curriculum data by course id, using definitions from utils/curriculum
+export const getCurriculumByCourseId = async (courseId: string): Promise<{ id: string; title: string; subtitle: string[] }[] | null> => {
+  // Lazy import to avoid bundling if unused
+  const curriculum = await import("../../utils/curriculum");
+  const map: Record<string, { id: string; title: string; subtitle: string[] }[]> = {
+    python: curriculum.pythonCourseData,
+    arduino: curriculum.ArduinoCurriculum,
+    webDesigning: curriculum.WebDesignCurriculum,
+    java: curriculum.javaCurriculum,
+    androidStudio: curriculum.AndroidCurriculum,
+    machineLearning: curriculum.MachineLearningCurriculum,
+    artificialIntelligence: curriculum.ArtificialIntelligenceCurriculum,
+    roboticsEv3: curriculum.RoboticsCurriculum,
+    spikePrime: curriculum.SpikePrimeCurriculum,
+    printing3d: curriculum.ThreeDPrintingCurriculum,
+    bambinoCoding: curriculum.BambinoCodingCurriculum,
+    electronics: [],
+    animationCoding: curriculum.AnimationAndCodingCurriculum,
+    appDesigning: [],
+    earlySimpleMachines: curriculum.EarlySimplemachineCurriculum,
+    iot: curriculum.IotCurriculum,
+    spikePneumatics: curriculum.SpikePneumatics,
+    simplePoweredMachines: curriculum.SimplePoweredMachines,
+    appLab: curriculum.AppLabCurriculum,
+  };
+
+  return map[courseId] || null;
 };

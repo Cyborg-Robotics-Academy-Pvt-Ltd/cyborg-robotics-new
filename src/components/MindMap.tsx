@@ -82,7 +82,7 @@ const HorizontalNode = memo(
           borderRadius: 12,
           background: `linear-gradient(135deg, ${data.color || "#3b82f6"} 0%, ${data.color || "#3b82f6"}dd 100%)`,
           color: "#fff",
-          fontWeight: 700,
+          fontWeight: 500,
           fontSize: "14px",
           textAlign: "center",
           minWidth: 160,
@@ -208,19 +208,19 @@ const initialNodes: Node[] = [
     id: "ROBOTICS",
     type: "horizontal",
     position: { x: 350, y: 600 },
-    data: { label: "ROBOTICS", color: "#7e22ce", collapsible: true },
+    data: { label: "ROBOTICS", color: "#AB2623", collapsible: true },
   },
   {
     id: "SKILL",
     type: "horizontal",
     position: { x: 350, y: 700 },
-    data: { label: "SKILL BASED", color: "#7e22ce", collapsible: true },
+    data: { label: "SKILL BASED", color: "#0ea018", collapsible: true },
   },
   {
     id: "WORKSHOPS",
     type: "horizontal",
     position: { x: 320, y: 800 },
-    data: { label: "WORKSHOPS & CAMPS", color: "#7e22ce", collapsible: true },
+    data: { label: "WORKSHOPS & CAMPS", color: "#0000FF", collapsible: true },
   },
 
   //
