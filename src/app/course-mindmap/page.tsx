@@ -3,6 +3,7 @@
 
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
+export const runtime = "nodejs";
 
 const MindMapComponent = dynamic(() => import("@/components/MindMap"), {
   ssr: false,
