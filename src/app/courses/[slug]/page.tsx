@@ -10,7 +10,9 @@ import type { Metadata } from "next";
 
 // Route options: allow handling unknown-at-build-time slugs at runtime
 export const dynamicParams = true;
-export const revalidate = 300;
+// Force dynamic rendering so Vercel creates a server lambda for this route
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Generate static paths for all course slugs
 export async function generateStaticParams() {
