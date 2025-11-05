@@ -1,11 +1,6 @@
-"use client";
 import React, { Suspense } from "react";
-import dynamic from "next/dynamic";
+import CourseTemplate from "@/components/CourseTemplate";
 import { notFound } from "next/navigation";
-const CourseTemplate = dynamic(() => import("@/components/CourseTemplate"), {
-  ssr: false,
-  loading: () => null,
-});
 import {
   getCourseData,
   getCurriculumByCourseId,
