@@ -97,17 +97,17 @@ function PriceAndRating({
     <div className="flex flex-col gap-2">
       {hasPrice && (
         <div className="flex items-center gap-3">
-          {/* <span className="text-2xl font-semibold text-gray-900">
+          <span className="text-2xl font-semibold text-gray-900">
             {formatCurrency(price as number, currency, locale)}
-          </span> */}
+          </span>
           {hasOriginal && (
             <>
-              {/* <span className="text-sm text-gray-500 line-through">
+              <span className="text-sm text-gray-500 line-through">
                 {formatCurrency(originalPrice as number, currency, locale)}
-              </span> */}
-              {/* <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              </span>
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
                 {discount}% off
-              </span> */}
+              </span>
             </>
           )}
         </div>
@@ -168,14 +168,12 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
   };
 
   const handleDownloadSyllabus = () => {
-    if (typeof window !== "undefined") {
-      const link = document.createElement("a");
-      link.href = courseData.syllabusPath;
-      link.download = courseData.syllabusFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const link = document.createElement("a");
+    link.href = courseData.syllabusPath;
+    link.download = courseData.syllabusFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getIconComponent = (iconName: string) => {
@@ -188,7 +186,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
   };
 
   return (
-    <div className="mx-auto max-w-7xl mt-2 md:mt8 overflow-hidden px-2 sm:px-4 lg:px-8">
+    <div className="mx-auto max-w-7xl mt-2 md:mt-24 overflow-hidden px-2 sm:px-4 lg:px-8">
       {/* Floating Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div
@@ -314,11 +312,6 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
                 layout="responsive"
                 unoptimized
                 className="object-cover w-full h-auto max-h-80 sm:max-h-[400px] transition-transform duration-700 hover:scale-110"
-                onError={(e) => {
-                  // Handle image loading errors
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/assets/placeholder-image.png"; // Fallback image
-                }}
               />
 
               {/* Floating elements */}
@@ -484,7 +477,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Join our comprehensive course and transform yourself into a skilled
+          Join our sscomprehensive course and transform yourself into a skilled
           developer with industry-relevant skills.
         </motion.p>
 
