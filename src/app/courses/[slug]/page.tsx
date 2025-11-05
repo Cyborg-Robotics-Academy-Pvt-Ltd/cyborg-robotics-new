@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import nextDynamic from "next/dynamic";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   getCourseData,
   getCurriculumByCourseId,
@@ -94,14 +94,14 @@ export default async function CoursePage({
   const slug = params.slug?.toLowerCase();
 
   if (!slug) {
-    notFound();
+    redirect("/course-mindmap");
   }
 
   const courseId = slugToCourseId[slug];
 
   if (!courseId) {
     console.error("[courses/[slug]] Not found: unknown slug", slug);
-    notFound();
+    redirect("/course-mindmap");
   }
 
   const course = getCourseData(courseId);
@@ -112,7 +112,7 @@ export default async function CoursePage({
       "[courses/[slug]] Not found: missing course for id",
       courseId
     );
-    notFound();
+    redirect("/course-mindmap");
   }
 
   const CourseTemplate = nextDynamic(
