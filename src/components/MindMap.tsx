@@ -261,7 +261,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 2 Levels",
       color: "#4ade80",
-      link: "/classroom-courses/bambino-coding",
+      link: "/courses/bambino-coding",
     },
   },
   {
@@ -271,7 +271,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Early Simple Machine",
       color: "#4ade80",
-      link: "/classroom-courses/early-simple-machines",
+      link: "/courses/early-simple-machines",
     },
   },
   {
@@ -281,7 +281,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Bambino Coding - 2 Levels",
       color: "#4ade80",
-      link: "/online-courses/bambino-coding",
+      link: "/courses/bambino-coding",
     },
   },
 
@@ -295,7 +295,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 1 Level",
       color: "#22d3ee",
-      link: "/classroom-courses/bambino-coding",
+      link: "/courses/bambino-coding",
     },
   },
   {
@@ -305,7 +305,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Simple & Powered Machines",
       color: "#22d3ee",
-      link: "/classroom-courses/simple-powered-machines",
+      link: "/courses/simple-powered-machines",
     },
   },
   {
@@ -329,7 +329,7 @@ const initialNodes: Node[] = [
     data: {
       label: "PEECEE - 2 Levels",
       color: "#22d3ee",
-      link: "/classroom-courses/arduino",
+      link: "/courses/arduino",
     },
   },
   {
@@ -339,7 +339,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Essential - 2 Levels",
       color: "#22d3ee",
-      link: "/classroom-courses/spike-pneumatics",
+      link: "/courses/spike-pneumatics",
     },
   },
 
@@ -353,7 +353,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Early Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/classroom-courses/electronics",
+      link: "/courses/electronics",
     },
   },
   {
@@ -363,7 +363,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Mini Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/classroom-courses/electronics",
+      link: "/courses/electronics",
     },
   },
 
@@ -383,7 +383,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Prime - 4 Levels",
       color: "#c084fc",
-      link: "/classroom-courses/spike-prime",
+      link: "/courses/spike-prime",
     },
   },
   {
@@ -393,7 +393,7 @@ const initialNodes: Node[] = [
     data: {
       label: "EV3 - 4 Levels",
       color: "#c084fc",
-      link: "/classroom-courses/robotics-ev3",
+      link: "/courses/robotics-ev3",
     },
   },
   {
@@ -403,7 +403,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE + Python - Levels",
       color: "#c084fc",
-      link: "/classroom-courses/spike-prime",
+      link: "/courses/spike-prime",
     },
   },
 
@@ -423,7 +423,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Application Designing - 4 Levels",
       color: "#06b6d4",
-      link: "/online-courses/app-designing",
+      link: "/courses/app-designing",
     },
   },
   {
@@ -433,7 +433,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Web Designing - 4 Levels",
       color: "#06b6d4",
-      link: "/online-courses/web-designing",
+      link: "/courses/web-designing",
     },
   },
   {
@@ -443,7 +443,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Python",
       color: "#06b6d4",
-      link: "/online-courses/python-language",
+      link: "/courses/python-language",
     },
   },
 
@@ -454,7 +454,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Java - 3 Levels",
       color: "#06b6d4",
-      link: "/online-courses/java",
+      link: "/courses/java",
     },
   },
   {
@@ -464,7 +464,7 @@ const initialNodes: Node[] = [
     data: {
       label: "DSA - 2 Levels",
       color: "#06b6d4",
-      link: "/online-courses/java",
+      link: "/courses/java",
     },
   },
 
@@ -484,14 +484,14 @@ const initialNodes: Node[] = [
     data: {
       label: "Basic Electronics + Arduino - 3 Levels",
       color: "#14b8a6",
-      link: "/classroom-courses/arduino",
+      link: "/courses/arduino",
     },
   },
   {
     id: "IOT",
     type: "horizontal",
     position: { x: 1300, y: 870 },
-    data: { label: "IoT", color: "#14b8a6", link: "/classroom-courses/iot" },
+    data: { label: "IoT", color: "#14b8a6", link: "/courses/iot" },
   },
   {
     id: "RASP",

@@ -10,9 +10,9 @@ export interface MenuItem {
 }
 
 const offlineCourseChildren: MenuItem[] = [
-    { title: 'Age 5–7', href: '/classroom-courses/bambino-coding' },
-    { title: 'Age 7–10', href: '/classroom-courses/animation-coding' },
-    { title: 'Age 10–12', href: '/classroom-courses/robotics-ev3' },
+    { title: 'Age 5–7', href: '/courses/bambino-coding' },
+    { title: 'Age 7–10', href: '/courses/animation-coding' },
+    { title: 'Age 10–12', href: '/courses/robotics-ev3' },
 ];
 
 const competitionChildren: MenuItem[] = [
@@ -27,11 +27,11 @@ const mainMenu: MenuItem[] = [
     icon: BookOpen,
     children: [
       { title: 'MindMap', href: '/course-mindmap', icon: BookCopy },
-      { title: 'Robotics', href: '/online-courses', icon: Bot },
-      { title: 'Skill Based', href: '/online-courses', icon: Target },
-      { title: 'Workshop & Camps', href: '/online-courses', icon: Tent },
+      { title: 'Robotics', href: '/courses', icon: Bot },
+      { title: 'Skill Based', href: '/courses', icon: Target },
+      { title: 'Workshop & Camps', href: '/courses', icon: Tent },
       { title: 'Workshop & Camps', href: '/test', icon: Tent },
-      // { title: 'Offline Course', href: '/classroom-courses', icon: PersonStanding, children: offlineCourseChildren },
+      // { title: 'Offline Course', href: '/courses', icon: PersonStanding, children: offlineCourseChildren },
       // { title: 'Soft Skills', href: '#', icon: HandHelping },
     ],
   },
