@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import React from "react";
-import Footer from "@/components/home/Footer";
 
+import { Testimonials } from "@/components/ui/course-accordion";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,102 @@ interface CourseTemplateProps {
     title: string;
     subtitle: string[];
   }[];
+}
+
+type PriceAndRatingProps = {
+  price?: number;
+  originalPrice?: number;
+  currency?: string;
+  locale?: string;
+};
+
+function formatCurrency(value: number, currency = "USD", locale = "en-US") {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+    }).format(value);
+  } catch {
+    return `${currency} ${value.toFixed(0)}`;
+  }
+}
+
+function Star({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.09 3.355a1 1 0 00.95.69h3.523c.967 0 1.371 1.24.588 1.81l-2.852 2.073a1 1 0 00-.364 1.118l1.09 3.356c.3.921-.755 1.688-1.538 1.118l-2.852-2.073a1 1 0 00-1.176 0l-2.852 2.073c-.783.57-1.838-.197-1.538-1.118l1.09-3.356a1 1 0 00-.364-1.118L2.798 8.782c-.783-.57-.379-1.81.588-1.81h3.523a1 1 0 00.95-.69l1.09-3.355z" />
+    </svg>
+  );
+}
+
+function StarHalf({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true" className={className}>
+      <defs>
+        <linearGradient id="half">
+          <stop offset="50%" stopColor="currentColor" />
+          <stop offset="50%" stopColor="transparent" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.09 3.355a1 1 0 00.95.69h3.523c.967 0 1.371 1.24.588 1.81l-2.852 2.073a1 1 0 00-.364 1.118l1.09 3.356c.3.921-.755 1.688-1.538 1.118l-2.852-2.073a1 1 0 00-1.176 0l-2.852 2.073c-.783.57-1.838-.197-1.538-1.118l1.09-3.356a1 1 0 00-.364-1.118L2.798 8.782c-.783-.57-.379-1.81.588-1.81h3.523a1 1 0 00.95-.69l1.09-3.355z"
+        fill="url(#half)"
+        stroke="currentColor"
+        className="text-amber-500"
+      />
+    </svg>
+  );
+}
+
+function PriceAndRating({
+  price,
+  originalPrice,
+  currency = "USD",
+  locale = "en-US",
+}: PriceAndRatingProps) {
+  const hasPrice = typeof price === "number" && price > 0;
+  const hasOriginal =
+    typeof originalPrice === "number" &&
+    typeof price === "number" &&
+    originalPrice > price;
+
+  if (!hasPrice) return null;
+
+  const discount =
+    hasOriginal && hasPrice
+      ? Math.round(
+          (((originalPrice as number) - (price as number)) /
+            (originalPrice as number)) *
+            100
+        )
+      : 0;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {hasPrice && (
+        <div className="flex items-center gap-3">
+          {/* <span className="text-2xl font-semibold text-gray-900">
+            {formatCurrency(price as number, currency, locale)}
+          </span> */}
+          {hasOriginal && (
+            <>
+              {/* <span className="text-sm text-gray-500 line-through">
+                {formatCurrency(originalPrice as number, currency, locale)}
+              </span> */}
+              {/* <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                {discount}% off
+              </span> */}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 const CourseTemplate: React.FC<CourseTemplateProps> = ({
@@ -90,7 +186,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
   };
 
   return (
-    <div className="mx-auto max-w-7xl mt-2 md:mt-24 overflow-hidden px-2 sm:px-4 lg:px-8">
+    <div className="mx-auto max-w-7xl mt-2 md:mt-8 overflow-hidden px-2 sm:px-4 lg:px-8">
       {/* Floating Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div
@@ -131,7 +227,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
             className="w-full md:w-10/12 lg:w-1/2 space-y-4 md:space-y-6"
             variants={fadeInUpVariants}
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div>
               <Badge className="mb-4 px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 text-red-800 hover:from-red-200 hover:to-red-300 border-0 shadow-xl backdrop-blur-sm font-medium text-sm">
                 ✨ {courseData.badge}
               </Badge>
@@ -150,6 +246,15 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
             >
               {courseData.subtitle}
             </motion.p>
+
+            <motion.div variants={fadeInUpVariants}>
+              <PriceAndRating
+                price={courseData.price}
+                originalPrice={courseData.originalPrice}
+                currency={courseData.currency || "INR"}
+                locale={courseData.locale || "en-IN"}
+              />
+            </motion.div>
 
             <motion.div
               className="flex flex-wrap gap-2 md:gap-4"
@@ -311,7 +416,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
         </motion.div>
       </motion.div>
 
-      {/* Learning Journey Timeline */}
+      {/* Testimonials */}
       <motion.div
         className="mt-16 sm:mt-20 mx-2 sm:mx-4 lg:mx-8"
         initial={{ opacity: 0, y: 50 }}
@@ -319,117 +424,8 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <div className="p-6 sm:p-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl shadow-xl relative overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(circle at 25% 25%, #f43f5e 0%, transparent 50%), 
-                               radial-gradient(circle at 75% 75%, #3b82f6 0%, transparent 50%)`,
-              }}
-            />
-          </div>
-
-          <motion.h2
-            className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8 sm:mb-12 relative z-10"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="md:text-5xl text-2xl mr-3">🗺️</span>
-            <span className="md:text-5xl text-xl mr-3">
-              Your Learning Adventure
-            </span>
-          </motion.h2>
-
-          <div className="relative flex flex-col gap-6 sm:gap-8 pl-4 sm:pl-4">
-            {/* Enhanced vertical line */}
-            <motion.div
-              className="absolute left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-red-300 via-blue-300 to-purple-300 rounded-full shadow-xl"
-              initial={{ scaleY: 0 }}
-              whileInView={{ scaleY: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              style={{ transformOrigin: "top" }}
-            />
-
-            {curriculumData.map((level, index) => (
-              <motion.div
-                key={level.id}
-                className="relative flex items-start z-10"
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                {/* Enhanced numbered circle */}
-                <motion.div
-                  className="flex flex-col items-center mr-8"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <motion.div
-                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-red-700 text-white text-lg sm:text-xl font-bold shadow-xl border-4 border-white relative"
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <motion.div
-                      className="absolute inset-0 rounded-full bg-gradient-to-br from-red-400 to-red-600 opacity-0"
-                      whileHover={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                    <span className="relative z-10">{index + 1}</span>
-                  </motion.div>
-                </motion.div>
-
-                {/* Enhanced step box */}
-                <motion.div
-                  className="flex-1 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-8 border border-white/50 relative overflow-hidden group"
-                  whileHover={{
-                    scale: 1.02,
-                    boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <motion.div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  <h3 className="text-xl sm:text-2xl font-bold text-red-700 mb-2 sm:mb-3 relative z-10">
-                    {level.title}
-                  </h3>
-                  <p className="text-gray-700 text-base sm:text-lg mb-2 sm:mb-3 relative z-10">
-                    {level.subtitle[0]}
-                  </p>
-                  {level.subtitle.length > 1 && (
-                    <motion.ul
-                      className="space-y-1 sm:space-y-2 relative z-10"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      {level.subtitle
-                        .slice(1)
-                        .map((item: string, itemIndex: number) => (
-                          <motion.li
-                            key={itemIndex}
-                            className="text-gray-600 text-sm sm:text-base flex items-start gap-2"
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ delay: itemIndex * 0.1 }}
-                          >
-                            <span className="text-red-500 mt-1">•</span>
-                            {item}
-                          </motion.li>
-                        ))}
-                    </motion.ul>
-                  )}
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <Testimonials testimonials={curriculumData} />
       </motion.div>
-
       {/* NEW: Additional CTA Section for Course Journey */}
       <motion.div
         className="mt-12 sm:mt-16 mx-2 sm:mx-4 lg:mx-8 p-4 sm:p-8 bg-red-50 rounded-2xl text-center relative overflow-hidden"
@@ -514,8 +510,6 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
           </motion.button>
         </motion.div>
       </motion.div>
-
-      <Footer />
     </div>
   );
 };
