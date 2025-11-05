@@ -168,12 +168,14 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
   };
 
   const handleDownloadSyllabus = () => {
-    const link = document.createElement("a");
-    link.href = courseData.syllabusPath;
-    link.download = courseData.syllabusFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (typeof window !== "undefined") {
+      const link = document.createElement("a");
+      link.href = courseData.syllabusPath;
+      link.download = courseData.syllabusFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -186,7 +188,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
   };
 
   return (
-    <div className="mx-auto max-w-7xl mt-2 md:mt-8 overflow-hidden px-2 sm:px-4 lg:px-8">
+    <div className="mx-auto max-w-7xl mt-2 md:mt8 overflow-hidden px-2 sm:px-4 lg:px-8">
       {/* Floating Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div
@@ -312,6 +314,11 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
                 layout="responsive"
                 unoptimized
                 className="object-cover w-full h-auto max-h-80 sm:max-h-[400px] transition-transform duration-700 hover:scale-110"
+                onError={(e) => {
+                  // Handle image loading errors
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/assets/placeholder-image.png"; // Fallback image
+                }}
               />
 
               {/* Floating elements */}
@@ -477,7 +484,7 @@ const CourseTemplate: React.FC<CourseTemplateProps> = ({
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Join our sscomprehensive course and transform yourself into a skilled
+          Join our comprehensive course and transform yourself into a skilled
           developer with industry-relevant skills.
         </motion.p>
 

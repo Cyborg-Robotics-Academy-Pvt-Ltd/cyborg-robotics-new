@@ -54,6 +54,8 @@ const nextConfig = {
       "@tabler/icons-react",
       "@xyflow/react"
     ],
+    // Add this to fix Turbopack runtime issues
+    serverComponentsExternalPackages: ["firebase-admin"],
   },
   // Enhanced performance optimizations
   webpack: (config) => {
