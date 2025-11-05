@@ -5,7 +5,11 @@ export const revalidate = 60;
 
 import React from "react";
 import CourseTemplate from "@/components/CourseTemplate";
-import { getCourseData, slugToCourseId } from "@/lib/courseData";
+import {
+  getCourseData,
+  getCurriculumByCourseId,
+  slugToCourseId,
+} from "@/lib/courseData";
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
@@ -30,33 +34,10 @@ export default async function Page({ params }: PageProps) {
   }
 
   // Load curriculum data
-  let curriculum = [];
+  let curriculum: { id: string; title: string; subtitle: string[] }[] = [];
   try {
-    const curriculumModule = require("@/utils/curriculum");
-
-    const map: Record<string, any[]> = {
-      python: curriculumModule.pythonCourseData,
-      arduino: curriculumModule.ArduinoCurriculum,
-      webDesigning: curriculumModule.WebDesignCurriculum,
-      java: curriculumModule.javaCurriculum,
-      androidStudio: curriculumModule.AndroidCurriculum,
-      machineLearning: curriculumModule.MachineLearningCurriculum,
-      artificialIntelligence: curriculumModule.ArtificialIntelligenceCurriculum,
-      roboticsEv3: curriculumModule.RoboticsCurriculum,
-      spikePrime: curriculumModule.SpikePrimeCurriculum,
-      printing3d: curriculumModule.ThreeDPrintingCurriculum,
-      bambinoCoding: curriculumModule.BambinoCodingCurriculum,
-      electronics: [],
-      animationCoding: curriculumModule.AnimationAndCodingCurriculum,
-      appDesigning: [],
-      earlySimpleMachines: curriculumModule.EarlySimplemachineCurriculum,
-      iot: curriculumModule.IotCurriculum,
-      spikePneumatics: curriculumModule.SpikePneumatics,
-      simplePoweredMachines: curriculumModule.SimplePoweredMachines,
-      appLab: curriculumModule.AppLabCurriculum,
-    };
-
-    curriculum = map[courseId] || [];
+    const curriculumData = await getCurriculumByCourseId(courseId);
+    curriculum = curriculumData || [];
   } catch (error) {
     console.error("Error loading curriculum:", error);
   }

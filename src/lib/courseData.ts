@@ -826,7 +826,7 @@ export const slugToCourseId: Record<string, string> = {
 // Resolve curriculum data by course id, using definitions from utils/curriculum
 export const getCurriculumByCourseId = async (courseId: string): Promise<{ id: string; title: string; subtitle: string[] }[] | null> => {
   // Lazy import to avoid bundling if unused
-  const curriculum = await import("../../utils/curriculum");
+  const curriculum = await import("@/utils/curriculum.ts");
   const map: Record<string, { id: string; title: string; subtitle: string[] }[]> = {
     python: curriculum.pythonCourseData,
     arduino: curriculum.ArduinoCurriculum,
