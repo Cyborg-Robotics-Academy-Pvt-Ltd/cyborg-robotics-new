@@ -9,8 +9,8 @@ import {
 import type { Metadata } from "next";
 
 // CRITICAL: Set these export options
-export const dynamic = "force-static";
-export const dynamicParams = false;
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 export const revalidate = false;
 
 // Generate static paths for all course slugs
