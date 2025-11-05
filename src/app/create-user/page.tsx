@@ -414,7 +414,7 @@ const CreateUser = () => {
               </div>
 
               {/* Main Icon */}
-              <h2 className="text-5xl font-bold text-gray-900 tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-4">
+              <h2 className="text-5xl font-bold  tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-4">
                 Create New User
               </h2>
 
