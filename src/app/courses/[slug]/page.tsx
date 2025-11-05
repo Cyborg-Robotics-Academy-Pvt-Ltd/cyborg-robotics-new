@@ -13,6 +13,7 @@ export const dynamicParams = true;
 // Force dynamic rendering so Vercel creates a server lambda for this route
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const runtime = "nodejs";
 
 // Generate static paths for all course slugs
 export async function generateStaticParams() {
