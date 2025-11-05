@@ -1,5 +1,5 @@
-"use client";
 import React from "react";
+import { notFound } from "next/navigation";
 import CourseTemplate from "@/components/CourseTemplate";
 import {
   getCourseData,
@@ -10,10 +10,18 @@ import {
 export default async function Page({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug?: string | string[] }>;
 }) {
-  const { slug } = await params;
-  const courseId = slugToCourseId[slug.toLowerCase()];
+  const resolvedParams = await params;
+  const slugParam = Array.isArray(resolvedParams?.slug)
+    ? resolvedParams?.slug[0]
+    : resolvedParams?.slug;
+  const slug =
+    typeof slugParam === "string" ? slugParam.toLowerCase() : undefined;
+  if (!slug) {
+    return notFound();
+  }
+  const courseId = slugToCourseId[slug];
   if (!courseId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -34,4 +42,8 @@ export default async function Page({
   }
 
   return <CourseTemplate courseId={courseId} curriculumData={curriculum} />;
+}
+
+export function generateStaticParams() {
+  return Object.keys(slugToCourseId).map((slug) => ({ slug }));
 }
