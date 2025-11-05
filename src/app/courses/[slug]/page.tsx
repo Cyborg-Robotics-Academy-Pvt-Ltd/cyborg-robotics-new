@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import CourseTemplate from "@/components/CourseTemplate";
+import nextDynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import {
   getCourseData,
@@ -112,6 +112,18 @@ export default async function CoursePage({
     );
     notFound();
   }
+
+  const CourseTemplate = nextDynamic(
+    () => import("@/components/CourseTemplate"),
+    {
+      loading: () => (
+        <div className="w-full h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ),
+      ssr: true,
+    }
+  );
 
   return (
     <Suspense
