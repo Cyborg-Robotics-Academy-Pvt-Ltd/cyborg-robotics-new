@@ -6,39 +6,100 @@ import {
   getCurriculumByCourseId,
   slugToCourseId,
 } from "@/lib/courseData";
+import type { Metadata } from "next";
 
-export default async function Page({
+// Disable dynamic params - only allow slugs from generateStaticParams
+export const dynamicParams = false;
+
+// Generate static paths for all course slugs
+export async function generateStaticParams() {
+  const slugs = Object.keys(slugToCourseId).map((slug) => ({
+    slug: slug.toLowerCase(),
+  }));
+
+  console.log("✅ Generating static params for slugs:", slugs);
+  return slugs;
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({
   params,
 }: {
-  params: { slug?: string | string[] };
-}) {
-  const slugParam = Array.isArray(params?.slug)
-    ? params?.slug[0]
-    : params?.slug;
-  const slug =
-    typeof slugParam === "string" ? slugParam.toLowerCase() : undefined;
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug?.toLowerCase();
+
   if (!slug) {
-    return notFound();
-  }
-  const courseId = slugToCourseId[slug];
-  if (!courseId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Course not found.</p>
-      </div>
-    );
+    return {
+      title: "Course Not Found",
+    };
   }
 
+  const courseId = slugToCourseId[slug];
+
+  if (!courseId) {
+    return {
+      title: "Course Not Found",
+    };
+  }
+
+  const course = getCourseData(courseId);
+
+  if (!course) {
+    return {
+      title: "Course Not Found",
+    };
+  }
+
+  return {
+    title: `${course.title} | Your Site Name`,
+    description: course.description || "Learn with our comprehensive course",
+    openGraph: {
+      title: course.title,
+      description: course.description,
+    },
+  };
+}
+
+// Main page component
+export default async function CoursePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  // Resolve params
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug?.toLowerCase();
+
+  console.log("🔍 Requested slug:", slug);
+
+  // Validate slug exists
+  if (!slug) {
+    console.error("❌ No slug provided");
+    notFound();
+  }
+
+  // Get course ID from slug
+  const courseId = slugToCourseId[slug];
+
+  if (!courseId) {
+    console.error(`❌ Course ID not found for slug: ${slug}`);
+    console.log("Available slugs:", Object.keys(slugToCourseId));
+    notFound();
+  }
+
+  console.log("✅ Found courseId:", courseId);
+
+  // Fetch course data
   const course = getCourseData(courseId);
   const curriculum = getCurriculumByCourseId(courseId) || [];
 
   if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Course data unavailable.</p>
-      </div>
-    );
+    console.error(`❌ Course data not found for courseId: ${courseId}`);
+    notFound();
   }
+
   return (
     <Suspense
       fallback={
@@ -50,8 +111,4 @@ export default async function Page({
       <CourseTemplate courseId={courseId} curriculumData={curriculum} />
     </Suspense>
   );
-}
-
-export function generateStaticParams() {
-  return Object.keys(slugToCourseId).map((slug) => ({ slug }));
 }
