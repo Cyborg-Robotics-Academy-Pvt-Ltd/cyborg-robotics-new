@@ -825,29 +825,36 @@ export const slugToCourseId: Record<string, string> = {
 
 // Resolve curriculum data by course id, using definitions from utils/curriculum
 export const getCurriculumByCourseId = async (courseId: string): Promise<{ id: string; title: string; subtitle: string[] }[] | null> => {
-  // Lazy import to avoid bundling if unused
-  const curriculum = await import("@/utils/curriculum.ts");
-  const map: Record<string, { id: string; title: string; subtitle: string[] }[]> = {
-    python: curriculum.pythonCourseData,
-    arduino: curriculum.ArduinoCurriculum,
-    webDesigning: curriculum.WebDesignCurriculum,
-    java: curriculum.javaCurriculum,
-    androidStudio: curriculum.AndroidCurriculum,
-    machineLearning: curriculum.MachineLearningCurriculum,
-    artificialIntelligence: curriculum.ArtificialIntelligenceCurriculum,
-    roboticsEv3: curriculum.RoboticsCurriculum,
-    spikePrime: curriculum.SpikePrimeCurriculum,
-    printing3d: curriculum.ThreeDPrintingCurriculum,
-    bambinoCoding: curriculum.BambinoCodingCurriculum,
-    electronics: [],
-    animationCoding: curriculum.AnimationAndCodingCurriculum,
-    appDesigning: [],
-    earlySimpleMachines: curriculum.EarlySimplemachineCurriculum,
-    iot: curriculum.IotCurriculum,
-    spikePneumatics: curriculum.SpikePneumatics,
-    simplePoweredMachines: curriculum.SimplePoweredMachines,
-    appLab: curriculum.AppLabCurriculum,
-  };
+  try {
+    // Use a more robust import approach
+    const curriculumModule = await import("@/utils/curriculum");
+    
+    const map: Record<string, { id: string; title: string; subtitle: string[] }[]> = {
+      python: curriculumModule.pythonCourseData,
+      arduino: curriculumModule.ArduinoCurriculum,
+      webDesigning: curriculumModule.WebDesignCurriculum,
+      java: curriculumModule.javaCurriculum,
+      androidStudio: curriculumModule.AndroidCurriculum,
+      machineLearning: curriculumModule.MachineLearningCurriculum,
+      artificialIntelligence: curriculumModule.ArtificialIntelligenceCurriculum,
+      roboticsEv3: curriculumModule.RoboticsCurriculum,
+      spikePrime: curriculumModule.SpikePrimeCurriculum,
+      printing3d: curriculumModule.ThreeDPrintingCurriculum,
+      bambinoCoding: curriculumModule.BambinoCodingCurriculum,
+      electronics: [],
+      animationCoding: curriculumModule.AnimationAndCodingCurriculum,
+      appDesigning: [],
+      earlySimpleMachines: curriculumModule.EarlySimplemachineCurriculum,
+      iot: curriculumModule.IotCurriculum,
+      spikePneumatics: curriculumModule.SpikePneumatics,
+      simplePoweredMachines: curriculumModule.SimplePoweredMachines,
+      appLab: curriculumModule.AppLabCurriculum,
+    };
 
-  return map[courseId] || null;
+    return map[courseId] || null;
+  } catch (error) {
+    console.error("Error importing curriculum for courseId:", courseId, error);
+    // Return empty array as fallback
+    return [];
+  }
 };
