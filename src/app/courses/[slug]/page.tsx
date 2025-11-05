@@ -1,8 +1,5 @@
 // app/courses/[slug]/page.tsx
 
-export const dynamic = "force-dynamic";
-export const revalidate = 60;
-
 import React from "react";
 import CourseTemplate from "@/components/CourseTemplate";
 import {
@@ -12,16 +9,33 @@ import {
 } from "@/lib/courseData";
 import { notFound } from "next/navigation";
 
+// Generate static params for all known course slugs during build time
 export async function generateStaticParams() {
-  return Object.keys(slugToCourseId).map((slug) => ({ slug }));
+  const slugs = Object.keys(slugToCourseId);
+
+  // Return an array of objects with the slug parameter
+  return slugs.map((slug) => ({
+    slug: slug,
+  }));
 }
+
+// Enable dynamic rendering as fallback for slugs not generated at build time
+export const dynamicParams = true;
 
 interface PageProps {
   params: { slug: string };
 }
 
 export default async function Page({ params }: PageProps) {
-  const slug = params.slug.toLowerCase().trim();
+  // Ensure slug is a string and properly formatted
+  const slug =
+    typeof params.slug === "string" ? params.slug.toLowerCase().trim() : "";
+
+  // Check if slug exists in our mapping
+  if (!slugToCourseId.hasOwnProperty(slug)) {
+    return notFound();
+  }
+
   const courseId = slugToCourseId[slug];
 
   if (!courseId) {
@@ -29,6 +43,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   const course = getCourseData(courseId);
+
   if (!course) {
     return notFound();
   }
@@ -39,7 +54,7 @@ export default async function Page({ params }: PageProps) {
     const curriculumData = await getCurriculumByCourseId(courseId);
     curriculum = curriculumData || [];
   } catch (error) {
-    console.error("Error loading curriculum:", error);
+    // Continue with empty curriculum if there's an error
   }
 
   return <CourseTemplate courseId={courseId} curriculumData={curriculum} />;
