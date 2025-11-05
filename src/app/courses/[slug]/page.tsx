@@ -8,17 +8,32 @@ import {
 } from "@/lib/courseData";
 import type { Metadata } from "next";
 
-// Disable dynamic params - only allow slugs from generateStaticParams
+// CRITICAL: Set these export options
+export const dynamic = "force-static";
 export const dynamicParams = false;
+export const revalidate = false;
 
 // Generate static paths for all course slugs
 export async function generateStaticParams() {
-  const slugs = Object.keys(slugToCourseId).map((slug) => ({
+  // Get all slugs
+  const allSlugs = Object.keys(slugToCourseId);
+
+  // Log during build
+  console.log("\n=================================");
+  console.log("🔨 BUILDING STATIC PAGES");
+  console.log("=================================");
+  console.log("Total slugs found:", allSlugs.length);
+  console.log("Slugs:", allSlugs);
+  console.log("=================================\n");
+
+  const params = allSlugs.map((slug) => ({
     slug: slug.toLowerCase(),
   }));
 
-  console.log("✅ Generating static params for slugs:", slugs);
-  return slugs;
+  // Log the params being returned
+  console.log("Generated params:", JSON.stringify(params, null, 2));
+
+  return params;
 }
 
 // Generate metadata for SEO
@@ -68,35 +83,23 @@ export default async function CoursePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  // Resolve params
   const resolvedParams = await params;
   const slug = resolvedParams.slug?.toLowerCase();
 
-  console.log("🔍 Requested slug:", slug);
-
-  // Validate slug exists
   if (!slug) {
-    console.error("❌ No slug provided");
     notFound();
   }
 
-  // Get course ID from slug
   const courseId = slugToCourseId[slug];
 
   if (!courseId) {
-    console.error(`❌ Course ID not found for slug: ${slug}`);
-    console.log("Available slugs:", Object.keys(slugToCourseId));
     notFound();
   }
 
-  console.log("✅ Found courseId:", courseId);
-
-  // Fetch course data
   const course = getCourseData(courseId);
   const curriculum = getCurriculumByCourseId(courseId) || [];
 
   if (!course) {
-    console.error(`❌ Course data not found for courseId: ${courseId}`);
     notFound();
   }
 
