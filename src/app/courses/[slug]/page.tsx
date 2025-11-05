@@ -8,10 +8,9 @@ import {
 } from "@/lib/courseData";
 import type { Metadata } from "next";
 
-// CRITICAL: Set these export options
-export const dynamic = "force-dynamic";
+// Route options: allow handling unknown-at-build-time slugs at runtime
 export const dynamicParams = true;
-export const revalidate = 0;
+export const revalidate = 300;
 
 // Generate static paths for all course slugs
 export async function generateStaticParams() {
