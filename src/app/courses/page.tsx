@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   description: "Explore all Cyborg Robotics Academy courses.",
 };
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default function CoursesIndexPage() {
   redirect("/course-mindmap");
 }
