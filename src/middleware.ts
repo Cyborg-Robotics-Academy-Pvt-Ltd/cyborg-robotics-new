@@ -24,6 +24,9 @@ const pathRedirects: Record<string, string> = {
   '/online-courses/java': '/courses/java',
   '/online-courses/artificial-intelligence': '/courses/artificial-intelligence',
   '/online-courses/machine-learning': '/courses/machine-learning',
+  
+  // Direct course ID mappings for consistency
+  '/courses/python': '/courses/python-language',
 };
 
 export function middleware(request: NextRequest) {
@@ -43,7 +46,6 @@ export const config = {
   matcher: [
     '/classroom-courses/:path*',
     '/online-courses/:path*',
+    '/courses/python',
   ],
 };
-
-

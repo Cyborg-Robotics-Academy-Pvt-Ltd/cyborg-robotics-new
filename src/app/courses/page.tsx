@@ -1,6 +1,28 @@
 import Link from "next/link";
 import { courseData } from "@/data/courseData";
 
+// Function to convert course IDs to URL-friendly slugs
+const courseIdToSlug = (id: string) => {
+  const slugMap: Record<string, string> = {
+    python: "python-language",
+    webDesigning: "web-designing",
+    appDesigning: "app-designing",
+    machineLearning: "machine-learning",
+    artificialIntelligence: "artificial-intelligence",
+    roboticsEv3: "robotics-ev3",
+    spikePrime: "spike-prime",
+    printing3d: "3d-printing",
+    bambinoCoding: "bambino-coding",
+    animationCoding: "animation-coding",
+    appLab: "app-lab",
+    simplePoweredMachines: "simple-powered-machines",
+    spikePneumatics: "spike-pneumatics",
+    earlySimpleMachines: "early-simple-machines",
+  };
+
+  return slugMap[id] || id;
+};
+
 export default function CoursesPage() {
   const courses = Object.values(courseData);
 
@@ -12,7 +34,7 @@ export default function CoursesPage() {
         {courses.map((course) => (
           <Link
             key={course.id}
-            href={`/courses/${course.id}`}
+            href={`/courses/${courseIdToSlug(course.id)}`}
             className="group border rounded-2xl overflow-hidden shadow hover:shadow-lg transition"
           >
             <img
