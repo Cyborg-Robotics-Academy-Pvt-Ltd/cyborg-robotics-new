@@ -27,7 +27,7 @@ export interface CourseData {
 }
 
 export const courseData: Record<string, CourseData> = {
-  python: {
+  "python": {
     id: "python",
     title: "PYTHON PROGRAMMING",
     subtitle: "Learn the world's fastest-growing programming language for web development, data science, AI and more",
@@ -67,7 +67,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Python is a powerful programming language that lets you work quickly and integrate systems more effectively. As a general-purpose, high-level language, Python allows you to focus on core functionality of applications by taking care of common programming tasks. Python's simple syntax emphasizes readability, reducing the cost of program maintenance. Its comprehensive standard library and interpreter are freely available for all major platforms, making it perfect for developing desktop GUI applications, websites, web applications, data analysis tools and even artificial intelligence systems. Our comprehensive course covers Python from basics to advanced concepts across six progressive levels.",
   },
-  arduino: {
+  "arduino": {
     id: "arduino",
     title: "Arduino",
     subtitle: "Build interactive electronics projects with Arduino programming and hardware integration",
@@ -107,8 +107,8 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Arduino is an open-source electronics platform based on easy-to-use hardware and software. It's intended for anyone making interactive projects. Arduino boards are able to read inputs - light on a sensor, a finger on a button, or a Twitter message - and turn it into an output - activating a motor, turning on an LED, publishing something online. You can tell your board what to do by sending a set of instructions to the microcontroller on the board. Our comprehensive Arduino course covers everything from basic electronics concepts to advanced IoT projects.",
   },
-  webDesigning: {
-    id: "webDesigning",
+  "web-designing": {
+    id: "web-designing",
     title: "Web Designing",
     subtitle: "Learn to build beautiful, responsive and interactive websites with HTML and CSS",
     badge: "Frontend Development Course",
@@ -147,7 +147,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Web design encompasses many different skills and disciplines in the production and maintenance of websites. The different areas of web design include web graphic design; user interface design; authoring, including standardized code and proprietary software; user experience design; and search engine optimization. Our comprehensive web designing course covers HTML, CSS, responsive design, and modern web development practices to create stunning, functional websites.",
   },
-  java: {
+  "java": {
     id: "java",
     title: "JAVA PROGRAMMING",
     subtitle: "Master object-oriented programming with Java for enterprise applications and Android development",
@@ -187,7 +187,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Java is a high-level, class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible. It is a general-purpose programming language intended to let programmers write once, run anywhere, meaning that compiled Java code can run on all platforms that support Java without the need to recompile. Our comprehensive Java course covers everything from basic syntax to advanced enterprise development concepts.",
   },
-  androidStudio: {
+  "androidStudio": {
     id: "androidStudio",
     title: "ANDROID STUDIO",
     subtitle: "Build professional Android applications using Android Studio and modern development practices",
@@ -227,7 +227,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Android Studio is the official integrated development environment for Google's Android operating system, built on JetBrains' IntelliJ IDEA software and designed specifically for Android development. Our comprehensive Android Studio course covers everything from setting up the development environment to publishing apps on the Google Play Store, including modern Android development practices and the latest features.",
   },
-  machineLearning: {
+  "machineLearning": {
     id: "machineLearning",
     title: "MACHINE LEARNING",
     subtitle: "Master the fundamentals of machine learning and build intelligent applications",
@@ -267,7 +267,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Machine Learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed. Our comprehensive machine learning course covers supervised and unsupervised learning, neural networks, deep learning, and practical applications in various industries. Students will learn to build and deploy machine learning models using popular frameworks like TensorFlow and scikit-learn.",
   },
-  artificialIntelligence: {
+  "artificialIntelligence": {
     id: "artificialIntelligence",
     title: "ARTIFICIAL INTELLIGENCE",
     subtitle: "Explore the cutting-edge world of AI and build intelligent systems",
@@ -307,7 +307,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Artificial Intelligence is the simulation of human intelligence in machines that are programmed to think and learn like humans. Our comprehensive AI course covers machine learning, deep learning, computer vision, natural language processing, and robotics. Students will learn to build intelligent systems that can perform tasks that typically require human intelligence.",
   },
-  roboticsEv3: {
+  "roboticsEv3": {
     id: "roboticsEv3",
     title: "ROBOTICS EV3",
     subtitle: "Build and program intelligent robots using LEGO Mindstorms EV3",
@@ -347,7 +347,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "LEGO Mindstorms EV3 is a robotics kit that allows students to build and program robots. Our comprehensive robotics course combines mechanical engineering, programming, and problem-solving skills. Students will learn to design, build, and program robots that can navigate mazes, pick up objects, and compete in various challenges.",
   },
-  spikePrime: {
+  "spikePrime": {
     id: "spikePrime",
     title: "SPIKE PRIME",
     subtitle: "Learn robotics and coding with LEGO Education SPIKE Prime",
@@ -387,7 +387,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware, and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
   },
-  printing3d: {
+  "printing3d": {
     id: "printing3d",
     title: "3D PRINTING",
     subtitle: "Learn to design and print 3D objects using modern 3D printing technology",
@@ -427,7 +427,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "3D printing is a manufacturing process that creates three-dimensional objects by depositing materials layer by layer. Our comprehensive 3D printing course covers 3D design, slicing software, printing technology, and post-processing techniques. Students will learn to design and print their own 3D objects using modern 3D printing technology.",
   },
-  bambinoCoding: {
+  "bambinoCoding": {
     id: "bambinoCoding",
     title: "BAMBINO CODING",
     subtitle: "Introduce young minds to programming with fun, interactive coding activities",
@@ -467,7 +467,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Bambino Coding is designed specifically for young learners to introduce them to the exciting world of programming. Using age-appropriate tools and visual programming languages, children learn to create games, animations, and interactive stories while developing essential computational thinking skills. Our course makes coding fun and accessible, building a strong foundation for future learning.",
   },
-  electronics: {
+  "electronics": {
     id: "electronics",
     title: "ELECTRONICS",
     subtitle: "Learn the fundamentals of electronic circuits and electronic components",
@@ -507,7 +507,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Electronics is the foundation of modern technology. Our comprehensive electronics course covers everything from basic circuit theory to advanced electronic systems. Students learn to work with electronic components, design circuits, and build practical projects. This course provides hands-on experience with real electronic components and teaches essential skills for understanding and working with electronic devices.",
   },
-  animationCoding: {
+  "animationCoding": {
     id: "animationCoding",
     title: "ANIMATION CODING",
     subtitle: "Create stunning animations and visual effects through programming",
@@ -547,7 +547,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Animation Coding combines the power of programming with the creativity of visual arts. Students learn to create stunning animations, interactive graphics, and visual effects using code. This course teaches both the technical skills of animation programming and the artistic principles of visual design, allowing students to bring their creative ideas to life through code.",
   },
-  appDesigning: {
+  "appDesigning": {
     id: "appDesigning",
     title: "APP DESIGNING",
     subtitle: "Design beautiful and functional mobile applications with modern UI/UX principles",
@@ -587,7 +587,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "App Designing focuses on creating user-friendly and visually appealing mobile applications. Students learn modern UI/UX design principles, user research, wireframing, prototyping, and using industry-standard design tools. This course prepares students to design mobile apps that are both beautiful and functional, with a focus on user experience and accessibility.",
   },
-  earlySimpleMachines: {
+  "earlySimpleMachines": {
     id: "earlySimpleMachines",
     title: "EARLY SIMPLE MACHINES",
     subtitle: "Explore basic mechanical principles through hands-on building and experimentation",
@@ -627,7 +627,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Early Simple Machines introduces students to fundamental mechanical principles through hands-on building and experimentation. Students learn about levers, pulleys, gears, and other simple machines while constructing working models. This course builds a strong foundation in mechanical engineering concepts and develops problem-solving skills through practical projects.",
   },
-  iot: {
+  "iot": {
     id: "iot",
     title: "INTERNET OF THINGS (IoT)",
     subtitle: "Connect devices and create smart systems that communicate over the internet",
@@ -667,7 +667,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices, and automate processes. Students learn about sensors, microcontrollers, wireless communication, and cloud platforms to create connected solutions for real-world problems.",
   },
-  spikePneumatics: {
+  "spikePneumatics": {
     id: "spikePneumatics",
     title: "SPIKE PNEUMATICS",
     subtitle: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
@@ -707,7 +707,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "SPIKE Pneumatics introduces students to pneumatic systems using LEGO Education SPIKE components. Students learn about air pressure, flow control, and pneumatic mechanisms while building working models. This course combines mechanical engineering with automation concepts, teaching students to design and control air-powered systems.",
   },
-  simplePoweredMachines: {
+  "simplePoweredMachines": {
     id: "simplePoweredMachines",
     title: "SIMPLE POWERED MACHINES",
     subtitle: "Explore powered mechanical systems and motor-driven mechanisms",
@@ -747,7 +747,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Simple Powered Machines focuses on mechanical systems that use motors and power sources. Students learn about electric motors, power transmission systems, gears, and control mechanisms. This course teaches the principles of powered mechanical systems and how to design and build motor-driven devices.",
   },
-  appLab: {
+  "appLab": {
     id: "appLab",
     title: "APP LAB",
     subtitle: "Create mobile applications using MIT App Inventor and block-based programming",
