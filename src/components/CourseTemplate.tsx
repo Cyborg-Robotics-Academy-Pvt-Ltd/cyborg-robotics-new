@@ -1,7 +1,7 @@
 "use client";
 
 import { CourseData } from "@/data/courseData";
-import { BookOpen, Clock, IndianRupee, Download } from "lucide-react";
+import { BookOpen, Clock, IndianRupee, Download, Star } from "lucide-react";
 import * as Icons from "lucide-react";
 
 interface CourseTemplateProps {
@@ -9,6 +9,18 @@ interface CourseTemplateProps {
 }
 
 export default function CourseTemplate({ course }: CourseTemplateProps) {
+  // Create a safer way to access icons without type casting the entire module
+  const getIconComponent = (iconName: string) => {
+    // Use a type guard to safely access icons
+    const icon = (
+      Icons as unknown as Record<
+        string,
+        React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined
+      >
+    )[iconName];
+    return icon || Star;
+  };
+
   return (
     <div className="max-w-6xl mx-auto py-16 px-6">
       {/* Header Section */}
@@ -66,7 +78,7 @@ export default function CourseTemplate({ course }: CourseTemplateProps) {
         <h2 className="text-2xl font-bold mb-6">Key Features</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {course.keyFeatures.map((feature, index) => {
-            const Icon = (Icons as any)[feature.iconName] || Icons["Star"];
+            const Icon = getIconComponent(feature.iconName);
             return (
               <div
                 key={index}
