@@ -46,7 +46,7 @@ export const menuItems = [
       { href: "/courses/iot", label: "IOT" },
       { href: "/courses/app-designing", label: "App Designing" },
       { href: "/courses/app-lab", label: "App Lab" },
-      { href: "/courses/android-studio", label: "Android Studio" },
+      { href: "/courses/androidStudio", label: "Android Studio" },
       { href: "/courses/electronics", label: "Electronics" },
       { href: "/courses/arduino", label: "Arduino" },
       { href: "/courses/web-designing", label: "Web Designing" },
