@@ -41,6 +41,8 @@ const nextConfig = {
     // Add qualities configuration to support quality={100} in Image components
     qualities: [10, 25, 50, 75, 100],
   },
+  // Move serverComponentsExternalPackages from experimental to root level
+  serverExternalPackages: ["firebase-admin"],
   experimental: {
     optimizePackageImports: [
       "lodash-es", 
@@ -53,10 +55,10 @@ const nextConfig = {
       "react-icons",
       "@tabler/icons-react",
       "@xyflow/react"
-    ],
-    // Add this to fix Turbopack runtime issues
-    serverComponentsExternalPackages: ["firebase-admin"],
+    ]
   },
+  // Add turbopack configuration to resolve the warning
+  turbopack: {},
   // Enhanced performance optimizations
   webpack: (config) => {
     // Optimize chunk splitting for better caching
