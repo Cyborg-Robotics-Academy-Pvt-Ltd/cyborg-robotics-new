@@ -3,11 +3,11 @@ import { courseData } from "@/data/courseData";
 import CourseTemplate from "@/components/CourseTemplate";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export default async function CoursePage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const course = courseData[slug];
 
   if (!course) {
