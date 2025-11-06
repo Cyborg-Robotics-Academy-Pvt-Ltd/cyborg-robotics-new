@@ -1,17 +1,14 @@
-import Link from "next/link";
-import { posts } from "../../../data/posts";
+import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-export default function BlogList() {
-  return (
-    <div>
-      <h1>Blog Posts</h1>
-      <ul className="mt-32">
-        {posts.map((post) => (
-          <li key={post.slug}>
-            <Link href={`/courses/${post.slug}`}>{post.title}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Courses | Cyborg Robotics Academy",
+  description: "Explore all Cyborg Robotics Academy courses.",
+};
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default function CoursesIndexPage() {
+  redirect("/course-mindmap");
 }
