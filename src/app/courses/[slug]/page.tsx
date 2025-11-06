@@ -11,7 +11,81 @@ interface PageProps {
 
 export default function CoursePage({ params }: PageProps) {
   const { slug } = params;
-  const course: CourseData | undefined = courseData[slug];
+
+  // Handle potential slug variations
+  const normalizedSlug = slug.replace(/-language$/, "");
+  let course: CourseData | undefined =
+    courseData[slug] || courseData[normalizedSlug];
+
+  // Additional check for python-language case
+  if (!course && slug === "python-language") {
+    course = courseData["python"];
+  }
+
+  // Additional check for web-designing case
+  if (!course && slug === "web-designing") {
+    course = courseData["webDesigning"];
+  }
+
+  // Additional check for app-designing case
+  if (!course && slug === "app-designing") {
+    course = courseData["appDesigning"];
+  }
+
+  // Additional check for machine-learning case
+  if (!course && slug === "machine-learning") {
+    course = courseData["machineLearning"];
+  }
+
+  // Additional check for artificial-intelligence case
+  if (!course && slug === "artificial-intelligence") {
+    course = courseData["artificialIntelligence"];
+  }
+
+  // Additional check for robotics-ev3 case
+  if (!course && slug === "robotics-ev3") {
+    course = courseData["roboticsEv3"];
+  }
+
+  // Additional check for spike-prime case
+  if (!course && slug === "spike-prime") {
+    course = courseData["spikePrime"];
+  }
+
+  // Additional check for 3d-printing case
+  if (!course && slug === "3d-printing") {
+    course = courseData["printing3d"];
+  }
+
+  // Additional check for bambino-coding case
+  if (!course && slug === "bambino-coding") {
+    course = courseData["bambinoCoding"];
+  }
+
+  // Additional check for animation-coding case
+  if (!course && slug === "animation-coding") {
+    course = courseData["animationCoding"];
+  }
+
+  // Additional check for app-lab case
+  if (!course && slug === "app-lab") {
+    course = courseData["appLab"];
+  }
+
+  // Additional check for simple-powered-machines case
+  if (!course && slug === "simple-powered-machines") {
+    course = courseData["simplePoweredMachines"];
+  }
+
+  // Additional check for spike-pneumatics case
+  if (!course && slug === "spike-pneumatics") {
+    course = courseData["spikePneumatics"];
+  }
+
+  // Additional check for early-simple-machines case
+  if (!course && slug === "early-simple-machines") {
+    course = courseData["earlySimpleMachines"];
+  }
 
   if (!course) {
     notFound();
