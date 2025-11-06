@@ -215,7 +215,7 @@ const mockData: Record<string, CourseData> = {
     ],
   },
 
-  androidStudio: {
+  "android-studio": {
     id: "androidStudio",
     title: "ANDROID STUDIO",
     subtitle:
