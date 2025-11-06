@@ -1,141 +1,97 @@
-import React, { Suspense } from "react";
-import nextDynamic from "next/dynamic";
-import { notFound, redirect } from "next/navigation";
-import {
-  getCourseData,
-  getCurriculumByCourseId,
-  slugToCourseId,
-} from "@/lib/courseData";
-import type { Metadata } from "next";
+// import { Suspense } from "react";
+// import loadDynamic from "next/dynamic";
+// import { getCurriculumByCourseId, slugToCourseId } from "@/lib/courseData";
 
-// Route options: allow handling unknown-at-build-time slugs at runtime
-export const dynamicParams = true;
-// Force dynamic rendering so Vercel creates a server lambda for this route
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const runtime = "nodejs";
+// // ✅ Force Node.js runtime (for any fs/path usage in courseData)
+// export const runtime = "nodejs";
 
-// Generate static paths for all course slugs
+// // ✅ Force dynamic rendering (no static generation — works for any slug)
+// export const dynamic = "force-dynamic";
+
+// // ✅ Disable ISR / caching (always fresh)
+// export const revalidate = 0;
+
+// // ✅ Dynamically import client-only CourseTemplate component
+// const CourseTemplateComponent = loadDynamic(
+//   () => import("@/components/CourseTemplate"),
+//   {
+//     ssr: false,
+//     loading: () => null,
+//   }
+// );
+
+// // ✅ Main dynamic course page (Server Component)
+// export default function CoursePage({ params }: { params: { slug: string } }) {
+//   const slug = params.slug?.toLowerCase();
+//   const courseId = slug ? slugToCourseId[slug] : undefined;
+//   const curriculum = courseId ? getCurriculumByCourseId(courseId) : undefined;
+
+//   // 🧩 Invalid slug → course not found
+//   if (!courseId) {
+//     return (
+//       <div className="w-full h-screen flex items-center justify-center">
+//         <div className="text-center">
+//           <p className="text-xl font-semibold">Course Not Found</p>
+//           <p className="text-gray-500 mt-2">
+//             The requested course does not exist.
+//           </p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // 🕒 Data still loading (safeguard)
+//   if (!curriculum) {
+//     return (
+//       <div className="w-full h-screen flex items-center justify-center">
+//         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+//       </div>
+//     );
+//   }
+
+//   // ✅ Render CourseTemplateComponent with fetched curriculum
+//   return (
+//     <Suspense
+//       fallback={
+//         <div className="w-full h-screen flex items-center justify-center">
+//           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+//         </div>
+//       }
+//     >
+//       <CourseTemplateComponent
+//         courseId={courseId}
+//         curriculumData={curriculum}
+//       />
+//     </Suspense>
+//   );
+// }
+import { posts } from "../../../../data/posts";
+
+// Generate static params for all posts
 export async function generateStaticParams() {
-  // Get all slugs
-  const allSlugs = Object.keys(slugToCourseId);
-
-  // Log during build
-  console.log("\n=================================");
-  console.log("🔨 BUILDING STATIC PAGES");
-  console.log("=================================");
-  console.log("Total slugs found:", allSlugs.length);
-  console.log("Slugs:", allSlugs);
-  console.log("=================================\n");
-
-  const params = allSlugs.map((slug) => ({
-    slug: slug.toLowerCase(),
+  return posts.map((post) => ({
+    slug: post.slug,
   }));
-
-  // Log the params being returned
-  console.log("Generated params:", JSON.stringify(params, null, 2));
-
-  return params;
 }
 
-// Generate metadata for SEO
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const slug = params.slug?.toLowerCase();
-
-  if (!slug) {
-    return {
-      title: "Course Not Found",
-    };
-  }
-
-  const courseId = slugToCourseId[slug];
-  console.error(
-    "[courses/[slug]] [metadata] slug:",
-    slug,
-    "→ courseId:",
-    courseId
-  );
-
-  if (!courseId) {
-    return {
-      title: "Course Not Found",
-    };
-  }
-
-  const course = getCourseData(courseId);
-  console.error("[courses/[slug]] [metadata] hasCourse:", Boolean(course));
-
-  if (!course) {
-    return {
-      title: "Course Not Found",
-    };
-  }
-
-  return {
-    title: `${course.title} | Your Site Name`,
-    description: course.description || "Learn with our comprehensive course",
-    openGraph: {
-      title: course.title,
-      description: course.description,
-    },
-  };
+// Type for page props
+interface PageProps {
+  params: Promise<{ slug: string }>;
 }
 
-// Main page component
-export default async function CoursePage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const slug = params.slug?.toLowerCase();
+// The page component
+export default async function BlogPost({ params }: PageProps) {
+  const { slug } = await params;
+  const post = posts.find((p) => p.slug === slug);
 
-  if (!slug) {
-    redirect("/course-mindmap");
+  if (!post) {
+    return <div>Post not found</div>;
   }
-
-  const courseId = slugToCourseId[slug];
-
-  if (!courseId) {
-    console.error("[courses/[slug]] Not found: unknown slug", slug);
-    redirect("/course-mindmap");
-  }
-
-  const course = getCourseData(courseId);
-  const curriculum = getCurriculumByCourseId(courseId) || [];
-
-  if (!course) {
-    console.error(
-      "[courses/[slug]] Not found: missing course for id",
-      courseId
-    );
-    redirect("/course-mindmap");
-  }
-
-  const CourseTemplate = nextDynamic(
-    () => import("@/components/CourseTemplate"),
-    {
-      loading: () => (
-        <div className="w-full h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ),
-      ssr: false,
-    }
-  );
 
   return (
-    <Suspense
-      fallback={
-        <div className="w-full h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      }
-    >
-      <CourseTemplate courseId={courseId} curriculumData={curriculum} />
-    </Suspense>
+    <article className="mt-32">
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
   );
 }

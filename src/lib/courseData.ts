@@ -851,3 +851,23 @@ export const getCurriculumByCourseId = (courseId: string): { id: string; title: 
 
   return map[courseId] || null;
 };
+
+// Helper utilities for slug resolution in app router
+export type CurriculumItem = { id: string; title: string; subtitle: string[] };
+
+export const allSlugs: string[] = Object.keys(slugToCourseId);
+
+export function slugToId(slug: string | undefined | null): string | null {
+  if (!slug) return null;
+  const normalized = String(slug).toLowerCase();
+  return slugToCourseId[normalized] ?? null;
+}
+
+export function getCourseAndCurriculumBySlug(
+  slug: string | undefined | null
+): { course: CourseData | null; curriculum: CurriculumItem[] | null; courseId: string | null } {
+  const courseId = slugToId(slug);
+  const course = courseId ? getCourseData(courseId) : null;
+  const curriculumData = courseId ? getCurriculumByCourseId(courseId) : null;
+  return { course, curriculum: curriculumData, courseId };
+}
