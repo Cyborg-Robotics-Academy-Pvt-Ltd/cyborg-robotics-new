@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { slugToCourseId, getCourseData } from "@/lib/courseData";
+import { slugToCourseId, getCourseData } from "@/data/courseData";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
