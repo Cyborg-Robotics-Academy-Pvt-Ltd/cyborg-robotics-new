@@ -214,47 +214,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  appDesigning: {
-    id: "appDesigning",
-    title: "APP DESIGNING",
-    subtitle:
-      "Design beautiful and functional mobile applications with modern UI/UX principles",
-    badge: "Mobile Design Course",
-    description:
-      "Design beautiful and functional mobile applications with modern UI/UX principles",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/APP DESIGNING.pdf",
-    syllabusFileName: "APP DESIGNING.pdf",
-    imagePath: "/assets/online-course/appdesigning.webp",
-    imageAlt: "App Designing Course",
-    price: 11999,
-    originalPrice: 17999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "UI/UX Design",
-        description: "Learn modern design principles and user experience",
-        iconName: "Layout",
-      },
-      {
-        title: "Mobile Interfaces",
-        description: "Design intuitive mobile app interfaces",
-        iconName: "Smartphone",
-      },
-      {
-        title: "Prototyping",
-        description: "Create interactive prototypes and wireframes",
-        iconName: "Rocket",
-      },
-      {
-        title: "Design Tools",
-        description: "Master industry-standard design software",
-        iconName: "Palette",
-      },
-    ],
-  },
+
   androidStudio: {
     id: "androidStudio",
     title: "ANDROID STUDIO",
@@ -298,7 +258,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  machineLearning: {
+  "machine-learning": {
     id: "machineLearning",
     title: "MACHINE LEARNING",
     subtitle:
@@ -340,7 +300,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  artificialIntelligence: {
+  "artificial-intelligence": {
     id: "artificialIntelligence",
     title: "ARTIFICIAL INTELLIGENCE",
     subtitle:
@@ -383,7 +343,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  roboticsEv3: {
+  "robotics-ev3": {
     id: "roboticsEv3",
     title: "ROBOTICS EV3",
     subtitle: "Build and program intelligent robots using LEGO Mindstorms EV3",
@@ -426,7 +386,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  spikePrime: {
+  "spike-prime": {
     id: "spikePrime",
     title: "SPIKE PRIME",
     subtitle: "Learn robotics and coding with LEGO Education SPIKE Prime",
@@ -468,7 +428,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  printing3d: {
+  "3d-printing": {
     id: "printing3d",
     title: "3D PRINTING",
     subtitle:
@@ -512,7 +472,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  bambinoCoding: {
+  "bambino-coding": {
     id: "bambinoCoding",
     title: "BAMBINO CODING",
     subtitle:
@@ -594,7 +554,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  animationCoding: {
+  "animation-coding": {
     id: "animationCoding",
     title: "ANIMATION CODING",
     subtitle:
@@ -676,7 +636,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  earlySimpleMachines: {
+  "early-simple-machines": {
     id: "earlySimpleMachines",
     title: "EARLY SIMPLE MACHINES",
     subtitle:
@@ -758,7 +718,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  spikePneumatics: {
+  "spike-pneumatics": {
     id: "spikePneumatics",
     title: "SPIKE PNEUMATICS",
     subtitle:
@@ -799,7 +759,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  simplePoweredMachines: {
+  "simple-powered-machines": {
     id: "simplePoweredMachines",
     title: "SIMPLE POWERED MACHINES",
     subtitle: "Explore powered mechanical systems and motor-driven mechanisms",
@@ -839,7 +799,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  appLab: {
+  "app-lab": {
     id: "appLab",
     title: "APP LAB",
     subtitle:
