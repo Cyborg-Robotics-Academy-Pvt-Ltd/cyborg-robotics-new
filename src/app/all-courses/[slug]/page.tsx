@@ -8,6 +8,29 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/home/Footer";
+import Testimonials from "@/components/ui/course-accordion";
+
+// Import curriculum data
+import {
+  javaCurriculum,
+  MachineLearningCurriculum,
+  AnimationAndCodingCurriculum,
+  ThreeDPrintingCurriculum,
+  AndroidCurriculum,
+  AppDevelopmentData,
+  AppLabCurriculum,
+  ArduinoCurriculum,
+  ArtificialIntelligenceCurriculum,
+  BambinoCodingCurriculum,
+  EarlySimplemachineCurriculum,
+  IotCurriculum,
+  pythonCourseData,
+  RoboticsCurriculum,
+  SimplePoweredMachines,
+  SpikePneumatics,
+  SpikePrimeCurriculum,
+  WebDesignCurriculum,
+} from "../../../../utils/curriculum";
 
 // Define the type for key features
 interface KeyFeature {
@@ -35,6 +58,13 @@ interface CourseData {
   locale: string;
   keyFeatures: KeyFeature[];
   content?: string;
+}
+
+// Define the type for curriculum data
+interface CurriculumLevel {
+  id: string;
+  title: string;
+  subtitle: string[];
 }
 
 // Mock data with slugs as keys
@@ -864,6 +894,87 @@ export default async function SlugPage({
     notFound();
   }
 
+  // Get curriculum data by slug
+  const getCurriculumData = (slug: string): CurriculumLevel[] => {
+    switch (slug) {
+      case "python-language":
+        return pythonCourseData;
+      case "arduino":
+        return ArduinoCurriculum;
+      case "web-designing":
+        return WebDesignCurriculum;
+      case "java":
+        return javaCurriculum;
+      case "android-studio":
+        return AndroidCurriculum;
+      case "machine-learning":
+        return MachineLearningCurriculum;
+      case "artificial-intelligence":
+        return ArtificialIntelligenceCurriculum;
+      case "robotics-ev3":
+        return RoboticsCurriculum;
+      case "spike-prime":
+        return SpikePrimeCurriculum;
+      case "3d-printing":
+        return ThreeDPrintingCurriculum;
+      case "bambino-coding":
+        return BambinoCodingCurriculum;
+      case "electronics":
+        return EarlySimplemachineCurriculum;
+      case "animation-coding":
+        return AnimationAndCodingCurriculum;
+      case "app-designing":
+        return AppDevelopmentData;
+      case "early-simple-machines":
+        return EarlySimplemachineCurriculum;
+      case "iot":
+        return IotCurriculum;
+      case "spike-pneumatics":
+        return SpikePneumatics;
+      case "simple-powered-machines":
+        return SimplePoweredMachines;
+      case "app-lab":
+        return AppLabCurriculum;
+      default:
+        // Return default curriculum data if no specific curriculum is found
+        return [
+          {
+            id: "level1",
+            title: "Foundation",
+            subtitle: [
+              "Introduction to programming concepts",
+              "Variables, data types, and operators",
+              "Control structures (if/else, loops)",
+              "Functions and modules",
+            ],
+          },
+          {
+            id: "level2",
+            title: "Intermediate",
+            subtitle: [
+              "Object-oriented programming",
+              "Error handling and debugging",
+              "File handling and data persistence",
+              "Working with external libraries",
+            ],
+          },
+          {
+            id: "level3",
+            title: "Advanced",
+            subtitle: [
+              "Database integration",
+              "API development and consumption",
+              "Testing and quality assurance",
+              "Deployment and DevOps basics",
+            ],
+          },
+        ];
+    }
+  };
+
+  // Get curriculum data for this course
+  const curriculumData = getCurriculumData(slug);
+
   // Icon component mapping
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
@@ -959,40 +1070,6 @@ export default async function SlugPage({
         );
     }
   };
-
-  // Curriculum data
-  const curriculumData = [
-    {
-      id: "level1",
-      title: "Foundation",
-      subtitle: [
-        "Introduction to programming concepts",
-        "Variables, data types, and operators",
-        "Control structures (if/else, loops)",
-        "Functions and modules",
-      ],
-    },
-    {
-      id: "level2",
-      title: "Intermediate",
-      subtitle: [
-        "Object-oriented programming",
-        "Error handling and debugging",
-        "File handling and data persistence",
-        "Working with external libraries",
-      ],
-    },
-    {
-      id: "level3",
-      title: "Advanced",
-      subtitle: [
-        "Database integration",
-        "API development and consumption",
-        "Testing and quality assurance",
-        "Deployment and DevOps basics",
-      ],
-    },
-  ];
 
   // Handle syllabus download
   const handleDownloadSyllabus = () => {
@@ -1206,7 +1283,10 @@ export default async function SlugPage({
           </div>
         </div>
       </div>
-
+      {/* Testimonials */}
+      <div className="mt-16 sm:mt-20 mx-2 sm:mx-4 lg:mx-8">
+        <Testimonials testimonials={curriculumData} />
+      </div>
       {/* NEW: Additional CTA Section for Course Journey */}
       <div className="mt-12 sm:mt-16 mx-2 sm:mx-4 lg:mx-8 p-4 sm:p-8 bg-red-50 rounded-2xl text-center relative overflow-hidden">
         {/* Subtle background decoration */}

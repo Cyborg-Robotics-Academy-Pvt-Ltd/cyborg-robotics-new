@@ -4,26 +4,119 @@ import Link from "next/link";
 
 const TestPage = () => {
   // Simple test data
-  const testData = [
+  const courseList = [
     {
       slug: "python-language",
       title: "Python Programming",
-      description: "Learn Python from basics to advanced concepts",
+      description:
+        "Learn Python for web development, data science, AI and more",
+    },
+    {
+      slug: "arduino",
+      title: "Arduino",
+      description:
+        "Build interactive electronics projects with Arduino programming and hardware integration",
     },
     {
       slug: "web-designing",
       title: "Web Designing",
-      description: "Create beautiful websites with modern tools",
+      description:
+        "Learn to build beautiful, responsive and interactive websites with HTML and CSS",
     },
     {
-      slug: "app-designing",
-      title: "App Designing",
-      description: "Design mobile applications with great UX",
+      slug: "java",
+      title: "JAVA PROGRAMMING",
+      description:
+        "Master object-oriented programming with Java for enterprise applications and Android development",
+    },
+    {
+      slug: "android-studio",
+      title: "ANDROID STUDIO",
+      description:
+        "Build professional Android applications using Android Studio and modern development practices",
     },
     {
       slug: "machine-learning",
-      title: "Machine Learning",
-      description: "Build intelligent systems with ML algorithms",
+      title: "MACHINE LEARNING",
+      description:
+        "Master the fundamentals of machine learning and build intelligent applications",
+    },
+    {
+      slug: "artificial-intelligence",
+      title: "ARTIFICIAL INTELLIGENCE",
+      description:
+        "Explore the cutting-edge world of AI and build intelligent systems",
+    },
+    {
+      slug: "robotics-ev3",
+      title: "ROBOTICS EV3",
+      description:
+        "Build and program intelligent robots using LEGO Mindstorms EV3",
+    },
+    {
+      slug: "spike-prime",
+      title: "SPIKE PRIME",
+      description: "Learn robotics and coding with LEGO Education SPIKE Prime",
+    },
+    {
+      slug: "3d-printing",
+      title: "3D PRINTING",
+      description:
+        "Learn to design and print 3D objects using modern 3D printing technology",
+    },
+    {
+      slug: "bambino-coding",
+      title: "BAMBINO CODING",
+      description:
+        "Introduce young minds to programming with fun, interactive coding activities",
+    },
+    {
+      slug: "electronics",
+      title: "ELECTRONICS",
+      description:
+        "Learn the fundamentals of electronic circuits and electronic components",
+    },
+    {
+      slug: "animation-coding",
+      title: "ANIMATION CODING",
+      description:
+        "Create stunning animations and visual effects through programming",
+    },
+    {
+      slug: "app-designing",
+      title: "APP DESIGNING",
+      description:
+        "Design beautiful and functional mobile applications with modern UI/UX principles",
+    },
+    {
+      slug: "early-simple-machines",
+      title: "EARLY SIMPLE MACHINES",
+      description:
+        "Explore basic mechanical principles through hands-on building and experimentation",
+    },
+    {
+      slug: "iot",
+      title: "INTERNET OF THINGS (IoT)",
+      description:
+        "Connect devices and create smart systems that communicate over the internet",
+    },
+    {
+      slug: "spike-pneumatics",
+      title: "SPIKE PNEUMATICS",
+      description:
+        "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
+    },
+    {
+      slug: "simple-powered-machines",
+      title: "SIMPLE POWERED MACHINES",
+      description:
+        "Explore powered mechanical systems and motor-driven mechanisms",
+    },
+    {
+      slug: "app-lab",
+      title: "APP LAB",
+      description:
+        "Create mobile applications using MIT App Inventor and block-based programming",
     },
   ];
 
@@ -41,10 +134,10 @@ const TestPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {testData.map((item, index) => (
+          {courseList.map((item, index) => (
             <Link
               key={index}
-              href={`/test/${item.slug}`}
+              href={`/all-courses/${item.slug}`}
               className="block bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 hover:border-blue-300 group"
             >
               <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-blue-600">
@@ -65,7 +158,9 @@ const TestPage = () => {
               <span className="text-blue-600 font-bold mr-2">1.</span>
               <span>
                 Each card above links to{" "}
-                <code className="bg-gray-100 px-1 rounded">/test/[slug]</code>{" "}
+                <code className="bg-gray-100 px-1 rounded">
+                  /all-courses/[slug]
+                </code>{" "}
                 where <code className="bg-gray-100 px-1 rounded">[slug]</code>{" "}
                 is a dynamic parameter
               </span>
