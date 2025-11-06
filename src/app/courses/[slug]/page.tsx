@@ -11,7 +11,7 @@ interface PageProps {
 
 export default function CoursePage({ params }: PageProps) {
   const { slug } = params;
-  const course: CourseData | undefined = (courseData as any)[slug];
+  const course: CourseData | undefined = courseData[slug];
 
   if (!course) {
     notFound();
