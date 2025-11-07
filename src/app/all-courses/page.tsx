@@ -1,206 +1,299 @@
 "use client";
-import React from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import CourseCategoryCarousel from "@/components/CourseCategoryCarousel";
+import CourseCarouselCard from "@/components/CourseCarouselCard";
+import {
+  enhancedCourseData,
+  COURSE_CATEGORIES,
+} from "@/data/enhancedCourseData";
 
-const TestPage = () => {
-  // Simple test data
-  const courseList = [
-    {
-      slug: "python-language",
-      title: "Python Programming",
-      description:
-        "Learn Python for web development, data science, AI and more",
-    },
-    {
-      slug: "arduino",
-      title: "Arduino",
-      description:
-        "Build interactive electronics projects with Arduino programming and hardware integration",
-    },
-    {
-      slug: "web-designing",
-      title: "Web Designing",
-      description:
-        "Learn to build beautiful, responsive and interactive websites with HTML and CSS",
-    },
-    {
-      slug: "java",
-      title: "JAVA PROGRAMMING",
-      description:
-        "Master object-oriented programming with Java for enterprise applications and Android development",
-    },
-    {
-      slug: "android-studio",
-      title: "ANDROID STUDIO",
-      description:
-        "Build professional Android applications using Android Studio and modern development practices",
-    },
-    {
-      slug: "machine-learning",
-      title: "MACHINE LEARNING",
-      description:
-        "Master the fundamentals of machine learning and build intelligent applications",
-    },
-    {
-      slug: "artificial-intelligence",
-      title: "ARTIFICIAL INTELLIGENCE",
-      description:
-        "Explore the cutting-edge world of AI and build intelligent systems",
-    },
-    {
-      slug: "robotics-ev3",
-      title: "ROBOTICS EV3",
-      description:
-        "Build and program intelligent robots using LEGO Mindstorms EV3",
-    },
-    {
-      slug: "spike-prime",
-      title: "SPIKE PRIME",
-      description: "Learn robotics and coding with LEGO Education SPIKE Prime",
-    },
-    {
-      slug: "3d-printing",
-      title: "3D PRINTING",
-      description:
-        "Learn to design and print 3D objects using modern 3D printing technology",
-    },
-    {
-      slug: "bambino-coding",
-      title: "BAMBINO CODING",
-      description:
-        "Introduce young minds to programming with fun, interactive coding activities",
-    },
-    {
-      slug: "electronics",
-      title: "ELECTRONICS",
-      description:
-        "Learn the fundamentals of electronic circuits and electronic components",
-    },
-    {
-      slug: "animation-coding",
-      title: "ANIMATION CODING",
-      description:
-        "Create stunning animations and visual effects through programming",
-    },
-    {
-      slug: "app-designing",
-      title: "APP DESIGNING",
-      description:
-        "Design beautiful and functional mobile applications with modern UI/UX principles",
-    },
-    {
-      slug: "early-simple-machines",
-      title: "EARLY SIMPLE MACHINES",
-      description:
-        "Explore basic mechanical principles through hands-on building and experimentation",
-    },
-    {
-      slug: "iot",
-      title: "INTERNET OF THINGS (IoT)",
-      description:
-        "Connect devices and create smart systems that communicate over the internet",
-    },
-    {
-      slug: "spike-pneumatics",
-      title: "SPIKE PNEUMATICS",
-      description:
-        "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    },
-    {
-      slug: "simple-powered-machines",
-      title: "SIMPLE POWERED MACHINES",
-      description:
-        "Explore powered mechanical systems and motor-driven mechanisms",
-    },
-    {
-      slug: "app-lab",
-      title: "APP LAB",
-      description:
-        "Create mobile applications using MIT App Inventor and block-based programming",
-    },
-  ];
+// Convert the enhanced course data to an array for easier manipulation
+const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
+  slug,
+  ...course,
+}));
+
+// Get unique age ranges
+const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))];
+
+const AllCoursesPage = () => {
+  // State for search and filter
+  const [search, setSearch] = useState("");
+  const [ageFilter, setAgeFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  // Filter logic
+  const filteredCourses = useMemo(() => {
+    return courseList.filter(
+      (course) =>
+        (search === "" ||
+          course.title.toLowerCase().includes(search.toLowerCase()) ||
+          course.description.toLowerCase().includes(search.toLowerCase())) &&
+        (ageFilter === "" || course.ageRange === ageFilter) &&
+        (categoryFilter === "" || course.category === categoryFilter)
+    );
+  }, [search, ageFilter, categoryFilter]);
+
+  // Group courses by category
+  const coursesByCategory = useMemo(() => {
+    const grouped: Record<string, typeof courseList> = {};
+
+    filteredCourses.forEach((course) => {
+      if (!grouped[course.category]) {
+        grouped[course.category] = [];
+      }
+      grouped[course.category].push(course);
+    });
+
+    return grouped;
+  }, [filteredCourses]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Slug Routing Test
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Courses</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            This page demonstrates dynamic routing in Next.js App Router. Click
-            on any card below to test the slug-based routing.
+            Explore our comprehensive range of courses designed to spark
+            creativity and build technical skills.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {courseList.map((item, index) => (
-            <Link
-              key={index}
-              href={`/all-courses/${item.slug}`}
-              className="block bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 hover:border-blue-300 group"
-            >
-              <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-blue-600">
-                {item.title}
-              </h3>
-              <p className="text-gray-600 text-sm mb-4">{item.description}</p>
-              <div className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded inline-block">
-                {item.slug}
+        {/* Search + Filter bar */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="search"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Search Courses
+              </label>
+              <Input
+                id="search"
+                type="text"
+                placeholder="Search by title or description..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="age-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Age Group
+              </label>
+              <Select
+                value={ageFilter || "all"}
+                onValueChange={(value) =>
+                  setAgeFilter(value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger id="age-filter">
+                  <SelectValue placeholder="All Ages" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ages</SelectItem>
+                  {uniqueAgeRanges.map((age) => (
+                    <SelectItem key={age} value={age}>
+                      {age}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="category-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Category
+              </label>
+              <Select
+                value={categoryFilter || "all"}
+                onValueChange={(value) =>
+                  setCategoryFilter(value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger id="category-filter">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {COURSE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Active filters display */}
+          {(search || ageFilter || categoryFilter) && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-gray-600">Active filters:</span>
+                {search && (
+                  <Badge variant="secondary" className="text-xs">
+                    Search: {search}
+                    <button
+                      onClick={() => setSearch("")}
+                      className="ml-2 hover:text-gray-900"
+                      aria-label="Remove search filter"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                {ageFilter && (
+                  <Badge variant="secondary" className="text-xs">
+                    Age: {ageFilter}
+                    <button
+                      onClick={() => setAgeFilter("")}
+                      className="ml-2 hover:text-gray-900"
+                      aria-label="Remove age filter"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                {categoryFilter && (
+                  <Badge variant="secondary" className="text-xs">
+                    Category: {categoryFilter}
+                    <button
+                      onClick={() => setCategoryFilter("")}
+                      className="ml-2 hover:text-gray-900"
+                      aria-label="Remove category filter"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setAgeFilter("");
+                    setCategoryFilter("");
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear all
+                </button>
               </div>
-            </Link>
-          ))}
+            </div>
+          )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">How It Works</h2>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start">
-              <span className="text-blue-600 font-bold mr-2">1.</span>
-              <span>
-                Each card above links to{" "}
-                <code className="bg-gray-100 px-1 rounded">
-                  /all-courses/[slug]
-                </code>{" "}
-                where <code className="bg-gray-100 px-1 rounded">[slug]</code>{" "}
-                is a dynamic parameter
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-600 font-bold mr-2">2.</span>
-              <span>
-                In Next.js 15, the{" "}
-                <code className="bg-gray-100 px-1 rounded">params</code> prop is
-                a Promise that must be awaited
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-600 font-bold mr-2">3.</span>
-              <span>
-                The dynamic route component receives the slug as a parameter and
-                uses it to display content
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-600 font-bold mr-2">4.</span>
-              <span>
-                If no data matches the slug, Next.js automatically shows the
-                not-found page
-              </span>
-            </li>
-          </ul>
+        {/* Results count */}
+        <div className="mb-6">
+          <p className="text-gray-600">
+            Showing {filteredCourses.length} of {courseList.length} courses
+          </p>
         </div>
 
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="inline-block bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            ← Back to Home
-          </Link>
+        {/* Category carousels */}
+        {Object.keys(coursesByCategory).length > 0 ? (
+          Object.entries(coursesByCategory).map(([category, courses]) => (
+            <CourseCategoryCarousel
+              key={category}
+              title={`${category} Courses`}
+            >
+              {courses.map((course) => (
+                <div key={course.slug} className="flex-shrink-0">
+                  <CourseCarouselCard
+                    slug={course.slug}
+                    title={course.title}
+                    description={course.description}
+                    ageRange={course.ageRange}
+                    category={course.category}
+                    imagePath={course.imagePath}
+                  />
+                </div>
+              ))}
+            </CourseCategoryCarousel>
+          ))
+        ) : (
+          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              No courses found
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Try adjusting your search or filter criteria
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setAgeFilter("");
+                setCategoryFilter("");
+              }}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
+
+        {/* All courses grid view (alternative to carousels) */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Courses</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => (
+              <div
+                key={course.slug}
+                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 hover:border-blue-300 group"
+              >
+                <div className="mb-4">
+                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">Course Image</span>
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-blue-600 line-clamp-2">
+                  {course.title}
+                </h3>
+
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  {course.description}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="secondary" className="text-xs">
+                    {course.ageRange}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {course.category}
+                  </Badge>
+                </div>
+
+                <Link
+                  href={`/all-courses/${course.slug}`}
+                  className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center text-sm font-medium w-full"
+                >
+                  View Details
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default TestPage;
+export default AllCoursesPage;
