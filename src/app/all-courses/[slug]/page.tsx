@@ -7,7 +7,7 @@ import Image from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import Footer from "@/components/home/Footer";
+
 import Testimonials from "@/components/ui/course-accordion";
 
 // Import curriculum data
@@ -1087,13 +1087,7 @@ export default async function SlugPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl mt-2 md:mt-24 overflow-hidden px-2 sm:px-4 lg:px-8">
-      {/* Floating Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-100 rounded-full opacity-20 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-100 rounded-full opacity-20 blur-3xl" />
-      </div>
-
+    <div className="mx-auto max-w-7xl mt-2 md:mt-5 overflow-hidden px-2 sm:px-4 lg:px-8">
       {/* Hero Section */}
       <div className="lg:mt-16 mt-4 px-2 sm:px-4 lg:px-0 relative">
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
@@ -1254,7 +1248,6 @@ export default async function SlugPage({
           </button>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
