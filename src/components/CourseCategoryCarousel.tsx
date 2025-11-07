@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CourseCategoryCarouselProps {
@@ -14,6 +14,9 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(3);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   // Convert children to array for easier manipulation
   const items = React.Children.toArray(children);
@@ -48,6 +51,33 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
     );
   };
 
+  // Touch handlers for swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50; // Minimum swipe distance
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+
+    // Reset touch positions
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   // Calculate visible items
   const visibleItems = items.slice(currentIndex, currentIndex + itemsPerView);
 
@@ -56,23 +86,40 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
 
   return (
     <div className="mb-12">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">{title}</h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+        {showNavigation && (
+          <div className="flex space-x-1.5">
+            <button
+              onClick={prevSlide}
+              disabled={currentIndex === 0}
+              className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              aria-label="Previous courses"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-600" />
+            </button>
+            <button
+              onClick={nextSlide}
+              disabled={currentIndex + itemsPerView >= totalItems}
+              className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              aria-label="Next courses"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="relative">
-        {showNavigation && (
-          <button
-            onClick={prevSlide}
-            disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Previous courses"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-        )}
-
-        <div className="overflow-hidden px-8">
+        <div
+          className="overflow-hidden"
+          ref={carouselRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div
-            className="flex transition-transform duration-300 ease-in-out gap-6"
+            className="flex transition-transform duration-300 ease-in-out gap-4"
             style={{
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
             }}
@@ -80,31 +127,20 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
             {items}
           </div>
         </div>
-
-        {showNavigation && (
-          <button
-            onClick={nextSlide}
-            disabled={currentIndex + itemsPerView >= totalItems}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Next courses"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-        )}
       </div>
 
       {/* Dots indicator */}
       {showNavigation && (
-        <div className="flex justify-center mt-4 space-x-2">
+        <div className="flex justify-center mt-4 space-x-1.5">
           {Array.from({ length: Math.ceil(totalItems / itemsPerView) }).map(
             (_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index * itemsPerView)}
-                className={`w-3 h-3 rounded-full ${
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
                   Math.floor(currentIndex / itemsPerView) === index
-                    ? "bg-blue-600"
-                    : "bg-gray-300"
+                    ? "bg-red-700 w-4"
+                    : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />

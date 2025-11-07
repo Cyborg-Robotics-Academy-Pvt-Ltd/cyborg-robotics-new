@@ -20,38 +20,47 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Plus, Minus } from "lucide-react";
 
 // Viewport Control Component
-// Updated to include expand all functionality
+// Updated to include expand all and collapse all functionality
 const ViewportControls = ({
   onFitView,
   onCropNodes,
   onExpandAll,
+  onCollapseAll,
 }: {
   onFitView: () => void;
   onCropNodes: () => void;
   onExpandAll: () => void;
+  onCollapseAll: () => void;
 }) => {
   return (
     <div className="absolute top-20 right-4 z-10 flex gap-2 flex-col">
       <div className="flex gap-2">
         <button
           onClick={onFitView}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded shadow"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-xl shadow"
         >
           Fit View
         </button>
         <button
           onClick={onCropNodes}
-          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded shadow"
+          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-xl shadow"
         >
           Crop Nodes
         </button>
         <button
           onClick={onExpandAll}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded shadow"
+          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-xl shadow"
         >
           Expand All
+        </button>
+        <button
+          onClick={onCollapseAll}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl shadow"
+        >
+          Collapse All
         </button>
       </div>
     </div>
@@ -96,26 +105,37 @@ const HorizontalNode = memo(
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.05)";
           e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+          // Add visual hint for expandable nodes
+          if (data.collapsible) {
+            e.currentTarget.style.border = "2px solid rgba(255,255,255,0.6)";
+          }
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
           e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+          e.currentTarget.style.border = "2px solid rgba(255,255,255,0.2)";
         }}
       >
-        {/* Collapse/Expand dot indicator */}
+        {/* Collapse/Expand dot indicator with Lucide icons */}
         {data.collapsible && (
           <div
             style={{
               position: "absolute",
               top: 16,
-              right: -8,
-              width: 16,
-              height: 16,
+              right: -12,
+              width: 24,
+              height: 24,
               borderRadius: "50%",
-              background: isCollapsed ? "#22c55e" : "#ef4444",
-              border: "2px solid white",
+              background: "white",
+              border: "2px solid " + (data.color || "#3b82f6"),
               cursor: "pointer",
               zIndex: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              transition: "all 0.2s ease",
+              animation: isCollapsed ? "pulse 2s infinite" : "none",
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -123,30 +143,20 @@ const HorizontalNode = memo(
                 onToggle();
               }
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.1)";
+              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
+            }}
+            title={isCollapsed ? "Expand to view courses" : "Collapse courses"}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 8,
-                height: 2,
-                background: "white",
-              }}
-            />
-            {isCollapsed && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "60%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%) rotate(90deg)",
-                  width: 8,
-                  height: 2,
-                  background: "white",
-                }}
-              />
+            {isCollapsed ? (
+              <Plus size={14} color={data.color || "#3b82f6"} />
+            ) : (
+              <Minus size={14} color={data.color || "#3b82f6"} />
             )}
           </div>
         )}
@@ -261,7 +271,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 2 Levels",
       color: "#4ade80",
-      link: "/courses/bambino-coding",
+      link: "/all-courses/bambino-coding",
     },
   },
   {
@@ -271,7 +281,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Early Simple Machine",
       color: "#4ade80",
-      link: "/courses/early-simple-machines",
+      link: "/all-courses/early-simple-machines",
     },
   },
   {
@@ -281,7 +291,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Bambino Coding - 2 Levels",
       color: "#4ade80",
-      link: "/courses/bambino-coding",
+      link: "/all-courses/bambino-coding",
     },
   },
 
@@ -295,7 +305,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 1 Level",
       color: "#22d3ee",
-      link: "/courses/bambino-coding",
+      link: "/all-courses/bambino-coding",
     },
   },
   {
@@ -305,7 +315,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Simple & Powered Machines",
       color: "#22d3ee",
-      link: "/courses/simple-powered-machines",
+      link: "/all-courses/simple-powered-machines",
     },
   },
   {
@@ -329,7 +339,7 @@ const initialNodes: Node[] = [
     data: {
       label: "PEECEE - 2 Levels",
       color: "#22d3ee",
-      link: "/courses/arduino",
+      link: "/all-courses/arduino",
     },
   },
   {
@@ -339,7 +349,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Essential - 2 Levels",
       color: "#22d3ee",
-      link: "/courses/spike-pneumatics",
+      link: "/all-courses/spike-pneumatics",
     },
   },
 
@@ -353,7 +363,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Early Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/courses/electronics",
+      link: "/all-courses/electronics",
     },
   },
   {
@@ -363,7 +373,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Mini Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/courses/electronics",
+      link: "/all-courses/electronics",
     },
   },
 
@@ -383,7 +393,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Prime - 4 Levels",
       color: "#c084fc",
-      link: "/courses/spike-prime",
+      link: "/all-courses/spike-prime",
     },
   },
   {
@@ -393,7 +403,7 @@ const initialNodes: Node[] = [
     data: {
       label: "EV3 - 4 Levels",
       color: "#c084fc",
-      link: "/courses/robotics-ev3",
+      link: "/all-courses/robotics-ev3",
     },
   },
   {
@@ -403,7 +413,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE + Python - Levels",
       color: "#c084fc",
-      link: "/courses/spike-prime",
+      link: "/all-courses/spike-prime",
     },
   },
 
@@ -423,7 +433,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Application Designing - 4 Levels",
       color: "#06b6d4",
-      link: "/courses/app-designing",
+      link: "/all-courses/app-designing",
     },
   },
   {
@@ -433,7 +443,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Web Designing - 4 Levels",
       color: "#06b6d4",
-      link: "/courses/web-designing",
+      link: "/all-courses/web-designing",
     },
   },
   {
@@ -443,7 +453,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Python",
       color: "#06b6d4",
-      link: "/courses/python-language",
+      link: "/all-courses/python-language",
     },
   },
 
@@ -454,7 +464,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Java - 3 Levels",
       color: "#06b6d4",
-      link: "/courses/java",
+      link: "/all-courses/java",
     },
   },
   {
@@ -464,7 +474,7 @@ const initialNodes: Node[] = [
     data: {
       label: "DSA - 2 Levels",
       color: "#06b6d4",
-      link: "/courses/java",
+      link: "/all-courses/java",
     },
   },
 
@@ -484,14 +494,14 @@ const initialNodes: Node[] = [
     data: {
       label: "Basic Electronics + Arduino - 3 Levels",
       color: "#14b8a6",
-      link: "/courses/arduino",
+      link: "/all-courses/arduino",
     },
   },
   {
     id: "IOT",
     type: "horizontal",
     position: { x: 1300, y: 870 },
-    data: { label: "IoT", color: "#14b8a6", link: "/courses/iot" },
+    data: { label: "IoT", color: "#14b8a6", link: "/all-courses/iot" },
   },
   {
     id: "RASP",
@@ -599,13 +609,21 @@ const initialNodes: Node[] = [
     id: "W_ROBOTICS_AI",
     type: "horizontal",
     position: { x: 950, y: 660 },
-    data: { label: "ROBOTICS & AI", color: "#06b6d4" },
+    data: {
+      label: "ROBOTICS & AI",
+      color: "#06b6d4",
+      link: "/all-courses/robotics-ai",
+    },
   },
   {
     id: "W_3DPRINT",
     type: "horizontal",
     position: { x: 950, y: 730 },
-    data: { label: "3D PRINTING", color: "#06b6d4" },
+    data: {
+      label: "3D PRINTING",
+      color: "#06b6d4",
+      link: "/all-courses/3d-printing",
+    },
   },
   {
     id: "W_DRONES",
@@ -1200,6 +1218,7 @@ const FlowWithProvider = () => {
     }
   );
   const [isMobile, setIsMobile] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
   const { fitView, getNodes, setViewport } = useReactFlow();
 
   // Check if device is mobile
@@ -1436,6 +1455,28 @@ const FlowWithProvider = () => {
     }, 100);
   }, [getNodes, alignAndFitNodes]);
 
+  // Collapse all nodes with line alignment
+  const handleCollapseAll = useCallback(() => {
+    // Get all collapsible nodes and set them to collapsed
+    const allCollapsedNodes: Record<string, boolean> = {};
+    const collapsibleNodes = nodes.filter((node) => node.data.collapsible);
+    collapsibleNodes.forEach((node) => {
+      allCollapsedNodes[node.id] = true;
+    });
+
+    setCollapsedNodes(allCollapsedNodes);
+
+    // Auto-adjust viewport after collapsing all nodes
+    setTimeout(() => {
+      // Get bounds of all nodes
+      const allNodes = getNodes();
+      if (allNodes.length === 0) return;
+
+      // Align and fit all nodes
+      alignAndFitNodes(allNodes);
+    }, 100);
+  }, [nodes, getNodes, alignAndFitNodes]);
+
   // Get nodes that should be hidden based on collapsed nodes
   const getHiddenNodes = useCallback(() => {
     const hiddenNodes = new Set<string>();
@@ -1559,6 +1600,7 @@ const FlowWithProvider = () => {
         onFitView={handleFitView}
         onCropNodes={handleCropNodes}
         onExpandAll={handleExpandAll}
+        onCollapseAll={handleCollapseAll}
       />
       <ReactFlow
         nodes={visibleNodes()}
@@ -1601,6 +1643,30 @@ const FlowWithProvider = () => {
           Swipe to pan, pinch to zoom
         </div>
       )}
+
+      {/* User instruction for expand/collapse */}
+      <div className="absolute top-4 left-0 right-0 text-center text-gray-700 text-sm bg-white/80 p-2 rounded-lg mx-4 shadow-md">
+        Click the (+) icon on nodes to expand and view courses
+      </div>
+
+      {/* First-time user tooltip */}
+      {showTooltip && (
+        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-20 w-64">
+          <div className="flex justify-between items-start">
+            <p className="text-sm">
+              <strong>Welcome!</strong> Click the (+) icons to explore our
+              courses
+            </p>
+            <button
+              onClick={() => setShowTooltip(false)}
+              className="text-white hover:text-gray-200 font-bold ml-2"
+            >
+              ×
+            </button>
+          </div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-blue-600"></div>
+        </div>
+      )}
     </>
   );
 };
@@ -1617,6 +1683,22 @@ const MindMap = () => {
         background: "white",
       }}
     >
+      <style jsx>{`
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          }
+          50% {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          }
+        }
+      `}</style>
       <ReactFlowProvider>
         <FlowWithProvider />
       </ReactFlowProvider>
