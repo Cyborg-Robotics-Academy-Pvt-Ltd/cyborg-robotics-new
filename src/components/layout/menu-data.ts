@@ -27,10 +27,10 @@ const mainMenu: MenuItem[] = [
     icon: BookOpen,
     children: [
       { title: 'MindMap', href: '/course-mindmap', icon: BookCopy },
-      { title: 'Robotics', href: '/courses', icon: Bot },
-      { title: 'Skill Based', href: '/courses', icon: Target },
-      { title: 'Workshop & Camps', href: '/courses', icon: Tent },
-      { title: 'Workshop & Camps', href: '/test', icon: Tent },
+      { title: 'Robotics', href: '/all-courses#Robotics', icon: Bot, id: 'Robotics' },
+      { title: 'Skill Based', href: '/', icon: Target },
+      { title: 'Workshop & Camps', href: '/', icon: Tent },
+    
       // { title: 'Offline Course', href: '/courses', icon: PersonStanding, children: offlineCourseChildren },
       // { title: 'Soft Skills', href: '#', icon: HandHelping },
     ],

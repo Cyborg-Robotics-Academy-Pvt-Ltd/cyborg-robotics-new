@@ -10,12 +10,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 import CourseCategoryCarousel from "@/components/CourseCategoryCarousel";
 import CourseCarouselCard from "@/components/CourseCarouselCard";
 import {
   enhancedCourseData,
   COURSE_CATEGORIES,
 } from "@/data/enhancedCourseData";
+import { useScrollToSection } from "@/hooks/useScrollToSection";
 
 // Convert the enhanced course data to an array for easier manipulation
 const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
@@ -31,6 +34,9 @@ const AllCoursesPage = () => {
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+
+  // Scroll to section hook
+  const { scrollToSection } = useScrollToSection();
 
   // Filter logic
   const filteredCourses = useMemo(() => {
@@ -59,40 +65,47 @@ const AllCoursesPage = () => {
   }, [filteredCourses]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Courses</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore our comprehensive range of courses designed to spark
-            creativity and build technical skills.
-          </p>
-        </div>
+        {Object.keys(coursesByCategory).length > 0 ? (
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Our Courses
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Explore our comprehensive range of courses designed to spark
+              creativity and build technical skills.
+            </p>
+          </div>
+        ) : null}
 
         {/* Search + Filter bar */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-12 border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="relative">
               <label
                 htmlFor="search"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Search Courses
               </label>
-              <Input
-                id="search"
-                type="text"
-                placeholder="Search by title or description..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full"
-              />
+              <div className="relative">
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="Search by title or description..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
             </div>
 
             <div>
               <label
                 htmlFor="age-filter"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Age Group
               </label>
@@ -102,7 +115,7 @@ const AllCoursesPage = () => {
                   setAgeFilter(value === "all" ? "" : value)
                 }
               >
-                <SelectTrigger id="age-filter">
+                <SelectTrigger id="age-filter" className="rounded-lg">
                   <SelectValue placeholder="All Ages" />
                 </SelectTrigger>
                 <SelectContent>
@@ -119,7 +132,7 @@ const AllCoursesPage = () => {
             <div>
               <label
                 htmlFor="category-filter"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Category
               </label>
@@ -129,7 +142,7 @@ const AllCoursesPage = () => {
                   setCategoryFilter(value === "all" ? "" : value)
                 }
               >
-                <SelectTrigger id="category-filter">
+                <SelectTrigger id="category-filter" className="rounded-lg">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,151 +159,125 @@ const AllCoursesPage = () => {
 
           {/* Active filters display */}
           {(search || ageFilter || categoryFilter) && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-gray-600">Active filters:</span>
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">
+                  Active filters:
+                </span>
                 {search && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs py-1 px-3 rounded-full flex items-center"
+                  >
                     Search: {search}
                     <button
                       onClick={() => setSearch("")}
                       className="ml-2 hover:text-gray-900"
                       aria-label="Remove search filter"
                     >
-                      ×
+                      <X className="h-3 w-3" />
                     </button>
                   </Badge>
                 )}
                 {ageFilter && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs py-1 px-3 rounded-full flex items-center"
+                  >
                     Age: {ageFilter}
                     <button
                       onClick={() => setAgeFilter("")}
                       className="ml-2 hover:text-gray-900"
                       aria-label="Remove age filter"
                     >
-                      ×
+                      <X className="h-3 w-3" />
                     </button>
                   </Badge>
                 )}
                 {categoryFilter && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs py-1 px-3 rounded-full flex items-center"
+                  >
                     Category: {categoryFilter}
                     <button
                       onClick={() => setCategoryFilter("")}
                       className="ml-2 hover:text-gray-900"
                       aria-label="Remove category filter"
                     >
-                      ×
+                      <X className="h-3 w-3" />
                     </button>
                   </Badge>
                 )}
-                <button
+                <Button
                   onClick={() => {
                     setSearch("");
                     setAgeFilter("");
                     setCategoryFilter("");
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  variant="ghost"
+                  className="text-sm text-red-600 hover:text-red-800 hover:bg-red-50 py-1 px-2 h-auto"
                 >
                   Clear all
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
 
         {/* Results count */}
-        <div className="mb-6">
+        <div className="mb-8">
           <p className="text-gray-600">
-            Showing {filteredCourses.length} of {courseList.length} courses
+            Showing{" "}
+            <span className="font-semibold">{filteredCourses.length}</span> of{" "}
+            <span className="font-semibold">{courseList.length}</span> courses
           </p>
         </div>
 
         {/* Category carousels */}
         {Object.keys(coursesByCategory).length > 0 ? (
           Object.entries(coursesByCategory).map(([category, courses]) => (
-            <CourseCategoryCarousel
-              key={category}
-              title={`${category} Courses`}
-            >
-              {courses.map((course) => (
-                <div key={course.slug} className="flex-shrink-0">
-                  <CourseCarouselCard
-                    slug={course.slug}
-                    title={course.title}
-                    description={course.description}
-                    ageRange={course.ageRange}
-                    category={course.category}
-                    imagePath={course.imagePath}
-                  />
-                </div>
-              ))}
-            </CourseCategoryCarousel>
+            <div key={category} id={category}>
+              <CourseCategoryCarousel title={`${category} Courses`}>
+                {courses.map((course) => (
+                  <div key={course.slug} className="flex-shrink-0 mb-4">
+                    <CourseCarouselCard
+                      slug={course.slug}
+                      title={course.title}
+                      description={course.description}
+                      ageRange={course.ageRange}
+                      category={course.category}
+                      imagePath={course.imagePath}
+                    />
+                  </div>
+                ))}
+              </CourseCategoryCarousel>
+            </div>
           ))
         ) : (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
+            <div className="mx-auto w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mb-6">
+              <Search className="w-12 h-12 text-red-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
               No courses found
             </h3>
-            <p className="text-gray-500 mb-4">
-              Try adjusting your search or filter criteria
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Try adjusting your search or filter criteria to find what you're
+              looking for.
             </p>
-            <button
+            <Button
               onClick={() => {
                 setSearch("");
                 setAgeFilter("");
                 setCategoryFilter("");
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-lg font-medium"
             >
               Clear all filters
-            </button>
+            </Button>
           </div>
         )}
-
-        {/* All courses grid view (alternative to carousels) */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course) => (
-              <div
-                key={course.slug}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-200 hover:border-blue-300 group"
-              >
-                <div className="mb-4">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">Course Image</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-blue-600 line-clamp-2">
-                  {course.title}
-                </h3>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {course.description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary" className="text-xs">
-                    {course.ageRange}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {course.category}
-                  </Badge>
-                </div>
-
-                <Link
-                  href={`/all-courses/${course.slug}`}
-                  className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center text-sm font-medium w-full"
-                >
-                  View Details
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
