@@ -42,153 +42,126 @@ const roleLinksMap: Record<
     {
       label: "Dashboard",
       href: "/admin-dashboard",
-      icon: (
-        <IconHome className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+    },
+    {
+      label: "User Profile",
+      href: "/user-profile",
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Create User",
       href: "/create-user",
-      icon: (
-        <IconUserPlus className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconUserPlus className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Student List",
       href: "/student-list",
-      icon: (
-        <IconUsers className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconUsers className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Tasks",
       href: "/admin-dashboard/create-task",
-      icon: (
-        <CalendarCheck className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <CalendarCheck className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "New Registration",
       href: "/admin-dashboard/new-registration",
-      icon: (
-        <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Renewal",
       href: "/admin-dashboard/renewal",
-      icon: (
-        <NotepadText className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <NotepadText className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Media",
       href: "/media",
-      icon: (
-        <Clapperboard className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Settings",
       href: "#",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Logout",
       href: "/login",
-      icon: (
-        <LogOut className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <LogOut className="h-5 w-5 shrink-0 text-black" />,
     },
   ],
   trainer: [
     {
       label: "Dashboard",
       href: "/trainer-dashboard",
-      icon: (
-        <IconHome className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+    },
+    {
+      label: "User Profile",
+      href: "/user-profile",
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Create Task",
       href: "/trainer-dashboard/create-task",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Student List",
       href: "/student-list",
-      icon: (
-        <IconUsers className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconUsers className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Media",
       href: "/media",
-      icon: (
-        <Clapperboard className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Settings",
       href: "#",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Logout",
       href: "/login",
-      icon: (
-        <LogOut className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <LogOut className="h-5 w-5 shrink-0 text-black" />,
     },
   ],
   student: [
     {
       label: "Dashboard",
       href: "/student-dashboard",
-      icon: (
-        <IconHome className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+    },
+    {
+      label: "User Profile",
+      href: "/user-profile",
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Course Progress",
       href: "/student-dashboard/course-progress",
-      icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconBrandTabler className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Upcoming Tasks",
       href: "/student-dashboard/upcoming-tasks",
-      icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconBrandTabler className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Media",
       href: "/student-dashboard/media",
-      icon: (
-        <Clapperboard className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Settings",
       href: "#",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Logout",
       href: "/login",
-      icon: (
-        <LogOut className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <LogOut className="h-5 w-5 shrink-0 text-black" />,
     },
   ],
 };
@@ -229,13 +202,13 @@ export default function DashboardLayout({
   return (
     <div
       className={cn(
-        "flex w-full flex-1 flex-col -mt-10 overflow-hidden bg-gray-100 md:flex-row dark:bg-neutral-800",
-        "min-h-[calc(100vh-6rem)]"
+        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row ",
+        "min-h-[calc(100vh-4rem)]"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-          <div className="flex  flex-1 flex-col overflow-x-hidden overflow-y-auto mt-16">
+        <SidebarBody className="justify-between gap-10 bg-white">
+          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-2 flex flex-col gap-2">
               {linksWithHandlers.map((link, idx) => (
@@ -268,8 +241,8 @@ export default function DashboardLayout({
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="flex flex-1 md:ml-[60px]">
-        <div className="flex h-full w-full flex-1 flex-col bg-transparent md:w-[85%]">
+      <div className="flex flex-1 md:ml-[60px] pt-16">
+        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%]">
           {children}
         </div>
       </div>

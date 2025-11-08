@@ -365,7 +365,7 @@ const CreateUser = () => {
         aria-label="Create User Page"
         className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
       >
-        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 md:mt-14">
+        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 ">
           <Toaster
             position="top-center"
             reverseOrder={false}
@@ -397,24 +397,8 @@ const CreateUser = () => {
           {/* Header Section */}
           <div className="max-w-7xl mx-auto mb-12">
             <div className="text-center transform transition-all duration-500">
-              {/* Logo */}
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="relative p-3">
-                    <Image
-                      src="/assets/logo.png"
-                      alt="Cyborg Robotics Academy Logo"
-                      width={200}
-                      height={200}
-                      className=""
-                      priority={true}
-                    />
-                  </div>
-                </div>
-              </div>
-
               {/* Main Icon */}
-              <h2 className="text-5xl font-bold  tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-4">
+              <h2 className="text-4xl font-bold gradient-text  tracking-tight  mb-4">
                 Create New User
               </h2>
 
@@ -455,7 +439,7 @@ const CreateUser = () => {
                           ? "Trainer Name *"
                           : "Admin Name *"}
                     </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                    <div className="relative transform transition-all duration-300">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                         <UserIcon className="h-5 w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
                       </div>
@@ -486,7 +470,7 @@ const CreateUser = () => {
                     >
                       Email Address *
                     </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                    <div className="relative transform transition-all duration-300">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                         <Mail className="h-5 w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
                       </div>
@@ -519,7 +503,7 @@ const CreateUser = () => {
                   >
                     Password *
                   </label>
-                  <div className="relative transform transition-all duration-300 hover:scale-[1.02] max-w-2xl">
+                  <div className="relative transform transition-all duration-300 max-w-2xl">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                       <Lock className="h-5 w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
                     </div>
@@ -623,7 +607,7 @@ const CreateUser = () => {
                     label="Select Role"
                     required
                     disabled={userRole === "trainer"}
-                    className="transform transition-all duration-300 hover:scale-[1.02] z-50"
+                    className="transform transition-all duration-300 "
                   />
                 </div>
 
@@ -645,7 +629,7 @@ const CreateUser = () => {
                       >
                         PRN Number *
                       </label>
-                      <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                      <div className="relative transform transition-all duration-300">
                         <input
                           id="prn-number"
                           name="prn"
@@ -702,7 +686,7 @@ const CreateUser = () => {
                       >
                         Enroll in Courses *
                       </label>
-                      <div className="relative transform transition-all duration-300 ">
+                      <div className="relative transform transition-all duration-300">
                         <div className="max-h-64 overflow-y-auto border-2 border-gray-200 rounded-2xl p-6 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                             {courses.map((courseName) => (

@@ -313,7 +313,7 @@ const LoginPage = () => {
 
   // Only render login form after auth check is complete
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden mt-10">
+    <div className="min-h-screen bg-white relative overflow-hidden mt-12">
       {/* Animated background elements */}
       <div className="absolute inset-0 ">
         <motion.div
@@ -363,10 +363,10 @@ const LoginPage = () => {
               >
                 <div className="relative">
                   <Image
-                    src="/assets/logo.png"
+                    src="/assets/Cyborg-logo.png"
                     alt="Logo"
-                    width={120}
-                    height={120}
+                    width={200}
+                    height={200}
                     className="relative z-10 mx-auto"
                   />
                 </div>

@@ -256,11 +256,11 @@ const Page = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="container mx-auto px-4 py-12 max-w-full "
+      className="container mx-auto px-4 py-4 max-w-full "
     >
       <Card className="shadow-lg border rounded-2xl overflow-hidden bg-white">
         {/* Header */}
-        <CardHeader className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 p-6 shadow-md">
+        <CardHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 p-6 shadow-md">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
             <CardTitle className="text-3xl font-extrabold text-white tracking-tight">
               Student Renewal

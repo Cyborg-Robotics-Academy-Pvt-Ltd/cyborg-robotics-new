@@ -1,4 +1,5 @@
 // Server Component - no "use client" directive needed
+"use client";
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 import Testimonials from "@/components/ui/course-accordion";
+import { handleDownloadSyllabus as downloadSyllabus } from "@/lib/utils";
 
 // Import curriculum data
 import {
@@ -1073,9 +1075,7 @@ export default async function SlugPage({
 
   // Handle syllabus download
   const handleDownloadSyllabus = () => {
-    // In a real app, this would trigger a download
-    console.log("Downloading syllabus...");
-    window.open(data.syllabusPath, "_blank");
+    downloadSyllabus(data.syllabusPath, data.syllabusFileName);
   };
 
   // Format price with currency
@@ -1242,7 +1242,7 @@ export default async function SlugPage({
 
           <button
             className="bg-white hover:bg-gray-100 text-red-800 font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg border border-red-300 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-            // onClick={handleDownloadSyllabus}
+            onClick={handleDownloadSyllabus}
           >
             Download Syllabus
           </button>

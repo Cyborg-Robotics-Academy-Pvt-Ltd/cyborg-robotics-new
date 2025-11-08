@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 import TemplateCarousel from "./TemplateCarousel";
+import Footer from "./Footer";
 
 // Immediate load - critical above the fold content
 const Features = dynamic(() => import("./Features"));
@@ -136,6 +137,7 @@ const HomePage: React.FC = () => {
         </motion.div>
 
         <NewsLetter />
+        <Footer />
       </div>
     </>
   );

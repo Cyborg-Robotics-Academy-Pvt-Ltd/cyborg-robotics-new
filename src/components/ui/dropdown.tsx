@@ -131,7 +131,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       {/* Dropdown Button */}
       <div
         className={cn(
-          "relative cursor-pointer rounded-2xl transition-all duration-300 transform hover:scale-[1.02]",
+          "relative cursor-pointer rounded-2xl transition-all duration-300 transform",
           sizeClasses[size],
           variantClasses[variant],
           disabled && "opacity-50 cursor-not-allowed bg-gray-100",

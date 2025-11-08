@@ -9,6 +9,9 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
 import HamburgerButton from "./hamburger-button";
+import { useAuth } from "@/lib/auth-context";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +21,7 @@ export default function Header() {
   const pathname = usePathname();
   const isAboutPage = pathname === "/about-us";
   const isHomePage = pathname === "/";
+  const { user, userRole, loading } = useAuth();
 
   // Handle scroll for transparent navbar on home page
   useEffect(() => {
@@ -179,6 +183,16 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+      localStorage.removeItem("userRole");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   // Navigation items for main navbar
   const navItems = [
     {
@@ -229,14 +243,27 @@ export default function Header() {
             {/* Transparent CTA buttons and menu */}
             <div className="flex items-center gap-4 absolute top-4 right-4">
               <div className="hidden lg:flex items-center gap-4">
-                <Link href="/login">
-                  <Button
-                    size="sm"
-                    className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
-                  >
-                    Log In
-                  </Button>
-                </Link>
+                {loading ? (
+                  <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                ) : user ? (
+                  <Link href={`/${userRole}-dashboard`}>
+                    <Button
+                      size="sm"
+                      className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/login">
+                    <Button
+                      size="sm"
+                      className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
+                    >
+                      Log In
+                    </Button>
+                  </Link>
+                )}
                 <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
                   <motion.div
                     initial={{ y: 0 }}
@@ -330,15 +357,28 @@ export default function Header() {
           </nav>
 
           {/* Desktop CTA buttons and menu */}
-          <div className="hidden lg:flex items-center gap-4 absolute top-4 right-4">
-            <Link href="/login">
-              <Button
-                size="sm"
-                className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#ffffff]"
-              >
-                Log In
-              </Button>
-            </Link>
+          <div className="hidden lg:flex items-center gap-4 absolute top-4 right-4 ">
+            {loading ? (
+              <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+            ) : user ? (
+              <Link href={`/${userRole}-dashboard`}>
+                <Button
+                  size="sm"
+                  className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#ffffff]"
+                >
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button
+                  size="sm"
+                  className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#ffffff]"
+                >
+                  Log In
+                </Button>
+              </Link>
+            )}
             <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
               <motion.div
                 initial={{ y: 0 }}

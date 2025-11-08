@@ -563,7 +563,7 @@ const Page = () => {
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
               <div className="bg-white bg-opacity-20 p-3 rounded-xl">
-                <UsersRound className="md:h-7 md:w-7 h-4 w-4" />
+                <UsersRound className="md:h-4 md:w-4 h-4 w-4" color="black" />
               </div>
               <h1 className="text-xl md:text-3xl font-bold tracking-tight">
                 Student Record
@@ -572,9 +572,9 @@ const Page = () => {
 
             <Link
               href="/create-user"
-              className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
+              className="inline-flex items-center px-4 py-2 bg-white text-black bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
             >
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-4 w-4 mr-2" color="black" />
               Add Student
             </Link>
           </div>
@@ -630,8 +630,8 @@ const Page = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <div className="bg-[#991b1b] bg-opacity-10 text-[#991b1b] px-4 py-2 rounded-full font-semibold flex items-center shadow-sm">
-                <UsersRound className="h-4 w-4 mr-2" />
+              <div className="bg-[#991b1b] bg-opacity-10 text-white text-[#991b1b] px-4 py-2 rounded-full font-semibold flex items-center shadow-sm">
+                <UsersRound className="h-4 w-4 mr-2" color="white" />
                 Students: {students.length}
               </div>
               <div className="bg-green-50 text-green-700 px-4 py-2 rounded-full font-medium flex items-center ">

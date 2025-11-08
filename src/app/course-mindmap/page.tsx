@@ -3,6 +3,7 @@
 
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
+import Footer from "@/components/home/Footer";
 export const runtime = "nodejs";
 
 const MindMapComponent = dynamic(() => import("@/components/MindMap"), {
@@ -20,6 +21,7 @@ export default function CourseMindmapPage() {
       }
     >
       <MindMapComponent />
+      <Footer />
     </Suspense>
   );
 }

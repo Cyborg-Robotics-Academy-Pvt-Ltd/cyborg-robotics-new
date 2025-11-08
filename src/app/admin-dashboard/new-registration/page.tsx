@@ -180,7 +180,7 @@ const Page = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-12 mt-20"
+      className="container mx-auto px-4 py-10 "
     >
       <Card className="shadow-xl rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-rose-100 to-pink-50 p-6 border-b">
@@ -195,7 +195,7 @@ const Page = () => {
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-10 rounded-full border border-rose-200 focus:ring-2 focus:ring-rose-500 shadow-sm"
+                  className="pl-10 pr-10 rounded-full  bg-white   border-none shadow-sm "
                 />
                 {searchTerm && (
                   <X
@@ -206,16 +206,21 @@ const Page = () => {
               </div>
               <Button
                 onClick={fetchRegistrations}
-                className="bg-rose-700 hover:bg-rose-800 rounded-full flex items-center gap-2"
+                className="bg-red-800 hover:bg-red-900 text-white rounded-full flex items-center gap-2"
               >
-                <RefreshCw className={loading ? "animate-spin" : ""} /> Refresh
+                <RefreshCw
+                  className={loading ? "animate-spin" : ""}
+                  color="white"
+                />{" "}
+                Refresh
               </Button>
               <Button
                 onClick={exportToExcel}
                 disabled={exporting || sortedRegistrations.length === 0}
-                className="bg-green-600 hover:bg-green-700 rounded-full flex items-center gap-2"
+                className="bg-green-600 text-white hover:bg-green-700 rounded-full flex items-center gap-2"
               >
-                <FileSpreadsheet /> {exporting ? "Exporting..." : "Export"}
+                <FileSpreadsheet color="white" />{" "}
+                {exporting ? "Exporting..." : "Export"}
               </Button>
             </div>
           </div>
