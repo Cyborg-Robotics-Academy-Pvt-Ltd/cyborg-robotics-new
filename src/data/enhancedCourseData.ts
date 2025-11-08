@@ -398,8 +398,8 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "9-13",
     category: "Robotics"
   },
-  "printing3d": {
-    id: "printing3d",
+  "3d-printing": {
+    id: "3dPrinting",
     title: "3D PRINTING",
     subtitle: "Learn to design and print 3D objects using modern 3D printing technology",
     badge: "Digital Manufacturing Course",

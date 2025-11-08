@@ -432,11 +432,8 @@ const MediaSection = () => {
   }, [fetchPrns]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-8 bg-white  rounded-xl shadow-lg mt-16 transition-transform transform ">
+    <div className="w-full max-w-6xl mx-auto p-8 bg-white   shadow-lg mt-2 transition-transform transform ">
       <h2 className="text-4xl font-bold mb-6 text-gray-800 flex items-center">
-        <span className="bg-red-100 p-2 rounded-lg mr-3">
-          {/* Removed Image icon */}
-        </span>
         Media Library
       </h2>
 
@@ -456,7 +453,7 @@ const MediaSection = () => {
 
       {/* Upload section with drag-and-drop */}
       <div
-        className={`w-full max-w-4xl mx-auto min-h-96 border border-dashed bg-white dark:bg-black border-neutral-200 dark:border-neutral-800 rounded-lg mb-8 ${
+        className={`w-full max-w-4xl mx-auto min-h-96 border border-dashed bg-white border-neutral-200 rounded-lg mb-8 ${
           isDragging ? "border-[#991b1b] bg-red-50" : ""
         }`}
         onDragOver={handleDragOver}

@@ -380,7 +380,7 @@ const CreateTasks = () => {
   const groupedTasks = groupTasksByDate(filteredTasks);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-6 md:pt-8 mt-20 ">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-6 md:pt-8  ">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -443,13 +443,13 @@ const CreateTasks = () => {
             </button>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 md:px-6 py-2.5 md:py-3 bg-red-700 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-indigo-700 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full sm:w-auto"
+              className="px-4 md:px-6 py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full sm:w-auto"
             >
               <PlusCircle size={18} className="mr-2" />
               Add New Class
             </button>
             <Link href="/student-list" className="w-full sm:w-auto">
-              <button className="px-4 md:px-6 py-2.5 md:py-3 bg-red-700 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-indigo-700 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full">
+              <button className="px-4 md:px-6 py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full">
                 Student List
               </button>
             </Link>

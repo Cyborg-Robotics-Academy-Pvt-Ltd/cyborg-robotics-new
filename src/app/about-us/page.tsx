@@ -10,6 +10,7 @@ import {
 import ScrollButton from "@/components/widgets/ScrollButton";
 import { useInView } from "react-intersection-observer";
 import AwardSection from "@/components/about/AwardSection";
+import Footer from "@/components/home/Footer";
 
 // Lazy load below-the-fold components for better performance
 const TeamSection = React.lazy(() => import("@/components/about/TeamSection"));
@@ -121,6 +122,7 @@ export default function AboutPage() {
         </div>
         {/* Floating Scroll Button with pulse animation for improved navigation */}
         <ScrollButton />
+        <Footer />
       </main>
     </>
   );

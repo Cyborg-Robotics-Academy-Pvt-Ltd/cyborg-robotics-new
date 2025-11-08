@@ -19,6 +19,7 @@ import {
   COURSE_CATEGORIES,
 } from "@/data/enhancedCourseData";
 import { useScrollToSection } from "@/hooks/useScrollToSection";
+import Footer from "@/components/home/Footer";
 
 // Convert the enhanced course data to an array for easier manipulation
 const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
@@ -279,6 +280,7 @@ const AllCoursesPage = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

@@ -92,7 +92,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "fixed left-0 top-0 h-screen py-4 hidden md:flex md:flex-col dark:bg-neutral-800 w-[300px] z-50", // changed to fixed
+          "fixed left-0 top-16 h-[calc(100vh-4rem)]  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar shadow-xl", // changed to fixed and adjusted for header
           open ? "px-4" : "px-2",
           className
         )}
@@ -125,7 +125,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden shadow-2xl  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
         )}
         {...props}
       >
@@ -146,15 +146,15 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10  flex flex-col justify-between hide-scrollbar z-40",
                 className
               )}
             >
               <div
-                className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
+                className="absolute right-10 top-10 z-50 text-black cursor-pointer"
                 onClick={() => setOpen(!open)}
               >
-                <IconX />
+                <IconX color="black" />
               </div>
               {children}
             </motion.div>
@@ -226,7 +226,7 @@ const SidebarLinkComponent = ({
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
         className={cn(
-          "text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+          "text-black  text-sm group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
           isActive && "text-[#B13133] font-bold"
         )}
       >

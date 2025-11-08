@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 import {
   AnimatePresence,
   motion,
@@ -8,7 +8,14 @@ import {
   type Transition,
 } from "framer-motion";
 import Link from "next/link";
-import { X, Shield, HelpCircle, ChevronRight, Users } from "lucide-react";
+import {
+  X,
+  Shield,
+  HelpCircle,
+  ChevronRight,
+  Users,
+  LogOut,
+} from "lucide-react";
 // Social icons now use images from public/assets/social-icons
 
 import { menuData, type MenuItem } from "./menu-data";
@@ -19,6 +26,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from "next/image";
+import { useAuth } from "@/lib/auth-context";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 interface OverlayMenuProps {
   isOpen: boolean;
@@ -241,6 +252,19 @@ export default function OverlayMenu({
   activeSection,
   scrollToSection,
 }: OverlayMenuProps) {
+  const { user, userRole } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut(auth);
+      setIsOpen(false);
+      router.push("/");
+      localStorage.removeItem("userRole");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  }, [router, setIsOpen]);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -288,6 +312,20 @@ export default function OverlayMenu({
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
                   />
+                  {/* Authentication Section */}
+                  {user && (
+                    <div className="mt-4">
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center mx-auto justify-between w-auto rounded-full p-3 text-sm transition-colors bg-red-800 text-white hover:bg-red-900"
+                      >
+                        <div className="flex items-center gap-2">
+                          <LogOut className="h-5 w-5 text-white" />
+                          <span>Log Out</span>
+                        </div>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: privacy/support/social/FAQs */}

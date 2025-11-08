@@ -3,7 +3,6 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import Header from "@/components/layout/header";
 import { ReactNode } from "react";
-import Footer from "@/components/home/Footer";
 import WhatsAppWidget from "@/components/widgets/WhatsAppWidget";
 import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
@@ -53,7 +52,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
             <Header />
             <main className="flex-1 w-full overflow-x-hidden">{children}</main>
-            <Footer />
           </div>
           <WhatsAppWidget />
           <ScrollButton />
