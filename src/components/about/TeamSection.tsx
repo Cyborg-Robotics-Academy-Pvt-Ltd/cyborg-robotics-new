@@ -84,6 +84,13 @@ const teamMembers: TeamMember[] = [
     linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
   },
   {
+    id: "Nilesh",
+    name: "Mr. Nilesh Jaiswar",
+    title: "Lead 3D Printing | Technologist",
+    image: "assets/team/nilesh.png",
+    linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
+  },
+  {
     id: "Anchal",
     name: "Ms. Anchal Mishra",
     title: "Lead Embedded Systems Educator | Technologist",
@@ -96,13 +103,6 @@ const teamMembers: TeamMember[] = [
     title: "Lead Programming Educator",
     image: "assets/team/omkar.png",
     linkedin: "https://www.linkedin.com/in/omkarshinde711/",
-  },
-  {
-    id: "Nilesh",
-    name: "Mr. Nilesh Jaiswar",
-    title: "Lead 3D Printing | Technologist",
-    image: "assets/team/nilesh.png",
-    linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
     id: "Sirjana",

@@ -43,6 +43,7 @@ const mainMenu: MenuItem[] = [
   { title: 'Brand Stories', href: '/about-us#story', icon: Sparkles, id: 'story' },
   { title: 'Meet the Team', href: '/about-us#team', icon: Users, id: 'team' },
   { title: 'Meet the Founder', href: '/about-us#founders', icon: PersonStanding, id: 'founders' },
+  { title: 'Awards', href: '/about-us#awards', icon: Award, id: 'awards' },
       { title: 'Careers', href: '/careers', icon: HandHelping, id: 'careers' },
     ],
   },

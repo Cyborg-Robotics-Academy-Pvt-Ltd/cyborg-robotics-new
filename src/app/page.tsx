@@ -2,6 +2,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import HomePage from "@/components/home/HomePage";
+import { ScrollButton, WhatsAppWidget } from "@/components/widgets";
 
 // Lazy load mouse follower only on desktop devices
 const MouseFollowerCircleDot = dynamic(
@@ -22,6 +23,8 @@ const Home = () => {
       <div className="hidden lg:block">
         <MouseFollowerCircleDot />
       </div>
+      <WhatsAppWidget />
+      <ScrollButton />
     </>
   );
 };
