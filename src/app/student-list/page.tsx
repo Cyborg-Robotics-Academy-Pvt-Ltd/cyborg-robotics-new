@@ -547,7 +547,8 @@ const Page = () => {
         const anchorRect = anchorRef.current.getBoundingClientRect();
         dropdownRef.current.style.position = "absolute";
         dropdownRef.current.style.top = `${anchorRect.bottom + window.scrollY}px`;
-        dropdownRef.current.style.left = `${anchorRect.left + window.scrollX}px`;
+        // Move dropdown slightly to the left (adjust as needed)
+        dropdownRef.current.style.left = `${anchorRect.left + window.scrollX - 150}px`;
         dropdownRef.current.style.zIndex = "9999";
       }
     }, [open, anchorRef]);
@@ -630,7 +631,7 @@ const Page = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <div className="bg-[#991b1b] bg-opacity-10 text-white text-[#991b1b] px-4 py-2 rounded-full font-semibold flex items-center shadow-sm">
+              <div className="bg-[#991b1b] bg-opacity-10 text-white px-4 py-2 rounded-full font-semibold flex items-center shadow-sm">
                 <UsersRound className="h-4 w-4 mr-2" color="white" />
                 Students: {students.length}
               </div>
@@ -938,7 +939,7 @@ const Page = () => {
                                   >
                                     <button
                                       onClick={() => handleAddClass(student)}
-                                      className="flex items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10 hover:text-[#991b1b] transition-colors rounded-xl"
+                                      className="flex items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10 hover:text-white transition-colors rounded-xl"
                                     >
                                       <UserPlus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                                       Add Student Class
@@ -955,7 +956,7 @@ const Page = () => {
                                         setCourseStudent(student);
                                         setShowNewCourseModal(true);
                                       }}
-                                      className="flex items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors"
+                                      className="flex items-center hover:bg-[#991b1b] hover:bg-opacity-10 hover:text-white w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-blue-700  transition-colors"
                                     >
                                       <MdAdd className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                                       Add New Course
@@ -970,7 +971,7 @@ const Page = () => {
                                       onClick={() =>
                                         router.push(`/${student.PrnNumber}`)
                                       }
-                                      className="flex items-center px-3 md:px-4 py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10 hover:text-[#991b1b] transition-colors w-full text-left rounded-xl"
+                                      className="flex items-center px-3 md:px-4  hover:bg-opacity-10 hover:text-white py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10  transition-colors w-full text-left rounded-xl"
                                     >
                                       <Eye className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                                       View Details
@@ -982,7 +983,7 @@ const Page = () => {
                                     transition={{ delay: 0.2 }}
                                   >
                                     <button
-                                      className="flex items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-[#991b1b] hover:bg-[#991b1b] hover:bg-opacity-10 transition-colors rounded-xl"
+                                      className="flex hover:bg-[#991b1b] text-red-800 hover:bg-opacity-10 hover:text-white items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-opacity-10 transition-colors rounded-xl"
                                       onClick={() => {
                                         if (
                                           window.confirm(

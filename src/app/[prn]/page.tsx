@@ -9,12 +9,20 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { AlertTriangle, BookOpen, Trophy } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  Trophy,
+  Award,
+  Calendar,
+  UserCheck,
+} from "lucide-react";
 import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
+import RoboticsCard from "@/components/ui/robotics-card";
 
 interface CourseData {
   classNumber: string;
@@ -204,7 +212,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
         <main
           role="main"
           aria-label="Student Not Found"
-          className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden"
+          className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4 relative overflow-hidden"
         >
           {/* Animated background elements */}
           <div className="absolute inset-0">
@@ -212,24 +220,24 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-800/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
           </div>
 
-          <div className="relative bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full text-center border border-gray-200">
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
-              style={{
-                background: "#991b1b",
-              }}
-            >
-              <AlertTriangle className="w-12 h-12 text-white animate-bounce" />
-            </div>
-            <h2
-              className="text-3xl font-bold mb-3"
-              style={{ color: "#991b1b" }}
-            >
-              Student Not Found
-            </h2>
-            <p className="text-gray-600 text-lg">
-              No student found with PRN: {prn}
-            </p>
+          <div className="relative max-w-md w-full text-center">
+            <RoboticsCard className="p-10 bg-white/80 backdrop-blur-sm border-2 border-dashed border-red-200">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg bg-gradient-to-br from-red-700 to-red-800">
+                <AlertTriangle className="w-12 h-12 text-white animate-bounce" />
+              </div>
+              <h2 className="text-3xl font-bold mb-3 text-red-800">
+                Student Not Found
+              </h2>
+              <p className="text-gray-600 text-lg mb-6">
+                No student found with PRN:{" "}
+                <span className="font-mono font-bold">{prn}</span>
+              </p>
+              <Link href="/student-list">
+                <button className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold rounded-lg shadow-md hover:from-red-800 hover:to-red-900 transition-all duration-300 transform hover:-translate-y-0.5">
+                  Back to Student List
+                </button>
+              </Link>
+            </RoboticsCard>
           </div>
         </main>
       </>
@@ -257,19 +265,26 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
       <main
         role="main"
         aria-label="Student Dashboard"
-        className="min-h-screen bg-gray-50 lg:mt-20 relative overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100  relative overflow-hidden"
       >
-        {/* Animated background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-800/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-red-800/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-0 w-64 h-64 bg-red-800/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-        </div>
-
-        <div className="relative container mx-auto px-4 py-8">
-          <div className="flex flex-col sm:flex-row sm:justify-end mb-4 sm:mb-6 mt-2 sm:mt-0">
-            <Link href="/student-list" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-4 md:px-6 py-2.5 md:py-3 bg-red-700 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-indigo-700 hover:shadow-md transition-all duration-300 flex items-center justify-center">
+        <div className="relative container mx-auto px-4 py-8 max-w-7xl">
+          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-8">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                Welcome,{" "}
+                <span className="text-red-800">{student.username}</span>
+              </h1>
+              <p className="text-gray-600 flex items-center">
+                <UserCheck className="w-4 h-4 mr-2" />
+                PRN: {student.PrnNumber}
+              </p>
+            </div>
+            <Link
+              href="/student-list"
+              className="w-full sm:w-auto mt-4 sm:mt-0"
+            >
+              <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white text-base font-semibold rounded-xl shadow-lg hover:from-red-800 hover:to-red-900 hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:-translate-y-0.5">
+                <Calendar className="w-5 h-5 mr-2" />
                 Student List
               </button>
             </Link>
@@ -277,44 +292,46 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
 
           {/* Enrolled Courses Section */}
           {student.courses.length === 0 ? (
-            <div className="bg-white rounded-3xl shadow-2xl p-12 border border-gray-200 text-center">
-              <div className="py-12">
-                <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl"
-                  style={{
-                    background: "#991b1b",
-                  }}
-                >
-                  <BookOpen className="w-16 h-16 text-white opacity-80" />
+            <RoboticsCard className="p-12 text-center border-2 border-dashed border-red-200 bg-gradient-to-br from-white to-red-50">
+              <div className="py-8">
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg bg-gradient-to-br from-red-700 to-red-800">
+                  <BookOpen className="w-12 h-12 text-white" />
                 </div>
-                <h3
-                  className="text-2xl font-bold mb-4"
-                  style={{ color: "#991b1b" }}
-                >
+                <h3 className="text-2xl font-bold mb-4 text-red-800">
                   No Courses Enrolled
                 </h3>
-                <p className="text-gray-600 text-lg max-w-md mx-auto">
+                <p className="text-gray-600 text-lg max-w-md mx-auto mb-6">
                   This student is not currently enrolled in any courses.
                 </p>
+                <Link href="/all-courses">
+                  <button className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold rounded-lg shadow-md hover:from-red-800 hover:to-red-900 transition-all duration-300 transform hover:-translate-y-0.5">
+                    Browse Courses
+                  </button>
+                </Link>
               </div>
-            </div>
+            </RoboticsCard>
           ) : (
-            <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-200">
-              <div className="mb-8">
-                <h2
-                  className="text-3xl font-bold mb-3"
-                  style={{ color: "#991b1b" }}
-                >
-                  Enrolled Courses
-                </h2>
-                <p className="text-gray-600 text-lg">
-                  Currently enrolled in{" "}
-                  <span className="font-bold" style={{ color: "#991b1b" }}>
-                    {student.courses.length}
-                  </span>{" "}
-                  course
-                  {student.courses.length !== 1 ? "s" : ""}
-                </p>
+            <RoboticsCard className="p-8 bg-white/80 backdrop-blur-sm">
+              <div className="mb-8 pb-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold text-red-800 mb-2">
+                      Enrolled Courses
+                    </h2>
+                    <p className="text-gray-600 flex items-center">
+                      <BookOpen className="w-5 h-5 mr-2 text-red-700" />
+                      Currently enrolled in
+                      <span className="font-bold mx-1 text-red-800">
+                        {student.courses.length}
+                      </span>
+                      course{student.courses.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="bg-red-100 text-red-800 px-4 py-2 rounded-full flex items-center">
+                    <Award className="w-5 h-5 mr-2" />
+                    <span className="font-semibold">Active</span>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -322,9 +339,11 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                   // Reverse index for correct mapping
                   const realIndex = student.courses.length - 1 - index;
                   return (
-                    <div
+                    <RoboticsCard
                       key={`${course.name}-${index}`}
-                      className="group relative bg-gray-50 border-2 border-gray-200 rounded-2xl p-6 hover:border-red-800/5 hover:bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 block cursor-pointer overflow-hidden"
+                      className="group relative overflow-hidden border-2 border-gray-200 hover:border-red-700 transition-all duration-500"
+                      variant="elevated"
+                      interactive
                     >
                       {/* Completed Overlay */}
                       {course && course.completed && (
@@ -345,37 +364,27 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                       )}
                       {/* Certificate Badge */}
                       {course.certificate && (
-                        <Image
-                          src="/assets/certificate.png"
-                          alt="Certificate"
-                          width={80}
-                          height={80}
-                          className="absolute top-2 right-1 object-contain mt-12 z-20"
-                        />
-                      )}
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-red-800/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div
-                        className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg"
-                        style={{
-                          background: "#991b1b",
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm">
-                          {student.courses.length - index}
-                        </span>
-                      </div>
-                      <div className="relative z-10 mb-6">
-                        <div
-                          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl"
-                          style={{
-                            background: "#991b1b",
-                          }}
-                        >
-                          <BookOpen className="w-8 h-8 text-white" />
+                        <div className="absolute top-4 right-4 z-20 animate-bounce">
+                          <Image
+                            src="/assets/certificate.png"
+                            alt="Certificate"
+                            width={60}
+                            height={60}
+                            className="object-contain drop-shadow-lg"
+                          />
                         </div>
-                        {/* Level Badge */}
-                        <div className="flex items-center mb-3">
+                      )}
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-700 to-red-800 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <BookOpen className="w-7 h-7 text-white" />
+                          </div>
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-800 font-bold text-sm">
+                            {student.courses.length - index}
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
                           <div
                             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getLevelColor(course.level)}`}
                           >
@@ -383,88 +392,87 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                             {getLevelLabel(course.level)}
                           </div>
                         </div>
-                        {/* Only the course title is a link */}
+
                         <Link
                           href={`/${student.PrnNumber}/${toSlug(course.name, course.level)}`}
-                          className="text-xl font-bold mb-3 z-50 line-clamp-2 transition-colors duration-300 block hover:underline"
-                          style={{ color: "#991b1b", pointerEvents: "auto" }}
+                          className="text-xl font-bold mb-3 line-clamp-2 transition-colors duration-300 block text-red-800 hover:text-red-900 hover:underline"
                         >
                           {course.name}
                         </Link>
-                      </div>
-                      <div className="relative z-10 bg-white rounded-xl p-4 group-hover:bg-gray-50 transition-all duration-300 border border-gray-200">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-sm font-medium text-gray-600 transition-colors">
-                            Class Number
-                          </span>
-                          {/* Show Edit button only for admin */}
-                          {userChecked &&
-                            isAdmin &&
-                            editingIndex !== realIndex && (
-                              <button
-                                className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 border border-yellow-300 transition-all duration-200"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleEditClick(
-                                    realIndex,
-                                    course.classNumber
-                                  );
-                                }}
-                              >
-                                Edit
-                              </button>
-                            )}
-                        </div>
-                        {userChecked &&
-                        isAdmin &&
-                        editingIndex === realIndex ? (
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="text"
-                              className="border rounded px-2 py-1 text-sm w-24"
-                              value={newClassNumber}
-                              onChange={(e) =>
-                                setNewClassNumber(e.target.value)
-                              }
-                              disabled={loading}
-                            />
-                            <button
-                              className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 border border-green-300 transition-all duration-200"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleSave(realIndex);
-                              }}
-                              disabled={loading}
-                            >
-                              {loading ? "Saving..." : "Save"}
-                            </button>
-                            <button
-                              className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded hover:bg-gray-200 border border-gray-300 transition-all duration-200"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleCancel();
-                              }}
-                              disabled={loading}
-                            >
-                              Cancel
-                            </button>
+
+                        <div className="mt-6 pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">
+                                Class Number
+                              </p>
+                              {userChecked &&
+                              isAdmin &&
+                              editingIndex === realIndex ? (
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    className="border rounded px-2 py-1 text-sm w-20 focus:ring-2 focus:ring-red-300 focus:outline-none"
+                                    value={newClassNumber}
+                                    onChange={(e) =>
+                                      setNewClassNumber(e.target.value)
+                                    }
+                                    disabled={loading}
+                                  />
+                                  <button
+                                    className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 border border-green-300 transition-all duration-200"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleSave(realIndex);
+                                    }}
+                                    disabled={loading}
+                                  >
+                                    {loading ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded hover:bg-gray-200 border border-gray-300 transition-all duration-200"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleCancel();
+                                    }}
+                                    disabled={loading}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center">
+                                  <p className="text-lg font-bold font-mono text-red-800">
+                                    {course.classNumber || "N/A"}
+                                  </p>
+                                  {/* Show Edit button only for admin */}
+                                  {userChecked &&
+                                    isAdmin &&
+                                    editingIndex !== realIndex && (
+                                      <button
+                                        className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 border border-yellow-300 transition-all duration-200"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleEditClick(
+                                            realIndex,
+                                            course.classNumber
+                                          );
+                                        }}
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        ) : (
-                          <p
-                            className="text-lg font-bold transition-colors duration-300 font-mono"
-                            style={{ color: "#991b1b" }}
-                          >
-                            {course.classNumber || "N/A"}
-                          </p>
-                        )}
+                        </div>
                       </div>
-                      {/* Subtle animation border */}
-                      <div className="absolute inset-0 rounded-2xl bg-red-800/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-sm"></div>
-                    </div>
+                    </RoboticsCard>
                   );
                 })}
               </div>
-            </div>
+            </RoboticsCard>
           )}
         </div>
       </main>

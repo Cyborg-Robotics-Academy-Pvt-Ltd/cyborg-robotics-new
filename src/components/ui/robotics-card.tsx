@@ -43,12 +43,6 @@ const RoboticsCard: React.FC<RoboticsCardProps> = ({
       )}
       onClick={onClick}
     >
-      {/* Robotics-themed animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-50/20 via-transparent to-blue-50/20 opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-
-      {/* Animated border effect */}
-      <div className="absolute inset-0 rounded-2xl border-2 border-transparent  transition-all duration-500"></div>
-
       {/* Content */}
       <div className="relative z-10 p-6">{children}</div>
 

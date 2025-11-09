@@ -53,8 +53,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Header />
             <main className="flex-1 w-full overflow-x-hidden">{children}</main>
           </div>
-          <WhatsAppWidget />
-          <ScrollButton />
 
           <Analytics />
           <SpeedInsights />

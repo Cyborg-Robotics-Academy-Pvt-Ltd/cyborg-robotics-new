@@ -35,6 +35,9 @@ import {
   ArrowLeftCircle,
   Trophy,
   Hash,
+  Award,
+  Clock,
+  Target,
 } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
@@ -169,18 +172,18 @@ function getLevelColor(level: string) {
   switch (level.toLowerCase()) {
     case "1":
     case "beginner":
-      return "bg-green-50 text-green-700 border-green-200";
+      return "bg-green-100 text-green-800 border-green-200";
     case "2":
     case "intermediate":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "bg-blue-100 text-blue-800 border-blue-200";
     case "3":
     case "advanced":
-      return "bg-purple-50 text-purple-700 border-purple-200";
+      return "bg-purple-100 text-purple-800 border-purple-200";
     case "4":
     case "expert":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-orange-100 text-orange-800 border-orange-200";
     default:
-      return "bg-gray-50 text-gray-700 border-gray-200";
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 }
 
@@ -808,7 +811,10 @@ const Page = ({
         aria-label="Loading Course Detail"
         className="min-h-screen bg-gray-50 flex items-center justify-center"
       >
-        {/* TODO: Add loading spinner and better feedback. */}
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-700 mb-4"></div>
+          <p className="text-gray-600">Loading course details...</p>
+        </div>
       </main>
     );
   }
@@ -819,7 +825,36 @@ const Page = ({
         aria-label="Course Not Found"
         className="min-h-screen bg-gray-50 flex items-center justify-center"
       >
-        {/* TODO: Add error message and better feedback. */}
+        <div className="text-center p-6 bg-white rounded-xl shadow-md max-w-md">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+            <svg
+              className="h-6 w-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+          <h3 className="mt-4 text-xl font-medium text-gray-900">
+            {error || "Student not found"}
+          </h3>
+          <p className="mt-2 text-gray-500">
+            We couldn't find the course details you're looking for.
+          </p>
+          <button
+            onClick={() => window.history.back()}
+            className="mt-6 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeftCircle size={16} />
+            Go Back
+          </button>
+        </div>
       </main>
     );
   }
@@ -846,377 +881,339 @@ const Page = ({
       <main
         role="main"
         aria-label="Course Detail"
-        className="min-h-screen bg-gray-50"
+        className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
       >
-        {/* TODO: Add loading and error states for better UX. */}
-        <div className="bg-gray-50 min-h-screen pb-12 lg:mt-20">
-          {/* Header */}
-          <div className="relative bg-gradient-to-r from-red-800 to-red-700 py-6 px-4 sm:px-6 lg:px-8 text-white shadow-lg overflow-hidden">
-            {/* SVG Wave Background */}
-            <svg
-              className="absolute bottom-0 left-0 w-full h-10"
-              viewBox="0 0 1440 320"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ zIndex: 0 }}
-            >
-              <path
-                fill="#fff"
-                fillOpacity="0.08"
-                d="M0,224L48,202.7C96,181,192,139,288,144C384,149,480,203,576,197.3C672,192,768,128,864,117.3C960,107,1056,149,1152,176C1248,203,1344,213,1392,218.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-              />
-            </svg>
+        <div className="bg-gradient-to-r from-red-800 to-red-700 py-4 px-4 sm:px-6 lg:px-8 text-white shadow-md overflow-hidden relative">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-900 rounded-full opacity-20 -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-red-900 rounded-full opacity-10 translate-y-24 -translate-x-24"></div>
 
-            <div className="max-w-5xl mx-auto relative z-10">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0">
-                {/* Glassmorphism Profile Card */}
-                <div className="flex items-center gap-4 bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-white border-opacity-20 relative">
-                  {/* Certificate Badge */}
-                  {isCertificateIssued && (
-                    <Image
-                      src="/assets/certificate.png"
-                      alt="Certificate"
-                      width={56}
-                      height={56}
-                      className="absolute top-2 right-2 object-contain rounded-full shadow-lg border-2 border-yellow-400 bg-white"
-                      style={{ zIndex: 20 }}
-                    />
-                  )}
-                  {/* Animated Gradient Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-yellow-400 via-pink-500 to-red-700 animate-gradient-spin shadow-lg">
-                      <div className="w-full h-full rounded-full bg-white bg-opacity-20 flex items-center justify-center text-xl font-bold uppercase border-2 border-white border-opacity-60">
-                        {student.username ? (
-                          student.username
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)
-                        ) : (
-                          <User size={24} />
-                        )}
-                      </div>
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              {/* Student Profile Card */}
+              <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 shadow-md border border-white/20 relative overflow-hidden">
+                {/* Certificate Badge */}
+                {isCertificateIssued && (
+                  <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-0.5 shadow-md border border-white">
+                    <Award className="text-red-800" size={16} />
+                  </div>
+                )}
+
+                {/* Avatar */}
+                <div className="flex-shrink-0 relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-red-700 p-0.5">
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">
+                      {student.username ? (
+                        student.username
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)
+                      ) : (
+                        <User size={16} />
+                      )}
                     </div>
                   </div>
-                  <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-lg font-bold truncate">
                       {student.username}
-                      {student.role && (
-                        <span
-                          className="ml-2 px-2 py-0.5 rounded bg-white bg-opacity-20 text-xs font-semibold uppercase tracking-wide border border-white border-opacity-30 cursor-pointer relative group"
-                          tabIndex={0}
-                        >
-                          {student.role}
-                          <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max px-3 py-1 rounded bg-black bg-opacity-80 text-white text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity z-20 pointer-events-none whitespace-nowrap">
-                            User Role
-                          </span>
-                        </span>
-                      )}
                     </h1>
-                    <div className="mt-1 flex items-center gap-2 flex-wrap">
-                      {/* Course Badge */}
-                      {courseName && courseName.trim() !== "" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white bg-opacity-20 text-xs font-medium shadow border border-white border-opacity-20">
-                          <BookOpen size={14} className="text-yellow-200" />
-                          {courseName.replace(/\s+Level\s+\w+$/, "")}
-                        </span>
-                      ) : resolvedParams?.sub ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white bg-opacity-20 text-xs font-medium shadow border border-white border-opacity-20">
-                          <BookOpen size={14} className="text-yellow-200" />
-                          {resolvedParams.sub
-                            .replace(/-/g, " ")
-                            .replace(/\s+level\s+\w+$/i, "")}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white bg-opacity-20 text-xs font-medium shadow border border-white border-opacity-20">
-                          <BookOpen size={14} className="text-yellow-200" />
-                          Course Not Found
-                        </span>
-                      )}
-
-                      {/* Level Badge - Extract from course name if not already set */}
-                      {(() => {
-                        const levelFromCourseName =
-                          courseName.match(/\s+Level\s+(\w+)$/);
-                        const levelToShow =
-                          courseLevel ||
-                          (levelFromCourseName ? levelFromCourseName[1] : null);
-
-                        return levelToShow ? (
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium shadow border ${getLevelColor(levelToShow)}`}
-                          >
-                            <Trophy size={14} />
-                            {getLevelLabel(levelToShow)}
-                          </span>
-                        ) : null;
-                      })()}
-                      <div className="flex items-center gap-1 text-xs text-gray-200">
-                        <User size={12} className="mr-1" />
-                        <span>PRN: {student.PrnNumber}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-200">
-                        <Mail size={12} className="mr-1" />
-                        <span>{student.email}</span>
-                      </div>
-                    </div>
-                    {/* Course Status Checkboxes - Only show for non-students */}
-                    {userRole !== "student" && (
-                      <div className="flex items-center gap-6 mt-3">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="completed"
-                            checked={isCourseCompleted}
-                            onCheckedChange={handleCompletedChange}
-                            className="border-white data-[state=checked]:bg-green-500 data-[state=checked]:text-white "
-                          />
-                          <label
-                            htmlFor="completed"
-                            className="text-sm font-medium text-white cursor-pointer"
-                          >
-                            Course Completed (
-                            {isCourseCompleted ? "true" : "false"})
-                          </label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="certificate"
-                            checked={isCertificateIssued}
-                            onCheckedChange={handleCertificateChange}
-                            className="border-white data-[state=checked]:bg-blue-500 data-[state=checked]:text-white"
-                          />
-                          <label
-                            htmlFor="certificate"
-                            className="text-sm font-medium text-white cursor-pointer"
-                          >
-                            Certificate Issued (
-                            {isCertificateIssued ? "true" : "false"})
-                          </label>
-                        </div>
-                      </div>
+                    {student.role && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold uppercase tracking-wide">
+                        {student.role}
+                      </span>
                     )}
-                    {/* Course Progress Bar */}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    {/* Course Badge */}
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
+                      <BookOpen size={12} />
+                      <span className="truncate max-w-[80px]">
+                        {courseName.replace(/\s+Level\s+\w+$/, "")}
+                      </span>
+                    </div>
+
+                    {/* Level Badge */}
                     {(() => {
-                      const assignedClassesNum = Number(assignedClasses);
-                      const completedTasksCount = completedTasks.length;
+                      const levelFromCourseName =
+                        courseName.match(/\s+Level\s+(\w+)$/);
+                      const levelToShow =
+                        courseLevel ||
+                        (levelFromCourseName ? levelFromCourseName[1] : null);
 
-                      // Calculate percentage based on assigned classes and completed tasks
-                      let percent = 0;
-                      if (assignedClassesNum > 0) {
-                        percent = Math.round(
-                          (completedTasksCount / assignedClassesNum) * 100
-                        );
-                      }
-
-                      // Show progress bar only when we have assigned classes
-                      return assignedClassesNum > 0 ? (
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] text-white font-medium">
-                              Course Progress
-                            </span>
-                            <span className="text-[10px] text-white font-semibold">
-                              {percent}%
-                            </span>
-                          </div>
-                          <div className="relative w-full h-5 bg-white bg-opacity-20 rounded-full border border-white border-opacity-40 shadow-inner overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-green-400 via-green-500 to-green-700 transition-all duration-700 flex items-center justify-end pr-2"
-                              style={{
-                                width: `${percent}%`,
-                                minWidth: percent > 0 ? "2rem" : 0,
-                              }}
-                            >
-                              <span
-                                className={`text-xs font-normal ${percent > 50 ? "text-white" : "text-green-900"} transition-colors duration-700`}
-                              >
-                                {percent}%
-                              </span>
-                              {percent === 100 && (
-                                <svg
-                                  className="ml-1 w-4 h-4 text-white inline-block animate-bounce"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-[8px] text-white opacity-60 mt-1">
-                            {completedTasksCount}/{assignedClassesNum} class
-                            completed
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          <div className="text-[10px] text-white opacity-60">
-                            No assigned classes for progress tracking
-                          </div>
-                        </div>
-                      );
+                      return levelToShow ? (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(levelToShow)}`}
+                        >
+                          <Trophy size={12} />
+                          {getLevelLabel(levelToShow)}
+                        </span>
+                      ) : null;
                     })()}
                   </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-1">
+                      <User size={12} />
+                      <span className="truncate">PRN: {student.PrnNumber}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Mail size={12} />
+                      <span className="truncate">{student.email}</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  {(() => {
+                    const assignedClassesNum = Number(assignedClasses);
+                    const completedTasksCount = completedTasks.length;
+                    let percent = 0;
+                    if (assignedClassesNum > 0) {
+                      percent = Math.round(
+                        (completedTasksCount / assignedClassesNum) * 100
+                      );
+                    }
+
+                    return assignedClassesNum > 0 ? (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-medium flex items-center gap-1">
+                            <Target size={10} />
+                            Progress
+                          </span>
+                          <span className="text-xs font-semibold">
+                            {percent}%
+                          </span>
+                        </div>
+                        <div className="relative w-full h-2 bg-white/20 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500"
+                            style={{ width: `${percent}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs mt-0.5 opacity-80">
+                          {completedTasksCount}/{assignedClassesNum} classes
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
-                <div className="mt-2 md:mt-0 flex justify-end">
-                  <button
-                    onClick={() => window.history.back()}
-                    className="px-4 py-1.5 bg-white text-red-700 rounded-xl shadow hover:bg-red-50 hover:scale-105 transition-all flex items-center gap-2 font-semibold border border-red-200 text-sm"
-                  >
-                    <ArrowLeftCircle size={16} className="text-red-700" />
-                    Back
-                  </button>
-                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-3">
+                {/* Status Checkboxes - Only for non-students */}
+                {userRole !== "student" && (
+                  <div className="flex gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        id="completed"
+                        checked={isCourseCompleted}
+                        onCheckedChange={handleCompletedChange}
+                        className="border-white data-[state=checked]:bg-green-500 data-[state=checked]:text-white h-4 w-4"
+                      />
+                      <label
+                        htmlFor="completed"
+                        className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                      >
+                        Completed
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        id="certificate"
+                        checked={isCertificateIssued}
+                        onCheckedChange={handleCertificateChange}
+                        className="border-white data-[state=checked]:bg-blue-500 data-[state=checked]:text-white h-4 w-4"
+                      />
+                      <label
+                        htmlFor="certificate"
+                        className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                      >
+                        Certificate
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => window.history.back()}
+                  className="px-3 py-2 bg-white text-red-700 rounded-lg shadow hover:bg-gray-100 transition-all flex items-center gap-1.5 text-sm font-medium"
+                >
+                  <ArrowLeftCircle size={14} />
+                  Back
+                </button>
               </div>
             </div>
           </div>
-          {isCourseCompleted && (
-            <div className="max-w-5xl mx-auto mt-4 mb-6">
-              <div className="flex items-center justify-center bg-green-100 border border-green-300 rounded-xl py-3 px-6 shadow text-green-800 font-semibold text-lg gap-2 animate-pulse">
-                <svg
-                  className="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                Course Completed!
-              </div>
+        </div>
+
+        {/* Course Completion Banner */}
+        {isCourseCompleted && (
+          <div className="max-w-7xl mx-auto mt-6 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 rounded-xl py-4 px-6 shadow-lg text-white font-semibold text-lg gap-3">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Congratulations! Course Completed Successfully
             </div>
-          )}
-          {showNextCourseModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative">
-                <button
-                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl font-bold"
-                  onClick={() => {
-                    setShowNextCourseModal(false);
-                    setNextCourseInput("");
-                    setIsEditingNextCourse(false);
+          </div>
+        )}
+
+        {/* Next Course Modal */}
+        {showNextCourseModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold"
+                onClick={() => {
+                  setShowNextCourseModal(false);
+                  setNextCourseInput("");
+                  setIsEditingNextCourse(false);
+                }}
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {isEditingNextCourse ? "Edit Next Course" : "Set Next Course"}
+              </h3>
+              <p className="text-gray-600 mb-5">
+                {isEditingNextCourse
+                  ? "Update the next course for this student"
+                  : "Specify what course the student should take next"}
+              </p>
+
+              <label
+                htmlFor="next-course-modal"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Course Name
+              </label>
+              <div className="flex gap-2 mb-4">
+                <input
+                  id="next-course-modal"
+                  type="text"
+                  placeholder="Enter next course name"
+                  className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm flex-1"
+                  value={nextCourseInput}
+                  onChange={(e) => setNextCourseInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleSaveNextCourse();
+                    }
                   }}
-                  aria-label="Close"
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2.5 rounded-xl bg-red-700 text-white font-semibold text-sm hover:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleSaveNextCourse}
+                  disabled={!nextCourseInput.trim()}
                 >
-                  ×
+                  {isEditingNextCourse ? "Update" : "Save"}
                 </button>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {isEditingNextCourse ? "Edit Next Course" : "Set Next Course"}
-                </h3>
-                <label
-                  htmlFor="next-course-modal"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Course Name:
-                </label>
-                <div className="flex gap-2 mb-4">
-                  <input
-                    id="next-course-modal"
-                    type="text"
-                    placeholder="Enter next course name"
-                    className="px-3 py-2 text-black rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm flex-1"
-                    value={nextCourseInput}
-                    onChange={(e) => setNextCourseInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        handleSaveNextCourse();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-xl bg-red-700 text-white font-semibold text-sm hover:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSaveNextCourse}
-                    disabled={!nextCourseInput.trim()}
-                  >
-                    {isEditingNextCourse ? "Update" : "Save"}
-                  </button>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-800">
-                    <strong>Note:</strong> Ask the parent which course the
-                    student will do next and enter it here.
-                  </p>
-                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-800">
+                  <strong>Tip:</strong> Ask the parent which course the student
+                  will do next and enter it here.
+                </p>
               </div>
             </div>
-          )}
-          {/* Floating Set/Edit Next Course Button - Only show for non-students */}
-          {isCourseCompleted && userRole !== "student" && (
-            <button
-              type="button"
-              className="fixed right-6 bottom-8 z-40 px-5 py-2 rounded-full bg-red-700 text-white font-semibold text-base shadow-lg hover:bg-red-800 transition-colors flex items-center gap-2"
-              onClick={() => {
-                if (student?.nextCourse) {
-                  handleEditNextCourse();
-                } else {
-                  setShowNextCourseModal(true);
-                }
-              }}
-              style={{ boxShadow: "0 4px 24px rgba(153,27,27,0.15)" }}
-            >
-              <BookOpen size={16} />
-              {student?.nextCourse ? "Edit Next Course" : "Set Next Course"}
-            </button>
-          )}
-          {/* Tabs Navigation */}
-          <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-8 mt-6">
-            <div className="border-b border-gray-200 mb-6">
-              <nav className="flex space-x-8" aria-label="Tabs">
-                <button
-                  className={`px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${activeTab === 0 ? "bg-white text-red-700 border-b-2 border-red-700" : "text-gray-500 hover:text-red-700"}`}
-                  onClick={() => setActiveTab(0)}
-                >
-                  <LayoutDashboard className="w-5 h-5" />
-                  Dashboard
-                </button>
-                <button
-                  className={`px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${activeTab === 1 ? "bg-white text-red-700 border-b-2 border-red-700" : "text-gray-500 hover:text-red-700"}`}
-                  onClick={() => setActiveTab(1)}
-                >
-                  <CheckSquare className="w-5 h-5" />
-                  Completed
-                </button>
-              </nav>
-            </div>
           </div>
-          {/* Tab Content */}
+        )}
+
+        {/* Floating Set/Edit Next Course Button */}
+        {isCourseCompleted && userRole !== "student" && (
+          <button
+            type="button"
+            className="fixed right-6 bottom-6 z-40 px-5 py-3 rounded-full bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold text-base shadow-lg hover:from-red-800 hover:to-red-900 transition-all flex items-center gap-2 shadow-red-500/30"
+            onClick={() => {
+              if (student?.nextCourse) {
+                handleEditNextCourse();
+              } else {
+                setShowNextCourseModal(true);
+              }
+            }}
+          >
+            <GraduationCap size={18} />
+            {student?.nextCourse ? "Edit Next Course" : "Set Next Course"}
+          </button>
+        )}
+
+        {/* Tabs Navigation */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="flex space-x-8" aria-label="Tabs">
+              <button
+                className={`px-4 py-3 text-base font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${
+                  activeTab === 0
+                    ? "text-red-700 border-b-2 border-red-700"
+                    : "text-gray-500 hover:text-red-700"
+                }`}
+                onClick={() => setActiveTab(0)}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                Dashboard
+              </button>
+              <button
+                className={`px-4 py-3 text-base font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${
+                  activeTab === 1
+                    ? "text-red-700 border-b-2 border-red-700"
+                    : "text-gray-500 hover:text-red-700"
+                }`}
+                onClick={() => setActiveTab(1)}
+              >
+                <CheckSquare className="w-5 h-5" />
+                Completed Classes
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           {activeTab === 0 && (
-            <>
+            <div className="space-y-8">
               {/* Summary Cards */}
-              <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-8 mt-0 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-red-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-red-500 transition-all hover:shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-600">
                         Assigned Classes
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
                         {classNumber ? classNumber : "N/A"}
                       </p>
                     </div>
                     <div className="bg-red-100 p-3 rounded-full">
-                      <ClipboardCheck className="h-6 w-6 text-red-700" />
+                      <ClipboardCheck className="h-6 w-6 text-red-600" />
                     </div>
                   </div>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
+
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-green-500 transition-all hover:shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-600">
                         Completed
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
                         {completedTasks.length}
                       </p>
                     </div>
@@ -1226,48 +1223,48 @@ const Page = ({
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-indigo-500">
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-blue-500 transition-all hover:shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Remaining Classes
+                      <p className="text-sm font-medium text-gray-600">
+                        Remaining
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
                         {remainingClasses}
                       </p>
                     </div>
-                    <div className="bg-indigo-100 p-3 rounded-full">
-                      <Hash className="h-6 w-6 text-indigo-600" />
+                    <div className="bg-blue-100 p-3 rounded-full">
+                      <Clock className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500">
+                <div className="bg-white rounded-2xl shadow-md p-5 border-l-4 border-purple-500 transition-all hover:shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-600">
                         Next Course
                       </p>
-                      <p className="text-lg font-bold text-gray-900 truncate">
+                      <p className="text-lg font-bold text-gray-900 mt-1 truncate max-w-[120px]">
                         {student?.nextCourse || "Not Set"}
                       </p>
                     </div>
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <GraduationCap className="h-6 w-6 text-blue-600" />
+                    <div className="bg-purple-100 p-3 rounded-full">
+                      <GraduationCap className="h-6 w-6 text-purple-600" />
                     </div>
                   </div>
                   {student?.nextCourse && userRole !== "student" && (
-                    <div className="mt-2 flex gap-1">
+                    <div className="mt-3 flex gap-2">
                       <button
                         type="button"
-                        className="px-2 py-1 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700 transition-colors"
                         onClick={handleEditNextCourse}
                       >
                         Edit
                       </button>
                       <button
                         type="button"
-                        className="px-2 py-1 rounded-lg bg-red-600 text-white text-xs hover:bg-red-700 transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs hover:bg-red-700 transition-colors"
                         onClick={handleDeleteNextCourse}
                       >
                         Remove
@@ -1276,211 +1273,196 @@ const Page = ({
                   )}
                 </div>
               </div>
+
               {/* Charts */}
-              <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pie Chart */}
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 w-full overflow-x-auto">
-                  <div className="min-w-[320px]">
-                    <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-red-700 border-b pb-2 flex items-center">
-                      <div className="w-1 h-6 bg-red-700 rounded-full mr-2"></div>
-                      Status Distribution
-                    </h2>
-                    {statusData.length > 0 ? (
-                      <div className="h-64 sm:h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={statusData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              outerRadius={120}
-                              innerRadius={60}
-                              fill="#8884d8"
-                              dataKey="value"
-                              label={(props: PieLabelProps) => {
-                                const name = props?.name ?? "Unknown";
-                                const percent =
-                                  typeof props?.percent === "number"
-                                    ? (props.percent * 100).toFixed(0) + "%"
-                                    : "0%";
-                                return `${name}: ${percent}`;
-                              }}
-                              paddingAngle={5}
-                            >
-                              {statusData.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={STATUS_COLORS[entry.name] || "#b91c1c"}
-                                  stroke="none"
-                                />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend
-                              verticalAlign="bottom"
-                              height={36}
-                              iconType="circle"
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-48 sm:h-64 text-gray-500">
-                        <p>No status data available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Bar Chart */}
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 w-full overflow-x-auto">
-                  <div className="min-w-[320px]">
-                    <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-red-700 border-b pb-2 flex items-center">
-                      <div className="w-1 h-6 bg-red-700 rounded-full mr-2"></div>
-                      Tasks by Date
-                    </h2>
-                    {barData.length > 0 ? (
-                      <div className="h-64 sm:h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={barData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                <div className="bg-white rounded-2xl shadow-md p-5">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <div className="w-1.5 h-5 bg-red-700 rounded-full"></div>
+                    Status Distribution
+                  </h2>
+                  {statusData.length > 0 ? (
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={statusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={100}
+                            innerRadius={60}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }: PieLabelProps) =>
+                              `${name}: ${percent ? (Number(percent) * 100).toFixed(0) : 0}%`
+                            }
+                            paddingAngle={5}
                           >
-                            <CartesianGrid
-                              strokeDasharray="3 3"
-                              stroke="#f0f0f0"
-                            />
-                            <XAxis
-                              dataKey="date"
-                              tick={{ fill: "#4B5563", fontSize: 12 }}
-                              tickLine={{ stroke: "#E5E7EB" }}
-                            />
-                            <YAxis
-                              tick={{ fill: "#4B5563", fontSize: 12 }}
-                              tickLine={{ stroke: "#E5E7EB" }}
-                              domain={[0, 2]}
-                            />
-                            <Tooltip />
-                            <Legend />
-                            <Bar
-                              dataKey="complete"
-                              fill="#991b1b"
-                              name="Completed"
-                              barSize={30}
-                            />
-                            <Bar
-                              dataKey="ongoing"
-                              fill="#991b1b"
-                              name="Ongoing"
-                              barSize={30}
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-48 sm:h-64 text-gray-500">
-                        <p>No bar chart data available</p>
-                      </div>
-                    )}
-                  </div>
+                            {statusData.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={STATUS_COLORS[entry.name] || "#b91c1c"}
+                                stroke="none"
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value) => [value, "Classes"]}
+                            labelFormatter={(name) => `Status: ${name}`}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                      <ClipboardCheck className="h-12 w-12 mb-3" />
+                      <p>No status data available</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bar Chart */}
+                <div className="bg-white rounded-2xl shadow-md p-5">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <div className="w-1.5 h-5 bg-red-700 rounded-full"></div>
+                    Tasks by Date
+                  </h2>
+                  {barData.length > 0 ? (
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={barData}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#f0f0f0"
+                          />
+                          <XAxis
+                            dataKey="date"
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            tickLine={{ stroke: "#E5E7EB" }}
+                          />
+                          <YAxis
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            tickLine={{ stroke: "#E5E7EB" }}
+                          />
+                          <Tooltip
+                            formatter={(value) => [value, "Classes"]}
+                            labelFormatter={(date) => `Date: ${date}`}
+                          />
+                          <Legend />
+                          <Bar
+                            dataKey="complete"
+                            fill="#10B981"
+                            name="Completed"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="ongoing"
+                            fill="#FBBF24"
+                            name="Ongoing"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                      <Calendar className="h-12 w-12 mb-3" />
+                      <p>No task data available</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </>
+            </div>
           )}
-          {activeTab === 1 && (
-            <div className="max-w-8xl mx-auto px-2 sm:px-4 lg:px-8 mb-8">
-              {/* Completed Tasks */}
-              <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-8 ">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-800 border-b pb-2 ">
-                  Completed Classes ({completedTasks.length})
-                </h2>
 
-                {completedTasks.length > 0 ? (
-                  <div className="space-y-4">
-                    {completedTasks.map((task, index) => {
-                      const taskDate = new Date(task.dateTime);
-                      const isValid = !isNaN(taskDate.getTime());
-                      const today = new Date();
-                      const isToday =
-                        isValid &&
-                        today.toDateString() === taskDate.toDateString();
-                      const statusColor =
-                        STATUS_COLORS[task.status] || "#6366F1";
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center p-4 border-l-4 rounded-r-lg shadow-sm transition-all hover:shadow-md bg-green-50"
-                          style={{ borderLeftColor: statusColor }}
-                        >
-                          <div className="flex-1 mr-4">
-                            <div className="font-medium text-gray-900">
-                              {task?.task}
-                            </div>
-                            <div className="text-sm text-gray-600 mt-1 flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              {isValid ? (
-                                <>
-                                  {isToday ? "Today, " : ""}
-                                  {taskDate.toLocaleString(undefined, {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </>
-                              ) : (
-                                "Date not specified"
-                              )}
-                            </div>
+          {activeTab === 1 && (
+            <div className="bg-white rounded-2xl shadow-md p-5">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                Completed Classes ({completedTasks.length})
+              </h2>
+
+              {completedTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {completedTasks.map((task, index) => {
+                    const taskDate = new Date(task.dateTime);
+                    const isValid = !isNaN(taskDate.getTime());
+                    const today = new Date();
+                    const isToday =
+                      isValid &&
+                      today.toDateString() === taskDate.toDateString();
+                    const statusColor = STATUS_COLORS[task.status] || "#6366F1";
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center p-4 border-l-4 rounded-r-lg bg-gradient-to-r from-gray-50 to-white shadow-sm transition-all hover:shadow-md"
+                        style={{ borderLeftColor: statusColor }}
+                      >
+                        <div className="flex-1 mr-4">
+                          <div className="font-medium text-gray-900">
+                            {task?.task}
                           </div>
-                          <div className="flex flex-col items-end">
-                            <span className="mb-2 text-sm font-medium py-1 px-3 bg-indigo-50 text-indigo-700 rounded-full flex items-center gap-1">
-                              <GraduationCap className="h-3 w-3" />
-                              {task.course}
-                            </span>
-                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                              {task.status}
-                            </span>
+                          <div className="text-sm text-gray-600 mt-1 flex items-center">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            {isValid ? (
+                              <>
+                                {isToday ? "Today, " : ""}
+                                {taskDate.toLocaleString(undefined, {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </>
+                            ) : (
+                              "Date not specified"
+                            )}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="py-16 text-center">
-                    <ClipboardCheck className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">
-                      No completed Classes
-                    </h3>
-                    <p className="mt-1 text-gray-500">
-                      No completed classes for this course yet.
-                    </p>
-                  </div>
-                )}
-              </div>
+                        <div className="flex flex-col items-end">
+                          <span className="mb-2 text-sm font-medium py-1.5 px-3 bg-red-50 text-red-700 rounded-full flex items-center gap-1.5">
+                            <BookOpen className="h-3.5 w-3.5" />
+                            {task.course}
+                          </span>
+                          <span
+                            className="px-3 py-1.5 text-xs font-medium rounded-full"
+                            style={{
+                              backgroundColor: `${statusColor}20`,
+                              color: statusColor,
+                            }}
+                          >
+                            {task.status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <ClipboardCheck className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    No completed classes yet
+                  </h3>
+                  <p className="mt-1 text-gray-500">
+                    Completed classes will appear here once available.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </main>
-      {/* Animated Gradient Keyframes */}
-      <style jsx>{`
-        @keyframes gradient-spin {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-        .animate-gradient-spin {
-          background-size: 200% 200%;
-          animation: gradient-spin 3s linear infinite;
-        }
-      `}</style>
     </>
   );
 };

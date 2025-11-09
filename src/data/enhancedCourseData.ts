@@ -188,48 +188,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "14+",
     category: "Programming"
   },
-  "android-studio": {
-    id: "androidStudio",
-    title: "ANDROID STUDIO",
-    subtitle: "Build professional Android applications using Android Studio and modern development practices",
-    badge: "Mobile Development Course",
-    description: "Build professional Android applications using Android Studio and modern development practices",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/ANDROID STUDIO.pdf",
-    syllabusFileName: "ANDROID STUDIO.pdf",
-    imagePath: "/assets/classroom-course/androidstudio.png",
-    imageAlt: "Android Studio Course",
-    price: 13999,
-    originalPrice: 19999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Android Development",
-        description: "Learn to build native Android applications using Java/Kotlin",
-        iconName: "Smartphone",
-      },
-      {
-        title: "UI/UX Design",
-        description: "Create beautiful and intuitive user interfaces for mobile apps",
-        iconName: "Layout",
-      },
-      {
-        title: "App Publishing",
-        description: "Learn to publish your apps on Google Play Store",
-        iconName: "Rocket",
-      },
-      {
-        title: "Modern Android Features",
-        description: "Implement latest Android features and best practices",
-        iconName: "Star",
-      },
-    ],
-    courseOverview: "Android Studio is the official integrated development environment for Google's Android operating system, built on JetBrains' IntelliJ IDEA software and designed specifically for Android development. Our comprehensive Android Studio course covers everything from setting up the development environment to publishing apps on the Google Play Store, including modern Android development practices and the latest features.",
-    ageRange: "14+",
-    category: "Programming"
-  },
+  
   "machine-learning": {
     id: "machineLearning",
     title: "MACHINE LEARNING",
@@ -776,46 +735,5 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "9-13",
     category: "Robotics"
   },
-  "app-lab": {
-    id: "appLab",
-    title: "APP LAB",
-    subtitle: "Create mobile applications using MIT App Inventor and block-based programming",
-    badge: "Mobile App Development Course",
-    description: "Create mobile applications using MIT App Inventor and block-based programming",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/App Lab.pdf",
-    syllabusFileName: "APP LAB.pdf",
-    imagePath: "/assets/classroom-course/applab.png",
-    imageAlt: "App Lab Course",
-    price: 7499,
-    originalPrice: 10999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Block-based Programming",
-        description: "Learn programming using visual blocks",
-        iconName: "Blocks",
-      },
-      {
-        title: "Mobile App Development",
-        description: "Create functional mobile applications",
-        iconName: "Smartphone",
-      },
-      {
-        title: "User Interface Design",
-        description: "Design intuitive app interfaces",
-        iconName: "Layout",
-      },
-      {
-        title: "App Testing",
-        description: "Test and debug mobile applications",
-        iconName: "Rocket",
-      },
-    ],
-    courseOverview: "App Lab teaches students how to create mobile applications using MIT App Inventor and block-based programming. Students learn about user interface design, app testing, and mobile app development. This course provides hands-on experience in building functional mobile applications and understanding the app development process.",
-    ageRange: "9-13",
-    category: "Programming"
-  }
+
 };

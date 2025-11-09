@@ -103,7 +103,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
           variant="secondary"
           className="text-xs py-0.5 px-2 rounded-full bg-red-50 text-red-700 hover:bg-red-100"
         >
-          {ageRange}
+          Age: {ageRange}
         </Badge>
         <Badge
           variant="outline"
