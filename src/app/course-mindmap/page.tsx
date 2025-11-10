@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Footer from "@/components/home/Footer";
 export const runtime = "nodejs";
 
-const MindMapComponent = dynamic(() => import("@/components/MindMap"), {
+const MindMapComponent = dynamic(() => import("@/components/course/MindMap"), {
   ssr: false,
   loading: () => null,
 });

@@ -23,16 +23,12 @@ import "@xyflow/react/dist/style.css";
 import { Plus, Minus } from "lucide-react";
 
 // Viewport Control Component
-// Updated to include expand all and collapse all functionality
+// Updated to include collapse all functionality
 const ViewportControls = ({
   onFitView,
-  onCropNodes,
-  onExpandAll,
   onCollapseAll,
 }: {
   onFitView: () => void;
-  onCropNodes: () => void;
-  onExpandAll: () => void;
   onCollapseAll: () => void;
 }) => {
   return (
@@ -43,18 +39,6 @@ const ViewportControls = ({
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-xl shadow"
         >
           Fit View
-        </button>
-        <button
-          onClick={onCropNodes}
-          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-xl shadow"
-        >
-          Crop Nodes
-        </button>
-        <button
-          onClick={onExpandAll}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-xl shadow"
-        >
-          Expand All
         </button>
         <button
           onClick={onCollapseAll}
@@ -524,7 +508,7 @@ const initialNodes: Node[] = [
     id: "QUARKY_AI",
     type: "horizontal",
     position: { x: 1000, y: 500 },
-    data: { label: "QUARKY", color: "#fb7185" },
+    data: { label: "QUARKY", color: "#fb7185", link: "/all-courses/ai" },
   },
   {
     id: "DEEP_LEARNING",
@@ -1319,16 +1303,6 @@ const FlowWithProvider = () => {
     [setViewport]
   );
 
-  // Crop nodes to viewport with line alignment
-  const handleCropNodes = useCallback(() => {
-    // Get bounds of all nodes
-    const allNodes = getNodes();
-    if (allNodes.length === 0) return;
-
-    // Align and fit all nodes
-    alignAndFitNodes(allNodes);
-  }, [getNodes, alignAndFitNodes]);
-
   // Fit view to show all nodes with line alignment
   const handleFitView = useCallback(() => {
     // Get bounds of all nodes
@@ -1440,20 +1414,6 @@ const FlowWithProvider = () => {
     },
     [getNodes, setViewport, alignAndFitNodes]
   );
-
-  // Expand all nodes with line alignment
-  const handleExpandAll = useCallback(() => {
-    setCollapsedNodes({});
-    // Auto-adjust viewport after expanding all nodes
-    setTimeout(() => {
-      // Get bounds of all nodes
-      const allNodes = getNodes();
-      if (allNodes.length === 0) return;
-
-      // Align and fit all nodes
-      alignAndFitNodes(allNodes);
-    }, 100);
-  }, [getNodes, alignAndFitNodes]);
 
   // Collapse all nodes with line alignment
   const handleCollapseAll = useCallback(() => {
@@ -1598,8 +1558,6 @@ const FlowWithProvider = () => {
     <>
       <ViewportControls
         onFitView={handleFitView}
-        onCropNodes={handleCropNodes}
-        onExpandAll={handleExpandAll}
         onCollapseAll={handleCollapseAll}
       />
       <ReactFlow

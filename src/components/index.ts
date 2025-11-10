@@ -1,2 +1,2 @@
-export { default as CourseCarouselCard } from './CourseCarouselCard';
-export { default as CourseCategoryCarousel } from './CourseCategoryCarousel';
+export { default as CourseCarouselCard } from './course/CourseCarouselCard';
+export { default as CourseCategoryCarousel } from './course/CourseCarouselCard';
