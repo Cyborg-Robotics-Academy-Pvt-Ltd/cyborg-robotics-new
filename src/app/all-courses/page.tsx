@@ -12,8 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import CourseCategoryCarousel from "@/components/CourseCategoryCarousel";
-import CourseCarouselCard from "@/components/CourseCarouselCard";
+import CourseCategoryCarousel from "@/components/course/CourseCategoryCarousel";
+import CourseCarouselCard from "@/components/course/CourseCarouselCard";
 import {
   enhancedCourseData,
   COURSE_CATEGORIES,

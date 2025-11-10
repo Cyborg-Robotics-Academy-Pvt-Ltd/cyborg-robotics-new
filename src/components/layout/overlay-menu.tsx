@@ -378,7 +378,7 @@ export default function OverlayMenu({
                           </AccordionTrigger>
                           <AccordionContent className="pb-2 text-sm text-gray-600">
                             Our robotics courses are designed for children aged
-                            5-18 years with specialized programs for different
+                            4-25 years with specialized programs for different
                             age groups.
                           </AccordionContent>
                         </AccordionItem>

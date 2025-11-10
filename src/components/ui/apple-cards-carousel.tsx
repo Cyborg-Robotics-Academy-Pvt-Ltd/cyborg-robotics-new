@@ -296,9 +296,9 @@ export const Card = ({
         layoutId={layout ? `card-${card.id}` : undefined}
         onClick={handleOpen}
         className="relative aspect-[9/16] 
-                   w-[60vw] sm:w-[150px] md:w-[180px] 
+                   w-[60vw] sm:w-[150px] md:w-[220px] 
                    overflow-hidden rounded-3xl snap-center
-                   max-h-[50vh]"
+                   max-h-[60vh]"
       >
         <BlurImage
           src={card.src}

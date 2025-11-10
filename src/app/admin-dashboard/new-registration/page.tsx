@@ -183,9 +183,9 @@ const Page = () => {
       className="container mx-auto px-4 py-10 "
     >
       <Card className="shadow-xl rounded-3xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-rose-100 to-pink-50 p-6 border-b">
+        <CardHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 p-6 border-b">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <CardTitle className="text-3xl font-bold text-rose-800">
+            <CardTitle className="text-3xl font-bold text-white">
               Student Registrations
             </CardTitle>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -227,9 +227,9 @@ const Page = () => {
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center items-center h-60 bg-rose-50">
+            <div className="flex justify-center items-center h-60 bg-gradient-to-r from-red-900 via-red-800 to-red-700">
               <Loader2 className="animate-spin h-8 w-8 text-rose-700" />
-              <span className="ml-2 text-rose-700">Loading...</span>
+              <span className="ml-2 text-white">Loading...</span>
             </div>
           ) : error ? (
             <div className="text-center p-8 text-rose-700">{error}</div>
@@ -241,7 +241,7 @@ const Page = () => {
             <>
               <div className="overflow-x-auto">
                 <Table className="min-w-full">
-                  <TableHeader className="bg-rose-100 sticky top-0 z-10">
+                  <TableHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white sticky top-0 z-10">
                     <TableRow>
                       {[
                         { key: "registrationDate", label: "Date" },
@@ -257,7 +257,7 @@ const Page = () => {
                           onClick={() =>
                             col.key && handleSort(col.key as keyof Registration)
                           }
-                          className="cursor-pointer hover:bg-rose-200 px-4 py-3"
+                          className="cursor-pointer  px-4 py-3"
                         >
                           <div className="flex items-center gap-1">
                             {col.label}
@@ -276,7 +276,7 @@ const Page = () => {
                     {paginated.map((reg, i) => (
                       <TableRow
                         key={reg.id}
-                        className={`${i % 2 ? "bg-gray-50" : "bg-white"} hover:bg-rose-50 transition`}
+                        className={`${i % 2 ? "bg-gray-50" : "bg-white"}`}
                       >
                         <TableCell>{reg.registrationDate || "-"}</TableCell>
                         <TableCell>{reg.studentName || "-"}</TableCell>
@@ -290,7 +290,7 @@ const Page = () => {
                   </TableBody>
                 </Table>
               </div>
-              <div className="flex justify-between items-center p-4 bg-rose-50">
+              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white">
                 <span className="text-sm">
                   Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
                   {Math.min(

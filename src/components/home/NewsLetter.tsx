@@ -113,7 +113,7 @@ export default function NewsletterSignup() {
   };
 
   return (
-    <section className="relative bg-white mt-4 px-4 overflow-hidden">
+    <section className="relative bg-white mt-20 px-4 overflow-hidden">
       {/* Background Elements */}
 
       <div className="relative max-w-7xl mx-auto">
