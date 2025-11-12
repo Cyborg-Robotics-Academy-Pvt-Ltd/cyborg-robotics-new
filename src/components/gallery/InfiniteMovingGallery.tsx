@@ -70,7 +70,7 @@ export const InfiniteMovingGallery = ({
   return (
     <div
       ref={containerRef}
-      className={`scroller relative z-20 max-w-7xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_1%,white_99%,transparent)] ${className}`}
+      className={`scroller relative z-20 max-w-8xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_1%,white_99%,transparent)] ${className}`}
     >
       <style jsx>{`
         @keyframes scroll {
