@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 // Template interface
 interface Template {
   id: string;
-  title: string;
   src: string;
   alt: string;
 }
@@ -30,13 +29,11 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
   const templateImages: Template[] = [
     {
       id: "template-1",
-      title: "Summer Camp Workshop",
       src: "/assets/events/summer-camp.jpg",
       alt: "Cyborg Robotics Academy Template 1",
     },
     {
       id: "template-2",
-      title: "Diwali Camp Workshop",
       src: "/assets/events/diwali-camp.jpg",
       alt: "Diwali Camp Template 1",
     },
@@ -192,13 +189,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
             </motion.button>
 
             {/* Mobile Template Title - Visible on mobile only */}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10 md:hidden">
-              <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
-                <span className="text-sm font-semibold">
-                  {templateImages[currentTemplateIndex].title}
-                </span>
-              </div>
-            </div>
+
             {/* Carousel Container - Responsive for mobile/desktop */}
             <div className="relative overflow-hidden rounded-2xl">
               {/* Mobile view - 100% width per item */}
@@ -247,12 +238,6 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                         className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-2xl"
                         priority
                       />
-                      {/* Title overlay for mobile */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-center rounded-b-xl">
-                        <span className="text-sm font-semibold">
-                          {template.title}
-                        </span>
-                      </div>
                     </motion.div>
                   </div>
                 ))}
@@ -304,10 +289,6 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                         className="w-full h-auto max-h-[70vh] object-contain rounded-2xl shadow-2xl"
                         priority
                       />
-                      {/* Title overlay for desktop */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-3 text-center rounded-b-xl">
-                        <span className="font-semibold">{template.title}</span>
-                      </div>
                     </motion.div>
                   </div>
                 ))}
