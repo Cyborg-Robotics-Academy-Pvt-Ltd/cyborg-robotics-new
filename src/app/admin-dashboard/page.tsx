@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { getAdminUserData } from "@/lib/admin-utils";
 import Link from "next/link";
 import {
   UserCog,
@@ -15,6 +16,7 @@ import {
   Sparkles,
   RefreshCw,
   User,
+  Shield,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
@@ -129,17 +131,17 @@ const AdminDashboard = () => {
     const checkAdminAuth = async () => {
       try {
         console.log("Fetching admin data for user:", user.uid);
-        const adminDocRef = doc(db, "admins", user.uid);
-        const adminDoc = await getDoc(adminDocRef);
 
-        if (!adminDoc.exists()) {
+        // First try to get admin data using the new utility
+        const adminData = await getAdminUserData(user.uid);
+
+        if (!adminData) {
           console.log("Admin document does not exist for user:", user.uid);
-          router.push("/login");
+          // Redirect to a page where admin can be created or show an error
+          router.push("/create-user");
           return;
         }
 
-        // Get admin data from the document
-        const adminData = adminDoc.data();
         console.log("Admin data retrieved:", adminData);
 
         // Set admin data for potential future use
@@ -188,8 +190,8 @@ const AdminDashboard = () => {
         setAdminData(adminData);
 
         // Update name if it has changed
-        if (adminData?.name && adminData.name.trim() !== adminName) {
-          setAdminName(adminData.name.trim());
+        if (adminData?.username && adminData.username.trim() !== adminName) {
+          setAdminName(adminData.username.trim());
         }
       }
     } catch (error) {
@@ -217,7 +219,7 @@ const AdminDashboard = () => {
     {
       title: "Create New User",
       description: "Add new students, trainers, or admin users to the system",
-      href: "/create-user",
+      href: "/admin-dashboard/create-user",
       icon: UserCog,
       color: "red",
       gradient: "from-red-500 to-pink-500",
@@ -227,6 +229,20 @@ const AdminDashboard = () => {
       hoverColor: "group-hover:text-red-600",
       action: "Manage users",
       delay: 0,
+    },
+    {
+      title: "Access Control",
+      description: "Manage user roles, permissions, and access levels",
+      href: "/admin-dashboard/access-control",
+      icon: Shield,
+      color: "indigo",
+      gradient: "from-indigo-500 to-purple-500",
+      bgColor: "bg-indigo-50",
+      iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200",
+      textColor: "text-indigo-600",
+      hoverColor: "group-hover:text-indigo-600",
+      action: "Manage access",
+      delay: 0.1,
     },
     {
       title: "Student Record",
@@ -240,7 +256,7 @@ const AdminDashboard = () => {
       textColor: "text-emerald-600",
       hoverColor: "group-hover:text-emerald-600",
       action: "View list",
-      delay: 0.1,
+      delay: 0.2,
     },
 
     {

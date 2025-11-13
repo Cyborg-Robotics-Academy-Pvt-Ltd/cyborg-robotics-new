@@ -353,7 +353,7 @@ const LoginPage = () => {
             {/* Top accent line */}
             <div className="h-[4px] bg-gradient-to-r from-red-700 to-red-800"></div>
 
-            <CardHeader className="space-y-3 pb-3 pt-4 px-6">
+            <CardHeader className="space-y-2 pb-2 pt-3 px-5">
               {/* Logo section */}
               <motion.div
                 initial={{ scale: 0.5, opacity: 0 }}
@@ -405,16 +405,16 @@ const LoginPage = () => {
               </motion.div>
             </CardHeader>
 
-            <CardContent className="px-6 pb-6">
+            <CardContent className="px-5 pb-5">
               <motion.form
                 onSubmit={handleLogin}
-                className="space-y-4"
+                className="space-y-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
               >
                 {/* Existing user section */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <User className="h-4 w-4 text-red-700" />
                     <h3 className="text-gray-800 text-md font-semibold">
@@ -441,7 +441,7 @@ const LoginPage = () => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-100 rounded-xl blur opacity-0 group-hover:opacity-50 transition-all duration-300"></div>
                         <div
-                          className={`relative flex items-center w-full pl-10 pr-10 py-3 bg-white border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md font-medium ${
+                          className={`relative flex items-center w-full pl-10 pr-10 py-2.5 bg-white border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md font-medium ${
                             isDropdownOpen
                               ? "border-red-400 ring-2 ring-red-200 bg-red-50"
                               : selectedRole
@@ -598,7 +598,7 @@ const LoginPage = () => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          className="pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300"
+                          className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300`}
                         />
                       </div>
                     </div>
@@ -628,7 +628,7 @@ const LoginPage = () => {
                           onChange={(e) => setPassword(e.target.value)}
                           required
                           placeholder="Enter your password"
-                          className="pl-10 pr-10 py-2.5 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300"
+                          className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300`}
                         />
                         <button
                           type="button"
@@ -694,6 +694,32 @@ const LoginPage = () => {
                       )}
                     </Button>
                   </motion.div>
+                </motion.div>
+
+                {/* Forgot password and Sign up links */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 1.1, duration: 0.5 }}
+                  className="text-center pt-2 space-y-2"
+                >
+                  <p className="text-gray-600 text-sm">
+                    <Link
+                      href="/forgot-password"
+                      className="text-red-600 font-medium hover:underline transition-colors duration-200"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Don't have an account?{" "}
+                    <Link
+                      href="/signup"
+                      className="text-red-600 font-medium hover:underline transition-colors duration-200"
+                    >
+                      Sign up
+                    </Link>
+                  </p>
                 </motion.div>
               </motion.form>
             </CardContent>
