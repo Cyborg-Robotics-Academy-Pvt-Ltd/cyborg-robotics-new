@@ -254,7 +254,7 @@ const AccessControlPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Shield className="text-blue-600" />
+                <Shield className="text-red-800" />
                 Access Control Management
               </h1>
               <p className="mt-2 text-gray-600">
@@ -263,7 +263,7 @@ const AccessControlPage = () => {
             </div>
             <button
               onClick={() => router.push("/admin-dashboard")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
             >
               <UserCog className="w-4 h-4" />
               Back to Dashboard
@@ -281,7 +281,7 @@ const AccessControlPage = () => {
               <input
                 type="text"
                 placeholder="Search by name or email..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -292,7 +292,7 @@ const AccessControlPage = () => {
                 Filter by Role
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
@@ -308,7 +308,7 @@ const AccessControlPage = () => {
                 Filter by Status
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -324,8 +324,8 @@ const AccessControlPage = () => {
         {/* Stats Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
-            <div className="rounded-full bg-blue-100 p-3 mr-4">
-              <Users className="text-blue-600 w-6 h-6" />
+            <div className="rounded-full bg-red-100 p-3 mr-4">
+              <Users className="text-red-800 w-6 h-6" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Users</p>
@@ -426,13 +426,13 @@ const AccessControlPage = () => {
                         <>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-blue-600" />
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <User className="h-5 w-5 text-red-800" />
                               </div>
                               <div className="ml-4">
                                 <input
                                   type="text"
-                                  className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                                   value={editFormData.name || ""}
                                   onChange={(e) =>
                                     setEditFormData({
@@ -444,7 +444,7 @@ const AccessControlPage = () => {
                                 <div className="text-sm text-gray-500 mt-1">
                                   <input
                                     type="email"
-                                    className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                                     value={editFormData.email || ""}
                                     onChange={(e) =>
                                       setEditFormData({
@@ -459,7 +459,7 @@ const AccessControlPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <select
-                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                               value={editFormData.role || ""}
                               onChange={(e) => handleRoleChange(e.target.value)}
                             >
@@ -470,7 +470,7 @@ const AccessControlPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <select
-                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                               value={editFormData.status || ""}
                               onChange={(e) =>
                                 handleStatusChange(e.target.value)
@@ -508,8 +508,8 @@ const AccessControlPage = () => {
                         <>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-blue-600" />
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <User className="h-5 w-5 text-red-800" />
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">

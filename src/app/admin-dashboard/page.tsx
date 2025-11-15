@@ -217,8 +217,8 @@ const AdminDashboard = () => {
 
   const dashboardCards = [
     {
-      title: "Create New User",
-      description: "Add new students, trainers, or admin users to the system",
+      title: "Grant Access",
+      description: "Provide system access to newly registered accounts",
       href: "/admin-dashboard/create-user",
       icon: UserCog,
       color: "red",
@@ -227,6 +227,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-red-100 to-red-200",
       textColor: "text-red-600",
       hoverColor: "group-hover:text-red-600",
+      borderColor: "border-red-200",
       action: "Manage users",
       delay: 0,
     },
@@ -241,6 +242,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200",
       textColor: "text-indigo-600",
       hoverColor: "group-hover:text-indigo-600",
+      borderColor: "border-indigo-200",
       action: "Manage access",
       delay: 0.1,
     },
@@ -255,10 +257,10 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-emerald-100 to-emerald-200",
       textColor: "text-emerald-600",
       hoverColor: "group-hover:text-emerald-600",
+      borderColor: "border-emerald-200",
       action: "View list",
       delay: 0.2,
     },
-
     {
       title: "Media Section",
       description: "View system analytics, reports and key metrics",
@@ -270,6 +272,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
       textColor: "text-blue-600",
       hoverColor: "group-hover:text-blue-600",
+      borderColor: "border-blue-200",
       action: "View analytics",
       delay: 0.3,
     },
@@ -284,6 +287,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-cyan-100 to-cyan-200",
       textColor: "text-cyan-600",
       hoverColor: "group-hover:text-cyan-600",
+      borderColor: "border-cyan-200",
       action: "Manage tasks",
       delay: 0.4,
     },
@@ -298,6 +302,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-amber-100 to-amber-200",
       textColor: "text-amber-600",
       hoverColor: "group-hover:text-amber-600",
+      borderColor: "border-amber-200",
       action: "Register students",
       delay: 0.5,
     },
@@ -312,6 +317,7 @@ const AdminDashboard = () => {
       iconBg: "bg-gradient-to-br from-teal-100 to-teal-200",
       textColor: "text-teal-600",
       hoverColor: "group-hover:text-teal-600",
+      borderColor: "border-teal-200",
       action: "Manage renewals",
       delay: 0.6,
     },
@@ -446,7 +452,7 @@ const AdminDashboard = () => {
                       y: -4,
                     }}
                     whileTap={{ scale: 0.98 }}
-                    className={`relative ${theme.cardBg} backdrop-blur-sm rounded-3xl ${theme.cardBorder} ${theme.shadow} ${theme.hoverShadow} transition-all duration-200 h-full overflow-hidden group`}
+                    className={`relative ${theme.cardBg} backdrop-blur-sm rounded-3xl ${card.borderColor} ${theme.shadow} ${theme.hoverShadow} transition-all duration-200 h-full overflow-hidden group`}
                   >
                     {/* Gradient Background */}
                     <div
@@ -498,7 +504,7 @@ const AdminDashboard = () => {
 
                       {/* Hover Effect Border */}
                       <div
-                        className={`absolute inset-0 rounded-3xl border-2 border-${card.color}-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+                        className={`absolute inset-0 rounded-3xl border-2 ${card.borderColor} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
                       />
                     </div>
                   </motion.div>

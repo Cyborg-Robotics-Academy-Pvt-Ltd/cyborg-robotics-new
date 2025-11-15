@@ -203,7 +203,11 @@ export default function Header() {
     { id: "what-we-offer", label: "We Offer", href: "#what-we-offer" },
     { id: "vision-mission", label: "Our Vision", href: "#vision-mission" },
     { id: "gallery", label: "Photo Hub", href: "#gallery" },
+    { id: "courses", label: "Courses", href: "/all-courses" },
   ];
+
+  // Determine if a nav item is a scroll link (starts with #)
+  const isScrollLink = (href: string) => href.startsWith("#");
 
   return (
     <div>
@@ -231,9 +235,13 @@ export default function Header() {
                   className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
                     activeSection === item.id
                       ? "text-red-300 font-semibold"
-                      : "text-white hover:text-red-300"
+                      : item.id === "courses"
+                        ? "text-red-300 font-semibold hover:text-red-200"
+                        : "text-white hover:text-red-300"
                   }`}
-                  onClick={(e) => handleNavClick(e, item.id)}
+                  onClick={(e) =>
+                    isScrollLink(item.href) && handleNavClick(e, item.id)
+                  }
                 >
                   {item.label}
                 </Link>
@@ -345,11 +353,15 @@ export default function Header() {
                 className={`animated-underline text-sm font-medium hover:font-semibold transition-colors ${
                   activeSection === item.id
                     ? "text-red-800 font-semibold"
-                    : isHomePage && !isScrolled
-                      ? "text-white hover:text-red-300"
-                      : "text-gray-900 hover:text-red-800"
+                    : item.id === "courses"
+                      ? "text-red-600 font-bold hover:text-red-700"
+                      : isHomePage && !isScrolled
+                        ? "text-white hover:text-red-300"
+                        : "text-gray-900 hover:text-red-800"
                 }`}
-                onClick={(e) => handleNavClick(e, item.id)}
+                onClick={(e) =>
+                  isScrollLink(item.href) && handleNavClick(e, item.id)
+                }
               >
                 {item.label}
               </Link>

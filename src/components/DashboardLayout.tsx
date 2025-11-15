@@ -16,7 +16,13 @@ import logo from "../../public/assets/logo1.png";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { CalendarCheck, Clapperboard, LogOut, NotepadText } from "lucide-react";
+import {
+  CalendarCheck,
+  Clapperboard,
+  LogOut,
+  NotepadText,
+  UserLock,
+} from "lucide-react";
 
 type Role = "admin" | "trainer" | "student";
 
@@ -80,6 +86,11 @@ const roleLinksMap: Record<
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
+      label: "Access Control",
+      href: "/admin-dashboard/access-control",
+      icon: <UserLock className="h-5 w-5 shrink-0 text-black" />,
+    },
+    {
       label: "Settings",
       href: "#",
       icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
@@ -131,37 +142,37 @@ const roleLinksMap: Record<
     {
       label: "Dashboard",
       href: "/student-dashboard",
-      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+      icon: <IconHome className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "User Profile",
       href: "/user-profile",
-      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "Course Progress",
       href: "/student-dashboard/course-progress",
-      icon: <IconBrandTabler className="h-5 w-5 shrink-0 text-black" />,
+      icon: <IconBrandTabler className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "Upcoming Tasks",
       href: "/student-dashboard/upcoming-tasks",
-      icon: <IconBrandTabler className="h-5 w-5 shrink-0 text-black" />,
+      icon: <IconBrandTabler className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "Media",
       href: "/student-dashboard/media",
-      icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
+      icon: <Clapperboard className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "Settings",
       href: "#",
-      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
+      icon: <IconSettings className="h-5 w-5 shrink-0 gradient-text" />,
     },
     {
       label: "Logout",
       href: "/login",
-      icon: <LogOut className="h-5 w-5 shrink-0 text-black" />,
+      icon: <LogOut className="h-5 w-5 shrink-0 gradient-text" />,
     },
   ],
 };
