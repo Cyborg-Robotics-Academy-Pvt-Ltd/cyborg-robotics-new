@@ -135,7 +135,7 @@ const CreateUserPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <User className="text-blue-600" />
+                <User className="text-red-800" />
                 Create New User
               </h1>
               <p className="mt-2 text-gray-600">
@@ -145,7 +145,7 @@ const CreateUserPage = () => {
             </div>
             <button
               onClick={() => router.push("/admin-dashboard")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
             >
               <UserCog className="w-4 h-4" />
               Back to Dashboard
@@ -174,7 +174,7 @@ const CreateUserPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
                   placeholder="Enter full name"
                 />
               </div>
@@ -198,7 +198,7 @@ const CreateUserPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
                   placeholder="Enter email address"
                 />
               </div>
@@ -236,7 +236,7 @@ const CreateUserPage = () => {
                       key={role.value}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
                         formData.role === role.value
-                          ? "border-blue-500 ring-2 ring-blue-200"
+                          ? "border-red-800 ring-2 ring-blue-200"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() =>
@@ -266,7 +266,7 @@ const CreateUserPage = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -287,7 +287,7 @@ const CreateUserPage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {isSubmitting ? (
                   <>
@@ -325,16 +325,16 @@ const CreateUserPage = () => {
         </div>
 
         {/* Info Section */}
-        <div className="mt-8 bg-blue-50 rounded-xl p-6">
+        <div className="mt-8 bg-red-800 rounded-xl p-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <Eye className="h-5 w-5 text-blue-500" />
+              <Eye className="h-5 w-5 text-white" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">
+              <h3 className="text-sm font-medium text-white">
                 User Creation Information
               </h3>
-              <div className="mt-2 text-sm text-blue-700">
+              <div className="mt-2 text-sm text-white">
                 <p>
                   When you create a user, they will be added to the appropriate
                   collection in Firestore:

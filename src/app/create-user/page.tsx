@@ -338,9 +338,9 @@ const CreateUser = () => {
       <main
         role="main"
         aria-label="Assign PRN & Enroll Courses Page"
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
+        className="min-h-screen bg-white"
       >
-        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 md:mt-14">
+        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 ">
           <Toaster
             position="top-center"
             reverseOrder={false}
@@ -372,35 +372,13 @@ const CreateUser = () => {
           {/* Header Section */}
           <div className="max-w-7xl mx-auto mb-12">
             <div className="text-center transform transition-all duration-500">
-              {/* Logo */}
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="relative p-3">
-                    <Image
-                      src="/assets/logo.png"
-                      alt="Cyborg Robotics Academy Logo"
-                      width={200}
-                      height={200}
-                      className=""
-                      priority={true}
-                    />
-                  </div>
-                </div>
-              </div>
-
               {/* Main Icon */}
-              <h2 className="text-5xl font-bold text-gray-900 tracking-tight bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] bg-clip-text text-transparent mb-4">
+              <h2 className="text-5xl font-bold  tracking-tight gradient-text mb-4">
                 Assign PRN & Enroll Courses
               </h2>
 
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Assign PRN number and enroll newly signed up students in
-                courses. Enter the student's email address, assign a PRN number,
-                and select courses.
-              </p>
-
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-blue-800 font-medium">
+              <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-red-800 font-medium">
                   Note: This page is for assigning PRN numbers and enrolling
                   courses for existing students. To create new users with
                   different roles, please use the "Create New User" option in
@@ -414,7 +392,7 @@ const CreateUser = () => {
           <div className="max-w-6xl mx-auto">
             <form className="space-y-12" onSubmit={handleEnrollCourses}>
               {/* Student Information Section */}
-              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+              <div className="bg-white rounded-3xl  border border-gray-100 p-8">
                 <div className="flex items-center space-x-4 mb-8">
                   <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-3 rounded-xl">
                     <UserIcon className="h-6 w-6 text-white" />
@@ -544,7 +522,7 @@ const CreateUser = () => {
               </div>
 
               {/* Course Selection Section */}
-              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+              <div className="bg-white rounded-3xl  border border-gray-100 p-8">
                 <div className="flex items-center space-x-4 mb-8">
                   <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-3 rounded-xl">
                     <BookOpen className="h-6 w-6 text-white" />
@@ -747,7 +725,7 @@ const CreateUser = () => {
                     !emailExists ||
                     prnExists
                   }
-                  className="group relative w-full max-w-md mx-auto flex justify-center py-5 px-8 border border-transparent rounded-2xl text-white bg-gradient-to-r from-[#AB2F30] via-[#8B1A1B] to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-xl shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
+                  className="group relative w-full max-w-md mx-auto flex justify-center py-5 px-8 border border-transparent rounded-2xl text-white bg-gradient-to-r from-red-700 via-red-800 to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-xl shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
                 >
                   <span className="absolute left-0 inset-y-0 flex items-center pl-8">
                     {enrolling ? (
