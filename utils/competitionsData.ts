@@ -165,6 +165,31 @@ export const competitionsData: CompetitionData[] = [
       "Research methodology skills",
       "International scientific collaboration"
     ]
+  },
+  {
+    id: "ftc-competition",
+    title: "FTC Competition",
+    description: "FIRST Tech Challenge (FTC) is a robotics competition for students in grades 7-12 to design, build, and program robots to compete in alliance formats.",
+    category: "FIRST Programs",
+    skills: ["Robot Design", "Programming", "Engineering", "Strategy", "Teamwork"],
+    imageUrl: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=400&h=300&fit=crop&q=75",
+    level: "national",
+    difficulty: "intermediate",
+    icon: Target,
+    eligibility: "Students in grades 7-12",
+    website: "https://www.firstinspires.org/robotics/ftc",
+    features: [
+      "Alliance-based competitions",
+      "Reusable robot kit",
+      "Real-world engineering experience",
+      "Scholarship opportunities"
+    ],
+    outcomes: [
+      "Advanced robotics skills",
+      "Engineering design process mastery",
+      "Leadership development",
+      "College and career preparation"
+    ]
   }
 ];
 

@@ -36,6 +36,7 @@ interface OverlayMenuProps {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   activeSection?: string;
   scrollToSection?: (sectionId: string) => void;
+  menuData?: { mainMenu: MenuItem[] }; // Added optional menuData prop
 }
 
 // Animation variants for staggered effect
@@ -251,9 +252,13 @@ export default function OverlayMenu({
   setIsOpen,
   activeSection,
   scrollToSection,
+  menuData: customMenuData, // Accept custom menu data
 }: OverlayMenuProps) {
   const { user, userRole } = useAuth();
   const router = useRouter();
+
+  // Use custom menu data if provided, otherwise use default
+  const menuItems = customMenuData?.mainMenu || menuData.mainMenu;
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -307,7 +312,7 @@ export default function OverlayMenu({
                 {/* Left: existing menu */}
                 <div className="">
                   <MenuList
-                    items={menuData.mainMenu}
+                    items={menuItems} // Use the menuItems variable instead of menuData.mainMenu
                     setIsOpen={setIsOpen}
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}

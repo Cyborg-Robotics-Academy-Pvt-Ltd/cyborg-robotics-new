@@ -201,8 +201,12 @@ export default function Header() {
       href: "#why-learn-robotics",
     },
     { id: "what-we-offer", label: "We Offer", href: "#what-we-offer" },
-    { id: "vision-mission", label: "Our Vision", href: "#vision-mission" },
     { id: "gallery", label: "Photo Hub", href: "#gallery" },
+    {
+      id: "ftc-competition",
+      label: "FTC Competition",
+      href: "/ftc-competition",
+    },
     { id: "courses", label: "Courses", href: "/all-courses" },
   ];
 
@@ -237,7 +241,9 @@ export default function Header() {
                       ? "text-red-300 font-semibold"
                       : item.id === "courses"
                         ? "text-red-300 font-semibold hover:text-red-200"
-                        : "text-white hover:text-red-300"
+                        : item.id === "ftc-competition"
+                          ? "text-yellow-300 font-bold hover:text-yellow-200" // Highlight FTC Competition
+                          : "text-white hover:text-red-300"
                   }`}
                   onClick={(e) =>
                     isScrollLink(item.href) && handleNavClick(e, item.id)
@@ -355,9 +361,11 @@ export default function Header() {
                     ? "text-red-800 font-semibold"
                     : item.id === "courses"
                       ? "text-red-600 font-bold hover:text-red-700"
-                      : isHomePage && !isScrolled
-                        ? "text-white hover:text-red-300"
-                        : "text-gray-900 hover:text-red-800"
+                      : item.id === "ftc-competition"
+                        ? "text-yellow-500 font-bold hover:text-yellow-600" // Highlight FTC Competition
+                        : isHomePage && !isScrolled
+                          ? "text-white hover:text-red-300"
+                          : "text-gray-900 hover:text-red-800"
                 }`}
                 onClick={(e) =>
                   isScrollLink(item.href) && handleNavClick(e, item.id)
