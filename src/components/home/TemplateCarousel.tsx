@@ -29,13 +29,8 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
   const templateImages: Template[] = [
     {
       id: "template-1",
-      src: "/assets/events/summer-camp.jpg",
-      alt: "Cyborg Robotics Academy Template 1",
-    },
-    {
-      id: "template-2",
-      src: "/assets/events/diwali-camp.jpg",
-      alt: "Diwali Camp Template 1",
+      src: "/assets/events/ftc.jpeg",
+      alt: "FTC Competition ",
     },
   ];
 
@@ -138,7 +133,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-md"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20 bg-opacity-90 backdrop-blur-md"
           onClick={closeModal}
         >
           <motion.div

@@ -68,6 +68,7 @@ export const menuItems = [
   // { href: "/blogs", label: "BLOG" },
   { href: "/events", label: "EVENTS" },
   { href: "/blogs", label: "BLOGS" },
+  { href: "/ftc-competition", label: "FTC COMPETITION" },
   { href: "/about-us#awards", label: "AWARDS" },
   {
     label: "GALLERY",
