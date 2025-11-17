@@ -11,7 +11,7 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
-import placeholderImageData from "@/lib/Placeholder-images.json";
+import ftcImage from "@/assets/events/ftc-competition.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -19,10 +19,6 @@ import { useInView } from "framer-motion";
 import { useRef } from "react";
 
 export function About() {
-  const aboutImage = placeholderImageData.placeholderImages.find(
-    (img) => img.id === "about-ftc-competition"
-  );
-
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -161,7 +157,7 @@ export function About() {
             transition={{ duration: 0.9, ease: "easeOut" }}
             className="relative flex justify-center perspective-1000"
           >
-            {aboutImage && (
+            {ftcImage && (
               <motion.div
                 whileHover={{ rotateY: 5, rotateX: -5, scale: 1.03 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
@@ -170,12 +166,12 @@ export function About() {
                 <Card className="overflow-hidden rounded-3xl shadow-2xl border-0 bg-gradient-to-br from-zinc-100 to-zinc-200">
                   <CardContent className="p-0 relative">
                     <Image
-                      src={aboutImage.imageUrl}
-                      alt={aboutImage.description}
+                      src={ftcImage}
+                      alt="FTC Competition"
                       width={700}
                       height={500}
                       className="w-full h-auto object-cover rounded-3xl"
-                      data-ai-hint={aboutImage.imageHint}
+                      data-ai-hint="FTC Competition"
                     />
                     {/* Overlay Effects */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
