@@ -53,7 +53,7 @@ export function Hero() {
                 asChild
                 className="bg-white text-red-600 hover:bg-gray-100 hover:text-red-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
               >
-                <Link href="#onboarding">
+                <Link href="https://docs.google.com/forms/d/e/1FAIpQLScsyPIaYIeznyzY48p_wquf1T4TLym5snO6xn3Iz_Epq63gjw/viewform">
                   <Users className="mr-2 h-5 w-5" />
                   Join the Team
                   <ArrowRight className="ml-2 h-5 w-5" />
