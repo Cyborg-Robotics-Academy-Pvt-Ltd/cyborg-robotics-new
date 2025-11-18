@@ -122,14 +122,14 @@ const MenuList = ({
 
   const isRootLevel = depth === 0;
   const containerSpacingClass = isRootLevel ? "space-y-2" : "space-y-1";
-  const triggerPaddingClass = isRootLevel ? "p-4 text-lg" : "p-3 text-base";
-  const linkPaddingClass = isRootLevel ? "p-4 text-lg" : "p-2 text-base";
+  const triggerPaddingClass = isRootLevel ? "p-3 text-lg" : "p-2 text-base";
+  const linkPaddingClass = isRootLevel ? "p-3 text-lg" : "p-2 text-base";
   const iconSizeClass = isRootLevel ? "h-5 w-5" : "h-4 w-4";
-  const iconGapClass = isRootLevel ? "gap-4" : "gap-3";
+  const iconGapClass = isRootLevel ? "gap-3" : "gap-2";
   const isOfflineCourseChildrenLevel =
     parentTitle === "Offline Course" && depth >= 1;
   const containerClass = isOfflineCourseChildrenLevel
-    ? "flex flex-row gap-2 "
+    ? "flex flex-row gap-2"
     : `flex flex-col ${containerSpacingClass}`;
 
   return (
@@ -146,11 +146,11 @@ const MenuList = ({
           {accordionItems.map((item) => (
             <AccordionItem
               value={item.title}
-              className="border-b-0"
+              className="border border-gray-200 rounded-xl overflow-hidden mb-2 shadow-sm hover:shadow-md transition-all duration-300"
               key={item.title}
             >
               <AccordionTrigger
-                className={`flex w-full items-center justify-between rounded-lg ${triggerPaddingClass} transition-colors hover:bg-accent hover:no-underline ${
+                className={`flex w-full items-center justify-between bg-white ${triggerPaddingClass} transition-all duration-300 hover:bg-gray-50 hover:no-underline ${
                   activeSection === item.id ? "bg-red-800 text-white" : ""
                 }`}
               >
@@ -160,22 +160,24 @@ const MenuList = ({
                       className={`${iconSizeClass} ${
                         activeSection === item.id
                           ? "text-white"
-                          : "text-muted-foreground"
+                          : "text-red-700"
                       }`}
                     />
                   )}
-                  <span>{item.title}</span>
+                  <span className="font-semibold">{item.title}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-0 pl-8">
-                <MenuList
-                  items={item.children!}
-                  setIsOpen={setIsOpen}
-                  depth={depth + 1}
-                  parentTitle={item.title}
-                  activeSection={activeSection}
-                  scrollToSection={scrollToSection}
-                />
+              <AccordionContent className="pb-1 pl-4 pr-3 pt-2 bg-gray-50 rounded-b-xl">
+                <div className="pb-0">
+                  <MenuList
+                    items={item.children!}
+                    setIsOpen={setIsOpen}
+                    depth={depth + 1}
+                    parentTitle={item.title}
+                    activeSection={activeSection}
+                    scrollToSection={scrollToSection}
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}
@@ -207,21 +209,21 @@ const MenuList = ({
 
         const isOfflineCourseChild = isOfflineCourseChildrenLevel;
         const linkClass = isOfflineCourseChild
-          ? `flex w-auto items-center justify-center rounded-xl my-3 ${linkPaddingClass} ${
+          ? `flex w-auto items-center justify-center rounded-xl my-1 ${linkPaddingClass} font-semibold transition-all duration-300 ${
               isActive
-                ? "bg-[#8a1a19] text-white"
-                : "bg-[#b92423] text-white hover:bg-[#a51f1e]"
+                ? "bg-[#8a1a19] text-white shadow-md"
+                : "bg-[#b92423] text-white hover:bg-[#a51f1e] shadow-sm hover:shadow-md"
             }`
-          : `flex items-center justify-between rounded-lg ${linkPaddingClass} transition-colors ${
+          : `flex items-center justify-between rounded-xl ${linkPaddingClass} transition-all duration-300 ${
               isActive
-                ? "bg-red-800 text-white"
-                : "hover:bg-accent text-foreground"
+                ? "bg-red-800 text-white shadow-md"
+                : "bg-white text-foreground hover:bg-gray-100 shadow-sm hover:shadow-md"
             }`;
         return (
           <motion.div
             key={item.title}
             variants={itemVariants}
-            className={isOfflineCourseChild ? undefined : undefined}
+            className={isOfflineCourseChild ? undefined : ""}
           >
             <Link
               href={item.href || "#"}
@@ -235,11 +237,11 @@ const MenuList = ({
                   {item.icon && (
                     <item.icon
                       className={`${iconSizeClass} ${
-                        isActive ? "text-white" : "text-muted-foreground"
+                        isActive ? "text-white" : "text-red-700"
                       }`}
                     />
                   )}
-                  <span>{item.title}</span>
+                  <span className="font-semibold">{item.title}</span>
                   {isLatestCompetition && (
                     <span className="ml-2 px-2 py-1 text-xs font-bold bg-yellow-400 text-yellow-900 rounded-full">
                       NEW
@@ -260,7 +262,7 @@ export default function OverlayMenu({
   setIsOpen,
   activeSection,
   scrollToSection,
-  menuData: customMenuData, // Accept custom menu data
+  menuData: customMenuData,
 }: OverlayMenuProps) {
   const { user, userRole } = useAuth();
   const router = useRouter();
@@ -297,7 +299,7 @@ export default function OverlayMenu({
             <X className="h-6 w-6 text-white" />
           </button>
 
-          <div className="container mx-auto justify-center flex h-full max-w-4xl flex-col px-4 md:px-6">
+          <div className="container mx-auto justify-center flex h-full max-w-6xl flex-col px-4 md:px-6">
             <header className="w-full py-4 border-b border-border/50 border-b-gray-300">
               <div className="flex items-center">
                 <Link
@@ -315,36 +317,40 @@ export default function OverlayMenu({
                 </Link>
               </div>
             </header>
-            <main className="flex-1 overflow-y-auto  no-scrollbar flex mt-14 justify-center">
-              <div className="grid grid-cols-1 w-screen gap-32 md:grid-cols-2 items-start">
-                {/* Left: existing menu */}
-                <div className="">
+            <main className="flex-1 overflow-y-auto no-scrollbar flex mt-6 justify-center">
+              <div className="grid grid-cols-1 w-screen gap-16 md:grid-cols-2 items-start">
+                {/* Left: existing menu - ENHANCED UI */}
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-2xl shadow-lg border border-gray-200 w-full max-w-2xl">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                      Navigation
+                    </h2>
+                    <div className="w-12 h-1 bg-red-700 rounded-full"></div>
+                  </div>
                   <MenuList
-                    items={menuItems} // Use the menuItems variable instead of menuData.mainMenu
+                    items={menuItems}
                     setIsOpen={setIsOpen}
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
                   />
                   {/* Authentication Section */}
                   {user && (
-                    <div className="mt-4">
+                    <div className="mt-4 pt-4 border-t border-gray-200">
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center mx-auto justify-between w-auto rounded-full p-3 text-sm transition-colors bg-red-800 text-white hover:bg-red-900"
+                        className="flex items-center justify-center w-full rounded-xl py-2 px-3 text-base font-medium transition-all duration-300 bg-gradient-to-r from-red-700 to-red-800 text-white hover:from-red-800 hover:to-red-900 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       >
-                        <div className="flex items-center gap-2">
-                          <LogOut className="h-5 w-5 text-white" />
-                          <span>Log Out</span>
-                        </div>
+                        <LogOut className="h-5 w-5 mr-2" />
+                        <span>Log Out</span>
                       </button>
                     </div>
                   )}
                 </div>
 
                 {/* Right: privacy/support/social/FAQs */}
-                <div className="flex flex-col justify-between self-start space-y-2">
+                <div className="flex flex-col justify-between self-start space-y-3 max-w-xl">
                   {/* Privacy Notice */}
-                  <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <div className="bg-gradient-to-r from-red-50 to-orange-50 p-3 rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-shadow duration-300">
                     <div className="flex items-start space-x-2">
                       <div className="mt-1 p-1.5 bg-red-100 rounded-lg">
                         <Shield className="h-4 w-4 text-red-800" />
@@ -369,14 +375,14 @@ export default function OverlayMenu({
                   </div>
 
                   {/* FAQ Section */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                       <HelpCircle className="h-5 w-5 text-red-700" />
                       <h3 className="text-lg font-semibold tracking-wide text-foreground">
                         Frequently Asked Questions
                       </h3>
                     </div>
-                    <div className="ml-8 space-y-3">
+                    <div className="ml-6 space-y-2">
                       <Accordion
                         type="single"
                         collapsible
@@ -433,14 +439,14 @@ export default function OverlayMenu({
                   </div>
 
                   {/* Social Media Section */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                       <Users className="h-5 w-5 text-red-700" />
                       <h3 className="text-lg font-semibold tracking-wide text-foreground">
                         Connect with us
                       </h3>
                     </div>
-                    <div className="flex items-center space-x-4 ml-8">
+                    <div className="flex items-center space-x-3 ml-6">
                       {[
                         {
                           href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
@@ -469,7 +475,7 @@ export default function OverlayMenu({
                           aria-label={alt}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-all duration-300 transform hover:scale-110 group"
+                          className="p-2 rounded-xl bg-red-50 hover:bg-red-100 transition-all duration-300 transform hover:scale-110 group"
                         >
                           <Image
                             src={src}
