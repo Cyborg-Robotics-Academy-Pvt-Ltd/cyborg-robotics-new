@@ -263,7 +263,7 @@ export default function Header() {
                   <Link href={`/${userRole}-dashboard`}>
                     <Button
                       size="sm"
-                      className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white hover:bg-white hover:text-[#b92423]"
+                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-orange-500 hover:text-[#ffffff]"
                     >
                       Dashboard
                     </Button>
@@ -300,7 +300,36 @@ export default function Header() {
                 </Link>
               </div>
               {/* Menu button - visible on all screens */}
-              <div className="p-1 rounded-md bg-red-800 text-white">
+              <div className="lg:hidden flex items-center gap-2">
+                {loading ? (
+                  <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                ) : user ? (
+                  <Link href={`/${userRole}-dashboard`}>
+                    <Button
+                      size="sm"
+                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-orange-500 hover:text-[#ffffff]"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/login">
+                    <Button
+                      size="sm"
+                      className=" font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-red-800 hover:text-[#ffffff]"
+                    >
+                      Log In
+                    </Button>
+                  </Link>
+                )}
+                <div className="p-1 rounded-md bg-red-800 text-white">
+                  <HamburgerButton
+                    isOpen={isMenuOpen}
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  />
+                </div>
+              </div>
+              <div className="hidden lg:flex p-1 rounded-md bg-red-800 text-white">
                 <HamburgerButton
                   isOpen={isMenuOpen}
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -429,7 +458,28 @@ export default function Header() {
           </div>
 
           {/* Mobile menu button - visible on mobile only */}
-          <div className="lg:hidden absolute top-4 right-4 z-50">
+          <div className="lg:hidden absolute top-4 right-4 z-50 flex items-center gap-2">
+            {loading ? (
+              <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+            ) : user ? (
+              <Link href={`/${userRole}-dashboard`}>
+                <Button
+                  size="sm"
+                  className=" font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-orange-500 hover:text-[#ffffff]"
+                >
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button
+                  size="sm"
+                  className="border-2 font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in border-white text-white bg-red-800 hover:text-[#ffffff]"
+                >
+                  Log In
+                </Button>
+              </Link>
+            )}
             <div className="p-1 rounded-md bg-red-800 text-white">
               <HamburgerButton
                 isOpen={isMenuOpen}
