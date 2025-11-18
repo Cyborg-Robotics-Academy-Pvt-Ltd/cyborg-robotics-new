@@ -66,12 +66,10 @@ export default function FTCPcompetitionPage() {
   };
 
   const navItems = [
-    { id: "about", label: "About FTC" },
+    { id: "about-ftc", label: "About FTC" },
     { id: "vision", label: "Vision" },
-    { id: "structure", label: "Program Structure" },
-    { id: "onboarding", label: "Onboarding" },
-    { id: "why-choose", label: "Why Choose Us" },
-    { id: "mentors", label: "Mentors" },
+    { id: "program-structure", label: "Program Structure" },
+    { id: "why-us", label: "Why Choose Us" },
   ];
 
   return (

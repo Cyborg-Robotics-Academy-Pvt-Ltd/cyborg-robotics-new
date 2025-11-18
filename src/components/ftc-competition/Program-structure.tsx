@@ -92,7 +92,7 @@ export function ProgramStructure() {
         {/* Program Overview Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto">
           {[
-            { label: "Age Group", value: "13–18 Years", icon: Users },
+            { label: "Age Group", value: "12–18 Years", icon: Users },
             { label: "Team Size", value: "15–25 Members", icon: Users },
             { label: "Frequency", value: "Weekly Sessions", icon: Calendar },
             { label: "Mentorship", value: "Industry Experts", icon: Brain },

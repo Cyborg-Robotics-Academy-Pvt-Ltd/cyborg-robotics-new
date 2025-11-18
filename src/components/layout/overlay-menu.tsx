@@ -202,6 +202,9 @@ const MenuList = ({
             window.location.pathname.startsWith("/blogs") &&
             item.href === "/blogs");
 
+        // Check if this is the latest competition item
+        const isLatestCompetition = item.id === "latest-competition";
+
         const isOfflineCourseChild = isOfflineCourseChildrenLevel;
         const linkClass = isOfflineCourseChild
           ? `flex w-auto items-center justify-center rounded-xl my-3 ${linkPaddingClass} ${
@@ -237,6 +240,11 @@ const MenuList = ({
                     />
                   )}
                   <span>{item.title}</span>
+                  {isLatestCompetition && (
+                    <span className="ml-2 px-2 py-1 text-xs font-bold bg-yellow-400 text-yellow-900 rounded-full">
+                      NEW
+                    </span>
+                  )}
                 </div>
               )}
             </Link>
