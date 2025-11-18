@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { WebsiteLoadingProvider } from "@/components/WebsiteLoading";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -47,16 +48,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         className="font-body antialiased overflow-x-hidden"
         suppressHydrationWarning={true}
       >
-        <AuthProvider>
-          <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
-            <Header />
-            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
-          </div>
+        <WebsiteLoadingProvider>
+          <AuthProvider>
+            <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
+              <Header />
+              <main className="flex-1 w-full overflow-x-hidden">
+                {children}
+              </main>
+            </div>
 
-          <Analytics />
+            <Analytics />
 
-          <SpeedInsights />
-        </AuthProvider>
+            <SpeedInsights />
+          </AuthProvider>
+        </WebsiteLoadingProvider>
       </body>
     </html>
   );
