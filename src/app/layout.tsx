@@ -8,6 +8,7 @@ import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ScrollButton from "@/components/widgets/ScrollButton";
+import OnekoCat from "@/components/OnekoCat";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
 
           <Analytics />
+          <OnekoCat />
           <SpeedInsights />
         </AuthProvider>
       </body>
