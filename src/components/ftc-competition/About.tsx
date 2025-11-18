@@ -138,7 +138,10 @@ export function About() {
                 size="lg"
                 className="group relative overflow-hidden bg-gradient-to-r from-red-800 to-red-700 hover:from-red-900 hover:to-red-700 text-white font-bold text-lg px-10 py-7 rounded-2xl  hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-300"
               >
-                <Link href="/registration/new" className="flex items-center">
+                <Link
+                  href="https://docs.google.com/forms/d/e/1FAIpQLScsyPIaYIeznyzY48p_wquf1T4TLym5snO6xn3Iz_Epq63gjw/viewform"
+                  className="flex items-center"
+                >
                   <span className="relative z-10 flex items-center">
                     Join Our Team Now
                     <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
