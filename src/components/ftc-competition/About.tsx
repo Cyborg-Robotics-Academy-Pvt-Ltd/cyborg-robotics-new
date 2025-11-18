@@ -11,7 +11,7 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
-import ftcImage from "@/assets/events/ftc-competition.png";
+// Removed unused ftcImage import
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -98,7 +98,7 @@ export function About() {
                 FIRST Tech Challenge (FTC)
               </strong>{" "}
               is a hands-on robotics program for students aged{" "}
-              <strong className="text-red-600">12–18 (grades 7–12)</strong>.
+              <strong className="text-red-600">12–18 (grades 6–12)</strong>.
               Teams design, build, and program robots to compete in a dynamic
               annual game. Students learn STEM concepts, problem-solving,
               teamwork, engineering workflow, and real-world innovation skills.
@@ -157,58 +157,56 @@ export function About() {
             transition={{ duration: 0.9, ease: "easeOut" }}
             className="relative flex justify-center perspective-1000"
           >
-            {ftcImage && (
-              <motion.div
-                whileHover={{ rotateY: 5, rotateX: -5, scale: 1.03 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative group cursor-pointer"
-              >
-                <Card className="overflow-hidden rounded-3xl shadow-2xl border-0 bg-gradient-to-br from-zinc-100 to-zinc-200">
-                  <CardContent className="p-0 relative">
-                    <Image
-                      src={ftcImage}
-                      alt="FTC Competition"
-                      width={700}
-                      height={500}
-                      className="w-full h-auto object-cover rounded-3xl"
-                      data-ai-hint="FTC Competition"
-                    />
-                    {/* Overlay Effects */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            {/* Removed redundant ftcImage check */}
+            <motion.div
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="relative group cursor-pointer"
+            >
+              <Card className="overflow-hidden rounded-3xl shadow-2xl border-0 bg-gradient-to-br from-zinc-100 to-zinc-200">
+                <CardContent className="p-0 relative">
+                  <Image
+                    src="/assets/events/ftc-robot.png"
+                    alt="FTC Competition"
+                    width={500}
+                    height={300}
+                    className="w-full h-auto object-cover rounded-3xl"
+                    data-ai-hint="FTC Competition"
+                  />
+                  {/* Overlay Effects */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-                    {/* Floating Badges */}
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 4,
-                        ease: "easeOut",
-                      }}
-                      className="absolute top-6 right-6 bg-white/20 backdrop-blur-lg rounded-full p-4 border border-white/30 shadow-xl"
-                    >
-                      <Trophy className="h-10 w-10 text-yellow-400 drop-shadow-lg" />
-                    </motion.div>
+                  {/* Floating Badges */}
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 4,
+                      ease: "easeOut",
+                    }}
+                    className="absolute top-6 right-6 bg-white/20 backdrop-blur-lg rounded-full p-4 border border-white/30 shadow-xl"
+                  >
+                    <Trophy className="h-10 w-10 text-yellow-400 drop-shadow-lg" />
+                  </motion.div>
 
-                    <div className="absolute bottom-6 left-6 bg-white/20 backdrop-blur-lg rounded-2xl px-5 py-3 border border-white/30 shadow-xl">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-6 w-6 text-red-500" />
-                        <div>
-                          <p className="text-white font-bold text-sm">
-                            Annual Competition
-                          </p>
-                          <p className="text-white/80 text-xs">
-                            2025-2026 Season
-                          </p>
-                        </div>
+                  <div className="absolute bottom-6 left-6 bg-white/20 backdrop-blur-lg rounded-2xl px-5 py-3 border border-white/30 shadow-xl">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-6 w-6 text-red-500" />
+                      <div>
+                        <p className="text-white font-bold text-sm">
+                          Annual Competition
+                        </p>
+                        <p className="text-white/80 text-xs">
+                          2025-2026 Season
+                        </p>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Subtle Corner Accent */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl -z-10" />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                  {/* Subtle Corner Accent */}
+                  <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl -z-10" />
+                </CardContent>
+              </Card>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>

@@ -16,7 +16,7 @@ export function Hero() {
   );
 
   return (
-    <section className="relative h-[90vh] w-full min-h-[600px] max-h-[800px] bg-background overflow-hidden">
+    <section className="relative h-screen w-full min-h-[600px] max-h-[800px] bg-background overflow-hidden">
       {heroImage && (
         <Image
           src={heroImage.imageUrl}

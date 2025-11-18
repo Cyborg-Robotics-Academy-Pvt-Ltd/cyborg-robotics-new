@@ -58,6 +58,20 @@ const mainMenu: MenuItem[] = [
     ],
   },
   {
+    title: 'Competitions',
+    icon: Trophy,
+    children: [
+      { 
+        title: 'FTC Competition', 
+        href: '/ftc-competition', 
+        icon: Trophy,
+        // Adding a highlight for the latest competition
+        id: 'latest-competition'
+      },
+      // Add other competitions here as needed
+    ],
+  },
+  {
     title: 'Behind Scenes',
     icon: Camera,
     children: [
