@@ -1,7 +1,7 @@
 "use client";
 import { Check } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useRef, useEffect } from "react";
 
 const benefits = [
   "Expert Mentorship: Deep hands-on experience",
@@ -14,33 +14,28 @@ const benefits = [
 const mentors = [
   {
     id: "Nilesh",
-    name: "Mr. Nilesh Jaiswar",
+    name: "Nilesh Jaiswar",
     title: "Mechanical Engineer",
-    image: "assets/team/nilesh.png",
   },
   {
     id: "Anchal",
-    name: "Ms. Anchal Mishra",
+    name: "Anchal Mishra",
     title: "Electronics Specialist",
-    image: "assets/team/anchal.png",
   },
   {
     id: "Mahvish",
-    name: "Ms. Mahvish Fatima",
-    title: "Robotics Skills Expert",
-    image: "assets/team/mahvish3.png",
+    name: "Mahvish Fatima",
+    title: "Research & Development Specialist",
   },
   {
     id: "Pratima",
-    name: "Ms. Pratima Thakur",
-    title: "Programming Lead",
-    image: "assets/team/pratima.png",
+    name: "Pratima Thakur",
+    title: "Documentation Architect",
   },
   {
     id: "Nikita",
-    name: "Ms. Nikita Mangale",
+    name: "Nikita Mangale",
     title: "Branding & Outreach Specialist",
-    image: "assets/team/nikita.png",
   },
 ];
 
@@ -48,137 +43,78 @@ interface Mentor {
   id: string;
   name: string;
   title: string;
-  image: string;
-}
-
-function MentorCard({ mentor }: { mentor: Mentor }) {
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  return (
-    <div className="h-full w-full mx-auto">
-      <div
-        className="relative w-full h-full cursor-pointer"
-        style={{ perspective: "1000px" }}
-        onMouseEnter={() => setIsFlipped(true)}
-        onMouseLeave={() => setIsFlipped(false)}
-      >
-        <div
-          className="relative w-full h-full transition-transform duration-500"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-          }}
-        >
-          {/* Front of the card */}
-          <div
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl bg-white"
-            style={{ backfaceVisibility: "hidden" }}
-          >
-            <div className="w-full h-60 relative">
-              <Image
-                src={`/${mentor.image}`}
-                alt={mentor.name}
-                fill
-                className="object-"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-white py-4 px-3">
-              <h4 className="text-black font-extrabold text-sm mb-1 truncate">
-                {mentor.name}
-              </h4>
-              <p className="text-black/90 text-[11px] font-medium line-clamp-2">
-                {mentor.title}
-              </p>
-            </div>
-          </div>
-
-          {/* Back of the card */}
-          <div
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
-            style={{
-              backfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-900"></div>
-            <div className="relative z-10 h-full flex flex-col justify-center items-center px-3 py-4 text-white">
-              <div className="mb-2">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg p-1 border-2 border-white/30">
-                  <Image
-                    src="/assets/Cyborg-logo.png"
-                    alt="Logo"
-                    width={60}
-                    height={60}
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </div>
-              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mb-2"></div>
-              <h4 className="font-bold text-base text-center mb-1 px-2 truncate">
-                {mentor.name}
-              </h4>
-              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-0.5 mb-2 max-w-[90%]">
-                <p className="text-[10px] font-normal text-center text-white/90 line-clamp-3">
-                  {mentor.title}
-                </p>
-              </div>
-              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mt-1 mb-2"></div>
-              <div className="text-[10px] font-normal text-white/90 text-center px-2">
-                Cyborg Robotics Mentor
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function WhyChooseUs() {
+  const { isVisible, setElement } = useScrollAnimation();
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (sectionRef.current) {
+      setElement(sectionRef.current);
+    }
+  }, [setElement]);
+
   return (
-    <section id="why-us" className="w-full bg-background py-4 md:py-4 lg:py-4">
-      <div className="container px-4 md:px-6">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="space-y-6">
-            <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-              Why Choose Us
-            </h2>
-            <p className="text-muted-foreground md:text-lg">
-              Joining Cyborg Robotics means more than just building robots. It's
-              about becoming part of a community dedicated to excellence,
-              innovation, and growth.
-            </p>
-            <ul className="space-y-4">
+    <section
+      id="why-us"
+      className="w-full bg-background py-4 md:py-4 lg:py-4"
+      ref={sectionRef}
+    >
+      <div className="container px-4 md:px-6 mx-auto">
+        <div
+          className={`text-center mb-8 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        >
+          <h1 className="text-center">
+            <span className="text-3xl font-bold gradient-text">Why Choose</span>
+            <span className="text-3xl font-bold text-black"> Us</span>
+          </h1>
+          <p className="text-muted-foreground md:text-lg max-w-3xl mx-auto">
+            Joining Cyborg Robotics means becoming part of a community driven by
+            excellence, innovation and growth.
+          </p>
+        </div>
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center w-[90%] mx-auto">
+          <div
+            className={`space-y-8 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          >
+            <ul className="space-y-6 max-w-2xl text-left w-full">
               {benefits.map((benefit, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <Check className="mt-1 h-5 w-5 flex-shrink-0 text-red-800" />
-                  <span className="text-foreground">{benefit}</span>
+                <li key={index} className="flex items-start gap-4 group">
+                  <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-800 flex items-center justify-center ">
+                    <Check className="h-4 w-4 flex-shrink-0 text-white  " />
+                  </div>
+                  <span className="text-foreground text-lg group-hover:text-red-700 transition-colors duration-300">
+                    {benefit}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="space-y-6">
-            <h3 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">
-              Meet the Mentors
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+          <div
+            className={`space-y-5 transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          >
+            <h1 className="text-center">
+              <span className="text-3xl font-bold gradient-text">Meet the</span>
+              <span className="text-3xl font-bold text-black"> Mentors</span>
+            </h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-4xl justify-items-center">
               {mentors.map((mentor) => (
                 <div
                   key={mentor.id}
-                  className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-red-200"
+                  className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-red-200 w-full max-w-xs hover:border-red-300 group"
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-red-700 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white font-bold text-xl group-hover:from-red-700 group-hover:to-red-900 transition-all duration-300 transform group-hover:scale-110">
                         {mentor.name.charAt(0)}
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-red-800 font-extrabold text-lg truncate">
+                      <h4 className="text-red-800 font-extrabold text-lg truncate group-hover:text-red-900 transition-colors duration-300">
                         {mentor.name}
                       </h4>
-                      <p className="text-red-600 text-xs mt-1 truncate">
+                      <p className="text-red-600 text-[11px] mt-1 group-hover:text-red-700 transition-colors duration-300 line-clamp-2">
                         {mentor.title}
                       </p>
                     </div>

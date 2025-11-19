@@ -205,7 +205,7 @@ export default function Header() {
     {
       id: "ftc-competition",
       label: "FTC Competition",
-      href: "/ftc-competition",
+      href: "/competition/ftc-competition",
     },
     { id: "courses", label: "Courses", href: "/all-courses" },
   ];

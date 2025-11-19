@@ -3,49 +3,37 @@ import Link from "next/link";
 import { ArrowRight, Trophy, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import placeholderImageData from "@/lib/Placeholder-images.json";
 
 export function Hero() {
-  const heroImage = placeholderImageData.placeholderImages.find(
-    (img: {
-      id: string;
-      description: string;
-      imageUrl: string;
-      imageHint: string;
-    }) => img.id === "hero-students-robot"
-  );
-
   return (
     <section className="relative h-screen w-full min-h-[600px] max-h-[800px] bg-background overflow-hidden">
-      {heroImage && (
-        <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
-          fill
-          className="object-cover"
-          priority
-          data-ai-hint={heroImage.imageHint}
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/40" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
+      <Image
+        src="/assets/events/ftc-thumbnail.png"
+        alt="FTC Competition"
+        fill
+        className="object-cover"
+        priority
+        data-ai-hint="FTC Competition"
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/60" />
       <div className="relative z-10 flex h-full flex-col items-start justify-center text-white px-4 sm:px-6 lg:px-8">
         <div className="container max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <div className="flex items-center mb-4">
-              <Trophy className="h-6 w-6 text-yellow-400 mr-2" />
-              <span className="text-yellow-400 font-semibold uppercase tracking-wider text-sm">
-                Global Competition
+            <div className="inline-flex items-center mb-4 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500/20 to-red-500/20 border border-yellow-400/30 backdrop-blur-sm animate-pulse">
+              <Trophy className="h-5 w-5 text-yellow-400 mr-2 animate-bounce" />
+              <span className="text-yellow-400 font-bold uppercase tracking-widest text-xs">
+                GLOBAL FTC COMPETITION
               </span>
             </div>
-            <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-left drop-shadow-[0_4px_3px_rgba(0,0,0,0.9)] leading-tight">
+            <h1 className="font-headline text-2xl sm:text-3xl md:text-5xl lg:text-5xl font-bold tracking-tight text-left drop-shadow-[0_4px_3px_rgba(0,0,0,0.9)] leading-tight">
               Join Cyborg Robotics in the{" "}
-              <span className="text-red-500">FTC Challenge</span>
+              <span className="text-red-600">FTC Challenge</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg sm:text-xl text-left text-white/90 drop-shadow-[0_2px_1px_rgba(0,0,0,0.8)] font-medium">
-              A global, prestigious robotics competition where young innovators
-              build, code, and compete — with Cyborg Robotics guiding their
-              journey to excellence.
+              Young inventors build, code and compete in this worldwide,
+              esteemed robotics competition, with Cyborg Robotics assisting them
+              on their path to success.
             </p>
             <div className="mt-10 flex flex-wrap justify-start gap-4">
               <Button
