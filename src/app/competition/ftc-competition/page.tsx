@@ -14,6 +14,7 @@ import { Vision } from "@/components/ftc-competition/Vision";
 import { ProgramStructure } from "@/components/ftc-competition/Program-structure";
 import { WhyChooseUs } from "@/components/ftc-competition/why-choose-us";
 import Footer from "@/components/home/Footer";
+import FtcFooter from "@/components/ftc-competition/Ftc-footer";
 
 export default function FTCPcompetitionPage() {
   const [activeSection, setActiveSection] = useState("about");
@@ -127,7 +128,7 @@ export default function FTCPcompetitionPage() {
       <Vision />
       <ProgramStructure />
       <WhyChooseUs />
-      <Footer />
+      <FtcFooter />
     </>
   );
 }

@@ -63,7 +63,7 @@ const mainMenu: MenuItem[] = [
     children: [
       { 
         title: 'FTC Competition', 
-        href: '/ftc-competition', 
+        href: '/competition/ftc-competition', 
         icon: Trophy,
         // Adding a highlight for the latest competition
         id: 'latest-competition'

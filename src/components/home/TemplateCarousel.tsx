@@ -7,6 +7,7 @@ interface Template {
   id: string;
   src: string;
   alt: string;
+  link?: string;
 }
 
 interface TemplateCarouselProps {
@@ -31,6 +32,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
       id: "template-1",
       src: "/assets/events/ftc.jpeg",
       alt: "FTC Competition ",
+      link: "/competition/ftc-competition",
     },
   ];
 
@@ -225,14 +227,19 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                       }}
                       className="relative"
                     >
-                      <Image
-                        src={template.src}
-                        alt={template.alt}
-                        width={500}
-                        height={500}
-                        className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-2xl"
-                        priority
-                      />
+                      <a
+                        href={template.link || "#"}
+                        className="block w-full h-full"
+                      >
+                        <Image
+                          src={template.src}
+                          alt={template.alt}
+                          width={500}
+                          height={500}
+                          className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-2xl"
+                          priority
+                        />
+                      </a>
                     </motion.div>
                   </div>
                 ))}
@@ -276,14 +283,19 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
                       }}
                       className="relative"
                     >
-                      <Image
-                        src={template.src}
-                        alt={template.alt}
-                        width={800}
-                        height={600}
-                        className="w-full h-auto max-h-[70vh] object-contain rounded-2xl shadow-2xl"
-                        priority
-                      />
+                      <a
+                        href={template.link || "#"}
+                        className="block w-full h-full"
+                      >
+                        <Image
+                          src={template.src}
+                          alt={template.alt}
+                          width={800}
+                          height={600}
+                          className="w-full h-auto max-h-[70vh] object-contain rounded-2xl shadow-2xl"
+                          priority
+                        />
+                      </a>
                     </motion.div>
                   </div>
                 ))}
