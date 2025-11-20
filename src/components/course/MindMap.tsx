@@ -255,7 +255,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 2 Levels",
       color: "#4ade80",
-      link: "/all-courses/bambino-coding",
+      link: "#",
     },
   },
   {
@@ -289,7 +289,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO - 1 Level",
       color: "#22d3ee",
-      link: "/all-courses/bambino-coding",
+      link: "#",
     },
   },
   {
@@ -568,7 +568,7 @@ const initialNodes: Node[] = [
     id: "DRONES",
     type: "horizontal",
     position: { x: 950, y: 660 },
-    data: { label: "DRONES - 4 LEVELS", color: "#34d399", collapsible: true },
+    data: { label: "DRONES - 4 LEVELS", color: "#34d399" },
   },
 
   {
@@ -578,7 +578,6 @@ const initialNodes: Node[] = [
     data: {
       label: "3D PRINTING - 3 LEVELS",
       color: "#60a5fa",
-      collapsible: true,
     },
   },
 
@@ -1195,8 +1194,6 @@ const FlowWithProvider = () => {
       PBL_SOFTWARE: true,
       PBL_HARDWARE: true,
       EMERGING: true,
-      DRONES: true,
-      "3DPRINT": true,
       WORK_TECH: true,
       WORK_NONTECH: true,
     }
@@ -1361,8 +1358,6 @@ const FlowWithProvider = () => {
                 "PBL_HW_ADVANCE",
               ],
               EMERGING: ["DRONES", "3DPRINT"],
-              DRONES: ["DRONE_L1", "DRONE_L2", "DRONE_L3", "DRONE_L4"],
-              "3DPRINT": ["3DPRINT_L1", "3DPRINT_L2", "3DPRINT_L3"],
               // WORKSHOPS subtree
               WORKSHOPS: ["WORK_TECH", "WORK_NONTECH"],
               WORK_TECH: [
@@ -1467,8 +1462,6 @@ const FlowWithProvider = () => {
       PBL_SOFTWARE: ["PBL_SW_BASIC", "PBL_SW_INTERMEDIATE", "PBL_SW_ADVANCE"],
       PBL_HARDWARE: ["PBL_HW_BASIC", "PBL_HW_INTERMEDIATE", "PBL_HW_ADVANCE"],
       EMERGING: ["DRONES", "3DPRINT"],
-      DRONES: ["DRONE_L1", "DRONE_L2", "DRONE_L3", "DRONE_L4"],
-      "3DPRINT": ["3DPRINT_L1", "3DPRINT_L2", "3DPRINT_L3"],
       // WORKSHOPS subtree
       WORKSHOPS: ["WORK_TECH", "WORK_NONTECH"],
       WORK_TECH: ["W_ROBOTICS_AI", "W_3DPRINT", "W_DRONES", "W_POWERBI"],
@@ -1639,6 +1632,7 @@ const MindMap = () => {
         width: "100vw",
         height: "100vh",
         background: "white",
+        marginRight: "100px",
       }}
     >
       <style jsx>{`

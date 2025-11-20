@@ -272,6 +272,7 @@ html {
   padding-top: 0.5rem;
   padding-bottom: 1rem;
   min-height: 20vh; /* Ensure sections have enough height for proper scroll detection */
+  position: relative;
 }
 
 /* Mobile-specific spacing adjustments */

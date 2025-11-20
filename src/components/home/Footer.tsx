@@ -175,7 +175,7 @@ const Footer: React.FC<FooterProps> = () => {
                     alt: "Facebook",
                   },
                   {
-                    href: "https://youtube.com/@cyborgroboticsacademy2270?si=aQjTThVhESGN_bQ9",
+                    href: "https://youtube.com/@cyborgroboticsacademy?si=xRsWS5Z7ap6c5epx",
                     src: "/assets/social-icons/youtube.png",
                     alt: "YouTube",
                   },
