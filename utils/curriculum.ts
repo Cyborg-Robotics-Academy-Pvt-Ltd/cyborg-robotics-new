@@ -759,7 +759,7 @@ export const javaCurriculum = [
       id: "1",
       title: "Level 1: Introduction to Robotics and Components",
       subtitle: [
-        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controllerand Sensors (Ultrasonic, Touch, Color, etc.).",
+        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controller and Sensors (Ultrasonic, Touch, Color, etc.).",
         "Learning Input-Output Devices and Port Mapping.",
         "Motor Control Techniques: Adjust speed, directionand movement patterns.",
         "Motor Movements in Different Directions: Implement axis and pivot turns.",
@@ -852,7 +852,7 @@ export const javaCurriculum = [
       id: "1",
       title: "Level 1: Introduction to Robotics and Components",
       subtitle: [
-        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controllerand Sensors (Ultrasonic, Touch, Color, etc.).",
+        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controller and Sensors (Ultrasonic, Touch, Color, etc.).",
         "Learning Input-Output Devices and Port Mapping.",
         "Motor Control Techniques: Adjust speed, directionand movement patterns.",
         "Motor Movements in Different Directions: Implement axis and pivot turns.",

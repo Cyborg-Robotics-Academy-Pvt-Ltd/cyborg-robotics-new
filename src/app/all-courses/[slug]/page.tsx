@@ -9,6 +9,36 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Import Lucide icons
+import {
+  Code,
+  Globe,
+  LineChart,
+  BrainCircuit,
+  Cpu,
+  CircuitBoard,
+  Zap,
+  Lightbulb,
+  Palette,
+  Layout,
+  Rocket,
+  Database,
+  Smartphone,
+  Settings,
+  Network,
+  Eye,
+  MessageSquare,
+  Bot,
+  Trophy,
+  Blocks,
+  GraduationCap,
+  Printer,
+  Cog,
+  Brush,
+  Gamepad2,
+  Wifi,
+} from "lucide-react";
+
 import Testimonials from "@/components/ui/course-accordion";
 import { handleDownloadSyllabus as downloadSyllabus } from "@/lib/utils";
 
@@ -225,7 +255,7 @@ const mockData: Record<string, CourseData> = {
       {
         title: "Object-Oriented Programming",
         description:
-          "Learn OOP concepts like inheritance, polymorphism, and encapsulation",
+          "Learn OOP concepts like inheritance, polymorphism and encapsulation",
         iconName: "Code",
       },
       {
@@ -241,7 +271,7 @@ const mockData: Record<string, CourseData> = {
       },
       {
         title: "Advanced Java Features",
-        description: "Master collections, multithreading, and Java frameworks",
+        description: "Master collections, multithreading and Java frameworks",
         iconName: "Settings",
       },
     ],
@@ -400,7 +430,7 @@ const mockData: Record<string, CourseData> = {
       {
         title: "STEAM Learning",
         description:
-          "Integrate Science, Technology, Engineering, Arts, and Mathematics",
+          "Integrate Science, Technology, Engineering, Arts and Mathematics",
         iconName: "GraduationCap",
       },
       {
@@ -486,7 +516,7 @@ const mockData: Record<string, CourseData> = {
       },
       {
         title: "Creative Projects",
-        description: "Build fun games, animations, and interactive stories",
+        description: "Build fun games, animations and interactive stories",
         iconName: "Gamepad2",
       },
       {
@@ -527,7 +557,7 @@ const mockData: Record<string, CourseData> = {
       },
       {
         title: "Component Knowledge",
-        description: "Understand resistors, capacitors, transistors, and more",
+        description: "Understand resistors, capacitors, transistors and more",
         iconName: "Cpu",
       },
       {
@@ -732,7 +762,7 @@ const mockData: Record<string, CourseData> = {
       },
       {
         title: "Air Pressure",
-        description: "Understand pressure, flow, and air dynamics",
+        description: "Understand pressure, flow and air dynamics",
         iconName: "Cog",
       },
       {
@@ -772,7 +802,7 @@ const mockData: Record<string, CourseData> = {
       },
       {
         title: "Power Transmission",
-        description: "Understand gears, belts, and power transfer",
+        description: "Understand gears, belts and power transfer",
         iconName: "Cog",
       },
       {
@@ -860,7 +890,7 @@ export default async function SlugPage({
             title: "Foundation",
             subtitle: [
               "Introduction to programming concepts",
-              "Variables, data types, and operators",
+              "Variables, data types and operators",
               "Control structures (if/else, loops)",
               "Functions and modules",
             ],
@@ -892,99 +922,63 @@ export default async function SlugPage({
   // Get curriculum data for this course
   const curriculumData = getCurriculumData(slug);
 
-  // Icon component mapping
+  // Icon component mapping - replaced SVG implementation with Lucide icons
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
       case "Code":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="16 18 22 12 16 6" />
-            <polyline points="8 6 2 12 8 18" />
-          </svg>
-        );
+        return <Code className="w-6 h-6" />;
       case "Globe":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-        );
+        return <Globe className="w-6 h-6" />;
       case "LineChart":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-        );
+        return <LineChart className="w-6 h-6" />;
       case "BrainCircuit":
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4.5 4.5 0 1 0 12 18" />
-            <path d="M12 5a3 3 0 1 1 5.997.125" />
-            <path d="M12 19a3 3 0 1 0-5.997-.125 4 4 0 0 0-2.526-5.77 4 4 0 0 0 .556-6.588" />
-            <path d="M12 19a3 3 0 1 1 5.997.125" />
-            <path d="M15 12h-3" />
-            <path d="M12 9v6" />
-          </svg>
-        );
+        return <BrainCircuit className="w-6 h-6" />;
+      case "Cpu":
+        return <Cpu className="w-6 h-6" />;
+      case "CircuitBoard":
+        return <CircuitBoard className="w-6 h-6" />;
+      case "Zap":
+        return <Zap className="w-6 h-6" />;
+      case "Lightbulb":
+        return <Lightbulb className="w-6 h-6" />;
+      case "Palette":
+        return <Palette className="w-6 h-6" />;
+      case "Layout":
+        return <Layout className="w-6 h-6" />;
+      case "Rocket":
+        return <Rocket className="w-6 h-6" />;
+      case "Database":
+        return <Database className="w-6 h-6" />;
+      case "Smartphone":
+        return <Smartphone className="w-6 h-6" />;
+      case "Settings":
+        return <Settings className="w-6 h-6" />;
+      case "Network":
+        return <Network className="w-6 h-6" />;
+      case "Eye":
+        return <Eye className="w-6 h-6" />;
+      case "MessageSquare":
+        return <MessageSquare className="w-6 h-6" />;
+      case "Bot":
+        return <Bot className="w-6 h-6" />;
+      case "Trophy":
+        return <Trophy className="w-6 h-6" />;
+      case "Blocks":
+        return <Blocks className="w-6 h-6" />;
+      case "GraduationCap":
+        return <GraduationCap className="w-6 h-6" />;
+      case "Printer":
+        return <Printer className="w-6 h-6" />;
+      case "Cog":
+        return <Cog className="w-6 h-6" />;
+      case "Brush":
+        return <Brush className="w-6 h-6" />;
+      case "Gamepad2":
+        return <Gamepad2 className="w-6 h-6" />;
+      case "Wifi":
+        return <Wifi className="w-6 h-6" />;
       default:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-          </svg>
-        );
+        return <Code className="w-6 h-6" />;
     }
   };
 
@@ -1076,8 +1070,6 @@ export default async function SlugPage({
       {/* Course Overview */}
       <div className="mt-16 sm:mt-20 mx-2 sm:mx-4 lg:mx-8">
         <div className="relative p-4 bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-xl border border-gray-100">
-          <div className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full opacity-20 blur-xl" />
-
           <h2 className="md:text-3xl text-xl font-bold  text-gray-800 mb-6 flex items-center gap-3">
             <span className="md:text-4xl text-xl ">📚</span>
             Course Overview

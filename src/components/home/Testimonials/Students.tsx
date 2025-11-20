@@ -41,7 +41,7 @@ const Students = () => {
       course: "3D Designing and Printing",
       quote:
         "3D Designing was amazing! I learned to make functional models in Tinkercad and turn creative ideas into real designs.",
-      mentor: "Nilesh Jaiswar",
+      mentor: "Anchal Mishra",
       image: "/assets/testimonials/students/RENEAOVELKER.jpg",
     },
     {
@@ -153,7 +153,7 @@ const Students = () => {
         {/* Left Button */}
         <button
           onClick={handlePrev}
-          className="hidden sm:flex relative z-10 w-12 h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-xl mr-2 sm:mr-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
+          className="flex sm:flex relative z-10 w-10 h-10 sm:w-12 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-xl mr-2 sm:mr-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
           aria-label="Previous testimonial"
         >
           &lt;
@@ -199,7 +199,7 @@ const Students = () => {
         {/* Right Button */}
         <button
           onClick={handleNext}
-          className="hidden sm:flex relative z-10 w-12 h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
+          className="flex sm:flex relative z-10 w-10 h-10 sm:w-12 sm:h-10 rounded-full bg-red-900 text-white shadow-lg items-center justify-center text-lg sm:text-xl ml-2 sm:ml-4 hover:bg-red-800 hover:shadow-xl active:scale-95 transition focus:outline-none"
           aria-label="Next testimonial"
         >
           &gt;

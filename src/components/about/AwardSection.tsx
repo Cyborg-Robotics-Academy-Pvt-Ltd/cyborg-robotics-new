@@ -74,8 +74,7 @@ const AwardSection = () => {
     },
     {
       id: 6,
-      title:
-        "1st (Beginner) & 2nd (Intermediate) – Line Follower, Robotex 2025",
+      title: "1st (Beginner) & 2nd (Intermediate) – Line Follower",
       image: "/assets/awards/Line-Follower.png",
     },
     {
@@ -86,7 +85,7 @@ const AwardSection = () => {
   ];
 
   return (
-    <section className="py-12 sm:py-16 md:py-1 bg-white ">
+    <section className="py-12 sm:py-16 md:py-10 bg-white ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div

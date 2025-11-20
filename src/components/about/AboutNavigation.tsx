@@ -30,10 +30,13 @@ export default function AboutNavigation({
   // Update active section based on scroll position
   useEffect(() => {
     const handleScroll = () => {
+      // Try both methods: getElementById and querySelector fallback
       const sections = aboutNavItems
         .map((item) => ({
           id: item.id,
-          element: document.getElementById(item.id),
+          element:
+            document.getElementById(item.id) ||
+            document.querySelector(`[data-section-id="${item.id}"]`),
         }))
         .filter((section) => section.element);
 
@@ -44,8 +47,12 @@ export default function AboutNavigation({
       // Find the current section based on scroll position
       let currentSection = sections[0].id;
       for (const section of sections) {
-        if (section.element && section.element.offsetTop <= scrollPosition) {
-          currentSection = section.id;
+        if (section.element) {
+          const elementTop =
+            section.element.getBoundingClientRect().top + window.scrollY;
+          if (elementTop <= scrollPosition) {
+            currentSection = section.id;
+          }
         }
       }
 
@@ -69,6 +76,7 @@ export default function AboutNavigation({
         top: 0,
         behavior: "smooth",
       });
+      setCurrentActiveSection("hero");
       return;
     }
 
@@ -87,6 +95,31 @@ export default function AboutNavigation({
       // Update URL hash without triggering page jump
       if (history.pushState) {
         history.pushState(null, "", `#${sectionId}`);
+      }
+
+      // Update active section immediately
+      setCurrentActiveSection(sectionId);
+    } else {
+      // Fallback: try to find element by data-id attribute
+      const fallbackElement = document.querySelector(
+        `[data-section-id="${sectionId}"]`
+      );
+      if (fallbackElement) {
+        const headerHeight = 80;
+        const elementPosition =
+          fallbackElement.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+
+        if (history.pushState) {
+          history.pushState(null, "", `#${sectionId}`);
+        }
+
+        setCurrentActiveSection(sectionId);
       }
     }
   };

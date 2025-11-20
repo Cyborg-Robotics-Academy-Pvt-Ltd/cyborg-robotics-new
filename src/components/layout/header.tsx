@@ -225,7 +225,7 @@ export default function Header() {
                 alt="Cyborg Logo"
                 width={80}
                 height={80}
-                className="h-12 w-auto"
+                className="h-9 md:h-12 w-auto"
                 priority
               />
             </Link>
@@ -263,7 +263,7 @@ export default function Header() {
                   <Link href={`/${userRole}-dashboard`}>
                     <Button
                       size="sm"
-                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-orange-500 hover:text-[#ffffff]"
+                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-transparent border border-gray-200/10 hover:text-[#ffffff]"
                     >
                       Dashboard
                     </Button>
@@ -307,7 +307,7 @@ export default function Header() {
                   <Link href={`/${userRole}-dashboard`}>
                     <Button
                       size="sm"
-                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-orange-500 hover:text-[#ffffff]"
+                      className="font-semibold rounded-[7px] transition-all duration-200 shadow-sm animate-fade-in  text-white bg-transparent border border-gray-200/10 hover:text-[#ffffff]"
                     >
                       Dashboard
                     </Button>

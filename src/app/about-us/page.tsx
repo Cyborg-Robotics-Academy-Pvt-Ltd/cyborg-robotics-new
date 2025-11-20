@@ -60,6 +60,7 @@ export default function AboutPage() {
           {/* Hero Section - add top margin for fixed header */}
           <motion.div
             id="hero"
+            data-section-id="hero"
             className="about-section pt-20"
             ref={heroRef}
             initial={{ opacity: 0, y: 30 }}
@@ -71,6 +72,7 @@ export default function AboutPage() {
 
           <motion.div
             id="story"
+            data-section-id="story"
             className="about-section"
             ref={storyRef}
             initial={{ opacity: 0, y: 30 }}
@@ -82,6 +84,7 @@ export default function AboutPage() {
 
           <motion.div
             id="founders"
+            data-section-id="founders"
             className="about-section"
             ref={foundersRef}
             initial={{ opacity: 0, y: 30 }}
@@ -96,6 +99,7 @@ export default function AboutPage() {
             {/* Team Section */}
             <motion.div
               id="team"
+              data-section-id="team"
               className="about-section"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -110,6 +114,7 @@ export default function AboutPage() {
             {/* Award  Section */}
             <motion.div
               id="awards"
+              data-section-id="awards"
               className="about-section"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
