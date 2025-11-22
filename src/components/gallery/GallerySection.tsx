@@ -35,10 +35,18 @@ const GallerySection = () => {
       <h1 className="text-center font-bold text-2xl md:text-3xl">
         Celebrating <span className="gradient-text">Learning</span>
       </h1>
+      <div className="flex items-center justify-center gap-1 my-3">
+        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
+        <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
+        <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
+      </div>
       <p className="text-center text-sm md:text-base text-gray-600 mt-1">
         Explore moments from our programs and events
       </p>
-      <InfiniteMovingGallery items={data} speed="normal" className="" />
+
+      <div className="mx-6 md:mx-0">
+        <InfiniteMovingGallery items={data} speed="normal" className="" />
+      </div>
     </div>
   );
 };

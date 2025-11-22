@@ -129,7 +129,7 @@ const MenuList = ({
   const isOfflineCourseChildrenLevel =
     parentTitle === "Offline Course" && depth >= 1;
   const containerClass = isOfflineCourseChildrenLevel
-    ? "flex flex-row gap-2"
+    ? "flex flex-row gap-2 "
     : `flex flex-col ${containerSpacingClass}`;
 
   return (
@@ -146,11 +146,11 @@ const MenuList = ({
           {accordionItems.map((item) => (
             <AccordionItem
               value={item.title}
-              className="border border-gray-200 rounded-xl overflow-hidden mb-2 shadow-sm hover:shadow-md transition-all duration-300"
+              className="border border-gray-200 rounded-3xl overflow-hidden  mb-1 shadow-sm hover:shadow-md transition-all duration-300"
               key={item.title}
             >
               <AccordionTrigger
-                className={`flex w-full items-center justify-between bg-white ${triggerPaddingClass} transition-all duration-300 hover:bg-gray-50 hover:no-underline ${
+                className={`flex w-full items-center justify-between bg-white  ${triggerPaddingClass} transition-all duration-300 hover:bg-gray-50 hover:no-underline ${
                   activeSection === item.id ? "bg-red-800 text-white" : ""
                 }`}
               >
@@ -209,15 +209,15 @@ const MenuList = ({
 
         const isOfflineCourseChild = isOfflineCourseChildrenLevel;
         const linkClass = isOfflineCourseChild
-          ? `flex w-auto items-center justify-center rounded-xl my-1 ${linkPaddingClass} font-semibold transition-all duration-300 ${
+          ? `flex w-auto items-center  justify-center rounded-lg my-1 ${linkPaddingClass} font-semibold transition-all duration-300 ${
               isActive
                 ? "bg-[#8a1a19] text-white shadow-md"
                 : "bg-[#b92423] text-white hover:bg-[#a51f1e] shadow-sm hover:shadow-md"
             }`
-          : `flex items-center justify-between rounded-xl ${linkPaddingClass} transition-all duration-300 ${
+          : `flex items-center justify-between  rounded-lg ${linkPaddingClass} transition-all duration-300 ${
               isActive
                 ? "bg-red-800 text-white shadow-md"
-                : "bg-white text-foreground hover:bg-gray-100 shadow-sm hover:shadow-md"
+                : "bg-white  text-foreground hover:bg-gray-100 shadow-sm hover:shadow-md"
             }`;
         return (
           <motion.div
@@ -284,7 +284,7 @@ export default function OverlayMenu({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-40 bg-white"
+          className="fixed inset-0 z-50 bg-white"
           variants={overlayVariants}
           initial="hidden"
           animate="visible"

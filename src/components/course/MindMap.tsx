@@ -1174,8 +1174,23 @@ const initialEdges: Edge[] = [
 const FlowWithProvider = () => {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
-  const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>(
-    {
+
+  // Initialize collapsed nodes from URL hash or default
+  const getInitialCollapsedNodes = (): Record<string, boolean> => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash.startsWith("#state=")) {
+        try {
+          const state = JSON.parse(decodeURIComponent(hash.slice(7)));
+          return state;
+        } catch (e) {
+          console.error("Failed to parse state from URL", e);
+        }
+      }
+    }
+
+    // Default collapsed state
+    return {
       // Setting initial collapsed nodes
       ROOT: true,
       ROBOTICS: true,
@@ -1196,7 +1211,11 @@ const FlowWithProvider = () => {
       EMERGING: true,
       WORK_TECH: true,
       WORK_NONTECH: true,
-    }
+    };
+  };
+
+  const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>(
+    getInitialCollapsedNodes
   );
   const [isMobile, setIsMobile] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
@@ -1213,6 +1232,20 @@ const FlowWithProvider = () => {
 
     return () => {
       window.removeEventListener("resize", checkIsMobile);
+    };
+  }, []);
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      // Re-initialize collapsed nodes when browser navigation occurs
+      const newCollapsedNodes = getInitialCollapsedNodes();
+      setCollapsedNodes(newCollapsedNodes);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
     };
   }, []);
 
@@ -1310,6 +1343,15 @@ const FlowWithProvider = () => {
     alignAndFitNodes(allNodes);
   }, [getNodes, alignAndFitNodes]);
 
+  // Update URL with current state
+  const updateUrlState = useCallback((state: Record<string, boolean>) => {
+    if (typeof window !== "undefined") {
+      const stateString = encodeURIComponent(JSON.stringify(state));
+      const newUrl = `${window.location.pathname}${window.location.search}#state=${stateString}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
+
   // Toggle node collapse/expand and auto-adjust viewport with line alignment
   const toggleNode = useCallback(
     (nodeId: string) => {
@@ -1319,6 +1361,9 @@ const FlowWithProvider = () => {
           ...prev,
           [nodeId]: !isCurrentlyCollapsed,
         };
+
+        // Update URL with new state
+        updateUrlState(newCollapsedState);
 
         // If we're expanding a node, auto-adjust viewport after state update
         if (isCurrentlyCollapsed) {
@@ -1407,7 +1452,7 @@ const FlowWithProvider = () => {
         return newCollapsedState;
       });
     },
-    [getNodes, setViewport, alignAndFitNodes]
+    [getNodes, setViewport, alignAndFitNodes, updateUrlState]
   );
 
   // Collapse all nodes with line alignment
@@ -1420,6 +1465,7 @@ const FlowWithProvider = () => {
     });
 
     setCollapsedNodes(allCollapsedNodes);
+    updateUrlState(allCollapsedNodes);
 
     // Auto-adjust viewport after collapsing all nodes
     setTimeout(() => {
@@ -1430,7 +1476,7 @@ const FlowWithProvider = () => {
       // Align and fit all nodes
       alignAndFitNodes(allNodes);
     }, 100);
-  }, [nodes, getNodes, alignAndFitNodes]);
+  }, [nodes, getNodes, alignAndFitNodes, updateUrlState]);
 
   // Get nodes that should be hidden based on collapsed nodes
   const getHiddenNodes = useCallback(() => {
@@ -1610,7 +1656,7 @@ const FlowWithProvider = () => {
             </p>
             <button
               onClick={() => setShowTooltip(false)}
-              className="text-white hover:text-gray-200 font-bold ml-2"
+              className="text-white hover:text-gray-200 font-bold ml-2 text-2xl"
             >
               ×
             </button>
