@@ -6,11 +6,17 @@ import Link from "next/link";
 const Testimonials = () => {
   return (
     <div className="w-full flex flex-col items-center mt-10">
-      <h1 className="mb-10 text-center">
+      <h1 className="mb-1 text-center">
         <span className="text-3xl font-bold gradient-text">Success</span>
         <span className="text-3xl font-bold text-black"> stories</span>
+        <div className="flex items-center justify-center gap-1 my-3">
+          <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
+          <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
+          <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
+        </div>
       </h1>
-      <h2 className="-mt-6 mb-10 text-center text-gray-600 text-base md:text-lg max-w-2xl">
+
+      <h2 className=" mb-10 text-center text-gray-600 text-base md:text-lg max-w-2xl">
         Hear from parents and students about their learning journeys with us.
       </h2>
 

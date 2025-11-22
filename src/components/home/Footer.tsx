@@ -30,12 +30,6 @@ const Footer: React.FC<FooterProps> = () => {
   // Refs for quick links
   const quickLinkRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  // Check if sections are in view
-  const isInView = useInView(sectionRefs.current[0], {
-    once: true,
-    margin: "-100px",
-  });
-
   const [dailyQuote, setDailyQuote] = useState<string>("");
   const [isLoadingQuote, setIsLoadingQuote] = useState<boolean>(false);
 
@@ -132,14 +126,11 @@ const Footer: React.FC<FooterProps> = () => {
         <div className="rounded-2xl shadow-xl shadow-gray-300/20 p-6 md:p-8 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {/* Section 1: Company Info & Social */}
-            <motion.div
+            <div
               className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[0]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <motion.div>
+              <div>
                 <Image
                   src="/assets/Cyborg-logo.png"
                   width={150}
@@ -149,7 +140,7 @@ const Footer: React.FC<FooterProps> = () => {
                   className="w-40 h-auto cursor-pointer"
                   ref={logoRef}
                 />
-              </motion.div>
+              </div>
               <p className="text-sm text-gray-700 leading-relaxed">
                 <span className="font-bold text-gray-900">
                   Cyborg Robotics Academy Private Limited
@@ -165,7 +156,7 @@ const Footer: React.FC<FooterProps> = () => {
                     alt: "LinkedIn",
                   },
                   {
-                    href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
+                    href: "https://www.instagram.com/cyborgroboticsacademy",
                     src: "/assets/social-icons/instagram.webp",
                     alt: "Instagram",
                   },
@@ -175,7 +166,7 @@ const Footer: React.FC<FooterProps> = () => {
                     alt: "Facebook",
                   },
                   {
-                    href: "https://youtube.com/@cyborgroboticsacademy?si=xRsWS5Z7ap6c5epx",
+                    href: "https://www.youtube.com/@cyborgroboticsacademy",
                     src: "/assets/social-icons/youtube.png",
                     alt: "YouTube",
                   },
@@ -199,15 +190,12 @@ const Footer: React.FC<FooterProps> = () => {
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Section 2: Contact Information */}
-            <motion.div
+            <div
               className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[1]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
             >
               <h3 className="text-lg font-bold text-gray-900">Contact Us</h3>
               <motion.div
@@ -219,7 +207,7 @@ const Footer: React.FC<FooterProps> = () => {
                 <Mail className="mt-1 flex-shrink-0 text-red-800" size={22} />
                 <Link
                   href="mailto:info@cyborgrobotics.in"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base font-medium text-gray-800 hover:text-[#a63534] hover:font-semibold transition-colors"
                 >
                   info@cyborgrobotics.in
                 </Link>
@@ -236,7 +224,7 @@ const Footer: React.FC<FooterProps> = () => {
                 />
                 <Link
                   href="https://www.google.com/maps/place/North+Court,+Rd+Number+12,+Jogger's+Park,+Nilanjali+Society,+Kalyani+Nagar,+Pune,+Maharashtra+411006/@18.5492198,73.8982955,786m/data=!3m2!1e3!4b1!4m10!1m2!2m1!1sNorth+court,office+No:2A,+1st+floor,opposite+joggers+park,above+punjab+national+bank,kalyani+nagar,Pune+411+006!3m6!1s0x3bc2c110e47e39a3:0x1790569bae5ab0f4!8m2!3d18.5492148!4d73.9031664!15sCm9Ob3J0aCBjb3VydCxvZmZpY2UgTm86MkEsIDFzdCBmbG9vcixvcHBvc2l0ZSBqb2dnZXJzIHBhcmssYWJvdmUgcHVuamFiIG5hdGlvbmFsIGJhbmlla2FseWFuaSBuYWdhcixQdW5lIDQxMSAwMDYiA4gBAZIBEWNvbXBvdW5kX2J1aWxkaW5n4AEA!16s%2Fg%2F1hjggd2b0?authuser=0&entry=ttu&g_ep=EgoyMDI1MDMxNy4wIKXMDSoASAFQAw%3D%3D"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
                 >
                   North Court, Office No: 2A, 1st Floor, Opposite Joggers Park,
                   Above Punjab National Bank, Kalyani Nagar, Pune 411 006
@@ -254,21 +242,15 @@ const Footer: React.FC<FooterProps> = () => {
                 />
                 <Link
                   href="tel:+919175159292"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
                 >
                   Phone: +91 91751 59292
                 </Link>
               </motion.div>
-            </motion.div>
+            </div>
 
             {/* Section 3: Quick Links */}
-            <motion.div
-              className="space-y-4 bg-white rounded-xl p-5 "
-              ref={sectionRefs.current[2]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
-            >
+            <div className="space-y-4 bg-white rounded-xl p-5 ">
               <h3 className="text-lg font-bold text-gray-900">Quick Links</h3>
               <ul className="space-y-3">
                 {[
@@ -288,7 +270,7 @@ const Footer: React.FC<FooterProps> = () => {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="text-base font-medium text-gray-800 hover:text-red-800 transition-all block"
+                      className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-red-800 hover:font- transition-all block"
                     >
                       <motion.span
                         ref={(el) => {
@@ -305,16 +287,10 @@ const Footer: React.FC<FooterProps> = () => {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
 
             {/* Section 4: Daily Inspiration */}
-            <motion.div
-              className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto"
-              ref={sectionRefs.current[3]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
-            >
+            <div className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto">
               <h3 className="text-lg font-bold text-gray-900">
                 Daily Inspiration
               </h3>
@@ -338,7 +314,7 @@ const Footer: React.FC<FooterProps> = () => {
                   />
                 </motion.button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 

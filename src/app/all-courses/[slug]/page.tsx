@@ -62,6 +62,8 @@ import {
   SpikePneumatics,
   SpikePrimeCurriculum,
   WebDesignCurriculum,
+  ElectronicsCurriculumData,
+  PeeCeeCurriculumData,
 } from "../../../../utils/curriculum";
 
 // Define the type for key features
@@ -572,6 +574,47 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  peecee: {
+    id: "peecee",
+    title: "peecee",
+    subtitle:
+      "Learn the fundamentals of electronics and robotics using the PIC microcontroller",
+    badge: " PeeCee Course",
+    description:
+      "Learn the fundamentals of electronics and robotics using the PIC microcontroller",
+    mode: "Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/peecee.pdf",
+    syllabusFileName: "peecee.pdf",
+    imagePath: "/assets/classroom-course/peecee.webp",
+    imageAlt: "peecee",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Microcontroller Programming",
+        description: "Learn to program the PIC microcontroller",
+        iconName: "Code",
+      },
+      {
+        title: "Robotics Projects",
+        description: "Build robotic projects using the PIC microcontroller",
+        iconName: "Bot",
+      },
+      {
+        title: "Electronic Circuits",
+        description: "Learn to design and build electronic circuits",
+        iconName: "CircuitBoard",
+      },
+      {
+        title: "Problem Solving",
+        description: "Develop problem-solving and critical thinking skills",
+        iconName: "BrainCircuit",
+      },
+    ],
+  },
   "animation-coding": {
     id: "animationCoding",
     title: "ANIMATION CODING",
@@ -867,7 +910,7 @@ export default async function SlugPage({
       case "bambino-coding":
         return BambinoCodingCurriculum;
       case "electronics":
-        return EarlySimplemachineCurriculum;
+        return ElectronicsCurriculumData;
       case "animation-coding":
         return AnimationAndCodingCurriculum;
       case "app-designing":
@@ -882,6 +925,8 @@ export default async function SlugPage({
         return SimplePoweredMachines;
       case "app-lab":
         return AppLabCurriculum;
+      case "peecee":
+        return PeeCeeCurriculumData;
       default:
         // Return default curriculum data if no specific curriculum is found
         return [

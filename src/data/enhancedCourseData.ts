@@ -609,6 +609,53 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "5-8",
     category: "Robotics"
   },
+ "peecee": {
+  id: "peecee",
+  title: "PEECEE (PIC Microcontroller)",
+  subtitle: "Learn electronics, sensors, automation and robotics using the PeeCee microcontroller",
+  badge: "Electronics & Robotics Course",
+  description: "Master electronics, sensors, motor control, automation and robotics using the PeeCee (PIC) microcontroller through hands-on learning and real-world projects.",
+  mode: "Offline",
+  duration: "36 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
+  syllabusPath: "/assets/pdf/PeeCee_Curriculum.pdf",
+  syllabusFileName: "PeeCee_Curriculum.pdf",
+  imagePath: "/assets/classroom-course/peecee.webp",
+  imageAlt: "PeeCee Microcontroller Course",
+  price: 7999,
+  originalPrice: 11999,
+  currency: "INR",
+  locale: "en-IN",
+
+  keyFeatures: [
+    {
+      title: "Microcontroller Programming",
+      description: "Learn basics of the PeeCee (PIC) microcontroller and embedded logic.",
+      iconName: "Cpu",
+    },
+    {
+      title: "Hands-on Electronics",
+      description: "Work with LEDs, sensors, motors and real electronic components.",
+      iconName: "CircuitBoard",
+    },
+    {
+      title: "Automation Projects",
+      description: "Build burglar alarms, automation systems and interactive machines.",
+      iconName: "Activity",
+    },
+    {
+      title: "Robotics Development",
+      description: "Create robots, smart machines and motor-controlled systems.",
+      iconName: "Bot",
+    },
+  ],
+
+  courseOverview:
+    "The PeeCee Course introduces students to electronics, programming, automation and robotics using the PIC microcontroller. Through hands-on projects, students learn sensor inputs, motor control, logic building, and smart machine development. Each level progressively develops skills—from basic electronics to advanced automation and robotics.",
+
+  ageRange: "8–16",
+ category: "Electronics",
+},
+
   "iot": {
     id: "iot",
     title: "INTERNET OF THINGS (IoT)",

@@ -133,6 +133,11 @@ export default function NewsletterSignup() {
               Updated
             </span>
           </h2>
+          <div className="flex items-center justify-center gap-1 my-3">
+            <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
+            <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
+            <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
+          </div>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
             Subscribe to our newsletter and never miss updates on new courses,
             events, and robotics innovations.

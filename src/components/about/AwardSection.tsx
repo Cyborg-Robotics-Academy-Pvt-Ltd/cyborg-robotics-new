@@ -2,9 +2,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
-import Image from "next/image";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 import { InfiniteMovingAwards } from "../ui/infinite-moving-cards-awards";
 
 // Type definition for award data
@@ -15,37 +12,6 @@ interface Award {
 }
 
 const AwardSection = () => {
-  // Initialize Embla with settings for infinite movement
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    {
-      loop: true,
-      align: "center",
-      slidesToScroll: 1,
-    },
-    [
-      Autoplay({
-        delay: 3000, // 3 seconds between movements
-        stopOnInteraction: false,
-        stopOnMouseEnter: true,
-      }),
-    ]
-  );
-
-  // Play autoplay when component mounts and handle resize
-  React.useEffect(() => {
-    if (emblaApi) {
-      emblaApi.plugins().autoplay?.play();
-
-      // Reset position on window resize
-      const handleResize = () => {
-        emblaApi.reInit();
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, [emblaApi]);
-
   const awards: Award[] = [
     {
       id: 1,
@@ -131,31 +97,14 @@ const AwardSection = () => {
           </div>
         </motion.div>
 
-        {/* Carousel Section with Infinite Movement */}
-        {/* <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex">
-            {awards.map((award) => (
-              <div
-                key={award.id}
-                className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] flex flex-col items-center justify-center p-4"
-              >
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-44  flex items-center justify-center">
-                  <Image
-                    src={award.image}
-                    alt={award.title}
-                    fill
-                    className="object-contain p-2"
-                  />
-                </div>
-                <h3 className="text-lg text-gray-900 mt-4 font-medium text-center px-2">
-                  {award.title}
-                </h3>
-              </div>
-            ))}
-          </div>
-        </div> */}
+        {/* Awards Carousel with Infinite Movement */}
         <div className="my-2">
-          <InfiniteMovingAwards awards={awards} speed="normal" />
+          <InfiniteMovingAwards
+            awards={awards}
+            speed="normal"
+            autoPlay={true}
+            autoPlayInterval={3000}
+          />
         </div>
       </div>
     </section>

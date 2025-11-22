@@ -13,6 +13,11 @@ const Features: React.FC = React.memo(() => {
         </span>
         <span className="text-black"> Private Limited</span>
       </h2>
+      <div className="flex items-center justify-center gap-1 my-3">
+        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
+        <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
+        <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
+      </div>
       <InfiniteMovingCards
         items={FeaturesImages}
         direction="right"

@@ -39,7 +39,7 @@ export default function WhoAreWe() {
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative  px-4 pb-1 sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
+      <section className="relative my-auto  px-4  sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
         {/* Enhanced decorative background with floating elements */}
         <div
           aria-hidden="true"
@@ -48,9 +48,9 @@ export default function WhoAreWe() {
 
         <div className="relative max-w-7xl mx-auto mt-10">
           {/* Enhanced header section */}
-          <div className="text-center mb-4">
-            <div className="flex  mb-3 justify-center ">
-              <h1 className="mb-10 text-center">
+          <div className="text-center ">
+            <div className="flex   justify-center ">
+              <h1 className=" text-center">
                 <span className="text-3xl font-bold gradient-text">Who</span>
                 <span className="text-3xl font-bold text-black"> Are We ?</span>
               </h1>
@@ -64,7 +64,11 @@ export default function WhoAreWe() {
                 />
               </div>
             </div>
-
+            <div className="flex items-center justify-center gap-1 my-3">
+              <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
+              <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
+              <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
+            </div>
             <p className="text-gray-600 text-lg md:text-xl text-center mb-8 max-w-4xl mx-auto leading-relaxed">
               Empowering future innovators through cutting-edge robotics
               education and hands-on learning experiences.
