@@ -128,16 +128,35 @@ const Page: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="max-w-4xl mx-auto mt-16"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-extrabold text-gray-800">
-              Student Renewal Form
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Complete your registration in just a few steps
-            </p>
+          <div className="bg-white rounded-t-2xl shadow-xl overflow-hidden transform transition-all">
+            <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">
+                Student Renewal Form
+              </h1>
+              <p className="text-xs sm:text-sm text-red-100 text-center mt-1 sm:mt-2 max-w-2xl mx-auto">
+                Complete your registration in just a few steps
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-red-800 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-white font-medium text-xs sm:text-sm">
+                  Progress
+                </span>
+                <span className="text-white font-medium text-xs sm:text-sm">
+                  1/1
+                </span>
+              </div>
+              <div className="w-full bg-red-900 rounded-full h-1.5 mt-1.5 sm:h-2 sm:mt-2">
+                <div
+                  className="bg-white h-1.5 rounded-full transition-all duration-300 sm:h-2"
+                  style={{ width: "0%" }}
+                ></div>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200">
+          <div className="bg-white/80 backdrop-blur-xl rounded-b-3xl shadow-2xl border border-gray-200 ">
             <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField

@@ -14,7 +14,7 @@ export default function FAQPage() {
     {
       question: "What age groups do your robotics courses cater to?",
       answer:
-        "Our robotics courses are designed for children aged 5-18 years. We have specialized programs for different age groups: Bambino Coding for ages 5-7, Animation Coding for ages 7-10, and advanced robotics courses like EV3 and Spike Prime for ages 10-18. Each program is tailored to the cognitive and developmental stages of the respective age groups.",
+        "Our robotics courses are designed for children aged 5-25 years. We have specialized programs for different age groups: Bambino Coding for ages 5-7, Animation Coding for ages 7-10 and advanced robotics courses like EV3 and Spike Prime for ages 10-18. Each program is tailored to the cognitive and developmental stages of the respective age groups.",
     },
     {
       question: "Do you offer both online and offline classes?",
@@ -30,19 +30,14 @@ export default function FAQPage() {
     {
       question: "How experienced are your instructors?",
       answer:
-        "Our instructors are highly qualified professionals with backgrounds in robotics, computer science, and engineering. Many of our instructors have industry experience and have participated in or mentored robotics competitions. They undergo continuous training to stay updated with the latest technologies and teaching methodologies.",
+        "Our instructors are highly qualified professionals with backgrounds in robotics, computer science and engineering. Many of our instructors have industry experience and have participated in or mentored robotics competitions. They undergo continuous training to stay updated with the latest technologies and teaching methodologies.",
     },
     {
       question: "What equipment or software do I need for online classes?",
       answer:
-        "For online classes, you&#39;ll need a computer or tablet with a stable internet connection, a webcam, and a microphone. We provide access to all necessary software and simulation tools through our learning platform. For hands-on projects, we may ship robotics kits to your home when required for specific courses.",
+        "For online classes, you'll need a computer or tablet with a stable internet connection, a webcam and a microphone. We provide access to all necessary software and simulation tools through our learning platform. For hands-on projects, we may ship robotics kits to your home when required for specific courses.",
     },
-    {
-      question:
-        "How long are the courses and what is the duration of each session?",
-      answer:
-        "Our courses typically range from 3 to 6 months in duration. Each session is 1.5 to 2 hours long, depending on the age group and complexity of the material. Younger students (5-10 years) have shorter sessions, while older students (11-18 years) have longer sessions to accommodate more complex projects.",
-    },
+
     {
       question: "Do you provide robotics kits for students?",
       answer:
@@ -56,32 +51,32 @@ export default function FAQPage() {
     {
       question: "What is your refund policy?",
       answer:
-        "We offer a 100% money-back guarantee if you&#39;re not satisfied with your first class. For ongoing courses, we provide prorated refunds based on the remaining sessions. Please refer to our complete refund policy on our website or contact our support team for specific details.",
+        "We offer a 100% money-back guarantee if you'll;re not satisfied with your first class. For ongoing courses, we provide prorated refunds based on the remaining sessions. Please refer to our complete refund policy on our website or contact our support team for specific details.",
     },
     {
       question: "How do you ensure safety during hands-on activities?",
       answer:
-        "Safety is our top priority. All our equipment is regularly maintained and safety-checked. Students receive safety training before using any tools or equipment. Our classrooms have first-aid facilities, and instructors are trained in safety protocols. For online classes, we provide detailed safety instructions for home-based activities.",
+        "Safety is our top priority. All our equipment is regularly maintained and safety-checked. Students receive safety training before using any tools or equipment. Our classrooms have first-aid facilities and instructors are trained in safety protocols. For online classes, we provide detailed safety instructions for home-based activities.",
     },
     {
       question: "Do you prepare students for robotics competitions?",
       answer:
-        "Yes, we have a dedicated competition preparation program. Our students regularly participate in national and international robotics competitions like FIRST LEGO League, VEX Robotics, and World Robot Olympiad. We provide specialized training, mentorship, and support for competition participants.",
+        "Yes, we have a dedicated competition preparation program. Our students regularly participate in national and international robotics competitions like FIRST LEGO League, VEX Robotics and World Robot Olympiad. We provide specialized training, mentorship and support for competition participants.",
     },
     {
       question: "How do you assess student progress?",
       answer:
-        "We use a combination of continuous assessment methods including project evaluations, quizzes, peer reviews, and portfolio assessments. Students receive regular feedback and progress reports. We also conduct monthly parent-teacher meetings to discuss student development and areas for improvement.",
+        "We use a combination of continuous assessment methods including project evaluations, quizzes, peer reviews and portfolio assessments. Students receive regular feedback and progress reports. We also conduct monthly parent-teacher meetings to discuss student development and areas for improvement.",
     },
     {
-      question: "Can parents monitor their child&#39;s progress?",
+      question: "Can parents monitor their child's progress?",
       answer:
-        "Absolutely! Parents have access to our online learning portal where they can track their child&#39;s attendance, assignments, grades, and progress reports. We also send monthly progress updates via email and encourage parents to participate in our quarterly review sessions.",
+        "Absolutely! Parents have access to our online learning portal where they can track their child's attendance, assignments, grades and progress reports. We also send monthly progress updates via email and encourage parents to participate in our quarterly review sessions.",
     },
     {
       question: "What programming languages do you teach?",
       answer:
-        "We start with visual programming languages like Scratch for younger students (5-10 years) and gradually introduce text-based languages like Python and JavaScript. For advanced courses, we teach C++, Java, and other industry-standard languages depending on the robotics platform being used.",
+        "We start with visual programming languages like Scratch for younger students (5-10 years) and gradually introduce text-based languages like Python and JavaScript. For advanced courses, we teach C++, Java and other industry-standard languages depending on the robotics platform being used.",
     },
     {
       question: "How do you handle different skill levels in the same class?",
@@ -112,12 +107,12 @@ export default function FAQPage() {
       question:
         "What support do you offer for students struggling with concepts?",
       answer:
-        "We provide multiple support options including one-on-one mentoring sessions, additional practice materials, and peer study groups. Our instructors are available for extra help during designated hours. We also offer remedial classes for students who need focused attention on specific topics.",
+        "We provide multiple support options including one-on-one mentoring sessions, additional practice materials and peer study groups. Our instructors are available for extra help during designated hours. We also offer remedial classes for students who need focused attention on specific topics.",
     },
     {
       question: "Do you offer career guidance related to STEM fields?",
       answer:
-        "Yes, we provide comprehensive career guidance including information about STEM careers, college admissions, scholarship opportunities, and internship programs. We organize career counseling sessions with industry professionals and alumni to help students make informed decisions about their future.",
+        "Yes, we provide comprehensive career guidance including information about STEM careers, college admissions, scholarship opportunities and internship programs. We organize career counseling sessions with industry professionals and alumni to help students make informed decisions about their future.",
     },
   ];
 
@@ -193,9 +188,9 @@ export default function FAQPage() {
               Still have questions?
             </h3>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              If you can&#39;t find the answer you&#39;re looking for, please
-              contact our support team. We&#39;re here to help you with any
-              questions about our robotics programs.
+              If you can't find the answer you're looking for, please contact
+              our support team. We're here to help you with any questions about
+              our robotics programs.
             </p>
             <Link
               href="/contact-us"

@@ -92,7 +92,6 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
           <div className="flex space-x-1.5">
             <button
               onClick={prevSlide}
-              disabled={currentIndex === 0}
               className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               aria-label="Previous courses"
             >
@@ -100,7 +99,6 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
             </button>
             <button
               onClick={nextSlide}
-              disabled={currentIndex + itemsPerView >= totalItems}
               className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               aria-label="Next courses"
             >

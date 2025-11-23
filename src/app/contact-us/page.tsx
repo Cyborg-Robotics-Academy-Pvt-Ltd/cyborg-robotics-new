@@ -265,9 +265,9 @@ const Page = () => {
                           Hours
                         </h3>
                         <p className="text-gray-600">
-                          Monday: 11AM - 7PM
+                          Monday: 10:30 AM - 7PM
                           <br />
-                          Wednesday - Sunday: 11AM - 7PM
+                          Wednesday - Sunday: 10:30 AM - 7PM
                           <br />
                           <span className="text-red-600">Tuesday: Closed</span>
                         </p>
