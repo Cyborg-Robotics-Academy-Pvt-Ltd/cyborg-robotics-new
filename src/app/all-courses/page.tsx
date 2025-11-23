@@ -67,7 +67,7 @@ const AllCoursesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         {Object.keys(coursesByCategory).length > 0 ? (
           <div className="text-center mb-10 mt-4">
             <h1 className="text-4xl gradient-text font-bold text-gray-900 mb-4">

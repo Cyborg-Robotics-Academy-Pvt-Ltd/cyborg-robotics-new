@@ -323,7 +323,7 @@ const initialNodes: Node[] = [
     data: {
       label: "PEECEE - 2 Levels",
       color: "#22d3ee",
-      link: "/all-courses/arduino",
+      link: "/all-courses/peecee",
     },
   },
   {

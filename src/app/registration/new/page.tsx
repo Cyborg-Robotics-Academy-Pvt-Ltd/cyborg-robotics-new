@@ -289,25 +289,27 @@ const RegisterPage: React.FC = () => {
         <Toaster />
         <div className="max-w-5xl mx-auto mt-10">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all">
-            <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 px-6 py-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center">
+            <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">
                 Student Registration Form
               </h1>
-              <p className="text-sm sm:text-base text-red-100 text-center mt-3 max-w-2xl mx-auto">
+              <p className="text-xs sm:text-sm text-red-100 text-center mt-1 sm:mt-2 max-w-2xl mx-auto">
                 Welcome to Cyborg Robotics Academy!
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-red-800 to-red-600 px-6 py-4">
+            <div className="bg-gradient-to-r from-red-800 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
               <div className="flex items-center justify-between">
-                <span className="text-white font-medium">Progress</span>
-                <span className="text-white font-medium">
+                <span className="text-white font-medium text-xs sm:text-sm">
+                  Progress
+                </span>
+                <span className="text-white font-medium text-xs sm:text-sm">
                   {step}/{totalSteps}
                 </span>
               </div>
-              <div className="w-full bg-red-900 rounded-full h-2.5 mt-2">
+              <div className="w-full bg-red-900 rounded-full h-1.5 mt-1.5 sm:h-2 sm:mt-2">
                 <div
-                  className="bg-white h-2.5 rounded-full transition-all duration-300"
+                  className="bg-white h-1.5 rounded-full transition-all duration-300 sm:h-2"
                   style={{ width: `${(step / totalSteps) * 100}%` }}
                 ></div>
               </div>

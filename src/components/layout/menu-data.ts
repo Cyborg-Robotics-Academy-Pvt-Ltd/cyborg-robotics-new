@@ -9,18 +9,6 @@ export interface MenuItem {
   id?: string; // Added for tracking active sections
 }
 
-const offlineCourseChildren: MenuItem[] = [
-    { title: 'Age 5–7', href: '/courses/bambino-coding' },
-    { title: 'Age 7–10', href: '/courses/animation-coding' },
-    { title: 'Age 10–12', href: '/courses/robotics-ev3' },
-];
-
-const competitionChildren: MenuItem[] = [
-    { title: 'Regional', href: '#' },
-    { title: 'National', href: '#' },
-    { title: 'International', href: '#' },
-];
-
 const mainMenu: MenuItem[] = [
   {
    title: 'Courses',
@@ -52,7 +40,7 @@ const mainMenu: MenuItem[] = [
     icon: Calendar,
     children: [
         { title: 'Workshop', href: '#', icon: Drama },
-        { title: 'Competition (categorized)', href: '#', icon: Trophy, children: competitionChildren },
+      
         { title: 'Team Huddle', href: '#', icon: Users },
         { title: 'Celebrations', href: '#', icon: Sparkles },
     ],
@@ -68,6 +56,7 @@ const mainMenu: MenuItem[] = [
         // Adding a highlight for the latest competition
         id: 'latest-competition'
       },
+       
       // Add other competitions here as needed
     ],
   },
@@ -81,9 +70,9 @@ const mainMenu: MenuItem[] = [
     ],
   },
   {
-    title: 'Blogs + Newsletter',
+    title: 'Blogs',
     icon: FileText,
-    href: '/blogs',
+    href: '#',
   },
   {
     title: 'Contact Us',
