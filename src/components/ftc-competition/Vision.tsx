@@ -139,7 +139,7 @@ export function Vision() {
                     </CardDescription>
 
                     {/* Animated underline on hover */}
-                    <div className="mt-4 w-12 h-1 bg-gradient-to-r from-red-500 to-red-500 rounded-full mx-auto transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                    <div className="mt-4 w-12 h-1 bg-gradient-to-r from-red-600 to-red-700 rounded-full mx-auto transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
                   </CardHeader>
                 </Card>
               </motion.div>

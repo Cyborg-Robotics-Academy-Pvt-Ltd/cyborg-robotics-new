@@ -55,12 +55,17 @@ export function About() {
       desc: "Connect with teams worldwide",
     },
     { icon: Zap, title: "Innovation", desc: "Cutting-edge technology skills" },
+    {
+      icon: Target,
+      title: "Official Training",
+      desc: "Certified FTC training program",
+    },
   ];
 
   return (
     <section
       id="about-ftc"
-      className="w-full py-12 lg:py-8 bg-white to-white overflow-hidden"
+      className="w-full py-12 lg:py-4 bg-white to-white overflow-hidden"
     >
       <div className="container px-4 md:px-6">
         <motion.div
@@ -71,15 +76,14 @@ export function About() {
           className="grid gap-8 lg:gap-12 lg:grid-cols-2 items-center"
         >
           {/* Left Content */}
-          <motion.div className="space-y-4" variants={itemVariants}>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={isInView ? { scale: 1, opacity: 1 } : {}}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="inline-flex items-center gap-2 rounded-full bg-red-500/10 px-4 py-1 text-xs font-bold text-red-600 border border-red-200 shadow-sm backdrop-blur-sm"
-            >
-              <Sparkles className="h-5 w-5 animate-pulse" />
-              <span>FIRST Tech Challenge</span>
+          <motion.div
+            id="about-ftc"
+            className="space-y-4"
+            variants={itemVariants}
+          >
+            <motion.div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-4 py-1 text-xs font-bold text-white border border-red-200 shadow-lg ">
+              <Sparkles className="h-5 w-5 " />
+              <span>OFFICIAL FTC TRAINING PARTNER</span>
             </motion.div>
 
             <motion.h2
@@ -98,10 +102,15 @@ export function About() {
                 FIRST Tech Challenge (FTC)
               </strong>{" "}
               is a hands-on robotics program for students aged{" "}
-              <strong className="text-red-600">12–18 (grades 6–12)</strong>.
-              Teams design, build and program robots to compete in a dynamic
-              annual game. Students learn STEM concepts, problem-solving,
-              teamwork, engineering workflow and real-world innovation skills.
+              <strong className="text-red-600">12–18 (grades 6–12)</strong>. As
+              an{" "}
+              <span className="font-bold text-red-600">
+                official training partner
+              </span>
+              , Cyborg Robotics helps teams design, build and program robots to
+              compete in a dynamic annual game. Students learn STEM concepts,
+              problem-solving, teamwork, engineering workflow and real-world
+              innovation skills.
             </motion.p>
 
             {/* Feature Grid */}
@@ -143,7 +152,7 @@ export function About() {
                   className="flex items-center"
                 >
                   <span className="relative z-10 flex items-center">
-                    Join Our Team Now
+                    Apply Now
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
@@ -163,20 +172,22 @@ export function About() {
             {/* Removed redundant ftcImage check */}
             <motion.div
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative group cursor-pointer"
+              className="relative group cursor-pointer w-full max-w-2xl"
             >
               <Card className="overflow-hidden rounded-3xl mt-10 shadow-xl bg-gradient-to-br from-zinc-100 to-zinc-200">
                 <CardContent className="p-0 relative">
-                  <Image
-                    src="/assets/events/ftc-bot.gif"
-                    alt="FTC Competition"
-                    width={350}
-                    height={150}
-                    className="w-full h-[30rem]  object-cover rounded-3xl"
-                    data-ai-hint="FTC Competition"
-                  />
+                  {/* Replaced GIF with YouTube embed */}
+                  <div className="relative w-full md:h-[20rem] h-[14rem] rounded-3xl overflow-hidden">
+                    <iframe
+                      src="https://www.youtube.com/embed/K_PuWjr7qcM"
+                      title="FTC Competition"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
 
-                  <div className="absolute bottom-4 left-4 bg-white/20 backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg">
+                  <div className="absolute bottom-12 left-4 bg-white/20 backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-red-500" />
                       <div>

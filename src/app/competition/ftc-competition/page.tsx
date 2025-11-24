@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, Users, Award, Calendar } from "lucide-react";
+import { ChevronRight, Users, Award, Calendar, Sparkles } from "lucide-react";
 // Added imports for hamburger menu
 import HamburgerButton from "@/components/layout/hamburger-button";
 import OverlayMenu from "@/components/layout/overlay-menu";
@@ -13,6 +13,7 @@ import { About } from "@/components/ftc-competition/About";
 import { Vision } from "@/components/ftc-competition/Vision";
 import { ProgramStructure } from "@/components/ftc-competition/Program-structure";
 import { WhyChooseUs } from "@/components/ftc-competition/why-choose-us";
+import { OfficialPartnerBadge } from "@/components/ftc-competition/OfficialPartnerBadge";
 import Footer from "@/components/home/Footer";
 import FtcFooter from "@/components/ftc-competition/Ftc-footer";
 
@@ -75,6 +76,7 @@ export default function FTCPcompetitionPage() {
 
   return (
     <>
+      <OfficialPartnerBadge />
       {/* Navigation */}
       <header className="fixed top-0 h-16 left-0 right-0 transition-all duration-300 bg-white shadow-lg border-b border-gray-200 z-50">
         <div className="container mx-auto flex items-center justify-between px-4 md:px-1 lg:px-1 h-full">
