@@ -23,14 +23,19 @@ const mentors = [
     title: "Electronics Specialist",
   },
   {
+    id: "Pratima",
+    name: "Pratima Thakur",
+    title: "Documentation and Soft-Skills Specialist",
+  },
+  {
+    id: "Sirjana ",
+    name: "Sirjana Vishwakarma",
+    title: "Branding & Outreach Specialist",
+  },
+  {
     id: "Mahvish",
     name: "Mahvish Fatima",
     title: "Research & Development Specialist",
-  },
-  {
-    id: "Pratima",
-    name: "Pratima Thakur",
-    title: "Documentation Architect",
   },
   {
     id: "Nikita",
@@ -58,7 +63,7 @@ export function WhyChooseUs() {
   return (
     <section
       id="why-us"
-      className="w-full bg-background py-4 md:py-4 lg:py-4"
+      className="w-full bg-background py-4 md:py-4 lg:py-4 mt-10"
       ref={sectionRef}
     >
       <div className="container px-4 md:px-6 mx-auto">
@@ -111,7 +116,7 @@ export function WhyChooseUs() {
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-red-800 font-extrabold text-lg truncate group-hover:text-red-900 transition-colors duration-300">
+                      <h4 className="text-red-800 text-[15px] font-bold group-hover:text-red-900 transition-colors duration-300 line-clamp-2">
                         {mentor.name}
                       </h4>
                       <p className="text-red-600 text-[11px] mt-1 group-hover:text-red-700 transition-colors duration-300 line-clamp-2">
