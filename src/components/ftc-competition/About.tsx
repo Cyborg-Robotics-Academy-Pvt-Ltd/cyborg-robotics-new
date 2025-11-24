@@ -83,7 +83,7 @@ export function About() {
           >
             <motion.div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-4 py-1 text-xs font-bold text-white border border-red-200 shadow-lg ">
               <Sparkles className="h-5 w-5 " />
-              <span>OFFICIAL FTC TRAINING PARTNER</span>
+              <span>official training partner of FTC</span>
             </motion.div>
 
             <motion.h2
@@ -105,7 +105,7 @@ export function About() {
               <strong className="text-red-600">12–18 (grades 6–12)</strong>. As
               an{" "}
               <span className="font-bold text-red-600">
-                official training partner
+                official training partner of FTC
               </span>
               , Cyborg Robotics helps teams design, build and program robots to
               compete in a dynamic annual game. Students learn STEM concepts,

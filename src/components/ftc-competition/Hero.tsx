@@ -20,10 +20,10 @@ export function Hero() {
       <div className="relative z-10 flex h-full flex-col items-start justify-center text-white px-4 sm:px-6 lg:px-8">
         <div className="container max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center mb-4 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500/30 to-red-500/30 border border-yellow-400/40 backdrop-blur-sm">
+            <div className="inline-flex items-center mb-4 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500/30 to-red-500/30 border border-yellow-400/40 ">
               <Trophy className="h-5 w-5 text-yellow-300 mr-2 flex-shrink-0" />
               <span className="text-white font-bold uppercase tracking-widest text-xs">
-                GLOBAL FTC COMPETITION - OFFICIAL TRAINING PARTNER
+                GLOBAL FTC COMPETITION - official training partner of FTC
               </span>
             </div>
             <h1 className="font-headline text-2xl sm:text-3xl md:text-5xl lg:text-5xl font-bold tracking-tight text-left drop-shadow-[0_4px_3px_rgba(0,0,0,0.9)] leading-tight">
@@ -60,6 +60,16 @@ export function Hero() {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Official Training Partner Badge - Floating */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-xl border border-red-200">
+          <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+          <span className="text-sm font-bold text-gray-800">
+            Official FIRST Tech Challenge Training Partner
+          </span>
         </div>
       </div>
     </section>
