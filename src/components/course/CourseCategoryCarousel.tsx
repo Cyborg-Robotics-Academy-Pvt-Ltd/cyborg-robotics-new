@@ -26,24 +26,31 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   // Calculate how many items we can show based on screen size
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 480) {
-        setItemsPerView(1); // Mobile portrait
-      } else if (window.innerWidth < 768) {
-        setItemsPerView(1); // Mobile landscape / small tablets
-      } else if (window.innerWidth < 1024) {
-        setItemsPerView(2); // Tablets
-      } else if (window.innerWidth < 1280) {
-        setItemsPerView(3); // Laptop
-      } else if (window.innerWidth < 1536) {
-        setItemsPerView(3); // Desktop
-      } else {
-        setItemsPerView(4); // Large desktop (2xl+)
+      if (typeof window !== "undefined") {
+        if (window.innerWidth < 480) {
+          setItemsPerView(1); // Mobile portrait
+        } else if (window.innerWidth < 768) {
+          setItemsPerView(1); // Mobile landscape / small tablets
+        } else if (window.innerWidth < 1024) {
+          setItemsPerView(2); // Tablets
+        } else if (window.innerWidth < 1280) {
+          setItemsPerView(3); // Laptop
+        } else if (window.innerWidth < 1536) {
+          setItemsPerView(3); // Desktop
+        } else {
+          setItemsPerView(4); // Large desktop (2xl+)
+        }
       }
     };
 
+    // Initial call to set the correct itemsPerView
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    // Only attach event listener if window is defined (client-side)
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
   }, []);
 
   const nextSlide = () => {
@@ -190,7 +197,9 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
                   width:
                     itemsPerView === 1
                       ? "100%"
-                      : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 12 : window.innerWidth < 1024 ? 16 : 24)) / itemsPerView}px)`,
+                      : typeof window !== "undefined"
+                        ? `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 12 : window.innerWidth < 1024 ? 16 : 24)) / itemsPerView}px)`
+                        : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * 16) / itemsPerView}px)`,
                 }}
               >
                 {item}
