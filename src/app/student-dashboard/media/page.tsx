@@ -319,7 +319,7 @@ const Page = () => {
                           alt={`Gallery image ${index + 1}`}
                           layout="fill"
                           objectFit="cover"
-                          className="transition-all duration-300 group-hover:scale-105 group-hover:brightness-95"
+                          className="transition-all duration-300 group-hover:scale-105 group-hover:brightness-80"
                           onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = "/api/placeholder/400/320";
@@ -327,7 +327,7 @@ const Page = () => {
                           }}
                         />
                       </div>
-                      <div className="absolute inset-0 bg-[#991b1b] bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="absolute inset-0   group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
                         <div className="transform scale-0 group-hover:scale-100 transition-transform duration-300">
                           <svg
                             className="w-12 h-12 text-white drop-shadow-lg"

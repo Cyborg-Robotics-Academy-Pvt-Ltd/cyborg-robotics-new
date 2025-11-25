@@ -95,8 +95,8 @@ const AccessControlPage = () => {
           const data = doc.data();
           allUsers.push({
             id: doc.id,
-            name: data.name || data.username || "N/A",
-            email: data.email || "N/A",
+            name: data.name || data.fullName || data.username || "",
+            email: data.email || "",
             role: collectionName.slice(0, -1), // Remove 's' from end
             status: data.status || "active",
             createdAt: data.createdAt?.toDate() || new Date(),
@@ -122,8 +122,8 @@ const AccessControlPage = () => {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (user) =>
-          user.name.toLowerCase().includes(term) ||
-          user.email.toLowerCase().includes(term)
+          (user.name && user.name.toLowerCase().includes(term)) ||
+          (user.email && user.email.toLowerCase().includes(term))
       );
     }
 
@@ -434,6 +434,7 @@ const AccessControlPage = () => {
                                   type="text"
                                   className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                                   value={editFormData.name || ""}
+                                  placeholder="Enter name"
                                   onChange={(e) =>
                                     setEditFormData({
                                       ...editFormData,
@@ -446,6 +447,7 @@ const AccessControlPage = () => {
                                     type="email"
                                     className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                                     value={editFormData.email || ""}
+                                    placeholder="Enter email"
                                     onChange={(e) =>
                                       setEditFormData({
                                         ...editFormData,

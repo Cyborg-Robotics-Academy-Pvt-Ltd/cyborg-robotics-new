@@ -147,17 +147,7 @@ const roleLinksMap: Record<
     {
       label: "User Profile",
       href: "/user-profile",
-      icon: <IconUserBolt className="h-5 w-5 shrink-0 gradient-text" />,
-    },
-    {
-      label: "Course Progress",
-      href: "/student-dashboard/course-progress",
-      icon: <IconBrandTabler className="h-5 w-5 shrink-0 gradient-text" />,
-    },
-    {
-      label: "Upcoming Tasks",
-      href: "/student-dashboard/upcoming-tasks",
-      icon: <IconBrandTabler className="h-5 w-5 shrink-0 gradient-text" />,
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "Media",
@@ -218,7 +208,7 @@ export default function DashboardLayout({
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 bg-white">
+        <SidebarBody className="justify-between gap-10 bg-white shadow-2xl">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-2 flex flex-col gap-2">
@@ -252,8 +242,8 @@ export default function DashboardLayout({
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="flex flex-1 md:ml-[60px] pt-16">
-        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%]">
+      <div className="flex flex-1 md:ml-[60px]  ">
+        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%]  shadow-xl ">
           {children}
         </div>
       </div>
@@ -265,7 +255,7 @@ export const Logo = () => {
   return (
     <a
       href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 flex items-center space-x-2 py-1 mt-14 md:mt-1 text-sm font-normal text-black"
     >
       <Image
         src={logo}

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronsRight } from "lucide-react";
 
 interface Links {
   label: string;
@@ -125,13 +126,13 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden shadow-2xl  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden shadow-2xl  items-center justify-between bg-neutral-100  w-full"
         )}
         {...props}
       >
-        <div className="flex justify-end z-20 w-full">
-          <IconMenu2
-            className="text-neutral-800 dark:text-neutral-200"
+        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-16 left-2 bg-white">
+          <ChevronsRight
+            className="text-neutral-800 animate-bounce"
             onClick={() => setOpen(!open)}
           />
         </div>
@@ -146,15 +147,15 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10  flex flex-col justify-between hide-scrollbar z-40",
+                "fixed h-full w-[85%] inset-0 bg-white  md:p-10 p-4  flex flex-col justify-between hide-scrollbar z-40",
                 className
               )}
             >
               <div
-                className="absolute right-10 top-10 z-50 text-black cursor-pointer"
+                className="absolute right-0 top-[70px] bg-red-800 rounded-full p-[2px]  z-50 text-black cursor-pointer"
                 onClick={() => setOpen(!open)}
               >
-                <IconX color="black" />
+                <IconX color="white" />
               </div>
               {children}
             </motion.div>
@@ -201,7 +202,7 @@ const SidebarLinkComponent = ({
     <Link
       href={link.href}
       className={cn(
-        "relative flex items-center group/sidebar py-2",
+        "relative flex items-center group/sidebar py-2 ",
         open ? "justify-start gap-2 pl-3" : "justify-center gap-0 pl-0",
         className
       )}

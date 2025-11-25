@@ -7,6 +7,7 @@ const page = () => {
     <>
       <Head>
         <title>Create Task | Trainer Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
           name="description"
           content="Create and manage tasks for students at Cyborg Robotics Academy."
@@ -21,10 +22,11 @@ const page = () => {
       <main
         role="main"
         aria-label="Create Task Page"
-        className="min-h-screen bg-white"
+        className="min-h-screen bg-white w-full"
       >
-        {/* TODO: Add better error handling and accessibility improvements. */}
-        <CreateTasks />
+        <div className="container mx-auto px-4">
+          <CreateTasks />
+        </div>
       </main>
     </>
   );

@@ -77,7 +77,7 @@ const StudentDashboard = () => {
   // Show error if PRN doesn't match
   if (prnMatch === false) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden ">
         {/* Animated background elements */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-800/5 rounded-full blur-3xl animate-pulse"></div>
@@ -111,7 +111,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] bg-white -mt-24 pt-24">
+    <div className="min-h-[calc(100vh-6rem)] bg-white md:mt-20  mt-10">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 ">
         {/* Welcome Section */}
         <div className="mb-8 bg-gradient-to-r from-[#991b1b] to-[#991b1b] p-6 rounded-xl shadow-md relative overflow-hidden">
@@ -125,14 +125,24 @@ const StudentDashboard = () => {
                 studentData.imageUrls[0] ? (
                   <Image
                     src={studentData.imageUrls[0]}
-                    alt={studentData?.username || "Student Avatar"}
+                    alt={
+                      studentData?.fullName ||
+                      studentData?.name ||
+                      studentData?.username ||
+                      "Student Avatar"
+                    }
                     width={48}
                     height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="text-white font-bold text-lg">
-                    {(studentData?.username || "S")
+                    {(
+                      studentData?.fullName ||
+                      studentData?.name ||
+                      studentData?.username ||
+                      "S"
+                    )
                       .split(" ")
                       .map((n: string) => n[0])
                       .join("")
@@ -141,7 +151,11 @@ const StudentDashboard = () => {
                 )}
               </div>
               <h1 className="text-3xl font-bold text-white">
-                Welcome , {studentData?.username || "Student"}
+                Welcome ,{" "}
+                {studentData?.fullName ||
+                  studentData?.name ||
+                  studentData?.username ||
+                  "Student"}
               </h1>
             </div>
 

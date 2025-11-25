@@ -295,13 +295,24 @@ const MediaSection = () => {
 
       querySnapshot.forEach((doc) => {
         const studentData = doc.data() as StudentData;
-        prnList.push({
-          prn: studentData.PrnNumber || "",
-          username: studentData.username || "",
-        });
+        // Only add entries that have either a PRN or username/fullName
+        const displayName =
+          studentData.username || (studentData as any).fullName || "";
+        if (studentData.PrnNumber || displayName) {
+          prnList.push({
+            prn: studentData.PrnNumber || "",
+            username: displayName,
+          });
+        }
       });
 
-      setAllPrns(prnList);
+      // Remove duplicates based on PRN
+      const uniquePrnList = prnList.filter(
+        (item, index, self) =>
+          index === self.findIndex((t) => t.prn === item.prn)
+      );
+
+      setAllPrns(uniquePrnList);
     } catch (error) {
       console.error("Error fetching PRN numbers: ", error);
       setError("Failed to fetch PRN numbers. Please try again.");
@@ -314,12 +325,32 @@ const MediaSection = () => {
     setPrnNumber(value);
 
     if (value.trim()) {
-      const filteredSuggestions = allPrns.filter(
-        (suggestion) =>
-          suggestion.prn.toLowerCase().includes(value.toLowerCase()) ||
-          suggestion.username.toLowerCase().includes(value.toLowerCase())
-      );
-      setPrnSuggestions(filteredSuggestions);
+      const lowerCaseValue = value.toLowerCase().trim();
+      const filteredSuggestions = allPrns
+        .filter((suggestion) => {
+          // Check if PRN matches (if PRN exists and is not empty)
+          const hasPrn = suggestion.prn && suggestion.prn.trim() !== "";
+          const prnMatch =
+            hasPrn && suggestion.prn.toLowerCase().includes(lowerCaseValue);
+
+          // Check if username matches (if username exists and is not empty)
+          const hasUsername =
+            suggestion.username && suggestion.username.trim() !== "";
+          const usernameMatch =
+            hasUsername &&
+            suggestion.username.toLowerCase().includes(lowerCaseValue);
+
+          // Return true if either matches
+          return prnMatch || usernameMatch;
+        })
+        .filter(
+          (suggestion) =>
+            (suggestion.prn && suggestion.prn.trim() !== "") ||
+            (suggestion.username && suggestion.username.trim() !== "")
+        ); // Filter out completely empty entries
+
+      // Limit to 10 suggestions to prevent performance issues
+      setPrnSuggestions(filteredSuggestions.slice(0, 10));
     } else {
       setPrnSuggestions([]);
     }
@@ -711,16 +742,16 @@ const MediaSection = () => {
                     {/* PRN Suggestions Dropdown */}
                     {prnSuggestions.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {prnSuggestions.map((suggestion) => (
+                        {prnSuggestions.map((suggestion, index) => (
                           <div
-                            key={suggestion.prn}
+                            key={`${suggestion.prn}-${index}`}
                             onClick={() => handlePrnSelect(suggestion.prn)}
                             className="px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-[#991b1b] cursor-pointer transition-colors duration-200"
                           >
                             <span className="font-medium">
-                              {suggestion.prn}
+                              {suggestion.prn || "N/A"}
                             </span>{" "}
-                            - {suggestion.username}
+                            - {suggestion.username || "N/A"}
                           </div>
                         ))}
                       </div>

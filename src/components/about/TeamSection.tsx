@@ -69,13 +69,13 @@ const teamMembers: TeamMember[] = [
     image: "assets/team/pratima.png",
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
   },
-  {
-    id: "Shrikant",
-    name: "Mr. Shrikant Gaikwad",
-    title: "Full Stack Developer",
-    image: "assets/team/shrikant.png",
-    linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
-  },
+  // {
+  //   id: "Shrikant",
+  //   name: "Mr. Shrikant Gaikwad",
+  //   title: "Full Stack Developer",
+  //   image: "assets/team/shrikant.png",
+  //   linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
+  // },
   {
     id: "Mahvish",
     name: "Ms. Mahvish Fatima",

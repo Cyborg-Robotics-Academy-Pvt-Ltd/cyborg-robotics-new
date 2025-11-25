@@ -42,12 +42,15 @@ interface Task {
   status: "ongoing" | "complete";
   prn?: string;
   username?: string;
+  fullName?: string;
   course?: string;
 }
 
 interface StudentData {
   PrnNumber: string;
   username: string;
+  fullName?: string;
+  name?: string;
   tasks?: Task[];
 }
 
@@ -137,6 +140,10 @@ const CreateTasks = () => {
               ...task,
               prn: studentData.PrnNumber,
               username: studentData.username,
+              fullName:
+                studentData.fullName ||
+                studentData.name ||
+                studentData.username,
             });
           });
         }
@@ -380,7 +387,7 @@ const CreateTasks = () => {
   const groupedTasks = groupTasksByDate(filteredTasks);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-6 md:pt-8  ">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50  mt-4 md:mt-12">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -407,50 +414,52 @@ const CreateTasks = () => {
         }}
       />
 
-      <div className="max-w-full mx-auto bg-white px-4  rounded-xl shadow-xl ">
-        <div className="mb-6 md:mb-8 mt-4 md:mt-2 py-2">
-          <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 flex items-center">
-            <MdDashboard className="mr-2 md:mr-3 text-red-700" size={36} />
-            Task Management Dashboard
+      <div className="max-w-full mx-auto bg-white px-4 py-6 rounded-xl shadow-xl">
+        <div className="mb-6 md:mb-8 mt-2 md:mt-4 py-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 flex items-center">
+            <MdDashboard className="mr-2 md:mr-3 text-red-700" size={24} />
+            <span className="truncate">Task Management Dashboard</span>
           </h1>
-          <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
+          <p className="text-gray-600 mt-2 text-sm sm:text-base md:text-lg font-medium">
             Seamlessly manage student tasks and monitor progress with ease
           </p>
         </div>
 
         {/* Search and Action Buttons */}
-        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center mb-6 gap-4">
-          <div className="w-full md:w-1/2">
+        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center mb-6 gap-4">
+          <div className="w-full lg:w-1/2">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search tasks, students, or courses..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-4 py-2.5 md:py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-sm md:text-base text-gray-700 placeholder-gray-400"
+                className="w-full pl-10 pr-4 py-2 sm:py-2.5 md:py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 text-sm md:text-base text-gray-700 placeholder-gray-400"
               />
-              <div className="absolute left-4 top-3 md:top-3.5 text-gray-400">
+              <div className="absolute left-3 top-2.5 sm:top-3 md:top-3.5 text-gray-400">
                 <Search className="w-4 h-4 md:w-5 md:h-5" />
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 md:gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full lg:w-auto">
             <button
               onClick={sortTasksByDate}
-              className="px-4 md:px-6 py-2.5 md:py-3 bg-white text-gray-700 text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 w-full sm:w-auto"
+              className="px-4 py-2 sm:py-2.5 md:py-3 bg-white text-gray-700 text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 w-full sm:w-auto"
             >
-              Sort by Date ({sortOrder === "asc" ? "↑" : "↓"})
+              <span className="hidden xs:inline">Sort by Date</span>
+              <span className="xs:hidden">Sort</span> (
+              {sortOrder === "asc" ? "↑" : "↓"})
             </button>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 md:px-6 py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full sm:w-auto"
+              className="px-4 py-2 sm:py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full sm:w-auto"
             >
-              <PlusCircle size={18} className="mr-2" />
-              Add New Class
+              <PlusCircle size={16} className="mr-1.5 md:mr-2" />
+              <span className="truncate">Add New Class</span>
             </button>
             <Link href="/student-list" className="w-full sm:w-auto">
-              <button className="px-4 md:px-6 py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full">
-                Student List
+              <button className="px-4 py-2 sm:py-2.5 md:py-3 bg-red-800 text-white text-sm md:text-base font-semibold rounded-xl shadow-sm hover:bg-red-900 hover:shadow-md transition-all duration-300 flex items-center justify-center w-full">
+                <span className="truncate">Student List</span>
               </button>
             </Link>
           </div>
@@ -462,22 +471,22 @@ const CreateTasks = () => {
             <Table>
               <TableHeader className="bg-gray-50">
                 <TableRow>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Student Name
                   </TableHead>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Class
                   </TableHead>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Date & Time
                   </TableHead>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Status
                   </TableHead>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Course
                   </TableHead>
-                  <TableHead className="py-3 md:py-4 px-3 md:px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -485,46 +494,43 @@ const CreateTasks = () => {
               <TableBody>
                 {Object.entries(groupedTasks).map(([date, tasks]) => (
                   <React.Fragment key={date}>
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-gray-500 px-3 md:px-6 py-2 md:py-3 text-sm"
-                      >
-                        {date}
-                      </TableCell>
-                    </TableRow>
                     {tasks.map((task, index) => (
                       <TableRow
                         key={index}
                         className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                         onClick={() => router.push(`/${task.prn}`)}
                       >
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm text-gray-900 font-medium whitespace-nowrap">
-                          {task.username}
-                        </TableCell>
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm text-gray-900 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <MdAssignment
-                              className="mr-2 text-indigo-600 flex-shrink-0"
-                              size={16}
-                            />
-                            <span className="truncate max-w-[150px] md:max-w-[200px]">
-                              {task.task}
-                            </span>
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs md:text-sm text-gray-900 font-medium whitespace-nowrap">
+                          <div className="max-w-[80px] sm:max-w-[100px] md:max-w-[120px] truncate">
+                            {task.fullName ||
+                              task.username ||
+                              task.prn ||
+                              "N/A"}
                           </div>
                         </TableCell>
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm text-gray-600 whitespace-nowrap">
-                          {new Date(task.dateTime).toLocaleString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs md:text-sm text-gray-900 whitespace-nowrap">
+                          <div className="flex items-center max-w-[100px] sm:max-w-[120px] md:max-w-[150px]">
+                            <MdAssignment
+                              className="mr-1 sm:mr-2 text-indigo-600 flex-shrink-0"
+                              size={14}
+                            />
+                            <span className="truncate">{task.task}</span>
+                          </div>
                         </TableCell>
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm whitespace-nowrap">
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs md:text-sm text-gray-600 whitespace-nowrap">
+                          <div className="max-w-[80px] sm:max-w-[100px] md:max-w-[120px] truncate">
+                            {new Date(task.dateTime).toLocaleString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs whitespace-nowrap">
                           <span
-                            className={`px-2 md:px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
+                            className={`px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 inline-flex text-[8px] sm:text-[10px] md:text-xs font-semibold rounded-full ${
                               task.status === "complete"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-yellow-100 text-yellow-800"
@@ -533,22 +539,22 @@ const CreateTasks = () => {
                             {task.status}
                           </span>
                         </TableCell>
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm text-gray-600 whitespace-nowrap">
-                          <span className="truncate max-w-[100px] md:max-w-[150px] block">
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs md:text-sm text-gray-600 whitespace-nowrap">
+                          <span className="truncate max-w-[60px] sm:max-w-[80px] md:max-w-[100px] block">
                             {task.course}
                           </span>
                         </TableCell>
-                        <TableCell className="py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm whitespace-nowrap">
-                          <div className="flex gap-2 md:gap-3">
+                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs whitespace-nowrap">
+                          <div className="flex gap-1 sm:gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleEdit(task, index);
                               }}
-                              className="p-1.5 md:p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-[5px] transition-colors duration-200"
+                              className="p-1 sm:p-1.5 md:p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-[5px] transition-colors duration-200"
                               title="Edit Task"
                             >
-                              <Edit size={16} />
+                              <Edit size={14} />
                             </button>
                             <button
                               onClick={(e) => {
@@ -561,10 +567,10 @@ const CreateTasks = () => {
                                   handleDelete(task);
                                 }
                               }}
-                              className="p-1.5 md:p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-[5px] transition-colors duration-200"
+                              className="p-1 sm:p-1.5 md:p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-[5px] transition-colors duration-200"
                               title="Delete Task"
                             >
-                              <Trash size={16} />
+                              <Trash size={14} />
                             </button>
                           </div>
                         </TableCell>
@@ -580,21 +586,27 @@ const CreateTasks = () => {
 
       {/* Modal for Adding/Editing Tasks */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] transition-opacity duration-300 overflow-y-auto p-2 md:p-4">
-          <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] transition-opacity duration-300 overflow-y-auto p-2 sm:p-4">
+          <div className="relative min-h-[calc(100vh-2rem)] sm:min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-4 sm:py-6 md:py-12 w-full">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md sm:max-w-lg mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
               {/* Modal Header */}
-              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-50 to-red-100">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center">
+              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 sm:px-6 py-3 bg-gradient-to-r from-red-50 to-red-100">
+                <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 flex items-center">
                   {editingTask ? (
                     <>
-                      <MdEditSquare className="mr-2 text-red-700" size={20} />
-                      Edit Task
+                      <MdEditSquare
+                        className="mr-1.5 sm:mr-2 text-red-700"
+                        size={16}
+                      />
+                      <span className="truncate">Edit Task</span>
                     </>
                   ) : (
                     <>
-                      <MdAdd className="mr-2 text-red-700" size={20} />
-                      Add New Task
+                      <MdAdd
+                        className="mr-1.5 sm:mr-2 text-red-700"
+                        size={16}
+                      />
+                      <span className="truncate">Add New Task</span>
                     </>
                   )}
                 </h2>
@@ -604,36 +616,36 @@ const CreateTasks = () => {
                     setEditingTask(null);
                     resetForm();
                   }}
-                  className="text-gray-500 hover:text-red-700 p-1.5 md:p-2 rounded-full hover:bg-red-50 transition-colors duration-200"
+                  className="text-gray-500 hover:text-red-700 p-1 sm:p-1.5 md:p-2 rounded-full hover:bg-red-50 transition-colors duration-200"
                   aria-label="Close modal"
                 >
-                  <MdClose size={20} />
+                  <MdClose size={18} />
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="px-4 md:px-6 py-4 md:py-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
-                <div className="space-y-4 md:space-y-6">
+              <div className="px-4 sm:px-6 py-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                <div className="space-y-4">
                   {/* Form fields with responsive styles */}
                   <div className="form-group relative">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
                       PRN Number
                     </label>
                     <input
                       type="text"
                       value={prn}
                       onChange={handlePrnChange}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
+                      className="w-full px-3 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
                       placeholder="Enter student PRN"
                     />
                     {/* PRN suggestions dropdown */}
                     {prnSuggestions.length > 0 && (
-                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 sm:max-h-48 overflow-y-auto">
                         {prnSuggestions.map((suggestion) => (
                           <div
                             key={suggestion.prn}
                             onClick={() => handlePrnSelect(suggestion.prn)}
-                            className="px-3 md:px-4 py-2.5 md:py-3 text-sm hover:bg-red-50 hover:text-red-700 cursor-pointer transition-colors duration-200 border-b last:border-b-0"
+                            className="px-3 py-2 text-xs sm:text-sm hover:bg-red-50 hover:text-red-700 cursor-pointer transition-colors duration-200 border-b last:border-b-0"
                           >
                             <span className="font-medium">
                               {suggestion.prn}
@@ -648,27 +660,27 @@ const CreateTasks = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="form-group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
                         Date and Time
                       </label>
                       <input
                         type="datetime-local"
                         value={dateTime}
                         onChange={handleDateTimeChange}
-                        className="w-full px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
+                        className="w-full px-3 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
                       />
                     </div>
 
                     <div className="form-group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
                         Status
                       </label>
                       <select
                         value={status}
                         onChange={handleStatusChange}
-                        className="w-full px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
+                        className="w-full px-3 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
                       >
                         <option value="complete">Complete</option>
                         <option value="ongoing">Ongoing</option>
@@ -677,13 +689,13 @@ const CreateTasks = () => {
                   </div>
 
                   <div className="form-group">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
                       Course
                     </label>
                     <select
                       value={course}
                       onChange={handleCourseChange}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
+                      className="w-full px-3 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
                     >
                       <option value="">Select Course</option>
                       {courses.map((course) => (
@@ -695,14 +707,14 @@ const CreateTasks = () => {
                   </div>
 
                   <div className="form-group">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">
                       Task Description
                     </label>
                     <input
                       type="text"
                       value={task}
                       onChange={handleTaskChange}
-                      className="w-full px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
+                      className="w-full px-3 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-red-700 hover:border-red-700 transition-all duration-200"
                       placeholder="Enter task description"
                     />
                   </div>
@@ -710,30 +722,30 @@ const CreateTasks = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 bg-gray-50 px-4 md:px-6 py-3 md:py-4 flex justify-end space-x-3 border-t">
+              <div className="sticky bottom-0 bg-gray-50 px-4 sm:px-6 py-3 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t">
                 <button
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingTask(null);
                     resetForm();
                   }}
-                  className="px-4 md:px-5 py-2 md:py-2.5 bg-white border border-gray-200 text-gray-700 text-sm md:text-base rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold"
+                  className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="px-4 md:px-5 py-2 md:py-2.5 bg-red-700 text-white text-sm md:text-base rounded-xl hover:bg-red-800 transition-all duration-200 font-semibold flex items-center"
+                  className="px-4 py-2 bg-red-700 text-white text-xs sm:text-sm rounded-xl hover:bg-red-800 transition-all duration-200 font-semibold flex items-center justify-center w-full sm:w-auto"
                 >
                   {editingTask ? (
                     <>
-                      <MdEditSquare className="mr-1.5 md:mr-2" size={16} />
-                      Update Task
+                      <MdEditSquare className="mr-1" size={14} />
+                      <span>Update Task</span>
                     </>
                   ) : (
                     <>
-                      <MdAdd className="mr-1.5 md:mr-2" size={16} />
-                      Add Task
+                      <MdAdd className="mr-1" size={14} />
+                      <span>Add Task</span>
                     </>
                   )}
                 </button>
