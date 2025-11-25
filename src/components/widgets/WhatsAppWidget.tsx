@@ -62,7 +62,7 @@ export default function WhatsAppWidget({
   }, [resolvedPhone, welcomeMessage]);
 
   return (
-    <div className="fixed bottom-4 right-8 md:right-32 z-50 flex flex-col items-end">
+    <div className="fixed bottom-20 right-8 md:right-4 z-50 flex flex-col items-end">
       <style jsx>{`
         @keyframes pulse {
           0% {

@@ -33,17 +33,17 @@ const ScrollButton = () => {
   return (
     <button
       onClick={handleButtonClick}
-      className="fixed z-50 bottom-20 md:bottom-4 md:right-14 right-8 rounded-full bg-white p-2 shadow-lg flex items-center justify-center"
+      className="fixed z-50 bottom-20 md:bottom-4 md:right-20 right-8 rounded-full bg-white p-2 shadow-lg flex items-center justify-center"
       style={{
-        width: "60px",
-        height: "60px",
+        width: "50px",
+        height: "50px",
         position: "fixed",
       }}
     >
       <svg
         className="absolute top-0 left-0"
-        width="60"
-        height="60"
+        width="50"
+        height="50"
         viewBox="0 0 60 60"
       >
         <circle

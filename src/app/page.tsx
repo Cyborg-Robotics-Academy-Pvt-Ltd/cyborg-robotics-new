@@ -2,7 +2,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import HomePage from "@/components/home/HomePage";
-import { ScrollButton, WhatsAppWidget } from "@/components/widgets";
+import { ChatBot, ScrollButton, WhatsAppWidget } from "@/components/widgets";
 import MouseFollower from "@/components/widgets/MouseFollower";
 
 const Home = () => {
@@ -14,6 +14,7 @@ const Home = () => {
       </div>
       <WhatsAppWidget />
       <ScrollButton />
+      <ChatBot />
     </>
   );
 };
