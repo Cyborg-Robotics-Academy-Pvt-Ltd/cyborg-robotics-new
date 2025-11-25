@@ -195,14 +195,14 @@ export default function Header() {
 
   // Navigation items for main navbar
   const navItems = [
-    {
-      id: "why-learn-robotics",
-      label: "Why Robotics",
-      href: "#why-learn-robotics",
-    },
     { id: "courses", label: "Courses", href: "/all-courses" },
+    {
+      id: "about-us",
+      label: "About Us",
+      href: "/about-us",
+    },
 
-    { id: "gallery", label: "Photo Hub", href: "#gallery" },
+    { id: "gallery", label: "Photo Hub", href: "/gallery/photos" },
     {
       id: "ftc-competition",
       label: "FTC Competition",
