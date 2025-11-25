@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CourseCategoryCarouselProps {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -16,6 +16,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   const [itemsPerView, setItemsPerView] = useState(3);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // Convert children to array for easier manipulation
@@ -25,12 +26,18 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   // Calculate how many items we can show based on screen size
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setItemsPerView(1);
+      if (window.innerWidth < 480) {
+        setItemsPerView(1); // Mobile portrait
+      } else if (window.innerWidth < 768) {
+        setItemsPerView(1); // Mobile landscape / small tablets
       } else if (window.innerWidth < 1024) {
-        setItemsPerView(2);
+        setItemsPerView(2); // Tablets
+      } else if (window.innerWidth < 1280) {
+        setItemsPerView(3); // Laptop
+      } else if (window.innerWidth < 1536) {
+        setItemsPerView(3); // Desktop
       } else {
-        setItemsPerView(3);
+        setItemsPerView(4); // Large desktop (2xl+)
       }
     };
 
@@ -40,15 +47,27 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   }, []);
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex + itemsPerView >= totalItems ? 0 : prevIndex + 1
-    );
+    if (isAnimating) return;
+    setIsAnimating(true);
+
+    setCurrentIndex((prevIndex) => {
+      const maxIndex = totalItems - itemsPerView;
+      return prevIndex >= maxIndex ? 0 : prevIndex + 1;
+    });
+
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? Math.max(0, totalItems - itemsPerView) : prevIndex - 1
-    );
+    if (isAnimating) return;
+    setIsAnimating(true);
+
+    setCurrentIndex((prevIndex) => {
+      const maxIndex = totalItems - itemsPerView;
+      return prevIndex === 0 ? maxIndex : prevIndex - 1;
+    });
+
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   // Touch handlers for swipe gestures
@@ -78,72 +97,169 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
     setTouchEnd(0);
   };
 
-  // Calculate visible items
-  const visibleItems = items.slice(currentIndex, currentIndex + itemsPerView);
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowLeft") {
+      prevSlide();
+    } else if (e.key === "ArrowRight") {
+      nextSlide();
+    }
+  };
 
   // Show navigation buttons only if there are more items than can be displayed
   const showNavigation = totalItems > itemsPerView;
+  const maxIndex = totalItems - itemsPerView;
+  const isAtStart = currentIndex === 0;
+  const isAtEnd = currentIndex >= maxIndex;
+
+  // Calculate total pages for dots
+  const totalPages = Math.ceil(totalItems / itemsPerView);
+  const currentPage = Math.floor(currentIndex / itemsPerView);
 
   return (
     <div className="mb-12">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      {/* Header with title and navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">
+            {title}
+          </h2>
+        </div>
+
         {showNavigation && (
-          <div className="flex space-x-1.5">
-            <button
-              onClick={prevSlide}
-              className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              aria-label="Previous courses"
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              aria-label="Next courses"
-            >
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-            </button>
+          <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
+            {/* Desktop navigation buttons */}
+            <div className="hidden sm:flex space-x-2">
+              <button
+                onClick={prevSlide}
+                disabled={isAtStart}
+                className="bg-white rounded-full p-1.5 md:p-2 shadow-md border border-gray-200 hover:bg-red-50 hover:border-red-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all duration-200 group"
+                aria-label="Previous courses"
+              >
+                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
+              </button>
+              <button
+                onClick={nextSlide}
+                disabled={isAtEnd}
+                className="bg-white rounded-full p-1.5 md:p-2 shadow-md border border-gray-200 hover:bg-red-50 hover:border-red-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all duration-200 group"
+                aria-label="Next courses"
+              >
+                <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
+              </button>
+            </div>
+
+            {/* Course counter */}
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 bg-gray-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap">
+              <span className="font-semibold text-gray-900">
+                {currentIndex + 1}-
+                {Math.min(currentIndex + itemsPerView, totalItems)}
+              </span>
+              <span>/</span>
+              <span>{totalItems}</span>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="relative">
+      {/* Carousel container */}
+      <div
+        className="relative"
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="region"
+        aria-label="Course carousel"
+      >
         <div
-          className="overflow-hidden"
+          className="overflow-hidden rounded-lg"
           ref={carouselRef}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div
-            className="flex transition-transform duration-300 ease-in-out gap-4"
+            className="flex transition-transform duration-500 ease-out gap-3 sm:gap-4 md:gap-6"
             style={{
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
             }}
           >
-            {items}
+            {items.map((item, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0"
+                style={{
+                  width:
+                    itemsPerView === 1
+                      ? "100%"
+                      : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 12 : window.innerWidth < 1024 ? 16 : 24)) / itemsPerView}px)`,
+                }}
+              >
+                {item}
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Mobile navigation arrows overlay */}
+        {showNavigation && (
+          <div className="sm:hidden">
+            {!isAtStart && (
+              <button
+                onClick={prevSlide}
+                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-1.5 shadow-xl border border-gray-300 hover:bg-white active:scale-95 transition-all duration-200 z-10"
+                aria-label="Previous courses"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-800" />
+              </button>
+            )}
+            {!isAtEnd && (
+              <button
+                onClick={nextSlide}
+                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-1.5 shadow-xl border border-gray-300 hover:bg-white active:scale-95 transition-all duration-200 z-10"
+                aria-label="Next courses"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-800" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Dots indicator */}
-      {showNavigation && (
-        <div className="flex justify-center mt-4 space-x-1.5">
-          {Array.from({ length: Math.ceil(totalItems / itemsPerView) }).map(
-            (_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index * itemsPerView)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  Math.floor(currentIndex / itemsPerView) === index
-                    ? "bg-red-700 w-4"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            )
-          )}
+      {/* Enhanced dots indicator */}
+      {showNavigation && totalPages > 1 && (
+        <div className="flex justify-center items-center mt-4 sm:mt-6 space-x-1.5 sm:space-x-2">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                if (!isAnimating) {
+                  setIsAnimating(true);
+                  setCurrentIndex(index * itemsPerView);
+                  setTimeout(() => setIsAnimating(false), 300);
+                }
+              }}
+              className={`transition-all duration-300 rounded-full ${
+                currentPage === index
+                  ? "bg-red-600 w-6 sm:w-8 h-2 sm:h-2.5 shadow-md"
+                  : "bg-gray-300 w-2 sm:w-2.5 h-2 sm:h-2.5 hover:bg-gray-400 hover:w-3 sm:hover:w-4"
+              }`}
+              aria-label={`Go to page ${index + 1}`}
+              aria-current={currentPage === index ? "true" : "false"}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Progress bar (alternative to dots for many items) */}
+      {showNavigation && totalPages > 8 && (
+        <div className="mt-3 sm:mt-4 px-1 sm:px-2">
+          <div className="h-0.5 sm:h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-red-600 rounded-full transition-all duration-300"
+              style={{
+                width: `${((currentIndex + itemsPerView) / totalItems) * 100}%`,
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

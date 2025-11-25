@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,6 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
   category,
   imagePath,
 }) => {
-  // Use placeholder image if imagePath is not provided or is empty
   const [imgSrc, setImgSrc] = useState(
     imagePath && imagePath.trim() !== ""
       ? imagePath
@@ -30,84 +29,118 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
   const [hasError, setHasError] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Handle image loading error
-  const handleImageError = () => {
+  const handleImageError = useCallback(() => {
     if (!hasError) {
       setHasError(true);
       setImgSrc("/assets/placeholder-image.png");
+      setIsImageLoading(false);
     }
-  };
+  }, [hasError]);
 
-  // Touch handlers for swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleImageLoad = useCallback(() => {
+    setIsImageLoading(false);
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50; // Minimum swipe distance
+    const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
     if (isLeftSwipe || isRightSwipe) {
-      // Handle swipe navigation if this card is part of a carousel
-      // For now, we'll just log the swipe direction
-      console.log(`Swiped ${isLeftSwipe ? "left" : "right"} on card: ${title}`);
+      if (cardRef.current) {
+        const swipeEvent = new CustomEvent("cardSwipe", {
+          bubbles: true,
+          detail: { direction: isLeftSwipe ? "left" : "right", title },
+        });
+        cardRef.current.dispatchEvent(swipeEvent);
+      }
 
-      // Reset touch positions
       setTouchStart(0);
       setTouchEnd(0);
     }
-  };
+  }, [touchStart, touchEnd, title]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      return;
+    }
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const link = cardRef.current?.querySelector("a");
+      if (link) {
+        link.click();
+      }
+    }
+  }, []);
+
+  const imageProps = useMemo(
+    () => ({
+      src: imgSrc,
+      alt: `${title} course image`,
+      fill: true,
+      className: `object-cover transition-all duration-500 ease-out group-hover:scale-110 ${isImageLoading ? "blur-sm" : "blur-0"}`,
+      sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+      onError: handleImageError,
+      onLoad: handleImageLoad,
+      unoptimized: hasError,
+    }),
+    [imgSrc, title, isImageLoading, handleImageError, handleImageLoad, hasError]
+  );
 
   return (
     <div
       ref={cardRef}
-      className="bg-white  mx-4 md:mx-2 rounded-3xl shadow-md hover:shadow-lg transition-all duration-300 p-5 border border-gray-100 hover:border-red-200 group min-w-[260px] max-w-[300px] h-full flex flex-col overflow-hidden"
+      className="bg-white mx-4 md:mx-2 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-red-300 group min-w-[260px] max-w-[300px] h-full flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 hover:-translate-y-2 backdrop-blur-sm"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="article"
+      aria-label={`${title} course card`}
     >
-      <div className="mb-3">
-        <div className="relative w-full h-36 rounded-lg overflow-hidden">
-          <Image
-            src={imgSrc}
-            alt={`${title} course image`}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onError={handleImageError}
-            unoptimized={hasError} // Skip optimization for fallback image
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="mb-4">
+        <div className="relative w-full h-40 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-100 group-hover:ring-red-200 transition-all duration-300">
+          <Image {...imageProps} />
+          {isImageLoading && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
       </div>
 
-      <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-red-700 line-clamp-2">
+      <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2 transition-colors duration-300">
         {title}
       </h3>
 
-      <p className="text-gray-600 text-xs mb-3 flex-grow line-clamp-2">
+      <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2 leading-relaxed">
         {description}
       </p>
 
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Badge
           variant="secondary"
-          className="text-xs py-0.5 px-2 rounded-full bg-red-50 text-red-700 hover:bg-red-100"
+          className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 transition-all duration-300 border border-red-100 font-medium shadow-sm"
         >
           Age: {ageRange}
         </Badge>
         <Badge
           variant="outline"
-          className="text-xs py-0.5 px-2 rounded-full border-red-200 text-red-700"
+          className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 font-medium shadow-sm"
         >
           {category}
         </Badge>
@@ -115,12 +148,13 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
 
       <Link
         href={`/all-courses/${slug}`}
-        className="mt-auto inline-block bg-red-800 text-white px-4 py-[10px] rounded-full hover:bg-red-700 transition-colors text-center text-sm font-semibold shadow hover:shadow-md"
+        className="mt-auto inline-block bg-gradient-to-r from-red-800 to-red-700 text-white px-6 py-3 rounded-full hover:from-red-700 hover:to-red-600 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-105 active:scale-95"
+        aria-label={`View details for ${title} course`}
       >
-        View Details
+        Explore Course
       </Link>
     </div>
   );
 };
 
-export default CourseCarouselCard;
+export default React.memo(CourseCarouselCard);
