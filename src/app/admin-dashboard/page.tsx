@@ -351,14 +351,14 @@ const AdminDashboard = () => {
       <main
         role="main"
         aria-label="Admin Dashboard"
-        className={`min-h-[calc(100vh-6rem)] -mt-24 pt-24 ${theme.background}`}
+        className={`min-h-[calc(100vh-6rem)] -mt-16 pt-24 ${theme.background}`}
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-30 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[length:20px_20px]"></div>
         </div>
 
-        <div className="relative w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 ">
+        <div className="relative w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 md:mt-10 ">
           {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}

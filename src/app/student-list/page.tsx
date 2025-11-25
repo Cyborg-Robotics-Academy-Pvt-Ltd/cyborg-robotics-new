@@ -143,7 +143,12 @@ const Page = () => {
         return {
           id: doc.id,
           PrnNumber: data.PrnNumber || "",
-          username: data.username || data.email?.split("@")[0] || "",
+          username:
+            data.name ||
+            data.fullName ||
+            data.username ||
+            data.email?.split("@")[0] ||
+            "",
           email: data.email || "",
           completedTasks: completedTasksCount,
           ongoingTasks: ongoingTasksCount,
@@ -559,7 +564,7 @@ const Page = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
-      <header className="bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-xl -mt-10 md:mt-1 ">
+      <header className="bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-xl md:mt-16  mt-10">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
@@ -582,8 +587,8 @@ const Page = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between md:mb-12">
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl">
               Student Record
@@ -592,7 +597,7 @@ const Page = () => {
               Manage and view all registered students in the system
             </p>
           </div>
-          <div className="mt-6 sm:mt-0 sm:ml-6">
+          <div className="mt-3 md:mt-6 sm:mt-0 sm:ml-6">
             <button
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white rounded-xl shadow-lg text-base font-semibold uppercase tracking-wide hover:scale-105 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#991b1b]"
               onClick={handleExport}
@@ -604,7 +609,7 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 mb-12">
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-4 md:mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
               <div className="relative rounded-xl shadow-sm">

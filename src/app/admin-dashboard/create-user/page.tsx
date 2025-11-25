@@ -128,33 +128,34 @@ const CreateUserPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 ">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <User className="text-red-800" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <User className="text-red-800 flex-shrink-0" />
                 Create New User
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 text-sm sm:text-base">
                 Add new users to the system with appropriate roles and
                 permissions
               </p>
             </div>
             <button
               onClick={() => router.push("/admin-dashboard")}
-              className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
+              className="px-3 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2 whitespace-nowrap text-sm sm:px-4 sm:py-2"
             >
               <UserCog className="w-4 h-4" />
-              Back to Dashboard
+              <span className="hidden xs:inline">Back to Dashboard</span>
+              <span className="xs:hidden">Back</span>
             </button>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-xl shadow-md p-8">
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
             <div>
@@ -174,7 +175,7 @@ const CreateUserPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800 text-base"
                   placeholder="Enter full name"
                 />
               </div>
@@ -198,7 +199,7 @@ const CreateUserPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800 text-base"
                   placeholder="Enter email address"
                 />
               </div>
@@ -209,7 +210,7 @@ const CreateUserPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Role *
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   {
                     value: "student",
@@ -236,7 +237,7 @@ const CreateUserPage = () => {
                       key={role.value}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
                         formData.role === role.value
-                          ? "border-red-800 ring-2 ring-blue-200"
+                          ? "border-red-800 ring-2 ring-red-200"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() =>
@@ -266,7 +267,7 @@ const CreateUserPage = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-800 focus:border-red-800 text-base"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -276,7 +277,7 @@ const CreateUserPage = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center p-4 bg-red-50 rounded-lg text-red-700">
+              <div className="flex items-center p-4 bg-red-50 rounded-lg text-red-700 text-sm">
                 <XCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                 <span>{error}</span>
               </div>
@@ -322,44 +323,6 @@ const CreateUserPage = () => {
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Info Section */}
-        <div className="mt-8 bg-red-800 rounded-xl p-6">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <Eye className="h-5 w-5 text-white" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-white">
-                User Creation Information
-              </h3>
-              <div className="mt-2 text-sm text-white">
-                <p>
-                  When you create a user, they will be added to the appropriate
-                  collection in Firestore:
-                </p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>
-                    <span className="font-medium">Students</span> - Added to the
-                    "students" collection
-                  </li>
-                  <li>
-                    <span className="font-medium">Trainers</span> - Added to the
-                    "trainers" collection
-                  </li>
-                  <li>
-                    <span className="font-medium">Administrators</span> - Added
-                    to the "admins" collection
-                  </li>
-                </ul>
-                <p className="mt-2">
-                  Users will need to sign in with their email and password to
-                  access the system.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

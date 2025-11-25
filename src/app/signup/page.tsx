@@ -199,11 +199,11 @@ const SignUpPage = () => {
       localStorage.setItem("userRole", "student");
 
       toast.success(
-        "Account created successfully! Please check your email for verification."
+        "Account created successfully! Please check your email for verification. Once fees processing is done, you can access your dashboard."
       );
 
-      // Redirect to dashboard
-      router.push("/student-dashboard");
+      // Don't redirect immediately, let user see the success message
+      // router.push("/student-dashboard");
     } catch (error: any) {
       console.error("Signup error:", error);
       let errorMessage = "Failed to create account. Please try again.";
@@ -636,6 +636,7 @@ const SignUpPage = () => {
                           value={formData.fullName}
                           onChange={handleChange}
                           placeholder="Enter your full name"
+                          required
                           className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.fullName ? "border-red-500" : ""}`}
                         />
                       </div>
@@ -676,6 +677,7 @@ const SignUpPage = () => {
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="Enter your email address"
+                          required
                           className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.email ? "border-red-500" : ""}`}
                         />
                       </div>
@@ -716,6 +718,7 @@ const SignUpPage = () => {
                           value={formData.grade}
                           onChange={handleChange}
                           placeholder="e.g., Grade 5"
+                          required
                           className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.grade ? "border-red-500" : ""}`}
                         />
                       </div>
@@ -756,6 +759,7 @@ const SignUpPage = () => {
                           value={formData.password}
                           onChange={handleChange}
                           placeholder="Create a password"
+                          required
                           className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.password ? "border-red-500" : ""}`}
                         />
                         <button
@@ -807,6 +811,7 @@ const SignUpPage = () => {
                           value={formData.confirmPassword}
                           onChange={handleChange}
                           placeholder="Confirm your password"
+                          required
                           className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.confirmPassword ? "border-red-500" : ""}`}
                         />
                         <button
