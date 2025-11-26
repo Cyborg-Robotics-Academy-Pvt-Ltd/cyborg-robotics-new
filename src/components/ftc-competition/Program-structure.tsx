@@ -66,7 +66,7 @@ export function ProgramStructure() {
       id="program-structure"
       className="w-full  bg-white relative overflow-hidden"
     >
-      <div className="container px-4 md:px-6 space-y-10">
+      <div className="container px-4 md:px-6 space-y-4">
         {/* Header */}
         <div ref={ref} className="text-center space-y-4">
           <div className="animate-fade-in">

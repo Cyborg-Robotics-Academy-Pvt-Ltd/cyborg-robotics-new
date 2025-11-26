@@ -26,7 +26,7 @@ const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
   const [dragStart, setDragStart] = useState(0);
   const modalContentRef = useRef<HTMLDivElement>(null);
 
-  // Template images array with id, title, and image
+  // Template images array with id, title and image
   const templateImages: Template[] = [
     {
       id: "template-1",

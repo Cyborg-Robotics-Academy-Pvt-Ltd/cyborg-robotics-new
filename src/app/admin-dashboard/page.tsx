@@ -233,7 +233,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Access Control",
-      description: "Manage user roles, permissions, and access levels",
+      description: "Manage user roles, permissions and access levels",
       href: "/admin-dashboard/access-control",
       icon: Shield,
       color: "indigo",
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
         <title>Admin Dashboard | Cyborg Robotics Academy</title>
         <meta
           name="description"
-          content="Admin dashboard for managing users, courses, tasks, and analytics at Cyborg Robotics Academy."
+          content="Admin dashboard for managing users, courses, tasks and analytics at Cyborg Robotics Academy."
         />
         <meta
           property="og:title"
@@ -343,7 +343,7 @@ const AdminDashboard = () => {
         />
         <meta
           property="og:description"
-          content="Admin dashboard for managing users, courses, tasks, and analytics at Cyborg Robotics Academy."
+          content="Admin dashboard for managing users, courses, tasks and analytics at Cyborg Robotics Academy."
         />
         <meta property="og:type" content="website" />
       </Head>

@@ -20,7 +20,7 @@ export const competitionsData: CompetitionData[] = [
   {
     id: "iro-competition",
     title: "International Robot Olympiad (IRO)",
-    description: "A prestigious international robotics competition that challenges students to design, build, and program robots to complete various tasks and missions.",
+    description: "A prestigious international robotics competition that challenges students to design, build and program robots to complete various tasks and missions.",
     category: "International Robotics",
     skills: ["Robot Design", "Programming", "Problem Solving", "Teamwork", "Innovation"],
     imageUrl: "https://images.unsplash.com/photo-1518314916381-77a37c2a49ae?w=400&h=300&fit=crop&q=75",
@@ -144,7 +144,7 @@ export const competitionsData: CompetitionData[] = [
   {
     id: "robocup-junior",
     title: "RoboCup Junior",
-    description: "Educational robotics competition for young students to learn about robotics and artificial intelligence through soccer, rescue, and dance challenges.",
+    description: "Educational robotics competition for young students to learn about robotics and artificial intelligence through soccer, rescue and dance challenges.",
     category: "RoboCup Programs",
     skills: ["AI Programming", "Robot Soccer", "Rescue Robotics", "Performance Arts", "Research"],
     imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop&q=75",
@@ -169,7 +169,7 @@ export const competitionsData: CompetitionData[] = [
   {
     id: "ftc-competition",
     title: "FTC Competition",
-    description: "FIRST Tech Challenge (FTC) is a robotics competition for students in grades 7-12 to design, build, and program robots to compete in alliance formats.",
+    description: "FIRST Tech Challenge (FTC) is a robotics competition for students in grades 7-12 to design, build and program robots to compete in alliance formats.",
     category: "FIRST Programs",
     skills: ["Robot Design", "Programming", "Engineering", "Strategy", "Teamwork"],
     imageUrl: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=400&h=300&fit=crop&q=75",

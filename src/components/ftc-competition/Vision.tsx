@@ -85,21 +85,9 @@ export function Vision() {
 
             <motion.p className="max-w-3xl text-lg md:text-xl text-gray-600 leading-relaxed mx-auto">
               At <strong className="text-gray-800">Cyborg Robotics</strong>, we
-              empower students to become confident, creative, and future-ready
+              empower students to become confident, creative and future-ready
               tech innovators.
             </motion.p>
-
-            <motion.div className="max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 border border-gray-200 shadow-sm">
-                <ChevronRight className="h-4 w-4 text-red-500" />
-                <p className="text-base md:text-lg text-gray-700 italic">
-                  Aligned with our academy mission:
-                  <strong className="text-red-600 block mt-1">
-                    “Unlock potential through practical, engaging learning.”
-                  </strong>
-                </p>
-              </div>
-            </motion.div>
           </motion.div>
 
           {/* Pillars Grid */}

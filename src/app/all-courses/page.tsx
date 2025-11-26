@@ -76,10 +76,10 @@ const AllCoursesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="px-4 sm:px-6 lg:px-8">
         {/* Header section */}
-        <div className="text-center mb-10 mt-4">
+        <div className="text-center mb-6 mt-4">
           <h1 className="text-4xl md:text-5xl gradient-text font-bold text-gray-900 mb-4">
             Our Courses
           </h1>
@@ -90,7 +90,7 @@ const AllCoursesPage = () => {
         </div>
 
         {/* Search + Filter bar - Enhanced */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-6">
             <Filter className="h-5 w-5 text-red-600" />
             <h2 className="text-lg font-semibold text-gray-900">
@@ -258,7 +258,7 @@ const AllCoursesPage = () => {
         </div>
 
         {/* Results count - Enhanced */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <p className="text-base text-gray-600">
             Showing{" "}
             <span className="font-bold text-gray-900">
@@ -281,7 +281,7 @@ const AllCoursesPage = () => {
         {/* Category carousels */}
         {Object.keys(coursesByCategory).length > 0 ? (
           Object.entries(coursesByCategory).map(([category, courses]) => (
-            <div key={category} id={category} className="mb-12">
+            <div key={category} id={category} className="mb-8">
               <CourseCategoryCarousel
                 title={
                   <div className="flex items-center gap-3">
@@ -296,7 +296,7 @@ const AllCoursesPage = () => {
                 }
               >
                 {courses.map((course) => (
-                  <div key={course.slug} className="flex-shrink-0 mb-4">
+                  <div key={course.slug} className="flex-shrink-0 mb-2">
                     <CourseCarouselCard
                       slug={course.slug}
                       title={course.title}

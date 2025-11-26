@@ -104,7 +104,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="bg-white mx-4 md:mx-2 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-red-300 group min-w-[260px] max-w-[300px] h-full flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 hover:-translate-y-2 backdrop-blur-sm"
+      className="bg-white mx-2 md:mx-1 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 p-4 border border-gray-100 hover:border-red-300 group min-w-[240px] max-w-[280px] h-full flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 hover:-translate-y-2 backdrop-blur-sm"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -113,8 +113,8 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
       role="article"
       aria-label={`${title} course card`}
     >
-      <div className="mb-4">
-        <div className="relative w-full h-40 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-100 group-hover:ring-red-200 transition-all duration-300">
+      <div className="mb-3">
+        <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-100 group-hover:ring-red-200 transition-all duration-300">
           <Image {...imageProps} />
           {isImageLoading && (
             <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl" />
@@ -123,15 +123,15 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
         </div>
       </div>
 
-      <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2 transition-colors duration-300">
+      <h3 className="text-base font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2 transition-colors duration-300">
         {title}
       </h3>
 
-      <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2 leading-relaxed">
+      <p className="text-gray-600 text-sm mb-3 flex-grow line-clamp-2 leading-relaxed">
         {description}
       </p>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-1 mb-3">
         <Badge
           variant="secondary"
           className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 transition-all duration-300 border border-red-100 font-medium shadow-sm"
@@ -148,7 +148,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
 
       <Link
         href={`/all-courses/${slug}`}
-        className="mt-auto inline-block bg-gradient-to-r from-red-800 to-red-700 text-white px-6 py-3 rounded-full hover:from-red-700 hover:to-red-600 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-105 active:scale-95"
+        className="mt-4 inline-block bg-gradient-to-r from-red-800 to-red-700 text-white px-5 py-2 rounded-full hover:from-red-700 hover:to-red-600 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-105 active:scale-95"
         aria-label={`View details for ${title} course`}
       >
         Explore Course

@@ -65,7 +65,7 @@ export function About() {
   return (
     <section
       id="about-ftc"
-      className="w-full py-12 lg:py-4 bg-white to-white overflow-hidden"
+      className="w-full py-2 lg:py-4 bg-white to-white overflow-hidden"
     >
       <div className="container px-4 md:px-6">
         <motion.div
@@ -73,19 +73,14 @@ export function About() {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid gap-8 lg:gap-12 lg:grid-cols-2 items-center"
+          className="grid  lg:gap-12 lg:grid-cols-2 items-center"
         >
           {/* Left Content */}
           <motion.div
             id="about-ftc"
-            className="space-y-4"
+            className="space-y-4 mt-10"
             variants={itemVariants}
           >
-            <motion.div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-4 py-1 text-xs font-bold text-white border border-red-200 shadow-lg ">
-              <Sparkles className="h-5 w-5 " />
-              <span>official training partner of FTC</span>
-            </motion.div>
-
             <motion.h2
               variants={itemVariants}
               className="font-headline text-2xl sm:text-xl md:text-3xl font-black tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-700"

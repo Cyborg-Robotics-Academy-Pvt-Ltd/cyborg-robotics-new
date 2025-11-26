@@ -34,11 +34,9 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
         } else if (window.innerWidth < 1024) {
           setItemsPerView(2); // Tablets
         } else if (window.innerWidth < 1280) {
-          setItemsPerView(3); // Laptop
-        } else if (window.innerWidth < 1536) {
-          setItemsPerView(3); // Desktop
+          setItemsPerView(4); // Laptop
         } else {
-          setItemsPerView(4); // Large desktop (2xl+)
+          setItemsPerView(4); // Desktop and above
         }
       }
     };
@@ -124,7 +122,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   const currentPage = Math.floor(currentIndex / itemsPerView);
 
   return (
-    <div className="mb-12">
+    <div className="mb-8">
       {/* Header with title and navigation */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6">
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -184,7 +182,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
           onTouchEnd={handleTouchEnd}
         >
           <div
-            className="flex transition-transform duration-500 ease-out gap-3 sm:gap-4 md:gap-6"
+            className="flex transition-transform duration-500 ease-out gap-1 sm:gap-2 md:gap-3"
             style={{
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
             }}
@@ -198,8 +196,8 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
                     itemsPerView === 1
                       ? "100%"
                       : typeof window !== "undefined"
-                        ? `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 12 : window.innerWidth < 1024 ? 16 : 24)) / itemsPerView}px)`
-                        : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * 16) / itemsPerView}px)`,
+                        ? `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 6 : window.innerWidth < 1024 ? 10 : 14)) / itemsPerView}px)`
+                        : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * 10) / itemsPerView}px)`,
                 }}
               >
                 {item}

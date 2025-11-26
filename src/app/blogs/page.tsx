@@ -40,7 +40,7 @@ const staticBlogs: Blog[] = [
     id: "static-2",
     title: "Explore Our Robotics Courses",
     content:
-      "From Lego Robotics to Arduino and EV3, our robotics courses are designed for all age groups. Students learn to build, program, and innovate with real-world robotics kits, fostering creativity and technical skills.",
+      "From Lego Robotics to Arduino and EV3, our robotics courses are designed for all age groups. Students learn to build, program and innovate with real-world robotics kits, fostering creativity and technical skills.",
     author: "Cyborg Robotics Academy",
     date: "2024-06-01",
     imageUrl: "/assets/classroom-course/ev3.webp",
@@ -48,9 +48,9 @@ const staticBlogs: Blog[] = [
   },
   {
     id: "static-3",
-    title: "Learn Programming: Python, Java, and More",
+    title: "Learn Programming: Python, Java and More",
     content:
-      "Our programming courses cover Python, Java, Web Design, and App Design. Whether you are a beginner or looking to advance your skills, our curriculum is tailored to help you succeed in the digital world.",
+      "Our programming courses cover Python, Java, Web Design and App Design. Whether you are a beginner or looking to advance your skills, our curriculum is tailored to help you succeed in the digital world.",
     author: "Cyborg Robotics Academy",
     date: "2024-06-01",
     imageUrl: "/assets/courses/coding.png",
@@ -60,7 +60,7 @@ const staticBlogs: Blog[] = [
     id: "static-4",
     title: "3D Printing and Animation Coding",
     content:
-      "Step into the future with our 3D Printing and Animation Coding courses. Learn to design, print, and animate your own creations, combining technology and creativity in exciting new ways.",
+      "Step into the future with our 3D Printing and Animation Coding courses. Learn to design, print and animate your own creations, combining technology and creativity in exciting new ways.",
     author: "Cyborg Robotics Academy",
     date: "2024-06-01",
     imageUrl: "/assets/courses/3dprinter.png",
@@ -152,7 +152,7 @@ const BlogsPage = () => {
         <title>Cyborg Blog | Cyborg Robotics Academy</title>
         <meta
           name="description"
-          content="Insights, tutorials, and the latest in robotics, programming, and tech education from Cyborg Robotics Academy."
+          content="Insights, tutorials and the latest in robotics, programming and tech education from Cyborg Robotics Academy."
         />
         <meta
           property="og:title"
@@ -160,7 +160,7 @@ const BlogsPage = () => {
         />
         <meta
           property="og:description"
-          content="Insights, tutorials, and the latest in robotics, programming, and tech education from Cyborg Robotics Academy."
+          content="Insights, tutorials and the latest in robotics, programming and tech education from Cyborg Robotics Academy."
         />
         <meta property="og:type" content="website" />
       </Head>
@@ -198,8 +198,8 @@ const BlogsPage = () => {
                 transition={{ duration: 0.6, delay: 0.8 }}
                 className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-2"
               >
-                Insights, tutorials, and the latest in robotics, programming,
-                and tech education.
+                Insights, tutorials and the latest in robotics, programming, and
+                tech education.
               </motion.p>
             </motion.div>
           </div>

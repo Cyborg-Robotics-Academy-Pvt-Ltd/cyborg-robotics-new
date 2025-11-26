@@ -140,7 +140,7 @@ export default function NewsletterSignup() {
           </div>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
             Subscribe to our newsletter and never miss updates on new courses,
-            events, and robotics innovations.
+            events and robotics innovations.
           </p>
         </div>
 

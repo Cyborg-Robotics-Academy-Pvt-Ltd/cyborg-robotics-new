@@ -33,8 +33,8 @@ export default function CompetitionsSection() {
           Global Robotics Competitions
         </h2>
         <p className="text-gray-600 mb-12 max-w-3xl mx-auto">
-          Participate in world-renowned robotics competitions like IRO, WRO, and
-          WSRO. Challenge yourself, showcase your skills, and compete on the
+          Participate in world-renowned robotics competitions like IRO, WRO and
+          WSRO. Challenge yourself, showcase your skills and compete on the
           global stage.
         </p>
       </div>

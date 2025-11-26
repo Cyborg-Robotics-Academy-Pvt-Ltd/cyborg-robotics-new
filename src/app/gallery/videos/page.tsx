@@ -10,7 +10,7 @@ const Page = () => {
         <title>Video Gallery | Cyborg Robotics Academy</title>
         <meta
           name="description"
-          content="Watch videos from Cyborg Robotics Academy events, classes, and activities."
+          content="Watch videos from Cyborg Robotics Academy events, classes and activities."
         />
         <meta
           property="og:title"
@@ -18,7 +18,7 @@ const Page = () => {
         />
         <meta
           property="og:description"
-          content="Watch videos from Cyborg Robotics Academy events, classes, and activities."
+          content="Watch videos from Cyborg Robotics Academy events, classes and activities."
         />
         <meta property="og:type" content="website" />
       </Head>

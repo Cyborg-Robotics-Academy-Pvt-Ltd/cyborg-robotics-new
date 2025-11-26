@@ -78,7 +78,7 @@ const Feature2: React.FC = React.memo(() => {
 
           <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
             Hands-on projects in engineering and coding — build creativity,
-            logic, and future-ready skills.
+            logic and future-ready skills.
           </p>
         </motion.div>
 

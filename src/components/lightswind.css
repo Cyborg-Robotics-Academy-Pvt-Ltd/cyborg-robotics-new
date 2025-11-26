@@ -354,7 +354,7 @@ body {
   -ms-overflow-style: none; /* For IE and Edge */
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* For Chrome, Safari, and Opera */
+  display: none; /* For Chrome, Safari and Opera */
 }
 
 /* Custom Card Component Styling */
