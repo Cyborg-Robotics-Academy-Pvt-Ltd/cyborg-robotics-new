@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     // Validate required fields
     if (!body.name || !body.email || !body.phone || !body.position || !body.experience || !body.message) {
       return NextResponse.json(
-        { error: "All fields are required: name, email, phone, position, experience, and message" },
+        { error: "All fields are required: name, email, phone, position, experience and message" },
         { status: 400 }
       );
     }
@@ -232,7 +232,7 @@ export async function GET() {
         location: "Pune, India",
         type: "Full-time",
         description:
-          "Create engaging content for our website, blog, and educational materials. Focus on STEM education and technology topics.",
+          "Create engaging content for our website, blog and educational materials. Focus on STEM education and technology topics.",
         requirements: [
           "Bachelor's degree in English, Journalism or related field",
           "Excellent writing and editing skills",

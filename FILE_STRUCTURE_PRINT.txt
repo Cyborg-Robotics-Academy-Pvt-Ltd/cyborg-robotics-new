@@ -9,7 +9,7 @@ Root Directory
 ├── .vscode/ (Visual Studio Code settings)
 │   └── settings.json (Workspace-specific settings)
 ├── public/ (Publicly accessible assets - served at root URL)
-│   ├── assets/ (Images, videos, and media files)
+│   ├── assets/ (Images, videos and media files)
 │   │   ├── certificates/ (Certificate templates)
 │   │   ├── classroom-course/ (Classroom course images)
 │   │   ├── courses/ (Course-related images)

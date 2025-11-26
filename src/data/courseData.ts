@@ -145,7 +145,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Rocket",
       },
     ],
-    courseOverview: "Web design encompasses many different skills and disciplines in the production and maintenance of websites. The different areas of web design include web graphic design; user interface design; authoring, including standardized code and proprietary software; user experience design; and search engine optimization. Our comprehensive web designing course covers HTML, CSS, responsive design, and modern web development practices to create stunning, functional websites.",
+    courseOverview: "Web design encompasses many different skills and disciplines in the production and maintenance of websites. The different areas of web design include web graphic design; user interface design; authoring, including standardized code and proprietary software; user experience design; and search engine optimization. Our comprehensive web designing course covers HTML, CSS, responsive design and modern web development practices to create stunning, functional websites.",
   },
   "java": {
     id: "java",
@@ -166,7 +166,7 @@ export const courseData: Record<string, CourseData> = {
     keyFeatures: [
       {
         title: "Object-Oriented Programming",
-        description: "Learn OOP concepts like inheritance, polymorphism, and encapsulation",
+        description: "Learn OOP concepts like inheritance, polymorphism and encapsulation",
         iconName: "Code",
       },
       {
@@ -181,7 +181,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "Advanced Java Features",
-        description: "Master collections, multithreading, and Java frameworks",
+        description: "Master collections, multithreading and Java frameworks",
         iconName: "Settings",
       },
     ],
@@ -265,7 +265,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Rocket",
       },
     ],
-    courseOverview: "Machine Learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed. Our comprehensive machine learning course covers supervised and unsupervised learning, neural networks, deep learning, and practical applications in various industries. Students will learn to build and deploy machine learning models using popular frameworks like TensorFlow and scikit-learn.",
+    courseOverview: "Machine Learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without being explicitly programmed. Our comprehensive machine learning course covers supervised and unsupervised learning, neural networks, deep learning and practical applications in various industries. Students will learn to build and deploy machine learning models using popular frameworks like TensorFlow and scikit-learn.",
   },
   "artificialIntelligence": {
     id: "artificialIntelligence",
@@ -305,7 +305,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "MessageSquare",
       },
     ],
-    courseOverview: "Artificial Intelligence is the simulation of human intelligence in machines that are programmed to think and learn like humans. Our comprehensive AI course covers machine learning, deep learning, computer vision, natural language processing, and robotics. Students will learn to build intelligent systems that can perform tasks that typically require human intelligence.",
+    courseOverview: "Artificial Intelligence is the simulation of human intelligence in machines that are programmed to think and learn like humans. Our comprehensive AI course covers machine learning, deep learning, computer vision, natural language processing and robotics. Students will learn to build intelligent systems that can perform tasks that typically require human intelligence.",
   },
   "robotics-ev3": {
     id: "roboticsEv3",
@@ -345,7 +345,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Trophy",
       },
     ],
-    courseOverview: "LEGO Mindstorms EV3 is a robotics kit that allows students to build and program robots. Our comprehensive robotics course combines mechanical engineering, programming, and problem-solving skills. Students will learn to design, build, and program robots that can navigate mazes, pick up objects, and compete in various challenges.",
+    courseOverview: "LEGO Mindstorms EV3 is a robotics kit that allows students to build and program robots. Our comprehensive robotics course combines mechanical engineering, programming and problem-solving skills. Students will learn to design, build and program robots that can navigate mazes, pick up objects and compete in various challenges.",
   },
   "spike-prime": {
     id: "spikePrime",
@@ -371,7 +371,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "STEAM Learning",
-        description: "Integrate Science, Technology, Engineering, Arts, and Mathematics",
+        description: "Integrate Science, Technology, Engineering, Arts and Mathematics",
         iconName: "GraduationCap",
       },
       {
@@ -385,7 +385,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Rocket",
       },
     ],
-    courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware, and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
+    courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
   },
   "printing3d": {
     id: "printing3d",
@@ -425,7 +425,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Rocket",
       },
     ],
-    courseOverview: "3D printing is a manufacturing process that creates three-dimensional objects by depositing materials layer by layer. Our comprehensive 3D printing course covers 3D design, slicing software, printing technology, and post-processing techniques. Students will learn to design and print their own 3D objects using modern 3D printing technology.",
+    courseOverview: "3D printing is a manufacturing process that creates three-dimensional objects by depositing materials layer by layer. Our comprehensive 3D printing course covers 3D design, slicing software, printing technology and post-processing techniques. Students will learn to design and print their own 3D objects using modern 3D printing technology.",
   },
   "bambinoCoding": {
     id: "bambinoCoding",
@@ -451,7 +451,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "Creative Projects",
-        description: "Build fun games, animations, and interactive stories",
+        description: "Build fun games, animations and interactive stories",
         iconName: "Gamepad2",
       },
       {
@@ -465,7 +465,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "GraduationCap",
       },
     ],
-    courseOverview: "Bambino Coding is designed specifically for young learners to introduce them to the exciting world of programming. Using age-appropriate tools and visual programming languages, children learn to create games, animations, and interactive stories while developing essential computational thinking skills. Our course makes coding fun and accessible, building a strong foundation for future learning.",
+    courseOverview: "Bambino Coding is designed specifically for young learners to introduce them to the exciting world of programming. Using age-appropriate tools and visual programming languages, children learn to create games, animations and interactive stories while developing essential computational thinking skills. Our course makes coding fun and accessible, building a strong foundation for future learning.",
   },
   "electronics": {
     id: "electronics",
@@ -491,7 +491,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "Component Knowledge",
-        description: "Understand resistors, capacitors, transistors, and more",
+        description: "Understand resistors, capacitors, transistors and more",
         iconName: "Cpu",
       },
       {
@@ -505,7 +505,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Zap",
       },
     ],
-    courseOverview: "Electronics is the foundation of modern technology. Our comprehensive electronics course covers everything from basic circuit theory to advanced electronic systems. Students learn to work with electronic components, design circuits, and build practical projects. This course provides hands-on experience with real electronic components and teaches essential skills for understanding and working with electronic devices.",
+    courseOverview: "Electronics is the foundation of modern technology. Our comprehensive electronics course covers everything from basic circuit theory to advanced electronic systems. Students learn to work with electronic components, design circuits and build practical projects. This course provides hands-on experience with real electronic components and teaches essential skills for understanding and working with electronic devices.",
   },
   "animationCoding": {
     id: "animationCoding",
@@ -545,7 +545,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Palette",
       },
     ],
-    courseOverview: "Animation Coding combines the power of programming with the creativity of visual arts. Students learn to create stunning animations, interactive graphics, and visual effects using code. This course teaches both the technical skills of animation programming and the artistic principles of visual design, allowing students to bring their creative ideas to life through code.",
+    courseOverview: "Animation Coding combines the power of programming with the creativity of visual arts. Students learn to create stunning animations, interactive graphics and visual effects using code. This course teaches both the technical skills of animation programming and the artistic principles of visual design, allowing students to bring their creative ideas to life through code.",
   },
   "appDesigning": {
     id: "appDesigning",
@@ -585,7 +585,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Palette",
       },
     ],
-    courseOverview: "App Designing focuses on creating user-friendly and visually appealing mobile applications. Students learn modern UI/UX design principles, user research, wireframing, prototyping, and using industry-standard design tools. This course prepares students to design mobile apps that are both beautiful and functional, with a focus on user experience and accessibility.",
+    courseOverview: "App Designing focuses on creating user-friendly and visually appealing mobile applications. Students learn modern UI/UX design principles, user research, wireframing, prototyping and using industry-standard design tools. This course prepares students to design mobile apps that are both beautiful and functional, with a focus on user experience and accessibility.",
   },
   "earlySimpleMachines": {
     id: "earlySimpleMachines",
@@ -625,7 +625,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "GraduationCap",
       },
     ],
-    courseOverview: "Early Simple Machines introduces students to fundamental mechanical principles through hands-on building and experimentation. Students learn about levers, pulleys, gears, and other simple machines while constructing working models. This course builds a strong foundation in mechanical engineering concepts and develops problem-solving skills through practical projects.",
+    courseOverview: "Early Simple Machines introduces students to fundamental mechanical principles through hands-on building and experimentation. Students learn about levers, pulleys, gears and other simple machines while constructing working models. This course builds a strong foundation in mechanical engineering concepts and develops problem-solving skills through practical projects.",
   },
   "iot": {
     id: "iot",
@@ -665,7 +665,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Database",
       },
     ],
-    courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices, and automate processes. Students learn about sensors, microcontrollers, wireless communication, and cloud platforms to create connected solutions for real-world problems.",
+    courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
   },
   "spikePneumatics": {
     id: "spikePneumatics",
@@ -691,7 +691,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "Air Pressure",
-        description: "Understand pressure, flow, and air dynamics",
+        description: "Understand pressure, flow and air dynamics",
         iconName: "Cog",
       },
       {
@@ -705,7 +705,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Bot",
       },
     ],
-    courseOverview: "SPIKE Pneumatics introduces students to pneumatic systems using LEGO Education SPIKE components. Students learn about air pressure, flow control, and pneumatic mechanisms while building working models. This course combines mechanical engineering with automation concepts, teaching students to design and control air-powered systems.",
+    courseOverview: "SPIKE Pneumatics introduces students to pneumatic systems using LEGO Education SPIKE components. Students learn about air pressure, flow control and pneumatic mechanisms while building working models. This course combines mechanical engineering with automation concepts, teaching students to design and control air-powered systems.",
   },
   "simplePoweredMachines": {
     id: "simplePoweredMachines",
@@ -731,7 +731,7 @@ export const courseData: Record<string, CourseData> = {
       },
       {
         title: "Power Transmission",
-        description: "Understand gears, belts, and power transfer",
+        description: "Understand gears, belts and power transfer",
         iconName: "Cog",
       },
       {
@@ -745,7 +745,7 @@ export const courseData: Record<string, CourseData> = {
         iconName: "Bot",
       },
     ],
-    courseOverview: "Simple Powered Machines focuses on mechanical systems that use motors and power sources. Students learn about electric motors, power transmission systems, gears, and control mechanisms. This course teaches the principles of powered mechanical systems and how to design and build motor-driven devices.",
+    courseOverview: "Simple Powered Machines focuses on mechanical systems that use motors and power sources. Students learn about electric motors, power transmission systems, gears and control mechanisms. This course teaches the principles of powered mechanical systems and how to design and build motor-driven devices.",
   },
   "appLab": {
     id: "appLab",
@@ -787,7 +787,7 @@ export const courseData: Record<string, CourseData> = {
 
     
     ],
-    courseOverview: "App Lab teaches students how to create mobile applications using MIT App Inventor and block-based programming. Students learn about user interface design, app testing, and mobile app development. This course provides hands-on experience in building functional mobile applications and understanding the app development process.",
+    courseOverview: "App Lab teaches students how to create mobile applications using MIT App Inventor and block-based programming. Students learn about user interface design, app testing and mobile app development. This course provides hands-on experience in building functional mobile applications and understanding the app development process.",
   }
 }
   

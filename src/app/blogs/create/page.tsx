@@ -77,7 +77,7 @@ const CreateBlogPage = () => {
     setError("");
     try {
       if (!title || !content || !author) {
-        setError("Title, content, and author are required.");
+        setError("Title, content and author are required.");
         setLoading(false);
         return;
       }

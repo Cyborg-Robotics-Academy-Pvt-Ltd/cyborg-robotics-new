@@ -191,7 +191,7 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
                     ),
                     style: {
                       ...(typedChild.props.style || {}),
-                      // String concatenation for background, border, and boxShadow
+                      // String concatenation for background, border and boxShadow
                       backgroundColor: cardGlowColor + "15",
                       borderColor: cardGlowColor,
                       boxShadow: "0 0 0 1px inset " + cardGlowColor,

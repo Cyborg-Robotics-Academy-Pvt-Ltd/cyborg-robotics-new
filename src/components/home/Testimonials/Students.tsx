@@ -8,7 +8,7 @@ const Students = () => {
       name: "Shivaan Sharma",
       course: "Drone",
       quote:
-        "The drone classes are fun! I learned how drones move, how motors and flight controllers work, and how forces like lift help them fly safely.",
+        "The drone classes are fun! I learned how drones move, how motors and flight controllers work and how forces like lift help them fly safely.",
       mentor: "Mahvish Fatima",
       image: "/assets/testimonials/students/ShivaanSharma.jpeg",
     },
@@ -16,7 +16,7 @@ const Students = () => {
       name: "Arjun Anupkumar",
       course: "Drone",
       quote:
-        "I really enjoy drone classes! I learned how the flight controller, motors, and propellers work together to make drones fly.",
+        "I really enjoy drone classes! I learned how the flight controller, motors and propellers work together to make drones fly.",
       mentor: "Mahvish Fatima",
       image: "/assets/testimonials/students/ArjunAnoopkumar.jpeg",
     },
@@ -24,7 +24,7 @@ const Students = () => {
       name: "Adish Bejgamwar",
       course: "3D + Arduino",
       quote:
-        "Through the 3D + Arduino course, I learned programming, creative design, and how to use components in new ways to solve problems.",
+        "Through the 3D + Arduino course, I learned programming, creative design and how to use components in new ways to solve problems.",
       mentor: "Anchal Mishra and Nilesh Jaiswar",
       image: "/assets/testimonials/students/ADISHBEJGAMWAR.jpg",
     },
@@ -32,7 +32,7 @@ const Students = () => {
       name: "Mihika Bole",
       course: "Arduino",
       quote:
-        "Arduino was so much fun! I learned to connect LEDs, motors, and sensors, and write programs to bring my projects to life.",
+        "Arduino was so much fun! I learned to connect LEDs, motors and sensors and write programs to bring my projects to life.",
       mentor: "Anchal Mishra",
       image: "/assets/testimonials/students/MIHIKABOLE.jpg",
     },
@@ -48,7 +48,7 @@ const Students = () => {
       name: "Sudarshan Joshi",
       course: "3D Designing and Printing",
       quote:
-        "I built robots with 3D Printing and Arduino! Learned coding, design, and sensors—turning my ideas into real working models.",
+        "I built robots with 3D Printing and Arduino! Learned coding, design and sensors—turning my ideas into real working models.",
       mentor: "Anchal Mishra and Nilesh Jaiswar",
       image: "/assets/testimonials/students/SUDARSHANJOSHI.jpg",
     },

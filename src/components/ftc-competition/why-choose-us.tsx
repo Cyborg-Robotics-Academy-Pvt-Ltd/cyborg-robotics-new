@@ -23,6 +23,11 @@ const mentors = [
     title: "Electronics Specialist",
   },
   {
+    id: "Mahvish",
+    name: "Mahvish Fatima",
+    title: "Research & Development Specialist",
+  },
+  {
     id: "Pratima",
     name: "Pratima Thakur",
     title: "Documentation and Soft-Skills Specialist",
@@ -31,11 +36,6 @@ const mentors = [
     id: "Sirjana ",
     name: "Sirjana Vishwakarma",
     title: "Branding & Outreach Specialist",
-  },
-  {
-    id: "Mahvish",
-    name: "Mahvish Fatima",
-    title: "Research & Development Specialist",
   },
   {
     id: "Nikita",

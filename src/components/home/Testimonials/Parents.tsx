@@ -34,14 +34,14 @@ const Parents = () => {
     },
     {
       quote:
-        "Cyborg has brought a positive change in my son Aadit. He’s grown to love robotics, learned teamwork, and handled challenges with confidence. Thank you, Team Cyborg, for your encouragement and support.",
+        "Cyborg has brought a positive change in my son Aadit. He’s grown to love robotics, learned teamwork and handled challenges with confidence. Thank you, Team Cyborg, for your encouragement and support.",
       name: "Ruchika Oswal",
       image: "/assets/testimonials/parents/RuchikaOswal.jpeg",
       course: "3D Printing",
     },
     {
       quote:
-        "Cyborg Robotics Academy has been perfect for my son’s curiosity about how things work. The hands-on projects, clear teaching, and encouraging mentors have boosted his confidence and creativity. Highly recommended!",
+        "Cyborg Robotics Academy has been perfect for my son’s curiosity about how things work. The hands-on projects, clear teaching and encouraging mentors have boosted his confidence and creativity. Highly recommended!",
       name: "Akansha Gaur",
       image: "/assets/testimonials/parents/AkanshaGaur.png",
       course: "Spike Essential",

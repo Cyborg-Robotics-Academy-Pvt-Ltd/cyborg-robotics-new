@@ -258,7 +258,7 @@ const AccessControlPage = () => {
                 Access Control Management
               </h1>
               <p className="mt-2 text-gray-600">
-                Manage user roles, permissions, and access levels
+                Manage user roles, permissions and access levels
               </p>
             </div>
             <button

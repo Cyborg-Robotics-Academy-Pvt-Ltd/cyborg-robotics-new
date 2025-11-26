@@ -1,6 +1,6 @@
 # Access Control Management
 
-This module provides administrators with tools to manage user roles, permissions, and access levels within the Cyborg Robotics Academy platform.
+This module provides administrators with tools to manage user roles, permissions and access levels within the Cyborg Robotics Academy platform.
 
 ## Features
 

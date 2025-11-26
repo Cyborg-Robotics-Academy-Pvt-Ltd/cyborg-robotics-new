@@ -314,7 +314,7 @@ const TrainerDashboard = () => {
         <title>Trainer Dashboard | Cyborg Robotics Academy</title>
         <meta
           name="description"
-          content="Trainer dashboard for managing students, tasks, and analytics at Cyborg Robotics Academy."
+          content="Trainer dashboard for managing students, tasks and analytics at Cyborg Robotics Academy."
         />
         <meta
           property="og:title"
@@ -322,7 +322,7 @@ const TrainerDashboard = () => {
         />
         <meta
           property="og:description"
-          content="Trainer dashboard for managing students, tasks, and analytics at Cyborg Robotics Academy."
+          content="Trainer dashboard for managing students, tasks and analytics at Cyborg Robotics Academy."
         />
         <meta property="og:type" content="website" />
       </Head>

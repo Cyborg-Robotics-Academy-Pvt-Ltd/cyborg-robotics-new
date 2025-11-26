@@ -1,56 +1,18 @@
 "use client";
 
-import { FaEye, FaUsers, FaFlag } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { GlowingCards, GlowingCard } from "../lightswind/glowing-cards";
-
-const whatWeOfferItems = [
-  {
-    title: "Our Vision",
-    description:
-      "Our Vision is to be a leading global academy, influencing the future of robotics for kids.",
-    icon: FaEye,
-    glowColor: "#a63534", // rich, warm reddish-brown
-    link: "/about-us#story", // Add link property for Our Vision card
-    backgroundImage: "/assets/whoarewe/vision.jpg",
-  },
-  {
-    title: "About Us",
-    description:
-      "Cyborg Robotics Academy Private Limited is one of the leading Robotics Academy in Pune offering various technical courses all under one roof.",
-    icon: FaUsers,
-    glowColor: "#313a49", // deep desaturated blue-gray
-    link: "/about-us", // Add link property for About Us card
-    backgroundImage: "",
-  },
-  {
-    title: "Our Mission",
-    description:
-      "Our mission is to transform the way parents & children think about learning robotics technology.",
-    icon: FaFlag,
-    glowColor: "#a63534", // pure white
-    link: "/about-us#story", // Add link property for Our Mission card
-    backgroundImage: "/assets/whoarewe/mission.jpg",
-  },
-];
 
 export default function WhoAreWe() {
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative my-auto  px-4  sm:px-6 lg:px-8  to-blue-50/30 overflow-hidden">
-        {/* Enhanced decorative background with floating elements */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-        ></div>
-
+      <section className="relative my-auto px-4 sm:px-6 lg:px-8 to-blue-50/30 overflow-hidden">
         <div className="relative max-w-7xl mx-auto mt-10">
-          {/* Enhanced header section */}
-          <div className="text-center ">
-            <div className="flex   justify-center ">
-              <h1 className=" text-center">
+          {/* Header section */}
+          <div className="text-center">
+            <div className="flex justify-center">
+              <h1 className="text-center">
                 <span className="text-3xl font-bold gradient-text">Who</span>
                 <span className="text-3xl font-bold text-black"> Are We ?</span>
               </h1>
@@ -69,124 +31,107 @@ export default function WhoAreWe() {
               <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
               <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
             </div>
-            <p className="text-gray-600 text-lg md:text-xl text-center mb-8 max-w-4xl mx-auto leading-relaxed">
-              Empowering future innovators through cutting-edge robotics
-              education and hands-on learning experiences.
-            </p>
           </div>
 
-          {/* Using GlowingCards component */}
-          <GlowingCards
-            enableGlow={true}
-            glowRadius={20}
-            glowOpacity={0.8}
-            animationDuration={400}
-            gap="2rem"
-            maxWidth="75rem"
-            padding="1rem"
-          >
-            {whatWeOfferItems.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <GlowingCard
-                  key={item.title}
-                  glowColor={item.glowColor}
-                  className="flex flex-col items-center text-center p-8 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group relative overflow-hidden"
-                >
-                  {/* Use Link component inside the card for proper glow effect */}
-                  {item.link ? (
-                    <Link
-                      href={item.link}
-                      className="w-full h-full flex flex-col items-center relative"
+          {/* Two-container layout */}
+          <div className="flex flex-col lg:flex-row gap-8 items-center">
+            {/* Left Container - About Us Content */}
+            <div className="lg:w-1/2">
+              <div className="bg-white rounded-2xl p-6 ">
+                <h2 className="text-2xl font-bold gradient-text mb-2 ">
+                  About Us –{" "}
+                  <span className="underline">Cyborg Robotics Academy</span>
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  <span className="font-semibold">Cyborg Robotics Academy</span>{" "}
+                  is a{" "}
+                  <span className="font-semibold text-[#a63534]">
+                    leading robotics and STEM education center
+                  </span>{" "}
+                  dedicated to{" "}
+                  <span className="font-semibold">
+                    preparing students for the future
+                  </span>
+                  . We teach{" "}
+                  <span className="font-semibold">
+                    robotics, coding and engineering
+                  </span>{" "}
+                  through{" "}
+                  <span className="font-semibold text-[#a63534]">
+                    hands-on, project-based learning
+                  </span>{" "}
+                  using tools like{" "}
+                  <span className="font-semibold">
+                    LEGO kits, Spike Prime, Arduino and IoT modules
+                  </span>
+                  .
+                </p>
+                <p className="text-gray-700 mb-4">
+                  Our courses{" "}
+                  <span className="font-semibold">
+                    support all age groups and skill levels
+                  </span>
+                  , helping students build{" "}
+                  <span className="font-semibold text-[#a63534]">
+                    creativity, confidence and problem-solving abilities
+                  </span>
+                  . We also{" "}
+                  <span className="font-semibold">
+                    train students for competitions
+                  </span>{" "}
+                  such as the{" "}
+                  <span className="font-semibold">
+                    FIRST Tech Challenge (FTC)
+                  </span>{" "}
+                  and <span className="font-semibold">WRO</span>, promoting{" "}
+                  <span className="font-semibold text-[#a63534]">
+                    teamwork and innovation
+                  </span>
+                  .
+                </p>
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-gray-700">
+                    <strong>For more information, contact</strong> +91
+                    9175159292 or info@cyborgrobotics.in
+                  </p>
+                </div>
+                <div className="mt-6">
+                  <Link
+                    href="/about-us"
+                    className="inline-flex items-center px-4 py-2 bg-[#a63534] text-white rounded-lg hover:bg-[#8a2d2d] transition-colors"
+                  >
+                    Learn More About Us
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 ml-2"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
-                      {/* Background image - reveals on hover/focus using next/image for optimization */}
-                      {item.backgroundImage && (
-                        <div className="absolute inset-0 pointer-events-none">
-                          <div className="absolute inset-0 opacity-0 group-hover:opacity-30 group-focus-within:opacity-30 motion-reduce:transition-none transition-opacity duration-500">
-                            <Image
-                              src={item.backgroundImage}
-                              alt=""
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 100vw, 33vw"
-                              unoptimized
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {/* Icon container with gradient background */}
-                      <div
-                        className={`relative mb-6 p-4 rounded-2xl bg-[#a63534] shadow-lg transform transition-all duration-500 group-hover:scale-110`}
-                      >
-                        <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 transition-opacity duration-300"></div>
-                        <Icon className="text-white text-2xl relative z-10" />
-                      </div>
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
 
-                      <h3 className="text-2xl lg:text-3xl font-bold gradient-text mb-4 group-hover:text-[#a63534] transition-colors duration-300">
-                        {item.title}
-                      </h3>
-
-                      <div
-                        className="w-16 h-1 bg-gradient-to-r rounded-full mx-auto mb-6 group-hover:scale-x-125 transition-transform duration-300"
-                        style={{
-                          backgroundImage: `linear-gradient(to right, ${item.glowColor}, ${item.glowColor}90)`,
-                        }}
-                      ></div>
-
-                      <p className="text-gray-600  leading-relaxed text-center text-base lg:text-lg">
-                        {item.description}
-                      </p>
-                    </Link>
-                  ) : (
-                    <>
-                      {/* Background image - reveals on hover/focus for non-link cards */}
-                      {item.backgroundImage && (
-                        <div className="absolute inset-0 pointer-events-none">
-                          <div className="absolute inset-0 opacity-0 group-hover:opacity-30 group-focus-within:opacity-30 motion-reduce:transition-none transition-opacity duration-500">
-                            <Image
-                              src={item.backgroundImage}
-                              alt=""
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 100vw, 33vw"
-                              unoptimized
-                            />
-                            <div
-                              className="absolute inset-0 bg-black/30"
-                              aria-hidden="true"
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {/* Icon container with gradient background */}
-                      <div
-                        className={`relative mb-6 p-4 rounded-2xl bg-[#a63534] shadow-lg transform transition-all duration-500 group-hover:scale-110`}
-                      >
-                        <div className="absolute inset-0 rounded-2xl bg-white/20  duration-300"></div>
-                        <Icon className="text-white text-2xl relative z-10" />
-                      </div>
-
-                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-4 group-hover:text-[#a63534] transition-colors duration-300">
-                        {item.title}
-                      </h3>
-
-                      <div
-                        className="w-16 h-1 bg-gradient-to-r rounded-full mx-auto mb-6 group-hover:scale-x-125 transition-transform duration-300"
-                        style={{
-                          backgroundImage: `linear-gradient(to right, ${item.glowColor}, ${item.glowColor}90)`,
-                        }}
-                      ></div>
-
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center text-base lg:text-lg">
-                        {item.description}
-                      </p>
-                    </>
-                  )}
-                </GlowingCard>
-              );
-            })}
-          </GlowingCards>
+            {/* Right Container - Image */}
+            <div className="lg:w-1/2">
+              <div className="rounded-2xl overflow-hidden ">
+                <Image
+                  src="/assets/whoarewe/latesttechnology.jpg"
+                  alt="Cyborg Robotics Academy"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto object-cover"
+                  unoptimized
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </>

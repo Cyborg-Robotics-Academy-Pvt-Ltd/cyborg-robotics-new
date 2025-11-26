@@ -1020,7 +1020,7 @@ export const javaCurriculum = [
     title: "Level 1: Basic Electronics",
     subtitle: [
       "Paper Circuit – Learn how to create simple circuits using conductive paper trails.",
-      "Getting started with electronics – Understand basic components like LEDs, resistors, and wires.",
+      "Getting started with electronics – Understand basic components like LEDs, resistors and wires.",
       "Series, parallel & combinational circuits – Explore how current flows through different circuit types.",
       "Decoration lights – Build colorful LED lighting circuits.",
       "Smart watch display – Create a simple display-based electronics project.",
