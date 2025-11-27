@@ -22,6 +22,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning className={poppins.variable}>
       <head>
         {/* Performance optimizations */}
+        <title>
+          Robotics & Coding Classes For Kids | STEM & Coding Academy
+        </title>
+        <meta
+          name="description"
+          content="Discover engaging robotics and coding courses for kids. Build STEM skills, innovate, and learn through hands-on projects in a fun environment."
+        />
+        <meta
+          name="keywords"
+          content="robotics academy for kids, kids robotics classes, robotics classes in Pune / your city, STEM classes for kids, coding classes for kids, robotics training for children, kids technology academy, robotics and coding for kids, STEM education for kids, child robotics workshops"
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
