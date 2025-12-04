@@ -146,7 +146,7 @@ export default function ChatBot() {
               mass: 1,
             }}
             style={{ transformOrigin: "bottom right" }}
-            className="fixed bottom-36 right-8 md:bottom-5 md:right-3 z-50 w-full max-w-xs h-[400px] bg-white rounded-2xl shadow-xl flex flex-col border border-gray-200 overflow-hidden"
+            className="fixed bottom-36 right-8 md:bottom-20 md:right-7 z-50 w-full max-w-xs h-[400px] bg-white rounded-2xl shadow-xl flex flex-col border border-gray-200 overflow-hidden"
           >
             {/* Chat Header */}
             <div className="bg-red-700 text-white p-2 flex items-center justify-between">

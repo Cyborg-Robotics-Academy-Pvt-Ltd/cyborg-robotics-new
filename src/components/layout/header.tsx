@@ -221,9 +221,7 @@ export default function Header() {
         animate={{
           y: 0, // Slide down to normal position
           backgroundColor:
-            isHomePage && !isScrolled
-              ? "rgba(0,0,0,0)"
-              : "rgba(255,255,255,0.95)",
+            isHomePage && !isScrolled ? "rgba(0,0,0,0)" : "rgba(255,255,255)",
           boxShadow:
             isHomePage && !isScrolled
               ? "none"
@@ -234,7 +232,7 @@ export default function Header() {
           backgroundColor: { duration: 0.3, ease: "easeInOut" }, // Color transition
           boxShadow: { duration: 0.3, ease: "easeInOut" }, // Shadow transition
         }}
-        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md`}
+        className={`fixed top-0 left-0 right-0 z-50 `}
       >
         <div className="flex h-16 items-center w-full justify-between relative">
           <motion.div
