@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 
 export default function WhoAreWe() {
   return (
@@ -38,7 +39,8 @@ export default function WhoAreWe() {
             {/* Left Container - About Us Content */}
             <div className="lg:w-1/2">
               <div className="bg-white rounded-2xl p-6 ">
-                <h2 className="text-2xl font-bold gradient-text mb-2 ">
+                <h2 className="text-2xl font-bold gradient-text mb-2 flex items-center">
+                  <GraduationCap className="mr-2 h-6 w-6 text-[#a63534]" />
                   About Us –{" "}
                   <span className="underline">Cyborg Robotics Academy</span>
                 </h2>
@@ -46,61 +48,62 @@ export default function WhoAreWe() {
                   <span className="font-semibold">Cyborg Robotics Academy</span>{" "}
                   is a{" "}
                   <span className="font-semibold text-[#a63534]">
-                    leading robotics and STEM education center
+                    leading STEM and Robotics education center
                   </span>{" "}
-                  dedicated to{" "}
+                  focused on{" "}
                   <span className="font-semibold">
-                    preparing students for the future
-                  </span>
-                  . We teach{" "}
-                  <span className="font-semibold">
-                    robotics, coding and engineering
+                    developing creativity, problem-solving skills and technical
+                    confidence
                   </span>{" "}
-                  through{" "}
-                  <span className="font-semibold text-[#a63534]">
-                    hands-on, project-based learning
-                  </span>{" "}
-                  using tools like{" "}
+                  in <span className="font-semibold">students of all ages</span>
+                  . Through{" "}
                   <span className="font-semibold">
-                    LEGO kits, Spike Prime, Arduino and IoT modules
+                    hands-on learning with LEGO Spike Prime, Arduino and IoT
+                    tools
                   </span>
-                  .
-                </p>
-                <p className="text-gray-700 mb-4">
-                  Our courses{" "}
+                  , we provide{" "}
                   <span className="font-semibold">
-                    support all age groups and skill levels
-                  </span>
-                  , helping students build{" "}
-                  <span className="font-semibold text-[#a63534]">
-                    creativity, confidence and problem-solving abilities
+                    practical training in robotics, coding and engineering
                   </span>
                   . We also{" "}
                   <span className="font-semibold">
-                    train students for competitions
-                  </span>{" "}
-                  such as the{" "}
-                  <span className="font-semibold">
-                    FIRST Tech Challenge (FTC)
-                  </span>{" "}
-                  and <span className="font-semibold">WRO</span>, promoting{" "}
+                    prepare students for major competitions
+                  </span>
+                  , such as{" "}
+                  <span className="font-semibold">FTC, WRO and IRO</span>,
+                  promoting{" "}
                   <span className="font-semibold text-[#a63534]">
                     teamwork and innovation
                   </span>
                   .
                 </p>
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+
+                {/* Our Achievements & Awards Section */}
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-xl font-bold text-[#a63534] mb-2 flex items-center">
+                    <GraduationCap className="mr-2 h-5 w-5" />
+                    Achievements
+                  </h3>
                   <p className="text-gray-700">
-                    <strong>For more information, contact</strong> +91
-                    9175159292 or info@cyborgrobotics.in
+                    Our students have won multiple awards, including 3rd Place &
+                    Judges' Award and 2nd Runner Up at IRO 2024, top prizes at
+                    the World STEM & Robotics Olympiad and podium finishes in
+                    Lego Line Follower and Line Follower categories.
                   </p>
                 </div>
-                <div className="mt-6">
+
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-gray-700">
+                    <strong>Contact:</strong> +91 9175159292 or
+                    info@cyborgrobotics.in
+                  </p>
+                </div>
+                <div className="mt-2">
                   <Link
                     href="/about-us"
                     className="inline-flex items-center px-4 py-2 bg-[#a63534] text-white rounded-lg hover:bg-[#8a2d2d] transition-colors"
                   >
-                    Learn More About Us
+                    Learn More
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 ml-2"
