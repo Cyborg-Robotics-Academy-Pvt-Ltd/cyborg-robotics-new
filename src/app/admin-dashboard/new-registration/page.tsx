@@ -180,7 +180,7 @@ const Page = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-10 "
+      className="container mx-auto px-4 mt-20 "
     >
       <Card className="shadow-xl rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 p-6 border-b">

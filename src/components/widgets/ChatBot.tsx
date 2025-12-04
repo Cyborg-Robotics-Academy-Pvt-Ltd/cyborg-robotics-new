@@ -122,7 +122,7 @@ export default function ChatBot() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleChat}
-        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-red-800 text-white shadow-lg flex items-center justify-center hover:bg-red-800 transition-colors"
+        className="fixed bottom-20 right-4 md:bottom-5 md:right-3 z-50 w-12 h-12 rounded-full bg-red-800 text-white shadow-lg flex items-center justify-center hover:bg-red-800 transition-colors"
         aria-label="Toggle chat"
       >
         {isOpen ? (
@@ -146,7 +146,7 @@ export default function ChatBot() {
               mass: 1,
             }}
             style={{ transformOrigin: "bottom right" }}
-            className="fixed bottom-20 right-5 z-50 w-full max-w-xs h-[400px] bg-white rounded-2xl shadow-xl flex flex-col border border-gray-200 overflow-hidden"
+            className="fixed bottom-36 right-8 md:bottom-5 md:right-3 z-50 w-full max-w-xs h-[400px] bg-white rounded-2xl shadow-xl flex flex-col border border-gray-200 overflow-hidden"
           >
             {/* Chat Header */}
             <div className="bg-red-700 text-white p-2 flex items-center justify-between">

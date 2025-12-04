@@ -284,7 +284,14 @@ export default function Header() {
                     isScrollLink(item.href) && handleNavClick(e, item.id)
                   }
                 >
-                  {item.label}
+                  <span className="flex items-center gap-1">
+                    {item.label}
+                    {item.id === "ftc-competition" && (
+                      <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        NEW
+                      </span>
+                    )}
+                  </span>
                 </Link>
               </motion.div>
             ))}
