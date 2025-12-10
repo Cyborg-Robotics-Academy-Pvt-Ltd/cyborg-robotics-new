@@ -39,10 +39,9 @@ export default function WhoAreWe() {
             {/* Left Container - About Us Content */}
             <div className="lg:w-1/2">
               <div className="bg-white rounded-2xl p-6 ">
-                <h2 className="text-2xl font-bold gradient-text mb-2 flex items-center">
+                <h2 className="text-2xl font-bold gradient-text mb-2 flex  items-center ">
                   <GraduationCap className="mr-2 h-6 w-6 text-[#a63534]" />
-                  About Us –{" "}
-                  <span className="underline">Cyborg Robotics Academy</span>
+                  About Us{" "}
                 </h2>
                 <p className="text-gray-700 mb-4">
                   <span className="font-semibold">Cyborg Robotics Academy</span>{" "}
