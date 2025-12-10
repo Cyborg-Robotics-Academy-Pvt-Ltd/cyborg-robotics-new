@@ -27,8 +27,27 @@ const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
   ...course,
 }));
 
-// Get unique age ranges
-const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))];
+// Get unique age ranges and sort them
+const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
+  (a, b) => {
+    // Extract the first number from each age range for comparison
+    const firstNumA = parseInt(a.match(/\d+/)?.[0] || "0");
+    const firstNumB = parseInt(b.match(/\d+/)?.[0] || "0");
+
+    // If first numbers are equal, compare the second number (if exists)
+    if (firstNumA === firstNumB) {
+      const secondNumA = parseInt(
+        a.match(/\d+-(\d+)/)?.[1] || a.match(/\d+/g)?.[1] || "0"
+      );
+      const secondNumB = parseInt(
+        b.match(/\d+-(\d+)/)?.[1] || b.match(/\d+/g)?.[1] || "0"
+      );
+      return secondNumA - secondNumB;
+    }
+
+    return firstNumA - firstNumB;
+  }
+);
 
 const AllCoursesPage = () => {
   // State for search and filter
@@ -153,7 +172,7 @@ const AllCoursesPage = () => {
                   <SelectItem value="all">All Ages</SelectItem>
                   {uniqueAgeRanges.map((age) => (
                     <SelectItem key={age} value={age}>
-                      Age {age}
+                      {age}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -289,15 +289,15 @@ const Page = () => {
                     className="absolute inset-0"
                   />
                   <div className="absolute bottom-4 right-4">
-                    <a
-                      href="https://goo.gl/maps/your-location-link"
+                    <Link
+                      href="https://www.google.com/maps?ll=18.549215,73.903166&z=16&t=h&hl=en&gl=IN&mapclient=embed&q=North+Court+Kalyani+Nagar+Pune,+Maharashtra+411006"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-white rounded-lg shadow-md text-sm font-medium text-[#8D0F11] hover:text-[#6d0b0d] transition-colors"
                     >
                       Open in Google Maps
                       <ExternalLink className="ml-2 w-4 h-4" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

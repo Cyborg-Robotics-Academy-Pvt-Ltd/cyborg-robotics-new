@@ -10,7 +10,7 @@ interface FooterProps {
   [key: string]: unknown;
 }
 
-const FtcFooter: React.FC<FooterProps> = () => {
+const Footer: React.FC<FooterProps> = () => {
   // Refs for the four main sections
   const sectionRefs = useRef([
     React.createRef<HTMLDivElement>(),
@@ -30,86 +30,28 @@ const FtcFooter: React.FC<FooterProps> = () => {
   // Refs for quick links
   const quickLinkRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  // Check if sections are in view
-  const isInView = useInView(sectionRefs.current[0], {
-    once: true,
-    margin: "-100px",
-  });
-
-  const [dailyQuote, setDailyQuote] = useState<string>("");
-  const [isLoadingQuote, setIsLoadingQuote] = useState<boolean>(false);
-
-  useEffect(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    const cacheKey = `dailyQuote-${y}-${m}-${d}`;
-
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        setDailyQuote(cached);
-        return;
-      }
-    } catch {
-      // ignore storage errors
-    }
-
-    const controller = new AbortController();
-    const fetchQuote = async () => {
-      try {
-        const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
-        const res = await fetch("/api/generate-blog", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal,
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        let text: string = (data?.generated || "").trim();
-        if (!text) return;
-        // sanitize to one line and keep it short
-        text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
-        setDailyQuote(text);
-        try {
-          localStorage.setItem(cacheKey, text);
-        } catch {
-          // ignore storage errors
-        }
-      } catch {
-        // network/API failure -> keep as empty or cached
-      }
-    };
-
-    fetchQuote();
-    return () => controller.abort();
-  }, []);
-
-  const fetchNewQuote = async () => {
-    if (isLoadingQuote) return;
-
+  // Array of 10 inspirational quotes
+  const quotes = [
+    "Robotics is not about machines, it's about possibilities.",
+    "The future is built by those who code it—one robot at a time.",
+    "Every robot you build is a step toward tomorrow.",
+    "In robotics, failure is just another step to innovation.",
+    "Robots turn imagination into reality.",
+    "The best way to learn robotics is to build, break, and rebuild.",
+    "Automation is the art of making the impossible, possible.",
+    "Robotics: where science meets creativity.",
+    "A robot is only as smart as the mind that builds it.",
+    "Dream, design, and drive the world with robotics.",
+  ];
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
+  const dailyQuote = quotes[quoteIndex];
+  const fetchNewQuote = () => {
     setIsLoadingQuote(true);
-    try {
-      const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
-      const res = await fetch("/api/generate-blog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      let text: string = (data?.generated || "").trim();
-      if (!text) return;
-      // sanitize to one line and keep it short
-      text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
-      setDailyQuote(text);
-    } catch {
-      // network/API failure -> keep current quote
-    } finally {
+    setTimeout(() => {
+      setQuoteIndex((prev) => (prev + 1) % quotes.length);
       setIsLoadingQuote(false);
-    }
+    }, 400); // Simulate loading
   };
 
   return (
@@ -132,14 +74,11 @@ const FtcFooter: React.FC<FooterProps> = () => {
         <div className="rounded-2xl shadow-xl shadow-gray-300/20 p-6 md:p-8 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {/* Section 1: Company Info & Social */}
-            <motion.div
+            <div
               className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[0]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <motion.div>
+              <div>
                 <Image
                   src="/assets/Cyborg-logo.png"
                   width={150}
@@ -149,7 +88,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                   className="w-40 h-auto cursor-pointer"
                   ref={logoRef}
                 />
-              </motion.div>
+              </div>
               <p className="text-sm text-gray-700 leading-relaxed">
                 <span className="font-bold text-gray-900">
                   Cyborg Robotics Academy Private Limited
@@ -165,7 +104,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                     alt: "LinkedIn",
                   },
                   {
-                    href: "https://www.instagram.com/cyborgroboticsacademy?igsh=dmppcHR2NWh1MDJ5",
+                    href: "https://www.instagram.com/cyborgroboticsacademy",
                     src: "/assets/social-icons/instagram.webp",
                     alt: "Instagram",
                   },
@@ -175,7 +114,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                     alt: "Facebook",
                   },
                   {
-                    href: "https://youtube.com/@cyborgroboticsacademy2270?si=aQjTThVhESGN_bQ9",
+                    href: "https://www.youtube.com/@cyborgroboticsacademy",
                     src: "/assets/social-icons/youtube.png",
                     alt: "YouTube",
                   },
@@ -199,15 +138,12 @@ const FtcFooter: React.FC<FooterProps> = () => {
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Section 2: Contact Information */}
-            <motion.div
+            <div
               className="space-y-4 bg-white rounded-xl p-5 "
               ref={sectionRefs.current[1]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
             >
               <h3 className="text-lg font-bold text-gray-900">Contact Us</h3>
               <motion.div
@@ -219,7 +155,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                 <Mail className="mt-1 flex-shrink-0 text-red-800" size={22} />
                 <Link
                   href="mailto:info@cyborgrobotics.in"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base font-medium text-gray-800 hover:text-[#a63534] hover:font-semibold transition-colors"
                 >
                   info@cyborgrobotics.in
                 </Link>
@@ -236,7 +172,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                 />
                 <Link
                   href="https://www.google.com/maps/place/North+Court,+Rd+Number+12,+Jogger's+Park,+Nilanjali+Society,+Kalyani+Nagar,+Pune,+Maharashtra+411006/@18.5492198,73.8982955,786m/data=!3m2!1e3!4b1!4m10!1m2!2m1!1sNorth+court,office+No:2A,+1st+floor,opposite+joggers+park,above+punjab+national+bank,kalyani+nagar,Pune+411+006!3m6!1s0x3bc2c110e47e39a3:0x1790569bae5ab0f4!8m2!3d18.5492148!4d73.9031664!15sCm9Ob3J0aCBjb3VydCxvZmZpY2UgTm86MkEsIDFzdCBmbG9vcixvcHBvc2l0ZSBqb2dnZXJzIHBhcmssYWJvdmUgcHVuamFiIG5hdGlvbmFsIGJhbmlla2FseWFuaSBuYWdhcixQdW5lIDQxMSAwMDYiA4gBAZIBEWNvbXBvdW5kX2J1aWxkaW5n4AEA!16s%2Fg%2F1hjggd2b0?authuser=0&entry=ttu&g_ep=EgoyMDI1MDMxNy4wIKXMDSoASAFQAw%3D%3D"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
                 >
                   North Court, Office No: 2A, 1st Floor, Opposite Joggers Park,
                   Above Punjab National Bank, Kalyani Nagar, Pune 411 006
@@ -254,27 +190,21 @@ const FtcFooter: React.FC<FooterProps> = () => {
                 />
                 <Link
                   href="tel:+919175159292"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] transition-colors"
+                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
                 >
-                  Phone: +91 9049435363
+                  Phone: +91 91751 59292
                 </Link>
               </motion.div>
-            </motion.div>
+            </div>
 
             {/* Section 3: Quick Links */}
-            <motion.div
-              className="space-y-4 bg-white rounded-xl p-5 "
-              ref={sectionRefs.current[2]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
-            >
+            <div className="space-y-4 bg-white rounded-xl p-5 ">
               <h3 className="text-lg font-bold text-gray-900">Quick Links</h3>
               <ul className="space-y-3">
                 {[
                   { href: "/", label: "Home" },
                   { href: "/about-us", label: "About" },
-                  { href: "/gallery/photo", label: "Gallery" },
+                  { href: "/gallery/photos  ", label: "Gallery" },
                   { href: "/contact-us", label: "Contact" },
                   {
                     href: "/terms-conditions",
@@ -288,7 +218,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="text-base font-medium text-gray-800 hover:text-red-800 transition-all block"
+                      className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-red-800 hover:font- transition-all block"
                     >
                       <motion.span
                         ref={(el) => {
@@ -305,16 +235,10 @@ const FtcFooter: React.FC<FooterProps> = () => {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
 
             {/* Section 4: Daily Inspiration */}
-            <motion.div
-              className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto"
-              ref={sectionRefs.current[3]}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-              transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
-            >
+            <div className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto">
               <h3 className="text-lg font-bold text-gray-900">
                 Daily Inspiration
               </h3>
@@ -338,7 +262,7 @@ const FtcFooter: React.FC<FooterProps> = () => {
                   />
                 </motion.button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
@@ -356,4 +280,4 @@ const FtcFooter: React.FC<FooterProps> = () => {
   );
 };
 
-export default FtcFooter;
+export default Footer;

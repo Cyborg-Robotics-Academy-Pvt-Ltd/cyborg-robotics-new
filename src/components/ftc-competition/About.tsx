@@ -137,7 +137,7 @@ export function About() {
 
             {/* CTA Button */}
             <motion.div variants={itemVariants} className="pt-4">
-              <Button
+              {/* <Button
                 asChild
                 size="default"
                 className="group relative overflow-hidden bg-gradient-to-r from-red-800 to-red-700 hover:from-red-900 hover:to-red-700 text-white font-bold px-6 py-4 rounded-xl hover:shadow-red-500/30 transform hover:scale-105 transition-all duration-300"
@@ -153,7 +153,7 @@ export function About() {
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                   <Sparkles className="absolute -top-1 -right-1 h-6 w-6 text-white/20" />
                 </Link>
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
 

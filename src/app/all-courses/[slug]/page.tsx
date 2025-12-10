@@ -64,6 +64,7 @@ import {
   WebDesignCurriculum,
   ElectronicsCurriculumData,
   PeeCeeCurriculumData,
+  EarlyElectronicsCurriculumData,
 } from "../../../../utils/curriculum";
 
 // Define the type for key features
@@ -157,7 +158,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Build interactive electronics projects with Arduino programming and hardware integration",
     mode: "Offline",
-    duration: "16 CLASSES (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ARDUINO.pdf",
     syllabusFileName: "ARDUINO.pdf",
     imagePath: "/assets/classroom-course/arduino.webp",
@@ -457,7 +458,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Learn to design and print 3D objects using modern 3D printing technology",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D PRINTING.pdf",
     syllabusFileName: "3D PRINTING.pdf",
     imagePath: "/assets/classroom-course/printing3d.webp",
@@ -501,7 +502,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Introduce young minds to programming with fun, interactive coding activities",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "7 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/BAMBINO CODING.pdf",
     syllabusFileName: "BAMBINO CODING.pdf",
     imagePath: "/assets/online-course/bambino.webp",
@@ -542,7 +543,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Learn the fundamentals of electronic circuits and electronic components",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ELECTRONICS.pdf",
     syllabusFileName: "ELECTRONICS.pdf",
     imagePath: "/assets/classroom-course/electronics.webp",
@@ -576,7 +577,7 @@ const mockData: Record<string, CourseData> = {
   },
   peecee: {
     id: "peecee",
-    title: "peecee",
+    title: "PeeCee",
     subtitle:
       "Learn the fundamentals of electronics and robotics using the PIC microcontroller",
     badge: " PeeCee Course",
@@ -860,6 +861,49 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "early-electronics": {
+    id: "earlyElectronics",
+    title: "EARLY ELECTRONICS",
+    subtitle:
+      "Discover the fundamentals of electronics through hands-on projects and experiments",
+    badge: "Foundational Electronics Course",
+    description:
+      "Explore electronic components, circuits, and build exciting projects with our comprehensive early electronics course",
+    mode: "Offline",
+    duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
+    syllabusFileName: "EARLY_ELECTRONICS.pdf",
+    imagePath: "/assets/classroom-course/early-electronics.webp",
+    imageAlt: "Early Electronics Course",
+    price: 8999,
+    originalPrice: 12999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Basic Components",
+        description:
+          "Learn about resistors, capacitors, LEDs, and integrated circuits",
+        iconName: "Cpu",
+      },
+      {
+        title: "Circuit Building",
+        description: "Construct series, parallel, and combinational circuits",
+        iconName: "CircuitBoard",
+      },
+      {
+        title: "Transistors & ICs",
+        description: "Understand PNP/NPN transistors and integrated circuits",
+        iconName: "Zap",
+      },
+      {
+        title: "Hands-on Projects",
+        description:
+          "Build practical electronics projects including smart devices",
+        iconName: "Lightbulb",
+      },
+    ],
+  },
 };
 
 // Server Component - properly handle params according to Next.js docs
@@ -911,6 +955,8 @@ export default async function SlugPage({
         return BambinoCodingCurriculum;
       case "electronics":
         return ElectronicsCurriculumData;
+      case "early-electronics":
+        return EarlyElectronicsCurriculumData;
       case "animation-coding":
         return AnimationAndCodingCurriculum;
       case "app-designing":

@@ -1129,3 +1129,49 @@ export const PeeCeeCurriculumData = [
   },
 ];
 
+export const EarlyElectronicsCurriculumData = [
+  {
+    id: "1",
+    title: "Level 1: Basic Electronics Fundamentals",
+    subtitle: [
+      "Introduction to Electronics: Basic concepts and principles",
+      "Series and Parallel circuits: Understanding circuit configurations",
+      "Combinational circuits: Complex circuit designs",
+      "Smart Watch Display: Practical application project",
+      "Logic Gates: AND, OR, NOT, NAND, NOR gates",
+      "Project based on Logic Gates: Hands-on implementation",
+      "Introduction to Integrated Circuits (ICs): Understanding ICs",
+      "IC-Based Projects: Practical applications with ICs",
+      "Introduction to Potentiometer: Variable resistor applications",
+      "Introduction to Light Dependent Resistor (LDR): Light sensing components",
+      "Projects on LDR: Practical implementations",
+      "Introduction to Capacitor: Energy storage components",
+      "Project Day 1: Hands-on project work",
+      "Project Day 2: Continued project development",
+      "Project Day 3: Project completion and presentation",
+      "Challenge Day: Problem-solving and critical thinking exercise"
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2: Advanced Electronic Components",
+    subtitle: [
+      "PNP Transistors: Understanding PNP transistor operation",
+      "NPN Transistors: Understanding NPN transistor operation",
+      "Recording IC: Audio recording integrated circuits",
+      "Amplifier: Signal amplification techniques",
+      "SCR (Silicon Controlled Rectifier): Power control devices",
+      "Project based on SCR: Practical SCR applications",
+      "Relay: Electromagnetic switching devices",
+      "Transformer: Voltage transformation principles",
+      "FM Module: Frequency modulation applications",
+      "Variable Capacitor: Tunable capacitance components",
+      "Solar Cell: Renewable energy applications",
+      "Antenna coil: RF and wireless communication components",
+      "Project Day 1: Hands-on project work",
+      "Project Day 2: Continued project development",
+      "Project Day 3: Project completion and presentation",
+      "Challenge Day: Advanced problem-solving exercise"
+    ],
+  }
+];

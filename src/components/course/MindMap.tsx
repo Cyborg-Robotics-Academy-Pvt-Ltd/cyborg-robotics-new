@@ -548,14 +548,14 @@ const initialNodes: Node[] = [
     id: "PBL_SOFTWARE",
     type: "horizontal",
     position: { x: 1000, y: 730 },
-    data: { label: "SOFTWARE", color: "#fbbf24", collapsible: true },
+    data: { label: "SOFTWARE", color: "#fbbf24", collapsible: false },
   },
 
   {
     id: "PBL_HARDWARE",
     type: "horizontal",
     position: { x: 1000, y: 790 },
-    data: { label: "HARDWARE", color: "#fbbf24", collapsible: true },
+    data: { label: "HARDWARE", color: "#fbbf24", collapsible: false },
   },
 
   {
@@ -568,7 +568,7 @@ const initialNodes: Node[] = [
     id: "DRONES",
     type: "horizontal",
     position: { x: 950, y: 660 },
-    data: { label: "DRONES - 4 LEVELS", color: "#34d399" },
+    data: { label: "DRONES - 2 LEVELS", color: "#34d399" },
   },
 
   {
@@ -1357,10 +1357,108 @@ const FlowWithProvider = () => {
     (nodeId: string) => {
       setCollapsedNodes((prev) => {
         const isCurrentlyCollapsed = prev[nodeId];
-        const newCollapsedState = {
+        let newCollapsedState = {
           ...prev,
           [nodeId]: !isCurrentlyCollapsed,
         };
+
+        // Define main categories (using actual node IDs)
+        const mainCategories = ["ROBOTICS", "SKILL", "WORKSHOPS"];
+
+        // Define age group categories
+        const ageGroups = ["AGE46", "AGE69", "AGE911", "AGE1116"];
+
+        // Define skill-based subcategories
+        const skillSubcategories = ["AI_ROOT", "PBL", "EMERGING"];
+
+        // Define workshop subcategories
+        const workshopSubcategories = ["WORK_TECH", "WORK_NONTECH"];
+
+        // Define age 11-16 subcategories
+        const age11to16Subcategories = ["MECH", "CODING", "EMBEDDED"];
+
+        // Log for debugging
+        console.log("Toggling node:", nodeId);
+        console.log("Is currently collapsed:", isCurrentlyCollapsed);
+        console.log("Is main category:", mainCategories.includes(nodeId));
+        console.log("Is age group:", ageGroups.includes(nodeId));
+        console.log(
+          "Is skill subcategory:",
+          skillSubcategories.includes(nodeId)
+        );
+        console.log(
+          "Is workshop subcategory:",
+          workshopSubcategories.includes(nodeId)
+        );
+        console.log(
+          "Is age 11-16 subcategory:",
+          age11to16Subcategories.includes(nodeId)
+        );
+
+        // If we're expanding a main category (i.e., it was collapsed and now we're making it expanded),
+        // collapse other main categories
+        if (isCurrentlyCollapsed && mainCategories.includes(nodeId)) {
+          console.log("Expanding main category, collapsing others");
+          mainCategories.forEach((categoryId) => {
+            if (categoryId !== nodeId) {
+              console.log("Collapsing category:", categoryId);
+              newCollapsedState[categoryId] = true;
+            }
+          });
+        }
+
+        // If we're expanding an age group category, collapse other age groups
+        if (isCurrentlyCollapsed && ageGroups.includes(nodeId)) {
+          console.log("Expanding age group, collapsing other age groups");
+          ageGroups.forEach((ageGroupId) => {
+            if (ageGroupId !== nodeId) {
+              console.log("Collapsing age group:", ageGroupId);
+              newCollapsedState[ageGroupId] = true;
+            }
+          });
+        }
+
+        // If we're expanding a skill subcategory, collapse other skill subcategories
+        if (isCurrentlyCollapsed && skillSubcategories.includes(nodeId)) {
+          console.log(
+            "Expanding skill subcategory, collapsing other skill subcategories"
+          );
+          skillSubcategories.forEach((skillId) => {
+            if (skillId !== nodeId) {
+              console.log("Collapsing skill subcategory:", skillId);
+              newCollapsedState[skillId] = true;
+            }
+          });
+        }
+
+        // If we're expanding a workshop subcategory, collapse other workshop subcategories
+        if (isCurrentlyCollapsed && workshopSubcategories.includes(nodeId)) {
+          console.log(
+            "Expanding workshop subcategory, collapsing other workshop subcategories"
+          );
+          workshopSubcategories.forEach((workshopId) => {
+            if (workshopId !== nodeId) {
+              console.log("Collapsing workshop subcategory:", workshopId);
+              newCollapsedState[workshopId] = true;
+            }
+          });
+        }
+
+        // If we're expanding an age 11-16 subcategory, collapse other age 11-16 subcategories
+        if (isCurrentlyCollapsed && age11to16Subcategories.includes(nodeId)) {
+          console.log(
+            "Expanding age 11-16 subcategory, collapsing other age 11-16 subcategories"
+          );
+          age11to16Subcategories.forEach((subId) => {
+            if (subId !== nodeId) {
+              console.log("Collapsing age 11-16 subcategory:", subId);
+              newCollapsedState[subId] = true;
+            }
+          });
+        }
+
+        // Log the new state
+        console.log("New collapsed state:", newCollapsedState);
 
         // Update URL with new state
         updateUrlState(newCollapsedState);
@@ -1633,37 +1731,34 @@ const FlowWithProvider = () => {
           style={{ background: "transparent" }}
         />
       </ReactFlow>
-
       {/* Mobile instructions */}
       {isMobile && (
         <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm bg-black/30 p-2 rounded-lg mx-4">
           Swipe to pan, pinch to zoom
         </div>
       )}
-
       {/* User instruction for expand/collapse */}
       <div className="absolute top-4 left-0 right-0 text-center text-gray-700 text-sm bg-white/80 p-2 rounded-lg mx-4 shadow-md">
         Click the (+) icon on nodes to expand and view courses
       </div>
-
       {/* First-time user tooltip */}
       {showTooltip && (
-        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-20 w-64">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-700 text-white p-5 rounded-xl shadow-2xl z-20 w-72 animate-fadeIn">
           <div className="flex justify-between items-start">
-            <p className="text-sm">
-              <strong>Welcome!</strong> Click the (+) icons to explore our
-              courses
+            <p className="text-sm font-medium">
+              <strong className="text-base">Welcome!</strong> Click the (+)
+              icons to explore our courses
             </p>
             <button
               onClick={() => setShowTooltip(false)}
-              className="text-white hover:text-gray-200 font-bold ml-2 text-2xl"
+              className="text-white hover:text-gray-200 font-bold ml-2 text-xl transition-transform duration-200 hover:scale-110"
             >
               ×
             </button>
           </div>
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-blue-600"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-red-700"></div>
         </div>
-      )}
+      )}{" "}
     </>
   );
 };
@@ -1695,6 +1790,21 @@ const MindMap = () => {
             transform: scale(1);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -10px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
         }
       `}</style>
       <ReactFlowProvider>
