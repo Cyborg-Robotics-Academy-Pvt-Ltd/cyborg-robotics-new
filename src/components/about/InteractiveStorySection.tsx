@@ -175,10 +175,10 @@ export default function InteractiveStorySection() {
                       Meanwhile, Lokesh was dreaming about building the
                       ecosystems where this kind of magic could thrive.
                       Together, we asked ourselves one powerful question:{" "}
-                      <em className="text-[#a63534] font-semibold">
+                      <span className="text-[#a63534] font-semibold">
                         &quot;What if every child could have access to such fun,
                         practical and meaningful learning?&quot;
-                      </em>
+                      </span>
                     </p>
                     <p className="font-semibold text-[#a63534]">
                       That question was the seed from which Cyborg Robotics
@@ -196,7 +196,7 @@ export default function InteractiveStorySection() {
                       The Challenge & Growth
                     </h4>
                     <p className="mb-3">
-                      The journey wasn&apos;t always easy. We started in{""}
+                      The journey wasn&apos;t always easy. We started in{" "}
                       <strong className="text-[#a63534]">2018</strong> with
                       limited resources, but the joy on our students&#39; faces
                       was all the fuel we needed. By{" "}
@@ -313,7 +313,7 @@ export default function InteractiveStorySection() {
                           <span className="text-gray-700">
                             {" "}
                             This brand is the place she wished she had as a
-                            child – a safe space to try, to fail and to keep
+                            child – a safe space to try to fail and to keep
                             going.
                           </span>
                         </div>

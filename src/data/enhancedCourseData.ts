@@ -22,7 +22,7 @@ export type CourseCategory = typeof COURSE_CATEGORIES[number];
 export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   "python-language": {
     id: "python",
-    title: "PYTHON PROGRAMMING",
+    title: "Python",
     subtitle: "Learn the world's fastest-growing programming language for web development, data science, AI and more",
     badge: "Most Popular Course",
     description: "Learn the world's fastest-growing programming language for web development, data science, AI and more",
@@ -59,7 +59,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Python is a powerful programming language that lets you work quickly and integrate systems more effectively. As a general-purpose, high-level language, Python allows you to focus on core functionality of applications by taking care of common programming tasks. Python's simple syntax emphasizes readability, reducing the cost of program maintenance. Its comprehensive standard library and interpreter are freely available for all major platforms, making it perfect for developing desktop GUI applications, websites, web applications, data analysis tools and even artificial intelligence systems. Our comprehensive course covers Python from basics to advanced concepts across six progressive levels.",
-    ageRange: "14+",
+    ageRange: "11-16",
     category: "Programming"
   },
   "arduino": {
@@ -143,12 +143,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Web design encompasses many different skills and disciplines in the production and maintenance of websites. The different areas of web design include web graphic design; user interface design; authoring, including standardized code and proprietary software; user experience design; and search engine optimization. Our comprehensive web designing course covers HTML, CSS, responsive design and modern web development practices to create stunning, functional websites.",
-    ageRange: "9-13",
+    ageRange: "11-16",
     category: "Programming"
   },
   "java": {
     id: "java",
-    title: "JAVA PROGRAMMING",
+    title: "Java",
     subtitle: "Master object-oriented programming with Java for enterprise applications and Android development",
     badge: "Enterprise Programming Course",
     description: "Master object-oriented programming with Java for enterprise applications and Android development",
@@ -185,13 +185,13 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Java is a high-level, class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible. It is a general-purpose programming language intended to let programmers write once, run anywhere, meaning that compiled Java code can run on all platforms that support Java without the need to recompile. Our comprehensive Java course covers everything from basic syntax to advanced enterprise development concepts.",
-    ageRange: "14+",
+    ageRange: "11-16",
     category: "Programming"
   },
   
   "machine-learning": {
     id: "machineLearning",
-    title: "MACHINE LEARNING",
+    title: "Machine Learning",
     subtitle: "Master the fundamentals of machine learning and build intelligent applications",
     badge: "AI & Data Science Course",
     description: "Master the fundamentals of machine learning and build intelligent applications",
@@ -233,7 +233,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "artificial-intelligence": {
     id: "artificialIntelligence",
-    title: "ARTIFICIAL INTELLIGENCE",
+    title: "Artificial Intelligence",
     subtitle: "Explore the cutting-edge world of AI and build intelligent systems",
     badge: "Advanced AI Course",
     description: "Explore the cutting-edge world of AI and build intelligent systems",
@@ -275,7 +275,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "robotics-ev3": {
     id: "roboticsEv3",
-    title: "ROBOTICS EV3",
+    title: "Robotics EV3",
     subtitle: "Build and program intelligent robots using LEGO Mindstorms EV3",
     badge: "Robotics Course",
     description: "Build and program intelligent robots using LEGO Mindstorms EV3",
@@ -312,12 +312,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "LEGO Mindstorms EV3 is a robotics kit that allows students to build and program robots. Our comprehensive robotics course combines mechanical engineering, programming and problem-solving skills. Students will learn to design, build and program robots that can navigate mazes, pick up objects and compete in various challenges.",
-    ageRange: "9-13",
+    ageRange: "11-16",
     category: "Robotics"
   },
   "spike-prime": {
     id: "spikePrime",
-    title: "SPIKE PRIME",
+    title: "Spike Prime",
     subtitle: "Learn robotics and coding with LEGO Education SPIKE Prime",
     badge: "Educational Robotics Course",
     description: "Learn robotics and coding with LEGO Education SPIKE Prime",
@@ -359,7 +359,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "3d-printing": {
     id: "3dPrinting",
-    title: "3D PRINTING",
+    title: "3D Printing",
     subtitle: "Learn to design and print 3D objects using modern 3D printing technology",
     badge: "Digital Manufacturing Course",
     description: "Learn to design and print 3D objects using modern 3D printing technology",
@@ -443,7 +443,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "electronics": {
     id: "electronics",
-    title: "ELECTRONICS",
+    title: "Electronics",
     subtitle: "Learn the fundamentals of electronic circuits and electronic components",
     badge: "Electronics Course",
     description: "Learn the fundamentals of electronic circuits and electronic components",
@@ -485,7 +485,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "animation-coding": {
     id: "animationCoding",
-    title: "ANIMATION CODING",
+    title: "Animation Coding",
     subtitle: "Create stunning animations and visual effects through programming",
     badge: "Creative Programming Course",
     description: "Create stunning animations and visual effects through programming",
@@ -527,7 +527,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "app-designing": {
     id: "appDesigning",
-    title: "APP DESIGNING",
+    title: "App Designing",
     subtitle: "Design beautiful and functional mobile applications with modern UI/UX principles",
     badge: "Mobile Design Course",
     description: "Design beautiful and functional mobile applications with modern UI/UX principles",
@@ -564,12 +564,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "App Designing focuses on creating user-friendly and visually appealing mobile applications. Students learn modern UI/UX design principles, user research, wireframing, prototyping and using industry-standard design tools. This course prepares students to design mobile apps that are both beautiful and functional, with a focus on user experience and accessibility.",
-    ageRange: "14+",
+    ageRange: "11-16",
     category: "Programming"
   },
   "early-simple-machines": {
     id: "earlySimpleMachines",
-    title: "EARLY SIMPLE MACHINES",
+    title: "Early Simple Machines",
     subtitle: "Explore basic mechanical principles through hands-on building and experimentation",
     badge: "Mechanical Engineering Course",
     description: "Explore basic mechanical principles through hands-on building and experimentation",
@@ -606,12 +606,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Early Simple Machines introduces students to fundamental mechanical principles through hands-on building and experimentation. Students learn about levers, pulleys, gears and other simple machines while constructing working models. This course builds a strong foundation in mechanical engineering concepts and develops problem-solving skills through practical projects.",
-    ageRange: "5-8",
+    ageRange: "4-6",
     category: "Robotics"
   },
  "peecee": {
   id: "peecee",
-  title: "PEECEE (PIC Microcontroller)",
+  title: "Peecee",
   subtitle: "Learn electronics, sensors, automation and robotics using the PeeCee microcontroller",
   badge: "Electronics & Robotics Course",
   description: "Master electronics, sensors, motor control, automation and robotics using the PeeCee (PIC) microcontroller through hands-on learning and real-world projects.",
@@ -652,7 +652,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   courseOverview:
     "The PeeCee Course introduces students to electronics, programming, automation and robotics using the PIC microcontroller. Through hands-on projects, students learn sensor inputs, motor control, logic building and smart machine development. Each level progressively develops skills—from basic electronics to advanced automation and robotics.",
 
-  ageRange: "8–16",
+  ageRange: "6-9",
  category: "Electronics",
 },
 
@@ -695,12 +695,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
-    ageRange: "14+",
+    ageRange: "11-16",
     category: "Electronics"
   },
   "spike-pneumatics": {
     id: "spikePneumatics",
-    title: "SPIKE PNEUMATICS",
+    title: "SPIKE Pneumatics",
     subtitle: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
     badge: "Pneumatic Systems Course",
     description: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
@@ -742,7 +742,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   },
   "simple-powered-machines": {
     id: "simplePoweredMachines",
-    title: "SIMPLE POWERED MACHINES",
+    title: "Simple Powered Machines",
     subtitle: "Explore powered mechanical systems and motor-driven mechanisms",
     badge: "Powered Systems Course",
     description: "Explore powered mechanical systems and motor-driven mechanisms",
@@ -779,8 +779,51 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Simple Powered Machines focuses on mechanical systems that use motors and power sources. Students learn about electric motors, power transmission systems, gears and control mechanisms. This course teaches the principles of powered mechanical systems and how to design and build motor-driven devices.",
-    ageRange: "9-13",
+    ageRange: "6-9",
     category: "Robotics"
   },
+
+  "early-electronics": {
+    id: "earlyElectronics",
+    title: "Early Electronics",
+    subtitle: "Discover the fundamentals of electronics through hands-on projects and experiments",
+    badge: "Foundational Electronics Course",
+    description: "Explore electronic components, circuits, and build exciting projects with our comprehensive early electronics course",
+    mode: "Offline",
+    duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
+    syllabusFileName: "EARLY_ELECTRONICS.pdf",
+    imagePath: "/assets/classroom-course/early-electronics.webp",
+    imageAlt: "Early Electronics Course",
+    price: 8999,
+    originalPrice: 12999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Basic Components",
+        description: "Learn about resistors, capacitors, LEDs, and integrated circuits",
+        iconName: "Cpu",
+      },
+      {
+        title: "Circuit Building",
+        description: "Construct series, parallel, and combinational circuits",
+        iconName: "CircuitBoard",
+      },
+      {
+        title: "Transistors & ICs",
+        description: "Understand PNP/NPN transistors and integrated circuits",
+        iconName: "Zap",
+      },
+      {
+        title: "Hands-on Projects",
+        description: "Build practical electronics projects including smart devices",
+        iconName: "Lightbulb",
+      },
+    ],
+    courseOverview: "Our Early Electronics course provides a solid foundation in electronics for beginners. Students will explore electronic components, understand how they work, and build various circuits. The course is divided into two levels, covering topics from basic electricity and components to more advanced concepts like transistors and integrated circuits. Through hands-on projects, students will gain practical experience in building electronic devices including a smart watch display, burglar alarms, and more.",
+    ageRange: "9-11",
+    category: "Electronics"
+  }
 
 };

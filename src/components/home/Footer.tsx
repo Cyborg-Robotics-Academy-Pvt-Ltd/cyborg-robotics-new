@@ -30,80 +30,28 @@ const Footer: React.FC<FooterProps> = () => {
   // Refs for quick links
   const quickLinkRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
-  const [dailyQuote, setDailyQuote] = useState<string>("");
-  const [isLoadingQuote, setIsLoadingQuote] = useState<boolean>(false);
-
-  useEffect(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    const cacheKey = `dailyQuote-${y}-${m}-${d}`;
-
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        setDailyQuote(cached);
-        return;
-      }
-    } catch {
-      // ignore storage errors
-    }
-
-    const controller = new AbortController();
-    const fetchQuote = async () => {
-      try {
-        const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
-        const res = await fetch("/api/generate-blog", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal,
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        let text: string = (data?.generated || "").trim();
-        if (!text) return;
-        // sanitize to one line and keep it short
-        text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
-        setDailyQuote(text);
-        try {
-          localStorage.setItem(cacheKey, text);
-        } catch {
-          // ignore storage errors
-        }
-      } catch {
-        // network/API failure -> keep as empty or cached
-      }
-    };
-
-    fetchQuote();
-    return () => controller.abort();
-  }, []);
-
-  const fetchNewQuote = async () => {
-    if (isLoadingQuote) return;
-
+  // Array of 10 inspirational quotes
+  const quotes = [
+    "Robotics is not about machines, it's about possibilities.",
+    "The future is built by those who code it—one robot at a time.",
+    "Every robot you build is a step toward tomorrow.",
+    "In robotics, failure is just another step to innovation.",
+    "Robots turn imagination into reality.",
+    "The best way to learn robotics is to build, break, and rebuild.",
+    "Automation is the art of making the impossible, possible.",
+    "Robotics: where science meets creativity.",
+    "A robot is only as smart as the mind that builds it.",
+    "Dream, design, and drive the world with robotics.",
+  ];
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
+  const dailyQuote = quotes[quoteIndex];
+  const fetchNewQuote = () => {
     setIsLoadingQuote(true);
-    try {
-      const prompt = `Give a short, motivational one-line quote for students learning robotics and coding. Max 8 words, no quotes, no emojis.`;
-      const res = await fetch("/api/generate-blog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      let text: string = (data?.generated || "").trim();
-      if (!text) return;
-      // sanitize to one line and keep it short
-      text = text.replace(/\s+/g, " ").replace(/["'`]/g, "").slice(0, 80);
-      setDailyQuote(text);
-    } catch {
-      // network/API failure -> keep current quote
-    } finally {
+    setTimeout(() => {
+      setQuoteIndex((prev) => (prev + 1) % quotes.length);
       setIsLoadingQuote(false);
-    }
+    }, 400); // Simulate loading
   };
 
   return (
@@ -256,7 +204,7 @@ const Footer: React.FC<FooterProps> = () => {
                 {[
                   { href: "/", label: "Home" },
                   { href: "/about-us", label: "About" },
-                  { href: "/gallery/photo", label: "Gallery" },
+                  { href: "/gallery/photos  ", label: "Gallery" },
                   { href: "/contact-us", label: "Contact" },
                   {
                     href: "/terms-conditions",

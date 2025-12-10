@@ -464,7 +464,7 @@ export default function OverlayMenu({
                           alt: "Facebook",
                         },
                         {
-                          href: "https://youtube.com/@cyborgroboticsacademy2270?si=aQjTThVhESGN_bQ9",
+                          href: "https://youtube.com/@cyborgroboticsacademy?si=Pf503uam_Awlea8Q",
                           src: "/assets/social-icons/youtube.png",
                           alt: "YouTube",
                         },
