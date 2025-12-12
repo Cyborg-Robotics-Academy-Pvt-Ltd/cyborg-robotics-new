@@ -1,8 +1,8 @@
 // app/layout.tsx
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
-import Header from "@/components/layout/header";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
+import ConditionalHeader from "@/components/layout/conditional-header";
 
 import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
@@ -62,7 +62,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <WebsiteLoadingProvider>
           <AuthProvider>
             <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
-              <Header />
+              <Suspense fallback={<div />}>
+                <ConditionalHeader />
+              </Suspense>
               <main className="flex-1 w-full overflow-x-hidden">
                 {children}
               </main>

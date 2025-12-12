@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 export const InfiniteMovingGallery = ({
   items,
@@ -31,7 +32,7 @@ export const InfiniteMovingGallery = ({
   const [scrollLeft, setScrollLeft] = useState(0);
   const itemWidthRef = useRef(0);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
   // Calculate the width of each item including gap
   useEffect(() => {
@@ -48,7 +49,8 @@ export const InfiniteMovingGallery = ({
     }
   }, [items]);
 
-  // Auto-play functionality
+  // Auto-play functionality (disabled)
+  /*
   useEffect(() => {
     if (!isAutoPlaying) return;
 
@@ -65,6 +67,7 @@ export const InfiniteMovingGallery = ({
       }
     };
   }, [isAutoPlaying, autoPlayInterval, items.length]);
+  */
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -224,9 +227,15 @@ export const InfiniteMovingGallery = ({
         className={`flex min-w-full shrink-0 gap-8 md:gap-4  py-4 w-max flex-nowrap`}
       >
         {items.map((item) => (
-          <li
+          <motion.li
             key={item.id}
             className="w-[240px] md:w-[230px] max-w-full relative rounded-2xl border border-b-2 border-white/30 h-[400px] md:h-[380px] flex-shrink-0 bg-white/10 backdrop-blur-lg shadow-lg overflow-hidden"
+            whileHover={{
+              scale: 1.05,
+              zIndex: 10,
+              transition: { duration: 0.3, ease: "easeInOut" },
+            }}
+            whileTap={{ scale: 0.95 }}
           >
             <div className="relative w-full h-full ">
               <Image
@@ -237,7 +246,7 @@ export const InfiniteMovingGallery = ({
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
-          </li>
+          </motion.li>
         ))}
       </ul>
     </div>

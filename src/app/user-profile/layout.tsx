@@ -15,8 +15,12 @@ export default function UserProfileLayout({
   const role = (userRole as "admin" | "trainer" | "student") || "student";
 
   return (
-    <DashboardLayout role={role} name={name}>
-      {children}
-    </DashboardLayout>
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-1">
+        <DashboardLayout role={role} name={name}>
+          {children}
+        </DashboardLayout>
+      </div>
+    </div>
   );
 }

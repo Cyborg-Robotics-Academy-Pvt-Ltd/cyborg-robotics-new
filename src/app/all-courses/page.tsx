@@ -20,6 +20,8 @@ import {
 } from "@/data/enhancedCourseData";
 import { useScrollToSection } from "@/hooks/useScrollToSection";
 import Footer from "@/components/home/Footer";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 // Convert the enhanced course data to an array for easier manipulation
 const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
@@ -49,11 +51,22 @@ const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
   }
 );
 
-const AllCoursesPage = () => {
+const AllCoursesPageContent = () => {
   // State for search and filter
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+
+  // Get search params from URL
+  const searchParams = useSearchParams();
+  const urlSearchParam = searchParams.get("search");
+
+  // Set initial search state from URL param and update when URL changes
+  React.useEffect(() => {
+    if (urlSearchParam !== null) {
+      setSearch(urlSearchParam);
+    }
+  }, [urlSearchParam]);
 
   // Scroll to section hook
   const { scrollToSection } = useScrollToSection();
@@ -98,8 +111,8 @@ const AllCoursesPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="px-4 sm:px-6 lg:px-8">
         {/* Header section */}
-        <div className="text-center mb-6 mt-4">
-          <h1 className="text-4xl md:text-5xl gradient-text font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 mt-8">
+          <h1 className="text-4xl md:text-5xl gradient-text font-bold  mb-4">
             Our Courses
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
@@ -121,19 +134,19 @@ const AllCoursesPage = () => {
             {/* Search Input */}
             <div className="relative">
               <label
-                htmlFor="search"
+                htmlFor="search your courses"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Search Courses
               </label>
               <div className="relative">
                 <Input
-                  id="search"
+                  id="search your courses"
                   type="text"
                   placeholder="e.g., Python, Robotics, Arduino"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg focus:ring-2 focus:ring-red-500 transition-all border-0"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 {search && (
@@ -151,7 +164,7 @@ const AllCoursesPage = () => {
             {/* Age Filter */}
             <div>
               <label
-                htmlFor="age-filter"
+                htmlFor="age filter"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Age Group
@@ -356,4 +369,10 @@ const AllCoursesPage = () => {
   );
 };
 
-export default AllCoursesPage;
+export default function AllCoursesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AllCoursesPageContent />
+    </Suspense>
+  );
+}

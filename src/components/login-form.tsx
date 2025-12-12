@@ -41,7 +41,7 @@ export function LoginForm({
                   type="email"
                   placeholder="m@example.com"
                   required
-                  className="h-9 text-sm"
+                  className="h-9 text-sm border-0"
                 />
               </div>
 
@@ -60,7 +60,7 @@ export function LoginForm({
                   id="password"
                   type="password"
                   required
-                  className="h-9 text-sm"
+                  className="h-9 text-sm border-0"
                 />
               </div>
 

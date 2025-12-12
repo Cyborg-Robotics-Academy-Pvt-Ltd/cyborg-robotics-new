@@ -598,7 +598,7 @@ const LoginPage = () => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300`}
+                          className={`pl-10 pr-3 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0`}
                         />
                       </div>
                     </div>
@@ -628,7 +628,7 @@ const LoginPage = () => {
                           onChange={(e) => setPassword(e.target.value)}
                           required
                           placeholder="Enter your password"
-                          className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300`}
+                          className={`pl-10 pr-10 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0`}
                         />
                         <button
                           type="button"

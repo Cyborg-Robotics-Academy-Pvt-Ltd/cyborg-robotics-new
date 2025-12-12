@@ -337,10 +337,17 @@ body {
   border-width: 1px;
   border-color: hsl(var(--border)); /* Use CSS variable for consistency */
 }
-.dark .border {
-  border-color: var(
-    --darklw-2
-  ); /* Using darklw-2 as per your original config for dark border */
+.border-transparent {
+  border-color: transparent;
+}
+.border-b-transparent {
+  border-bottom-color: transparent;
+}
+.dark .border-transparent {
+  border-color: transparent;
+}
+.dark .border-b-transparent {
+  border-bottom-color: transparent;
 }
 
 /* Smooth Scroll Utility */
