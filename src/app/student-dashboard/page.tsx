@@ -111,7 +111,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] bg-white md:mt-20  mt-10">
+    <div className="min-h-[calc(100vh-6rem)] bg-white pt-4">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 ">
         {/* Welcome Section */}
         <div className="mb-8 bg-gradient-to-r from-[#991b1b] to-[#991b1b] p-6 rounded-xl shadow-md relative overflow-hidden">
@@ -136,7 +136,7 @@ const StudentDashboard = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white font-bold text-lg">
+                  <span className="text-red-800 font-bold text-lg">
                     {(
                       studentData?.fullName ||
                       studentData?.name ||

@@ -300,7 +300,7 @@ export default function OverlayMenu({
           </button>
 
           <div className="container mx-auto justify-center flex h-full max-w-6xl flex-col px-4 md:px-6">
-            <header className="w-full py-4 border-b border-border/50 border-b-gray-300">
+            <header className="w-full py-4 border-b border-transparent">
               <div className="flex items-center">
                 <Link
                   href="/"

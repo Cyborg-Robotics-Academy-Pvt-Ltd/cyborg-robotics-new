@@ -13,8 +13,12 @@ export default function StudentDashboardLayout({
     user?.displayName || (user?.email ? user.email.split("@")[0] : "Student");
 
   return (
-    <DashboardLayout role="student" name={name}>
-      {children}
-    </DashboardLayout>
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-1">
+        <DashboardLayout role="student" name={name}>
+          {children}
+        </DashboardLayout>
+      </div>
+    </div>
   );
 }

@@ -269,7 +269,7 @@ const Page = () => {
               <div className="relative w-full sm:w-80">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white" />
                 <Input
-                  className="pl-12 pr-4 py-3 rounded-full border-slate-200 focus:ring-4 focus:ring-red-400/50 focus:border-red-500 transition-all duration-300 text-base shadow-lg placeholder:text-white text-white"
+                  className="pl-12 pr-4 py-3 rounded-full focus:ring-4 focus:ring-red-400/50 transition-all duration-300 text-base shadow-lg placeholder:text-white text-white border-0"
                   placeholder="Search by name or school..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}

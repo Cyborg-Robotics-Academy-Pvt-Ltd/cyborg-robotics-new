@@ -51,12 +51,17 @@ const roleLinksMap: Record<
       icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
     },
     {
+      label: "Grant Access",
+      href: "/admin-dashboard/create-user",
+      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
+    },
+    {
       label: "User Profile",
       href: "/user-profile",
       icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
     {
-      label: "Create User",
+      label: "Student Enrollment",
       href: "/create-user",
       icon: <IconUserPlus className="h-5 w-5 shrink-0 text-black" />,
     },
@@ -203,8 +208,8 @@ export default function DashboardLayout({
   return (
     <div
       className={cn(
-        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row ",
-        "min-h-[calc(100vh-4rem)]"
+        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row pt-16",
+        "min-h-[calc(100vh-6rem)]"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -243,7 +248,7 @@ export default function DashboardLayout({
         </SidebarBody>
       </Sidebar>
       <div className="flex flex-1 md:ml-[60px]  ">
-        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%]  shadow-xl ">
+        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%] shadow-xl ">
           {children}
         </div>
       </div>

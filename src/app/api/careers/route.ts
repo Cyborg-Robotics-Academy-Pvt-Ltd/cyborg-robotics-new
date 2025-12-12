@@ -16,7 +16,6 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
     // Email validation (basic)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(body.email)) {

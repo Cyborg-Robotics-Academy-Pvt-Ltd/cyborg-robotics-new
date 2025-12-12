@@ -125,7 +125,7 @@ export default function AboutNavigation({
   };
 
   return (
-    <header className="fixed top-0 h-16 left-0 right-0 transition-all duration-300 bg-white shadow-lg border-b border-gray-200 z-50">
+    <header className="fixed top-0 h-16 left-0 right-0 transition-all duration-300 bg-white/95 shadow-lg border-b border-transparent z-50">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-1 lg:px-1 ">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">

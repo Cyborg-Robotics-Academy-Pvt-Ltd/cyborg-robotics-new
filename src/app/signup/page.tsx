@@ -637,7 +637,7 @@ const SignUpPage = () => {
                           onChange={handleChange}
                           placeholder="Enter your full name"
                           required
-                          className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.fullName ? "border-red-500" : ""}`}
+                          className={`pl-10 pr-3 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.fullName ? "border-red-500" : ""}`}
                         />
                       </div>
                     </div>
@@ -678,7 +678,7 @@ const SignUpPage = () => {
                           onChange={handleChange}
                           placeholder="Enter your email address"
                           required
-                          className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.email ? "border-red-500" : ""}`}
+                          className={`pl-10 pr-3 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.email ? "border-red-500" : ""}`}
                         />
                       </div>
                     </div>
@@ -719,7 +719,7 @@ const SignUpPage = () => {
                           onChange={handleChange}
                           placeholder="e.g., Grade 5"
                           required
-                          className={`pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.grade ? "border-red-500" : ""}`}
+                          className={`pl-10 pr-3 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.grade ? "border-red-500" : ""}`}
                         />
                       </div>
                     </div>
@@ -760,7 +760,7 @@ const SignUpPage = () => {
                           onChange={handleChange}
                           placeholder="Create a password"
                           required
-                          className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.password ? "border-red-500" : ""}`}
+                          className={`pl-10 pr-10 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.password ? "border-red-500" : ""}`}
                         />
                         <button
                           type="button"
@@ -812,7 +812,7 @@ const SignUpPage = () => {
                           onChange={handleChange}
                           placeholder="Confirm your password"
                           required
-                          className={`pl-10 pr-10 py-2 text-sm bg-white border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:border-gray-400 focus:ring-2 focus:ring-gray-400 transition-all duration-300 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                          className={`pl-10 pr-10 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.confirmPassword ? "border-red-500" : ""}`}
                         />
                         <button
                           type="button"

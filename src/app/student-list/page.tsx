@@ -563,7 +563,7 @@ const Page = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
+    <div className="min-h-screen -mt-16 bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
       <header className="bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-xl md:mt-16  mt-10">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between w-full">
@@ -745,7 +745,7 @@ const Page = () => {
                   {[...Array(8)].map((_, i) => (
                     <div
                       key={i}
-                      className="h-16 bg-gray-100 rounded w-full"
+                      className="h-10 bg-gray-100 rounded w-full"
                     ></div>
                   ))}
                 </div>
@@ -755,77 +755,77 @@ const Page = () => {
             <div className="overflow-x-auto overflow-visible rounded-xl shadow-lg border border-gray-200">
               <Table className="min-w-full divide-y divide-gray-200">
                 <colgroup>
-                  <col className="w-36 md:w-44" />
-                  <col className="w-36 md:w-52" />
-                  <col className="w-52 md:w-72" />
-                  <col className="w-36 md:w-52" />
-                  {activeTab === "hold" && <col className="w-36 md:w-52" />}
-                  <col className="w-36 md:w-52" />
-                  <col className="w-24 md:w-28" />
+                  <col className="w-28 md:w-36" />
+                  <col className="w-28 md:w-36" />
+                  <col className="w-36 md:w-44 hidden md:table-cell" />
+                  <col className="w-28 md:w-36" />
+                  {activeTab === "hold" && <col className="w-28 md:w-36" />}
+                  <col className="w-32 md:w-40" />
+                  <col className="w-16 md:w-20" />
                 </colgroup>
                 <TableHeader>
                   <TableRow className="bg-gray-50 border-b border-gray-200">
                     <TableHead
-                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
+                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("PrnNumber")}
                     >
                       <div className="flex items-center">
                         PRN Number
                         {sortColumn === "PrnNumber" && (
                           <ChevronDown
-                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
                     <TableHead
-                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
+                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("username")}
                     >
                       <div className="flex items-center">
                         Student Name
                         {sortColumn === "username" && (
                           <ChevronDown
-                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
                     <TableHead
-                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base hidden md:table-cell"
+                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm hidden md:table-cell"
                       onClick={() => handleSort("email")}
                     >
                       <div className="flex items-center">
                         Email Address
                         {sortColumn === "email" && (
                           <ChevronDown
-                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-sm md:text-base">
+                    <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-xs md:text-sm">
                       Courses
                     </TableHead>
                     {activeTab === "hold" && (
-                      <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-sm md:text-base">
-                        Suggested Course
+                      <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-xs md:text-sm">
+                        Next Course
                       </TableHead>
                     )}
                     <TableHead
-                      className="font-semibold text-gray-700 py-6 px-4 md:px-8 cursor-pointer hover:text-red-600 transition-colors text-sm md:text-base"
+                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("completedTasks")}
                     >
                       <div className="flex items-center">
                         Classes
                         {sortColumn === "completedTasks" && (
                           <ChevronDown
-                            className={`ml-3 h-5 w-5 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
+                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
                           />
                         )}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-6 px-4 md:px-8 text-right text-sm md:text-base sticky right-0 bg-gray-50 z-10">
+                    <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-right text-xs md:text-sm sticky right-0 bg-gray-50 z-10">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -839,47 +839,66 @@ const Page = () => {
                       } hover:bg-gray-100`}
                       onClick={() => router.push(`/${student.PrnNumber}`)}
                     >
-                      <TableCell className="font-mono text-gray-800 py-6 px-4 md:px-8 text-sm md:text-base">
+                      <TableCell className="font-mono text-gray-800 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.PrnNumber}
                       </TableCell>
-                      <TableCell className="font-medium text-gray-900 py-6 px-4 md:px-8 text-sm md:text-base">
+                      <TableCell className="font-medium text-gray-900 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.username}
                       </TableCell>
-                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base hidden md:table-cell">
+                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm hidden md:table-cell">
                         {student.email}
                       </TableCell>
-                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
-                        {student.courses && student.courses.length > 0
-                          ? student.courses
-                              .map((course) =>
-                                typeof course === "string"
-                                  ? course
-                                  : course?.name || ""
-                              )
-                              .filter(Boolean)
-                              .join(", ")
-                          : "-"}
+                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
+                        <div className="relative group">
+                          <span className="truncate max-w-[120px] inline-block">
+                            {student.courses && student.courses.length > 0
+                              ? student.courses
+                                  .map((course) =>
+                                    typeof course === "string"
+                                      ? course
+                                      : course?.name || ""
+                                  )
+                                  .filter(Boolean)
+                                  .slice(0, 2)
+                                  .join(", ") +
+                                (student.courses.length > 2 ? "..." : "")
+                              : "-"}
+                          </span>
+                          {student.courses && student.courses.length > 0 && (
+                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
+                              <div className="font-medium mb-1">Courses:</div>
+                              {student.courses
+                                .map((course) =>
+                                  typeof course === "string"
+                                    ? course
+                                    : course?.name || ""
+                                )
+                                .filter(Boolean)
+                                .join(", ")}
+                              <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-gray-800"></div>
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       {activeTab === "hold" && (
-                        <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">
-                              {student.nextCourse || "No next course assigned"}
+                        <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
+                          <div className="flex items-center">
+                            <span className="text-xs">
+                              {student.nextCourse || "-"}
                             </span>
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className="text-gray-600 py-6 px-4 md:px-8 text-sm md:text-base">
-                        <div className="space-y-3">
-                          <span
-                            className={`${
-                              student.completedTasks > 15
-                                ? "bg-gradient-to-r from-[#991b1b]/10 to-[#7f1d1d]/10 text-[#991b1b] shadow"
-                                : "bg-green-100 text-green-700"
-                            } px-3 py-2 rounded-full text-sm font-semibold tracking-wide`}
-                          >
-                            Completed: {student.completedTasks}
-                          </span>
+                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
+                        <div className="space-y-1 relative group">
+                          <div className="flex items-center">
+                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                              {student.completedTasks} Comp
+                            </span>
+                            <span className="ml-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                              {student.ongoingTasks} Ong
+                            </span>
+                          </div>
                           {student.tasks
                             .filter(
                               (t) => t.status.toLowerCase() === "complete"
@@ -893,22 +912,45 @@ const Page = () => {
                             .map((task, i) => (
                               <div
                                 key={i}
-                                className="text-sm text-gray-500 mt-2 hidden md:block"
+                                className="text-xs text-gray-500 truncate max-w-[120px]"
                               >
-                                Latest Completed: {task.course} - {task.task}
+                                {task.course}: {task.task}
                               </div>
                             ))}
+                          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
+                            <div className="font-medium mb-1">
+                              Task Summary:
+                            </div>
+                            <div>Completed: {student.completedTasks}</div>
+                            <div>Ongoing: {student.ongoingTasks}</div>
+                            {student.tasks
+                              .filter(
+                                (t) => t.status.toLowerCase() === "complete"
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.dateTime).getTime() -
+                                  new Date(a.dateTime).getTime()
+                              )
+                              .slice(0, 3)
+                              .map((task, i) => (
+                                <div key={i} className="mt-1 truncate">
+                                  • {task.course}: {task.task}
+                                </div>
+                              ))}
+                            <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-gray-800"></div>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell
-                        className="text-right py-6 px-4 md:px-8 sticky right-0 bg-white z-10"
+                        className="text-right py-3 px-3 md:px-4 sticky right-0 bg-white z-10"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           ref={(el) => {
                             actionBtnRefs.current[student.id] = el;
                           }}
-                          className="text-gray-500 hover:text-gray-700 focus:outline-none p-2 md:p-3 rounded-full transition-colors dropdown-trigger shadow-xl"
+                          className="text-gray-500 hover:text-gray-700 focus:outline-none p-1.5 md:p-2 rounded-full transition-colors dropdown-trigger shadow-md"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleDropdown(student.id, e);

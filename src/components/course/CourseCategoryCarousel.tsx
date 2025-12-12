@@ -152,16 +152,6 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
                 <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
               </button>
             </div>
-
-            {/* Course counter */}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 bg-gray-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap">
-              <span className="font-semibold text-gray-900">
-                {currentIndex + 1}-
-                {Math.min(currentIndex + itemsPerView, totalItems)}
-              </span>
-              <span>/</span>
-              <span>{totalItems}</span>
-            </div>
           </div>
         )}
       </div>

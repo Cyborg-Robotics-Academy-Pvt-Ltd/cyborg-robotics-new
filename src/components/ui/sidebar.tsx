@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsRight } from "lucide-react";
+import { ChevronsRight, Menu } from "lucide-react";
 
 interface Links {
   label: string;
@@ -93,7 +93,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "fixed left-0 top-16 h-[calc(100vh-4rem)]  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar shadow-xl", // changed to fixed and adjusted for header
+          "fixed left-0  h-[calc(100vh-4rem)]  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar shadow-xl", // changed to fixed and adjusted for header
           open ? "px-4" : "px-2",
           className
         )}
@@ -130,11 +130,8 @@ export const MobileSidebar = ({
         )}
         {...props}
       >
-        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-16 left-2 bg-white">
-          <ChevronsRight
-            className="text-neutral-800 animate-bounce"
-            onClick={() => setOpen(!open)}
-          />
+        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-16 right-2 bg-white">
+          <Menu className="text-neutral-800 " onClick={() => setOpen(!open)} />
         </div>
         <AnimatePresence>
           {open && (

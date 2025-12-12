@@ -13,8 +13,12 @@ export default function TrainerDashboardLayout({
     user?.displayName || (user?.email ? user.email.split("@")[0] : "Trainer");
 
   return (
-    <DashboardLayout role="trainer" name={name}>
-      {children}
-    </DashboardLayout>
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-1">
+        <DashboardLayout role="trainer" name={name}>
+          {children}
+        </DashboardLayout>
+      </div>
+    </div>
   );
 }

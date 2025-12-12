@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 import Link from "next/link";
 import OverlayMenu from "./overlay-menu";
@@ -12,11 +12,20 @@ import HamburgerButton from "./hamburger-button";
 import { useAuth } from "@/lib/auth-context";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+import { enhancedCourseData } from "@/data/enhancedCourseData";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState<
+    Array<{ title: string; slug: string }>
+  >([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const isAboutPage = pathname === "/about-us";
@@ -193,6 +202,90 @@ export default function Header() {
     }
   };
 
+  // Handle search submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowSuggestions(false);
+      router.push(
+        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`
+      );
+    }
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: {
+    title: string;
+    slug: string;
+  }) => {
+    setSearchQuery(suggestion.title);
+    setShowSuggestions(false);
+    searchInputRef.current?.blur();
+
+    // Navigate immediately
+    router.push(`/all-courses?search=${encodeURIComponent(suggestion.title)}`);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check if the click is outside the search container
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        // Check if the click is not on a suggestion item
+        const suggestionElements = document.querySelectorAll(
+          ".search-suggestion-item"
+        );
+        let clickedOnSuggestion = false;
+        suggestionElements.forEach((el) => {
+          if (el.contains(event.target as Node)) {
+            clickedOnSuggestion = true;
+          }
+        });
+
+        if (!clickedOnSuggestion) {
+          setShowSuggestions(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Generate search suggestions based on course data
+  useEffect(() => {
+    const generateSuggestions = () => {
+      if (!searchQuery.trim()) {
+        setSearchSuggestions([]);
+        return;
+      }
+
+      // Convert enhancedCourseData to array and filter based on search query
+      const courseList = Object.entries(enhancedCourseData).map(
+        ([slug, course]) => ({
+          slug,
+          title: course.title,
+        })
+      );
+
+      // Filter suggestions based on search query
+      const filteredSuggestions = courseList
+        .filter((course) =>
+          course.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 5); // Limit to 5 suggestions
+
+      setSearchSuggestions(filteredSuggestions);
+    };
+
+    generateSuggestions();
+  }, [searchQuery]);
+
   // Navigation items for main navbar
   const navItems = [
     { id: "courses", label: "Courses", href: "/all-courses" },
@@ -221,20 +314,25 @@ export default function Header() {
         animate={{
           y: 0, // Slide down to normal position
           backgroundColor:
-            isHomePage && !isScrolled ? "rgba(0,0,0,0)" : "rgba(255,255,255)",
+            isHomePage && !isScrolled ? "rgba(0,0,0,0)" : "rgba(255,255,255,1)",
           boxShadow:
             isHomePage && !isScrolled
               ? "none"
               : "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+          borderBottom:
+            isHomePage && !isScrolled
+              ? "1px solid transparent"
+              : "1px solid rgba(0, 0, 0, 0.1)",
         }}
         transition={{
           y: { type: "spring", stiffness: 300, damping: 30 }, // Smooth spring animation for sliding
           backgroundColor: { duration: 0.3, ease: "easeInOut" }, // Color transition
           boxShadow: { duration: 0.3, ease: "easeInOut" }, // Shadow transition
+          borderBottom: { duration: 0.3, ease: "easeInOut" }, // Border transition
         }}
         className={`fixed top-0 left-0 right-0 z-50 `}
       >
-        <div className="flex h-16 items-center w-full justify-between relative">
+        <div className="flex h-16 items-center w-full justify-between px-4">
           <motion.div
             animate={{
               scale: isHomePage && !isScrolled ? 1 : 1,
@@ -255,48 +353,112 @@ export default function Header() {
             </Link>
           </motion.div>
 
-          {/* Navigation */}
-          <nav className="hidden lg:flex gap-8 items-center justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            {navItems.map((item) => (
-              <motion.div
-                key={item.id}
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Link
-                  href={item.href}
-                  className={`animated-underline text-sm font-medium hover:font-semibold transition-all duration-300 ${
-                    activeSection === item.id
-                      ? "text-red-800 font-semibold"
-                      : item.id === "courses"
-                        ? isHomePage && !isScrolled
-                          ? "text-white font-bold hover:text-red-300"
-                          : "text-black font-bold hover:text-red-700"
-                        : item.id === "ftc-competition"
-                          ? "text-yellow-500 font-bold hover:text-yellow-600"
-                          : isHomePage && !isScrolled
-                            ? "text-white hover:text-red-300"
-                            : "text-gray-900 hover:text-red-800"
-                  }`}
-                  onClick={(e) =>
-                    isScrollLink(item.href) && handleNavClick(e, item.id)
-                  }
-                >
-                  <span className="flex items-center gap-1">
-                    {item.label}
-                    {item.id === "ftc-competition" && (
-                      <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                        NEW
+          {/* Desktop Navigation with Search - Hidden on mobile, centered on desktop */}
+          <div className="hidden lg:flex items-center justify-center flex-1">
+            <div className="flex items-center justify-center gap-5 max-w-3xl w-full">
+              {/* Navigation */}
+              <nav className="flex gap-5 items-center">
+                {navItems.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`animated-underline text-sm font-medium hover:font-semibold transition-all duration-300 ${
+                        activeSection === item.id
+                          ? "text-red-800 font-semibold"
+                          : item.id === "courses"
+                            ? isHomePage && !isScrolled
+                              ? "text-white font-bold hover:text-red-300"
+                              : "text-black font-bold hover:text-red-700"
+                            : item.id === "ftc-competition"
+                              ? "text-yellow-500 font-bold hover:text-yellow-600"
+                              : isHomePage && !isScrolled
+                                ? "text-white hover:text-red-300"
+                                : "text-gray-900 hover:text-red-800"
+                      }`}
+                      onClick={(e) =>
+                        isScrollLink(item.href) && handleNavClick(e, item.id)
+                      }
+                    >
+                      <span className="flex items-center gap-1">
+                        {item.label}
+                        {item.id === "ftc-competition" && (
+                          <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                            NEW
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </nav>
+                    </Link>
+                  </motion.div>
+                ))}
+              </nav>
+
+              {/* Search Bar with Suggestions */}
+              <div className="flex-1 max-w-[160px] ml-4 relative">
+                <form
+                  onSubmit={handleSearch}
+                  className="relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search Courses"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    className={`w-full pl-7 pr-3 py-1 rounded-2xl focus:ring-2 focus:ring-red-500 transition-all text-xs ${
+                      isHomePage && !isScrolled
+                        ? "bg-white/20 text-white placeholder:text-white/70 border-0"
+                        : "bg-white text-gray-900 placeholder:text-gray-500 border-0"
+                    }`}
+                  />
+                  <Search
+                    className={`absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 ${
+                      isHomePage && !isScrolled ? "text-white" : "text-gray-400"
+                    }`}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Search Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                    {searchSuggestions.map((suggestion, index) => (
+                      <div
+                        key={suggestion.slug}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className={`search-suggestion-item px-3 py-2 text-xs hover:bg-red-50 hover:text-red-700 cursor-pointer transition-colors duration-200 ${
+                          index < searchSuggestions.length - 1
+                            ? "border-b border-gray-100"
+                            : ""
+                        }`}
+                      >
+                        <span className="font-medium">{suggestion.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* CTA buttons and menu */}
-          <div className="flex items-center gap-4 absolute top-4 right-4">
+          <div className="flex items-center gap-3">
             <div className="hidden lg:flex items-center gap-4">
               {loading ? (
                 <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
@@ -310,7 +472,7 @@ export default function Header() {
                       size="sm"
                       className={`font-semibold rounded-[7px] transition-all duration-300 shadow-sm ${
                         isHomePage && !isScrolled
-                          ? "text-white bg-transparent border border-gray-200/10 hover:text-[#ffffff]"
+                          ? "text-white    hover:text-[#ffffff]"
                           : "text-white bg-red-800 hover:text-[#ffffff]"
                       }`}
                     >
