@@ -176,99 +176,73 @@ export const javaCurriculum = [
     },
   ];
 
-  export const ThreeDPrintingCurriculum = [
-    {
-      id: "1",
-      title: "Introduction to 3D Printing",
-      subtitle: [
-        "What is 3D printing? (Basic explanation)",
-        "How does a 3D printer work? (Parts and process)",
-        "Different types of 3D printers",
-        "Basic safety rules while using 3D printers",
-      ],
-    },
-    {
-      id: "2",
-      title: "Understanding 3D Design",
-      subtitle: [
-        "Introduction to 3D shapes and models",
-        "Simple 3D design concepts (e.g., cubes, spheres)",
-        "Hands-on: Building simple objects using modeling clay or craft materials",
-      ],
-    },
-    {
-      id: "3",
-      title: "Introduction to 3D Design Software",
-      subtitle: [
-        "Navigating 3D design software (Tinkercad, etc.)",
-        "Understanding the workspace (grid, axes)",
-        "Basic tools (move, rotate, scale)",
-      ],
-    },
-    {
-      id: "4",
-      title: "Creating Simple 3D Models",
-      subtitle: [
-        "Hands-on: Creating basic objects (e.g., keychain, toy block)",
-        "Adding shapes together to form complex models",
-        "Saving and exporting designs for 3D printing",
-      ],
-    },
-    {
-      id: "5",
-      title: "Preparing Models for 3D Printing",
-      subtitle: [
-        "Introduction to file formats (STL, OBJ)",
-        "Slicing software overview (What it does and why it’s important)",
-        "Setting up a model for printing (layer height, infill, supports)",
-      ],
-    },
-    {
-      id: "6",
-      title: "Printing Your First Model",
-      subtitle: [
-        "Loading the filament",
-        "Starting the print",
-        "Monitoring the printing process",
-      ],
-    },
-    {
-      id: "7",
-      title: "Post-Printing Process",
-      subtitle: [
-        "Removing the object from the print bed",
-        "Cleaning and polishing the 3D-printed object",
-        "Hands-on: Decorating or painting the printed object",
-      ],
-    },
-    {
-      id: "8",
-      title: "Fun 3D Printing Projects",
-      subtitle: [
-        "Designing and printing simple toys (e.g., a car, animal figurines)",
-        "Creating personalized keychains or name tags",
-        "Group project: Building a mini 3D printed city or maze",
-      ],
-    },
-    {
-      id: "9",
-      title: "Real-World Applications of 3D Printing",
-      subtitle: [
-        "Exploring different industries that use 3D printing (e.g., medicine, automotive, fashion)",
-        "Fun examples: 3D-printed houses, foodand toys",
-        "How 3D printing can help solve everyday problems",
-      ],
-    },
-    {
-      id: "10",
-      title: "Wrap-up and Final Project",
-      subtitle: [
-        "Review of what was learned",
-        "Final project: Design and print a custom object",
-        "Show-and-tell of completed 3D prints",
-      ],
-    },
-  ];
+ export const ThreeDPrintingCurriculum = {
+  level1: {
+    title: "Level 1: Introduction to 3D Printing & Basic Design (Ages 8–12)",
+    modules: [
+      { id: "1", title: "What is 3D Printing?", subtitle: ["Basic explanation of 3D printing", "Live demo: Observe a cube being printed", "Understanding layers and object formation"] },
+      { id: "2", title: "How a 3D Printer Works", subtitle: ["Printer parts: Filament, hotend, bed", "Bed leveling basics", "Filament loading and preheating"] },
+      { id: "3", title: "Introduction to 3D Design (Tinkercad)", subtitle: ["Navigating Tinkercad", "Move, rotate, scale tools", "Grid and object placement"] },
+      { id: "4", title: "Creating Basic Shapes", subtitle: ["Cubes, cylinders, spheres", "Hands-on: Design a basic object"] },
+      { id: "5", title: "Combining Shapes", subtitle: ["Grouping and merging", "Hands-on: Personalized name keychain"] },
+      { id: "6", title: "Designing an Open Box", subtitle: ["Creating hollow objects", "Hands-on: Print a small open box"] },
+      { id: "7", title: "Slicing Software (Cura)", subtitle: ["Introduction to Cura", "Exporting STL and slicing"] },
+      { id: "8", title: "Understanding Print Settings", subtitle: ["Layer height, infill, supports", "Impact on print time and quality"] },
+      { id: "9", title: "Creating a Functional Object", subtitle: ["Design for usability", "Hands-on: Phone stand"] },
+      { id: "10", title: "Supports & Overhangs", subtitle: ["When supports are required", "Print a model with overhangs"] },
+      { id: "11", title: "Mini Puzzle Game Design", subtitle: ["Understanding tolerance", "Design and print a maze puzzle"] },
+      { id: "12", title: "Interlocking Parts", subtitle: ["Fit and spacing concepts", "Print Lego-style bricks"] },
+      { id: "13", title: "Organizing Your Desk", subtitle: ["Functional daily-use designs", "Stackable desk organizer"] },
+      { id: "14", title: "Basic Troubleshooting", subtitle: ["Common print issues", "Fixing and avoiding failures"] },
+      { id: "15", title: "Final Project", subtitle: ["Design a custom model", "Prepare and print"] },
+      { id: "16", title: "Show & Tell", subtitle: ["Explain design and process", "Peer presentation"] }
+    ]
+  },
+
+  level2: {
+    title: "Level 2: Fusion 360 + Blender + Advanced Printing (Ages 12–16)",
+    modules: [
+      { id: "1", title: "Advanced 3D Printing Techniques", subtitle: ["Multi-part models", "Demo of moving parts"] },
+      { id: "2", title: "Introduction to Fusion 360", subtitle: ["Interface and sketch basics", "Hands-on: Phone stand"] },
+      { id: "3", title: "Parametric Design & Constraints", subtitle: ["Dimensions and rules", "Snap-fit box design"] },
+      { id: "4", title: "Loft & Fillet Tools", subtitle: ["Smooth curves and edges", "Rounded case design"] },
+      { id: "5", title: "Precision in Design", subtitle: ["Using calipers", "Custom phone case"] },
+      { id: "6", title: "Getting Started with Blender", subtitle: ["UI and navigation", "Create a simple shape"] },
+      { id: "7", title: "Text and Engraving", subtitle: ["3D text tools", "Engraved keychain"] },
+      { id: "8", title: "Modifying STL Files", subtitle: ["Importing models", "Editing downloaded files"] },
+      { id: "9", title: "Engineering Design Concepts", subtitle: ["Multi-part fitting", "Pen holder"] },
+      { id: "10", title: "Tolerance Testing", subtitle: ["Fit testing", "Refinement prints"] },
+      { id: "11", title: "Functional Home Tools", subtitle: ["Problem-solving design", "Household tool"] },
+      { id: "12", title: "Fusion 360 Joints & Assemblies", subtitle: ["Moving parts", "Snap-fit enclosure"] },
+      { id: "13", title: "Preparing Large Models", subtitle: ["Splitting models", "Post-print assembly"] },
+      { id: "14", title: "Final Project Planning", subtitle: ["Idea brainstorming", "Prototype start"] },
+      { id: "15", title: "Final Model & Adjustments", subtitle: ["Troubleshooting", "Model finalization"] },
+      { id: "16", title: "Project Presentation", subtitle: ["Showcase project", "Explain applications"] }
+    ]
+  },
+
+  level3: {
+    title: "Level 3: Advanced Projects & Real-World Applications (Ages 16–18)",
+    modules: [
+      { id: "1", title: "Mechanical Design Concepts", subtitle: ["Gear systems", "Working gear mechanism"] },
+      { id: "2", title: "Designing for Strength", subtitle: ["Wall thickness and infill", "Strong key holder"] },
+      { id: "3", title: "Modular Design Techniques", subtitle: ["Attachable modules", "Stackable storage"] },
+      { id: "4", title: "Snap-Fit & Hinged Models", subtitle: ["Open/close mechanisms", "Hinged case"] },
+      { id: "5", title: "Multi-Part Assembly", subtitle: ["Functional assemblies", "Hinged box"] },
+      { id: "6", title: "Architectural Modeling", subtitle: ["Scale and layout", "Mini city design"] },
+      { id: "7", title: "Threaded Parts & Screws", subtitle: ["Thread accuracy", "Screw-cap container"] },
+      { id: "8", title: "Jigs & Fixtures", subtitle: ["Everyday tools", "Custom stand"] },
+      { id: "9", title: "Medical & Engineering Use Cases", subtitle: ["Prosthetic concepts", "Prosthetic grip"] },
+      { id: "10", title: "Robotics & Automation", subtitle: ["Robotic components", "Arm joint"] },
+      { id: "11", title: "Gears & Motion Transfer", subtitle: ["Torque concepts", "Gear testing"] },
+      { id: "12", title: "Electronic Enclosure Design", subtitle: ["Arduino/Raspberry Pi cases", "Ventilation and wiring"] },
+      { id: "13", title: "Final Project Planning", subtitle: ["Ideation", "Design draft"] },
+      { id: "14", title: "Prototyping & Iterations", subtitle: ["Test prints", "Design improvement"] },
+      { id: "15", title: "Advanced Troubleshooting", subtitle: ["Error identification", "Quality optimization"] },
+      { id: "16", title: "Showcase & Feedback", subtitle: ["Final presentation", "Peer and mentor review"] }
+    ]
+  }
+};
 
   export const AndroidCurriculum = [
     {
@@ -412,45 +386,161 @@ export const javaCurriculum = [
     },
   ];
 
-  export const ArduinoCurriculum = [
+ export const ArduinoCurriculum = {
+  meta: {
+    title: "ARDUINO COURSE",
+    teacher: "Certified Trainer",
+    duration: "16 Classes (1 Hour per Class)",
+    mode: "Offline",
+    description: "Arduino is an open-source electronics platform that enables students to build interactive and intelligent systems using simple coding and hardware. The course introduces microcontrollers, digital and analog signals and circuit connections. Students work with sensors such as ultrasonic, IR, LDR, temperature, flame, gas, PIR and RFID, along with outputs like LEDs, buzzers, motors, relays, displays and speakers. Using the Arduino IDE, learners build projects ranging from basic circuits to full automation and robotics systems."
+  },
+
+  levels: [
     {
       id: "1",
-      title: "Level 1: Beginners (16 Classes)",
-      subtitle: [
-        "Introduction to Arduino Microcontroller",
-        "Introduction of LEDs",
-        "Disco light master (learn to blink LED using Arduino)",
-        "Robo driving base (learn to move driving base in different directions)",
-        "Distance dash (measure distance using ultrasonic sensor)",
-        "Bi-directional visitor counter (learn how to count visiting people)",
-        "Line follower robo (learn how the line follower robo works)",
-        "Challenge",
+      title: "Level 1: Foundations of Electronics & Motion (Ages 12–14)",
+      modules: [
+        {
+          title: "Introduction to Arduino & LED Blink",
+          topics: [
+            "What Arduino is and how it works",
+            "Upload code to blink an LED",
+            "Simulate traffic lights using LEDs"
+          ]
+        },
+        {
+          title: "Button-Controlled Buzzer",
+          topics: [
+            "Understanding digital input and output",
+            "Trigger buzzer using push button"
+          ]
+        },
+        {
+          title: "Temperature Sensor (DHT11) Monitoring",
+          topics: [
+            "Connect DHT11 sensor",
+            "Read temperature data",
+            "View values on Serial Monitor"
+          ]
+        },
+        {
+          title: "Ultrasonic Sensor for Distance Sensing",
+          topics: [
+            "Measure distance using ultrasonic sensor",
+            "Display distance values"
+          ]
+        },
+        {
+          title: "Servo Motor Control via Potentiometer",
+          topics: [
+            "Rotate servo using potentiometer",
+            "Foundation for robotic walking"
+          ]
+        },
+        {
+          title: "BO Motor & Driver Integration (L293D / L298N)",
+          topics: [
+            "Connect motor driver with Arduino",
+            "Control DC motors in both directions"
+          ]
+        },
+        {
+          title: "IR Sensor with Buzzer / LED Feedback",
+          topics: [
+            "Detect obstacles or black lines",
+            "Trigger output on detection"
+          ]
+        }
       ],
-      teacher: "Certified Trainer",
-      duration: "16 Classes (1 Hour Per Class)",
-      mode: "Online and Offline",
+      megaProjects: [
+        "Hand Follower or Edge Follower Robot (IR + motor control)",
+        "Obstacle Avoidance Car (Ultrasonic + motor driver)",
+        "Hollow Clock with Stepper Motor",
+        "Otto Bot – Walking Robot with Servo Motors"
+      ]
     },
+
     {
       id: "2",
-      title: "Level 2: Intermediate (16 Classes)",
-      subtitle: [
-        "Obstacle avoiding robot (learn how to avoid obstacles for robot)",
-        "Smart Dustbin (learn how to program and control smart dustbin using Arduino)",
-        "Arduino calculator (learn how the calculator works using Arduino)",
-        "Arduino color sensor (learn about color sensors)",
-        "Joystick controlled car (learn to control a robotic car using joystick commands)",
-        "Plant watering system (learn how to detect soil moisture levels)",
-        "Smoke/Gas Detector (learn how sensors detect harmful gas)",
-        "Bluetooth Controlled devices (learn to control systems wirelessly using Bluetooth)",
-        "Obstacle avoidance car (learn how to avoid collisions with a robotic car)",
-        "Piano Using Buzzer (learn to generate musical tones using Arduino and buzzer)",
-        "Robotic Claw (design a robotic claw to pick up objects)",
+      title: "Level 2: Intermediate Robotics & Smart Logic (Ages 14–16)",
+      modules: [
+        {
+          title: "LDR + LED Indicators",
+          topics: ["Light detection using LDR", "Automatic LED ON/OFF"]
+        },
+        {
+          title: "Keypad Module",
+          topics: ["Password input system", "Access control basics"]
+        },
+        {
+          title: "IR Remote Control",
+          topics: ["Using IR remote buttons", "Control LEDs or servo motors"]
+        },
+        {
+          title: "Dual Motor Control with IR Remote",
+          topics: ["Drive two motors", "Forward, backward and turn logic"]
+        },
+        {
+          title: "Flame Sensor with Alerts",
+          topics: ["Fire detection", "Buzzer and LED alert"]
+        },
+        {
+          title: "Joystick-Controlled Servo",
+          topics: ["Multi-directional servo movement", "Robotic arm simulation"]
+        },
+        {
+          title: "OLED Display Integration",
+          topics: ["Display sensor values", "Show temperature or distance"]
+        },
+        {
+          title: "Sound Sensor (Clap Switch)",
+          topics: ["Detect clap sound", "Toggle LED or motor"]
+        }
       ],
-      teacher: "Certified Trainer",
-      duration: "16 Classes (1 Hour Per Class)",
-      mode: "Online and Offline",
+      megaProjects: [
+        "Wall-E Tracking Robot (Line tracking + motor logic)",
+        "Fire-Fighting Robot (Flame sensor + autonomous logic)",
+        "Robotic Arm (Joystick or potentiometer controlled)"
+      ]
     },
-  ];
+
+    {
+      id: "3",
+      title: "Level 3: Advanced Automation & Wearables (Ages 16–18)",
+      modules: [
+        {
+          title: "PIR Motion Detection",
+          topics: ["Detect human movement", "Motion-based light or alarm"]
+        },
+        {
+          title: "Relay Control for Appliances",
+          topics: ["Switch AC/DC devices", "Operate fans, bulbs, pumps"]
+        },
+        {
+          title: "Bluetooth Control (HC-05)",
+          topics: ["Mobile connectivity", "Remote control of robot or appliance"]
+        },
+        {
+          title: "Voice Recording Module",
+          topics: ["Record and play voice messages", "Security and alert use cases"]
+        },
+        {
+          title: "Gas / Smoke Detection (MQ Sensors)",
+          topics: ["Detect gas or smoke leaks", "Safety alert system"]
+        },
+        {
+          title: "RFID Technology",
+          topics: ["Read RFID tags", "Identification and access systems"]
+        }
+      ],
+      megaProjects: [
+        "Home Automation System",
+        "Bionic Hand (Flex sensors + servo motors)",
+        "Pet Robot (Dog/Cat Bot with sound and walking logic)"
+      ]
+    }
+  ]
+};
 
   export const ArtificialIntelligenceCurriculum = [
     {
@@ -847,88 +937,7 @@ export const javaCurriculum = [
     },
   ];
 
-  export const SpikePneumatics = [
-    {
-      id: "1",
-      title: "Level 1: Introduction to Robotics and Components",
-      subtitle: [
-        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controller and Sensors (Ultrasonic, Touch, Color, etc.).",
-        "Learning Input-Output Devices and Port Mapping.",
-        "Motor Control Techniques: Adjust speed, directionand movement patterns.",
-        "Motor Movements in Different Directions: Implement axis and pivot turns.",
-        "Port View and Measurements: Monitor sensor values and motor states.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Level 2: Sensor Integration and Logical Programming",
-      subtitle: [
-        "Maze Solving Challenge: Develop problem-solving skills through pathfinding logic.",
-        "Introduction to Ultrasonic Sensor: Use for obstacle detection and distance measurement.",
-        "Comparison Operators and Conditional Logic.",
-        "Programming with Loops and Sequences.",
-        "Touch Sensor and Its Modes: Explore tactile input and interaction.",
-        "Boolean Data Types in Robotics Programming.",
-        "Color Sensor and Its Modes: Detect colors and implement conditional responses.",
-      ],
-    },
-    {
-      id: "3",
-      title: "Level 3: Programming Blocks and Flow Control",
-      subtitle: [
-        "Action Blocks: Move Steering, Move Tank, Large Motor, Medium Motor, Display, Soundand Light Blocks.",
-        "Sensor Blocks: Touch Sensor, Ultrasonic Sensor, Color Sensor, Gyro Sensor, Timer Blocks.",
-        "Flow Control Blocks: Start, Wait, Loop, Switchand Loop Interrupt Blocks.",
-        "Data Operations Blocks: Math, Compare, Logic, Variableand Random Blocks.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Level 4: Advanced Programming and Customization",
-      subtitle: [
-        "My Blocks (Without and With Parameters): Creating reusable code modules.",
-        "Using Variables Within My Blocks to Manage Inputs Dynamically.",
-        "Advanced Blocks: Bluetooth, File Accessand Messaging Blocks.",
-        "Final Project: Integrating Learned Concepts into a Functional Robot.",
-      ],
-      teacher: "Certified Trainer",
-      duration: "12 Classes (1 Hour Per Class)",
-      mode: "Offline",
-    },
-    {
-      id: "5",
-      title: "LEGO Spike Essential and Pneumatics",
-      subtitle: [
-        "Spike Essential teaches basic robotics and coding through hands-on activities.",
-        "Motors, Wheels, Axles, Pulleysand Beams: Used to build simple robotic models.",
-        "2 Ports: Connect motors and sensors for interactive functionality.",
-        "Color Sensor: Detects colors and light intensity, triggering specific actions.",
-        "Light Matrix: A 3x3 LED display on the hub, providing visual feedback with patterns or messages.",
-        "LEGO Pneumatics focuses on fluid mechanics and pressure-based systems.",
-        "Air Pumps and Cylinders: Demonstrate how compressed air is used to create motion.",
-        "Valves and Tubes: Control the flow of air and regulate movement in mechanical models.",
-        "Pressure Gauges: Teach students to measure and control air pressure for stability.",
-      ],
-    },
-    {
-      id: "6",
-      title: "Mechanical Parts and Programming Blocks",
-      subtitle: [
-        "Motors: Provide power to move wheels or drive other mechanical components.",
-        "Pulleys: Used to transfer force across a distance via belts, providing mechanical advantage.",
-        "Wheels and Axles: Wheels help the robot move smoothly, while axles transmit rotation.",
-        "Gears: Transfer rotational motion and adjust speed or torque using gear ratios.",
-        "Beams and Connectors: Provide structural support, creating a sturdy frame for robotic models.",
-        "Programming Blocks:",
-        "Motor Blocks: Start Motor, Stop Motor, Set Speed, Move for Rotations/Seconds.",
-        "Light Blocks: Set Light Color, Blink Light.",
-        "Sound Blocks: Play Sound, Play Note.",
-        "Event Blocks: When Program Starts, When Button Pressed, When Tilted.",
-        "Control Blocks: Wait For, Repeat Loop, Forever Loop, If-Else.",
-        "Sensor Blocks: Color Sensor, Hub Tilt Sensor.",
-      ],
-    },
-  ];
+ 
 
   export  const SpikePrimeCurriculum = [
     {
@@ -1070,64 +1079,45 @@ export const javaCurriculum = [
 
 export const PeeCeeCurriculumData = [
   {
-    id: "1",
-    title: "Level 1: Introduction to PeeCee ",
+    id: 1,
+    title: "Level 1: PeeCee Fundamentals",
+    ageGroup: "6 to 9 Years",
     subtitle: [
-      "Introduction to PeeCee – Understand how microcontrollers work.",
-      "Light and Sound – Generate and control LED and buzzer outputs.",
-      "Eyes Never Lie – Build sensor-based detection projects.",
-      "Rookie Programmer – Learn basic PeeCee programming.",
-      "Add-ons to PeeCee – Use external modules for expansion.",
-      "Who’s at Door – Create a simple visitor alert system.",
-      "Stand in the Line – Build line-based input output systems.",
-      "Next Cross – Work on basic logic-based automation.",
-      "Touch to Start – Use touch sensors to control programs.",
-      "Dependent on Line – Detect signals and respond.",
-      "Introduction to Motor – Learn how motors work with PeeCee.",
-      "Switch and Motors – Control motors using switches.",
-      "Scribbling Robot – Build a simple drawing robot.",
-      "Elegant Lights – Create animated light patterns.",
-      "Throne of PeeCee – Combine multiple components in one setup.",
-      "Disco Light Hanger – Make a fun multi-light project.",
-      "Strobe Light – Create fast flashing light effects.",
-      "Challenges – Hands-on tasks for practice.",
+      "PeeCee: Seeing, Hearing and Believing – Understanding sensors and outputs.",
+      "PeeCee Add-Ons – Next Cross and Elegant Light projects.",
+      "Scribbling Bot Construction – Basics of switches and motors.",
+      "Scribbling Robot Programming – Introduction to algorithms and logic.",
+      "Rookie Programmer + Stand in Line + Disco Light Hanger – Integrated project.",
+      "Walking Dog Construction – Mechanical design and assembly.",
+      "Walking Dog Programming – Motion logic and control.",
+      "Touch to Start + Automated Fan – Touch-based automation project.",
+      "Dependent on Light (LDR) + Laser Concept – Laser Burglar Alarm and Smart Night Lamp projects.",
+      "Servo Motors – Variable Speed Fan and Unique Beginner Motor projects.",
+      "Temperature Sensor + Throne of PeeCee – Sensor-based control system.",
+      "Challenge Day – Hands-on problem-solving and innovation tasks.",
     ],
   },
   {
-    id: "2",
-    title: "Level 2: Robotics & Automation with PeeCee",
+    id: 2,
+    title: "Level 2: Robotics and Automation",
+    ageGroup: "6 to 9 Years",
     subtitle: [
-      "Robo – Build your first PeeCee-powered robot.",
-      "Watch The Wall – Create obstacle detection logic.",
-      "Waving – Make servo motors create movement patterns.",
-      "Unique Motors Beginner – Learn different types of motors.",
-      "Laser Burglar Alarm – Build a laser security system.",
-      "Camera Pan System – Move a camera using servos.",
-      "Responsive Traffic Signal – Create an automated traffic signal system.",
-      "Walking Dog – Build a walking robot.",
-      "Sound Activated Car – Create a sound-controlled vehicle.",
-    ],
-  },
-  {
-    id: "3",
-    title: "Level 3: Smart Machine Development",
-    subtitle: [
-      "Introduction to Smart Machine – Learn automation concepts.",
-      "RGB Mix Master – Create dynamic RGB color outputs.",
-      "LED Color Dance – Program LED animations.",
-      "Switch & Shine – Control LEDs using switches.",
-      "Knock Knock Alert – Build vibration/knock detection systems.",
-      "Twinkle Tunes – Combine sound and light responses.",
-      "Rhythmic Glow – Sync LED glow patterns with beats.",
-      "Touch to Glow – Control LEDs with touch input.",
-      "Rise and Shine – Time-based or sensor-based automation.",
-      "Motor Magic – Advanced motor control programming.",
-      "Spin Master Control – Control motor speeds and rotation.",
-      "Variable Speed Fan – Build a speed-controlled fan system.",
-      "Robotic Claw – Create a functioning robotic gripper.",
+      "Moving Robo Car Construction – Building a mobile robotic platform.",
+      "Programming of Moving Robo Car – Motion control and logic.",
+      "Ultrasonic Sensor Integration – Obstacle detection and programming.",
+      "Gesture Sensor and Robotic Claw – Construction and integration.",
+      "Robotic Claw Programming – Grip and movement control.",
+      "Sound Activated Car – Microphone, buzzer and control programming.",
+      "Potentiometer and Servo Motor – Camera Pan System project.",
+      "Proximity Sensor + Traffic Light – System construction.",
+      "Traffic Light Programming – Automated signal logic.",
+      "Home Automation System – Hardware construction.",
+      "Home Automation Programming – Control logic and automation.",
+      "Challenge Day – Advanced practical challenges and evaluation.",
     ],
   },
 ];
+
 
 export const EarlyElectronicsCurriculumData = [
   {
@@ -1175,3 +1165,224 @@ export const EarlyElectronicsCurriculumData = [
     ],
   }
 ];
+
+export const DroneCurriculumData = [
+  {
+    id: 1,
+    title: "Drone Curriculum – Level 1",
+    ageGroup: "4+ Years",
+    subtitle: [
+      "Discover the Drone World – Introduction to drones and their real-world uses.",
+      "Anatomy of a Drone – Understanding drone parts and their functions.",
+      "Secrets of Flight – Basics of how drones fly and stay stable.",
+      "Let’s Build (Part 1) – Drone assembly fundamentals.",
+      "Let’s Build (Part 2) – Completing drone assembly and setup.",
+      "Mastering the Controls – Learning basic drone control and handling.",
+      "Ignition and Inspection – Safety checks and pre-flight procedures.",
+      "Into the Skies – First guided flight experience.",
+      "Pilot in Command – Developing confidence and controlled flying skills.",
+      "Aerial Fun Missions (Part 1) – Simple flight challenges and tasks.",
+      "Aerial Fun Missions (Part 2) – Advanced fun missions and accuracy flying.",
+      "Drone Show and Awards – Demonstration, celebration and certification.",
+    ],
+  }
+];
+
+export const ThreeDPrintingArduinoCurriculum = {
+  meta: {
+    title: "3D PRINTING + ARDUINO COURSE",
+    teacher: "Certified Trainer",
+    duration: "16 Classes (1 Hour per Class)",
+    mode: "Offline",
+    description: "Combine 3D printing and Arduino to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics."
+  },
+
+  levels: [
+    {
+      id: "1",
+      title: "Level 1: Introduction to 3D Design & Arduino Basics (Ages 12–14)",
+      modules: [
+        {
+          title: "What is 3D Printing?",
+          topics: [
+            "Basic explanation of 3D printing",
+            "Live demo: Observe a cube being printed",
+            "Understanding layers and object formation"
+          ]
+        },
+        {
+          title: "Introduction to Arduino & LED Blink",
+          topics: [
+            "What Arduino is and how it works",
+            "Upload code to blink an LED",
+            "Simulate traffic lights using LEDs"
+          ]
+        },
+        {
+          title: "Introduction to 3D Design (Tinkercad)",
+          topics: [
+            "Navigating Tinkercad",
+            "Move, rotate, scale tools",
+            "Grid and object placement"
+          ]
+        },
+        {
+          title: "Creating Basic Shapes",
+          topics: [
+            "Cubes, cylinders, spheres",
+            "Hands-on: Design a basic object"
+          ]
+        },
+        {
+          title: "Button-Controlled Buzzer",
+          topics: [
+            "Understanding digital input and output",
+            "Trigger buzzer using push button"
+          ]
+        },
+        {
+          title: "Combining Shapes",
+          topics: [
+            "Grouping and merging",
+            "Hands-on: Personalized name keychain"
+          ]
+        },
+        {
+          title: "Temperature Sensor (DHT11) Monitoring",
+          topics: [
+            "Connect DHT11 sensor",
+            "Read temperature data",
+            "View values on Serial Monitor"
+          ]
+        }
+      ],
+      megaProjects: [
+        "Custom LED Enclosure (3D printed case + Arduino LED circuit)",
+        "Personalized Keychain with Embedded Electronics",
+        "Basic Sensor Housing with Visual Indicator"
+      ]
+    },
+
+    {
+      id: "2",
+      title: "Level 2: Intermediate Design & Electronics (Ages 14–16)",
+      modules: [
+        {
+          title: "Parametric Design & Constraints",
+          topics: [
+            "Dimensions and rules",
+            "Snap-fit box design"
+          ]
+        },
+        {
+          title: "Ultrasonic Sensor for Distance Sensing",
+          topics: [
+            "Measure distance using ultrasonic sensor",
+            "Display distance values"
+          ]
+        },
+        {
+          title: "Engineering Design Concepts",
+          topics: [
+            "Multi-part fitting",
+            "Pen holder"
+          ]
+        },
+        {
+          title: "Servo Motor Control via Potentiometer",
+          topics: [
+            "Rotate servo using potentiometer",
+            "Foundation for robotic walking"
+          ]
+        },
+        {
+          title: "Tolerance Testing",
+          topics: [
+            "Fit testing",
+            "Refinement prints"
+          ]
+        },
+        {
+          title: "IR Sensor with Buzzer / LED Feedback",
+          topics: [
+            "Detect obstacles or black lines",
+            "Trigger output on detection"
+          ]
+        },
+        {
+          title: "OLED Display Integration",
+          topics: [
+            "Display sensor values",
+            "Show temperature or distance"
+          ]
+        }
+      ],
+      megaProjects: [
+        "Obstacle Avoidance Car Enclosure (3D printed chassis + Arduino sensors)",
+        "Smart Distance Measurer (Custom case + ultrasonic sensor display)",
+        "Interactive Servo Control Panel (3D printed interface + potentiometer control)"
+      ]
+    },
+
+    {
+      id: "3",
+      title: "Level 3: Advanced Integration & Automation (Ages 16–18)",
+      modules: [
+        {
+          title: "Snap-Fit & Hinged Models",
+          topics: [
+            "Open/close mechanisms",
+            "Hinged case"
+          ]
+        },
+        {
+          title: "Bluetooth Control (HC-05)",
+          topics: [
+            "Mobile connectivity",
+            "Remote control of robot or appliance"
+          ]
+        },
+        {
+          title: "Electronic Enclosure Design",
+          topics: [
+            "Arduino/Raspberry Pi cases",
+            "Ventilation and wiring"
+          ]
+        },
+        {
+          title: "Multi-Part Assembly",
+          topics: [
+            "Functional assemblies",
+            "Hinged box"
+          ]
+        },
+        {
+          title: "Gas / Smoke Detection (MQ Sensors)",
+          topics: [
+            "Detect gas or smoke leaks",
+            "Safety alert system"
+          ]
+        },
+        {
+          title: "Relay Control for Appliances",
+          topics: [
+            "Switch AC/DC devices",
+            "Operate fans, bulbs, pumps"
+          ]
+        },
+        {
+          title: "Advanced Troubleshooting",
+          topics: [
+            "Error identification",
+            "Quality optimization"
+          ]
+        }
+      ],
+      megaProjects: [
+        "Home Automation Hub (3D printed control panel + Arduino relay system)",
+        "Bluetooth-Controlled Robot (Custom 3D printed chassis + HC-05 module)",
+        "Smart Environmental Monitor (Enclosed sensor array with alerts)"
+      ]
+    }
+  ]
+};

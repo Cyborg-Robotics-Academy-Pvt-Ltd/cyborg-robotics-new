@@ -14,7 +14,7 @@ We've successfully implemented a professional dashboard navigation system that f
   - Logo and "Dashboard" title
   - Notification bell icon
   - User profile section with name and role
-  - Responsive mobile menu with profile, settings, and logout options
+  - Responsive mobile menu with profile, settings and logout options
   - Consistent styling with the brand's color scheme
 
 ### 2. Updated Dashboard Layouts
@@ -80,7 +80,7 @@ Each layout now wraps the dashboard content with:
 
 1. **Clear Role Separation**: Users immediately understand they're in a different context after login
 2. **Reduced Cognitive Load**: Removes irrelevant marketing navigation from workspace areas
-3. **Professional Appearance**: Aligns with industry standards used by platforms like Udemy, Coursera, and Canvas
+3. **Professional Appearance**: Aligns with industry standards used by platforms like Udemy, Coursera and Canvas
 4. **Improved Focus**: Students/trainers can focus on learning without distractions
 5. **Better Mobile Experience**: Clean mobile menu specifically designed for dashboard use
 6. **Consistent Branding**: Maintains visual consistency with brand colors and styling

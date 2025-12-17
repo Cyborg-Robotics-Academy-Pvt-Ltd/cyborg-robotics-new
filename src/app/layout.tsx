@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </title>
         <meta
           name="description"
-          content="Discover engaging robotics and coding courses for kids. Build STEM skills, innovate, and learn through hands-on projects in a fun environment."
+          content="Discover engaging robotics and coding courses for kids. Build STEM skills, innovate and learn through hands-on projects in a fun environment."
         />
         <meta
           name="keywords"

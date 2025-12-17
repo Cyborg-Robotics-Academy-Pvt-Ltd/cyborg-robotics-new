@@ -59,14 +59,14 @@ import {
   pythonCourseData,
   RoboticsCurriculum,
   SimplePoweredMachines,
-  SpikePneumatics,
   SpikePrimeCurriculum,
   WebDesignCurriculum,
   ElectronicsCurriculumData,
   PeeCeeCurriculumData,
   EarlyElectronicsCurriculumData,
+  DroneCurriculumData,
+  ThreeDPrintingArduinoCurriculum,
 } from "../../../../utils/curriculum";
-
 // Define the type for key features
 interface KeyFeature {
   title: string;
@@ -584,7 +584,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Learn the fundamentals of electronics and robotics using the PIC microcontroller",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "12 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/peecee.pdf",
     syllabusFileName: "peecee.pdf",
     imagePath: "/assets/classroom-course/peecee.webp",
@@ -868,7 +868,7 @@ const mockData: Record<string, CourseData> = {
       "Discover the fundamentals of electronics through hands-on projects and experiments",
     badge: "Foundational Electronics Course",
     description:
-      "Explore electronic components, circuits, and build exciting projects with our comprehensive early electronics course",
+      "Explore electronic components, circuits and build exciting projects with our comprehensive early electronics course",
     mode: "Offline",
     duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
@@ -883,12 +883,12 @@ const mockData: Record<string, CourseData> = {
       {
         title: "Basic Components",
         description:
-          "Learn about resistors, capacitors, LEDs, and integrated circuits",
+          "Learn about resistors, capacitors, LEDs and integrated circuits",
         iconName: "Cpu",
       },
       {
         title: "Circuit Building",
-        description: "Construct series, parallel, and combinational circuits",
+        description: "Construct series, parallel and combinational circuits",
         iconName: "CircuitBoard",
       },
       {
@@ -900,6 +900,87 @@ const mockData: Record<string, CourseData> = {
         title: "Hands-on Projects",
         description:
           "Build practical electronics projects including smart devices",
+        iconName: "Lightbulb",
+      },
+    ],
+  },
+  drone: {
+    id: "drone",
+    title: "DRONE",
+    subtitle:
+      "Learn the fundamentals of drone technology and build your own drone",
+    badge: "Drone Technology Course",
+    description:
+      "Learn the fundamentals of drone technology and build your own drone",
+    mode: "Offline",
+    duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/DRONE.pdf",
+    syllabusFileName: "DRONE.pdf",
+    imagePath: "/assets/classroom-course/drone.webp",
+    imageAlt: "Drone Course",
+    price: 9999,
+    originalPrice: 14999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Drone Technology",
+        description: "Learn the fundamentals of drone technology",
+        iconName: "Rocket",
+      },
+      {
+        title: "Drone Assembly",
+        description: "Build your own drone from scratch",
+        iconName: "Settings",
+      },
+      {
+        title: "Flight Control",
+        description: "Learn to control and operate your drone",
+        iconName: "Bot",
+      },
+    ],
+  },
+  "3d-printing-arduino": {
+    id: "printing3dArduino",
+    title: "3D PRINTING + ARDUINO",
+    subtitle:
+      "Combine 3D printing and Arduino to create innovative electronic projects",
+    badge: "Electronics & Digital Manufacturing Course",
+    description:
+      "Combine 3D printing and Arduino to create innovative electronic projects",
+    mode: "Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
+    syllabusFileName: "3D PRINTING ARDUINO.pdf",
+    imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
+    imageAlt: "3D Printing + Arduino Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "3D Design & Printing",
+        description:
+          "Learn to design and print custom 3D objects using CAD software",
+        iconName: "Printer",
+      },
+      {
+        title: "Arduino Programming",
+        description:
+          "Master Arduino microcontroller programming and electronics",
+        iconName: "Cpu",
+      },
+      {
+        title: "Integrated Projects",
+        description:
+          "Build complete projects combining 3D printed parts with electronics",
+        iconName: "Zap",
+      },
+      {
+        title: "Innovation & Creativity",
+        description:
+          "Develop creative solutions using both technologies together",
         iconName: "Lightbulb",
       },
     ],
@@ -934,7 +1015,19 @@ export default async function SlugPage({
       case "python-language":
         return pythonCourseData;
       case "arduino":
-        return ArduinoCurriculum;
+        // Transform ArduinoCurriculum to match CurriculumLevel[] structure
+        return ArduinoCurriculum.levels.map((level: any) => ({
+          id: level.id,
+          title: level.title,
+          subtitle: [
+            ...level.modules.map(
+              (module: any) => `${module.title}: ${module.topics.join(", ")}`
+            ),
+            ...level.megaProjects.map(
+              (project: string) => `Mega Project: ${project}`
+            ),
+          ],
+        }));
       case "web-designing":
         return WebDesignCurriculum;
       case "java":
@@ -950,7 +1043,30 @@ export default async function SlugPage({
       case "spike-prime":
         return SpikePrimeCurriculum;
       case "3d-printing":
-        return ThreeDPrintingCurriculum;
+        // Transform ThreeDPrintingCurriculum to match CurriculumLevel[] structure
+        return [
+          {
+            id: "level1",
+            title: ThreeDPrintingCurriculum.level1.title,
+            subtitle: ThreeDPrintingCurriculum.level1.modules.map(
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+            ),
+          },
+          {
+            id: "level2",
+            title: ThreeDPrintingCurriculum.level2.title,
+            subtitle: ThreeDPrintingCurriculum.level2.modules.map(
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+            ),
+          },
+          {
+            id: "level3",
+            title: ThreeDPrintingCurriculum.level3.title,
+            subtitle: ThreeDPrintingCurriculum.level3.modules.map(
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+            ),
+          },
+        ];
       case "bambino-coding":
         return BambinoCodingCurriculum;
       case "electronics":
@@ -965,14 +1081,29 @@ export default async function SlugPage({
         return EarlySimplemachineCurriculum;
       case "iot":
         return IotCurriculum;
-      case "spike-pneumatics":
-        return SpikePneumatics;
+
       case "simple-powered-machines":
         return SimplePoweredMachines;
       case "app-lab":
         return AppLabCurriculum;
       case "peecee":
-        return PeeCeeCurriculumData;
+        return PeeCeeCurriculumData as unknown as CurriculumLevel[];
+      case "drone":
+        return DroneCurriculumData as unknown as CurriculumLevel[];
+      case "3d-printing-arduino":
+        // Transform ThreeDPrintingArduinoCurriculum to match CurriculumLevel[] structure
+        return ThreeDPrintingArduinoCurriculum.levels.map((level: any) => ({
+          id: level.id,
+          title: level.title,
+          subtitle: [
+            ...level.modules.map(
+              (module: any) => `${module.title}: ${module.topics.join(", ")}`
+            ),
+            ...level.megaProjects.map(
+              (project: string) => `Mega Project: ${project}`
+            ),
+          ],
+        })) as unknown as CurriculumLevel[];
       default:
         // Return default curriculum data if no specific curriculum is found
         return [
@@ -1009,7 +1140,6 @@ export default async function SlugPage({
         ];
     }
   };
-
   // Get curriculum data for this course
   const curriculumData = getCurriculumData(slug);
 
