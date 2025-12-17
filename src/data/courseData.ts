@@ -667,46 +667,7 @@ export const courseData: Record<string, CourseData> = {
     ],
     courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
   },
-  "spikePneumatics": {
-    id: "spikePneumatics",
-    title: "SPIKE PNEUMATICS",
-    subtitle: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    badge: "Pneumatic Systems Course",
-    description: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/Spike Essential and Pneumatics.pdf",
-    syllabusFileName: "Spike Essential.pdf",
-    imagePath: "/assets/classroom-course/pneumatics.webp",
-    imageAlt: "SPIKE Pneumatics Course",
-    price: 9499,
-    originalPrice: 13999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Pneumatic Systems",
-        description: "Learn air-powered mechanisms and controls",
-        iconName: "Zap",
-      },
-      {
-        title: "Air Pressure",
-        description: "Understand pressure, flow and air dynamics",
-        iconName: "Cog",
-      },
-      {
-        title: "Mechanical Design",
-        description: "Design systems using pneumatic components",
-        iconName: "Settings",
-      },
-      {
-        title: "Automation",
-        description: "Create automated pneumatic systems",
-        iconName: "Bot",
-      },
-    ],
-    courseOverview: "SPIKE Pneumatics introduces students to pneumatic systems using LEGO Education SPIKE components. Students learn about air pressure, flow control and pneumatic mechanisms while building working models. This course combines mechanical engineering with automation concepts, teaching students to design and control air-powered systems.",
-  },
+
   "simplePoweredMachines": {
     id: "simplePoweredMachines",
     title: "SIMPLE POWERED MACHINES",
@@ -788,6 +749,46 @@ export const courseData: Record<string, CourseData> = {
     
     ],
     courseOverview: "App Lab teaches students how to create mobile applications using MIT App Inventor and block-based programming. Students learn about user interface design, app testing and mobile app development. This course provides hands-on experience in building functional mobile applications and understanding the app development process.",
+  },
+  "3d-printing-arduino": {
+    id: "3dPrintingArduino",
+    title: "3D PRINTING + ARDUINO COURSE",
+    subtitle: "Combine 3D printing and Arduino to create innovative electronic projects",
+    badge: "Electronics & Digital Manufacturing Course",
+    description: "Combine 3D printing and Arduino to create innovative electronic projects",
+    mode: "Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
+    syllabusFileName: "3D PRINTING ARDUINO.pdf",
+    imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
+    imageAlt: "3D Printing + Arduino Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "3D Design & Printing",
+        description: "Learn to design and print custom 3D objects using CAD software",
+        iconName: "Printer",
+      },
+      {
+        title: "Arduino Programming",
+        description: "Master Arduino microcontroller programming and electronics",
+        iconName: "Cpu",
+      },
+      {
+        title: "Integrated Projects",
+        description: "Build complete projects combining 3D printed parts with electronics",
+        iconName: "Zap",
+      },
+      {
+        title: "Innovation & Creativity",
+        description: "Develop creative solutions using both technologies together",
+        iconName: "Lightbulb",
+      }
+    ],
+    courseOverview: "Our 3D Printing + Arduino course combines two powerful technologies to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics. Students will build complete projects that combine 3D printed parts with sensors, motors, LEDs and other electronic components. By the end of the course, students will have the skills to create their own custom electronic devices with professionally designed enclosures and mechanical parts."
   }
 }
   

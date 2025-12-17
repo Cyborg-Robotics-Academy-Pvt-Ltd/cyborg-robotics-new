@@ -609,6 +609,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "4-6",
     category: "Robotics"
   },
+  "3d-printing-arduino": {
+    id: "3dPrintingArduino",
+    title: "3D Printing + Arduino Course",
+    subtitle: "Combine 3D printing and Arduino to create innovative electronic projects",
+    badge: "Electronics & Digital Manufacturing Course",
+    description: "Combine 3D printing and Arduino to create innovative electronic projects",
+    mode: "Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
+    syllabusFileName: "3D PRINTING ARDUINO.pdf",
+    imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
+    imageAlt: "3D Printing + Arduino Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "3D Design & Printing",
+        description: "Learn to design and print custom 3D objects using CAD software",
+        iconName: "Printer",
+      },
+      {
+        title: "Arduino Programming",
+        description: "Master Arduino microcontroller programming and electronics",
+        iconName: "Cpu",
+      },
+      {
+        title: "Integrated Projects",
+        description: "Build complete projects combining 3D printed parts with electronics",
+        iconName: "Zap",
+      },
+      {
+        title: "Innovation & Creativity",
+        description: "Develop creative solutions using both technologies together",
+        iconName: "Lightbulb",
+      },
+    ],
+    courseOverview: "Our 3D Printing + Arduino course combines two powerful technologies to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics. Students will build complete projects that combine 3D printed parts with sensors, motors, LEDs and other electronic components. By the end of the course, students will have the skills to create their own custom electronic devices with professionally designed enclosures and mechanical parts.",
+    ageRange: "12-16",
+    category: "Electronics"
+  },
  "peecee": {
   id: "peecee",
   title: "Peecee",
@@ -656,90 +698,8 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
  category: "Electronics",
 },
 
-  "iot": {
-    id: "iot",
-    title: "INTERNET OF THINGS (IoT)",
-    subtitle: "Connect devices and create smart systems that communicate over the internet",
-    badge: "Connected Technology Course",
-    description: "Connect devices and create smart systems that communicate over the internet",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/INTERNET OF THINGS.pdf",
-    syllabusFileName: "IOT.pdf",
-    imagePath: "/assets/classroom-course/iot.webp",
-    imageAlt: "IoT Course",
-    price: 16999,
-    originalPrice: 23999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Device Connectivity",
-        description: "Learn to connect devices to the internet",
-        iconName: "Wifi",
-      },
-      {
-        title: "Sensor Integration",
-        description: "Work with various sensors and data collection",
-        iconName: "Zap",
-      },
-      {
-        title: "Smart Systems",
-        description: "Create intelligent automated systems",
-        iconName: "Bot",
-      },
-      {
-        title: "Data Processing",
-        description: "Process and analyze IoT data streams",
-        iconName: "Database",
-      },
-    ],
-    courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
-    ageRange: "11-16",
-    category: "Electronics"
-  },
-  "spike-pneumatics": {
-    id: "spikePneumatics",
-    title: "SPIKE Pneumatics",
-    subtitle: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    badge: "Pneumatic Systems Course",
-    description: "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/Spike Essential and Pneumatics.pdf",
-    syllabusFileName: "Spike Essential.pdf",
-    imagePath: "/assets/classroom-course/pneumatics.webp",
-    imageAlt: "SPIKE Pneumatics Course",
-    price: 9499,
-    originalPrice: 13999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Pneumatic Systems",
-        description: "Learn air-powered mechanisms and controls",
-        iconName: "Zap",
-      },
-      {
-        title: "Air Pressure",
-        description: "Understand pressure, flow and air dynamics",
-        iconName: "Cog",
-      },
-      {
-        title: "Mechanical Design",
-        description: "Design systems using pneumatic components",
-        iconName: "Settings",
-      },
-      {
-        title: "Automation",
-        description: "Create automated pneumatic systems",
-        iconName: "Bot",
-      },
-    ],
-    courseOverview: "SPIKE Pneumatics introduces students to pneumatic systems using LEGO Education SPIKE components. Students learn about air pressure, flow control and pneumatic mechanisms while building working models. This course combines mechanical engineering with automation concepts, teaching students to design and control air-powered systems.",
-    ageRange: "9-13",
-    category: "Robotics"
-  },
+
+
   "simple-powered-machines": {
     id: "simplePoweredMachines",
     title: "Simple Powered Machines",
@@ -788,7 +748,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     title: "Early Electronics",
     subtitle: "Discover the fundamentals of electronics through hands-on projects and experiments",
     badge: "Foundational Electronics Course",
-    description: "Explore electronic components, circuits, and build exciting projects with our comprehensive early electronics course",
+    description: "Explore electronic components, circuits and build exciting projects with our comprehensive early electronics course",
     mode: "Offline",
     duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
@@ -802,12 +762,12 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     keyFeatures: [
       {
         title: "Basic Components",
-        description: "Learn about resistors, capacitors, LEDs, and integrated circuits",
+        description: "Learn about resistors, capacitors, LEDs and integrated circuits",
         iconName: "Cpu",
       },
       {
         title: "Circuit Building",
-        description: "Construct series, parallel, and combinational circuits",
+        description: "Construct series, parallel and combinational circuits",
         iconName: "CircuitBoard",
       },
       {
@@ -821,9 +781,92 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
         iconName: "Lightbulb",
       },
     ],
-    courseOverview: "Our Early Electronics course provides a solid foundation in electronics for beginners. Students will explore electronic components, understand how they work, and build various circuits. The course is divided into two levels, covering topics from basic electricity and components to more advanced concepts like transistors and integrated circuits. Through hands-on projects, students will gain practical experience in building electronic devices including a smart watch display, burglar alarms, and more.",
+    courseOverview: "Our Early Electronics course provides a solid foundation in electronics for beginners. Students will explore electronic components, understand how they work and build various circuits. The course is divided into two levels, covering topics from basic electricity and components to more advanced concepts like transistors and integrated circuits. Through hands-on projects, students will gain practical experience in building electronic devices including a smart watch display, burglar alarms and more.",
     ageRange: "9-11",
     category: "Electronics"
-  }
-
+  },
+  "drone": {
+    id: "drone",
+    title: "Drone",
+    subtitle: "Learn to build and fly drones with LEGO Education SPIKE",
+    badge: "Drone Building Course",
+    description: "Learn to build and fly drones with LEGO Education SPIKE",
+    mode: "Offline",
+    duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/DRONE.pdf",
+    syllabusFileName: "DRONE.pdf",
+    imagePath: "/assets/classroom-course/drone.webp",
+    imageAlt: "Drone Course",
+    price: 9999,
+    originalPrice: 14999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Drone Building",
+        description: "Learn to build drones using LEGO Education SPIKE",
+        iconName: "Builder",
+      },
+      {
+        title: "Flight Controls",
+        description: "Understand pitch, roll and yaw controls",
+        iconName: "Cog",
+      },
+      {
+        title: "Sensor Integration",
+        description: "Work with various sensors for navigation and control",
+        iconName: "Zap",
+      },
+      {
+        title: "Automation",
+        description: "Create automated drone flight patterns",
+        iconName: "Bot",
+      },
+    ],
+    courseOverview: "Our Drone course teaches students how to build and fly drones using LEGO Education SPIKE. Students learn about drone design, flight controls and sensor integration. They build working drones and learn how to control them using programming. This course combines engineering, technology and creativity, providing students with a fun and engaging way to learn about robotics and automation.",
+    ageRange: "4+",
+    category: "Drone Technology"
+  },
+  "iot": {
+  id: "iot",
+  title: "Internet of Things (IoT)",
+  subtitle: "Connect devices and create smart systems that communicate over the internet",
+  badge: "Connected Technology Course",
+  description: "Connect devices and create smart systems that communicate over the internet",
+  mode: "Online & Offline",
+  duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+  syllabusPath: "/assets/pdf/INTERNET OF THINGS.pdf",
+  syllabusFileName: "IOT.pdf",
+  imagePath: "/assets/classroom-course/iot.webp",
+  imageAlt: "IoT Course",
+  price: 16999,
+  originalPrice: 23999,
+  currency: "INR",
+  locale: "en-IN",
+  keyFeatures: [
+    {
+      title: "Device Connectivity",
+      description: "Learn to connect devices to the internet",
+      iconName: "Wifi",
+    },
+    {
+      title: "Sensor Integration",
+      description: "Work with various sensors and data collection",
+      iconName: "Zap",
+    },
+    {
+      title: "Smart Systems",
+      description: "Create intelligent automated systems",
+      iconName: "Bot",
+    },
+    {
+      title: "Data Processing",
+      description: "Process and analyze IoT data streams",
+      iconName: "Database",
+    },
+  ],
+  courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
+  ageRange: "11-16",
+  category: "Electronics"
+},
 };

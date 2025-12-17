@@ -1,6 +1,13 @@
 "use client";
 
-import { Dispatch, SetStateAction, useCallback } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   AnimatePresence,
   motion,
@@ -15,6 +22,7 @@ import {
   ChevronRight,
   Users,
   LogOut,
+  Search,
 } from "lucide-react";
 // Social icons now use images from public/assets/social-icons
 
@@ -30,6 +38,8 @@ import { useAuth } from "@/lib/auth-context";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { enhancedCourseData } from "@/data/enhancedCourseData";
 
 interface OverlayMenuProps {
   isOpen: boolean;
@@ -267,8 +277,102 @@ export default function OverlayMenu({
   const { user, userRole } = useAuth();
   const router = useRouter();
 
+  // Search functionality states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState<
+    Array<{ title: string; slug: string }>
+  >([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Use custom menu data if provided, otherwise use default
   const menuItems = customMenuData?.mainMenu || menuData.mainMenu;
+
+  // Handle search submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowSuggestions(false);
+      setIsOpen(false);
+      router.push(
+        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`
+      );
+    }
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: {
+    title: string;
+    slug: string;
+  }) => {
+    setSearchQuery(suggestion.title);
+    setShowSuggestions(false);
+    searchInputRef.current?.blur();
+    setIsOpen(false);
+
+    // Navigate immediately
+    router.push(`/all-courses?search=${encodeURIComponent(suggestion.title)}`);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check if the click is outside the search container
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        // Check if the click is not on a suggestion item
+        const suggestionElements = document.querySelectorAll(
+          ".search-suggestion-item"
+        );
+        let clickedOnSuggestion = false;
+        suggestionElements.forEach((el) => {
+          if (el.contains(event.target as Node)) {
+            clickedOnSuggestion = true;
+          }
+        });
+
+        if (!clickedOnSuggestion) {
+          setShowSuggestions(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Generate search suggestions based on course data
+  useEffect(() => {
+    const generateSuggestions = () => {
+      if (!searchQuery.trim()) {
+        setSearchSuggestions([]);
+        return;
+      }
+
+      // Convert enhancedCourseData to array and filter based on search query
+      const courseList = Object.entries(enhancedCourseData).map(
+        ([slug, course]) => ({
+          slug,
+          title: course.title,
+        })
+      );
+
+      // Filter suggestions based on search query
+      const filteredSuggestions = courseList
+        .filter((course) =>
+          course.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 5); // Limit to 5 suggestions
+
+      setSearchSuggestions(filteredSuggestions);
+    };
+
+    generateSuggestions();
+  }, [searchQuery]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -280,6 +384,7 @@ export default function OverlayMenu({
       console.error("Error signing out:", error);
     }
   }, [router, setIsOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -316,7 +421,55 @@ export default function OverlayMenu({
                   />
                 </Link>
               </div>
+
+              {/* Search Bar with Suggestions - Only visible on mobile/small screens */}
+              <div className="mt-4 relative max-w-md mx-auto lg:hidden">
+                <form onSubmit={handleSearch} className="relative">
+                  <Input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search Courses"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    className="w-full pl-9 pr-3 py-2 rounded-2xl focus:ring-2 focus:ring-red-500 transition-all text-sm bg-white text-gray-900 placeholder:text-gray-500 border border-gray-300"
+                  />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Search Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                    {searchSuggestions.map((suggestion, index) => (
+                      <div
+                        key={suggestion.slug}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className={`search-suggestion-item px-3 py-2 text-sm hover:bg-red-50 hover:text-red-700 cursor-pointer transition-colors duration-200 ${
+                          index < searchSuggestions.length - 1
+                            ? "border-b border-gray-100"
+                            : ""
+                        }`}
+                      >
+                        <span className="font-medium">{suggestion.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </header>
+
             <main className="flex-1 overflow-y-auto no-scrollbar flex mt-6 justify-center">
               <div className="grid grid-cols-1 w-screen gap-16 md:grid-cols-2 items-start">
                 {/* Left: existing menu - ENHANCED UI */}
@@ -327,6 +480,7 @@ export default function OverlayMenu({
                     </h2>
                     <div className="w-12 h-1 bg-red-700 rounded-full"></div>
                   </div>
+
                   <MenuList
                     items={menuItems}
                     setIsOpen={setIsOpen}
@@ -476,6 +630,7 @@ export default function OverlayMenu({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 rounded-xl bg-red-50 hover:bg-red-100 transition-all duration-300 transform hover:scale-110 group"
+                          onClick={() => setIsOpen(false)}
                         >
                           <Image
                             src={src}

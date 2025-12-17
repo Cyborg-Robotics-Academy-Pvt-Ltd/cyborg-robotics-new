@@ -37,11 +37,11 @@ const Footer: React.FC<FooterProps> = () => {
     "Every robot you build is a step toward tomorrow.",
     "In robotics, failure is just another step to innovation.",
     "Robots turn imagination into reality.",
-    "The best way to learn robotics is to build, break, and rebuild.",
+    "The best way to learn robotics is to build, break and rebuild.",
     "Automation is the art of making the impossible, possible.",
     "Robotics: where science meets creativity.",
     "A robot is only as smart as the mind that builds it.",
-    "Dream, design, and drive the world with robotics.",
+    "Dream, design and drive the world with robotics.",
   ];
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
