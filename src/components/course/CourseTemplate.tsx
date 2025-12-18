@@ -82,7 +82,7 @@ export default function CourseTemplate({ course }: CourseTemplateProps) {
             return (
               <div
                 key={index}
-                className="p-5 border rounded-xl shadow-sm hover:shadow-md transition"
+                className="p-5 rounded-xl shadow-sm hover:shadow-md transition"
               >
                 <Icon className="text-blue-600 mb-3" size={28} />
                 <h3 className="font-semibold text-lg">{feature.title}</h3>

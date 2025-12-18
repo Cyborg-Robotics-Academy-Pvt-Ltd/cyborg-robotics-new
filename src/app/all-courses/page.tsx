@@ -313,14 +313,14 @@ const AllCoursesPageContent = () => {
         {/* Category carousels */}
         {Object.keys(coursesByCategory).length > 0 ? (
           Object.entries(coursesByCategory).map(([category, courses]) => (
-            <div key={category} id={category} className="mb-8">
+            <div key={category} id={category} className="mb-8 ">
               <CourseCategoryCarousel
                 title={
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 ">
                     <span>{category} Courses</span>
                     <Badge
                       variant="secondary"
-                      className="text-xs px-2 py-1 bg-red-800 text-white border border-red-200 rounded-full"
+                      className="text-xs px-2 py-1 bg-red-800 text-white rounded-full"
                     >
                       {courses.length}
                     </Badge>
@@ -328,7 +328,10 @@ const AllCoursesPageContent = () => {
                 }
               >
                 {courses.map((course) => (
-                  <div key={course.slug} className="flex-shrink-0 mb-2">
+                  <div
+                    key={course.slug}
+                    className="flex-shrink-0 mb-2 px-1 mt-5"
+                  >
                     <CourseCarouselCard
                       slug={course.slug}
                       title={course.title}
@@ -344,7 +347,7 @@ const AllCoursesPageContent = () => {
           ))
         ) : (
           // Enhanced empty state
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-6">
               <Search className="w-12 h-12 text-red-600" />
             </div>

@@ -1,6 +1,19 @@
 "use client";
 import React from "react";
-import { InfiniteMovingGallery } from "@/components/gallery/InfiniteMovingGallery";
+
+// Import Swiper React components
+import { Swiper, SwiperSlide } from "swiper/react";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import "swiper/css/pagination";
+
+// Import required modules
+import { EffectCoverflow, Pagination } from "swiper/modules";
+
+// Import custom styles
+import "./swiper.css";
 
 const GallerySection = () => {
   const data = [
@@ -45,7 +58,54 @@ const GallerySection = () => {
       </p>
 
       <div className="mx-6 md:mx-0">
-        <InfiniteMovingGallery items={data} speed="normal" className="" />
+        <style jsx global>{`
+          .mySwiper .swiper-pagination-bullet {
+            background: #cbd5e1;
+            opacity: 1;
+            width: 8px;
+            height: 8px;
+            transition: all 0.3s ease;
+          }
+          .mySwiper .swiper-pagination-bullet-active {
+            background: #8d0f11;
+            width: 20px;
+            border-radius: 4px;
+          }
+        `}</style>
+        <Swiper
+          effect={"coverflow"}
+          grabCursor={true}
+          spaceBetween={20}
+          centeredSlides={true}
+          slidesPerView={"auto"}
+          coverflowEffect={{
+            rotate: 30,
+            stretch: 0,
+            depth: 100,
+            modifier: 1,
+            slideShadows: true,
+          }}
+          pagination={true}
+          modules={[EffectCoverflow, Pagination]}
+          className="mySwiper"
+          initialSlide={0}
+          breakpoints={{
+            // Mobile (default)
+            0: {
+              centeredSlides: true,
+            },
+            // Desktop
+            1024: {
+              centeredSlides: false,
+            },
+          }}
+        >
+          {data.map((item) => (
+            <SwiperSlide key={item.id}>
+              <img src={item.src} alt={`Gallery item ${item.id}`} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </div>
   );

@@ -88,8 +88,8 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50; // Minimum swipe distance
-    const isRightSwipe = distance < -50;
+    const isLeftSwipe = distance > 30; // Reduced minimum swipe distance for better responsiveness
+    const isRightSwipe = distance < -30;
 
     if (isLeftSwipe) {
       nextSlide();
@@ -105,8 +105,10 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
+      e.preventDefault(); // Prevent default scrolling behavior
       prevSlide();
     } else if (e.key === "ArrowRight") {
+      e.preventDefault(); // Prevent default scrolling behavior
       nextSlide();
     }
   };
@@ -138,18 +140,18 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
               <button
                 onClick={prevSlide}
                 disabled={isAtStart}
-                className="bg-white rounded-full p-1.5 md:p-2 shadow-md border border-gray-200 hover:bg-red-50 hover:border-red-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all duration-200 group"
+                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                 aria-label="Previous courses"
               >
-                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
+                <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-red-600 transition-colors duration-300" />
               </button>
               <button
                 onClick={nextSlide}
                 disabled={isAtEnd}
-                className="bg-white rounded-full p-1.5 md:p-2 shadow-md border border-gray-200 hover:bg-red-50 hover:border-red-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-all duration-200 group"
+                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                 aria-label="Next courses"
               >
-                <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
+                <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-red-600 transition-colors duration-300" />
               </button>
             </div>
           </div>
@@ -158,18 +160,19 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
 
       {/* Carousel container */}
       <div
-        className="relative"
+        className="relative focus:outline-none"
         onKeyDown={handleKeyDown}
         tabIndex={0}
         role="region"
         aria-label="Course carousel"
       >
         <div
-          className="overflow-hidden rounded-lg"
+          className="overflow-hidden"
           ref={carouselRef}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{ cursor: "grab" }}
         >
           <div
             className="flex transition-transform duration-500 ease-out gap-1 sm:gap-2 md:gap-3"
@@ -184,15 +187,17 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
                 style={{
                   width:
                     itemsPerView === 1
-                      ? "100%"
+                      ? "90%" // Show partial next card on mobile
                       : typeof window !== "undefined"
-                        ? `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 6 : window.innerWidth < 1024 ? 10 : 14)) / itemsPerView}px)`
-                        : `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * 10) / itemsPerView}px)`,
+                        ? `calc(${90 / itemsPerView}% - ${((itemsPerView - 1) * (window.innerWidth < 768 ? 6 : window.innerWidth < 1024 ? 10 : 14)) / itemsPerView}px)`
+                        : `calc(${90 / itemsPerView}% - ${((itemsPerView - 1) * 10) / itemsPerView}px)`,
                 }}
               >
                 {item}
               </div>
             ))}
+            {/* Spacer to show partial next card */}
+            <div className="flex-shrink-0" style={{ width: "10%" }}></div>
           </div>
         </div>
 
@@ -202,19 +207,19 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
             {!isAtStart && (
               <button
                 onClick={prevSlide}
-                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-1.5 shadow-xl border border-gray-300 hover:bg-white active:scale-95 transition-all duration-200 z-10"
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white active:scale-95 transition-all duration-300 z-10 flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                 aria-label="Previous courses"
               >
-                <ChevronLeft className="w-4 h-4 text-gray-800" />
+                <ChevronLeft className="w-5 h-5 text-gray-800 transition-colors duration-300" />
               </button>
             )}
             {!isAtEnd && (
               <button
                 onClick={nextSlide}
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-1.5 shadow-xl border border-gray-300 hover:bg-white active:scale-95 transition-all duration-200 z-10"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white active:scale-95 transition-all duration-300 z-10 flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                 aria-label="Next courses"
               >
-                <ChevronRight className="w-4 h-4 text-gray-800" />
+                <ChevronRight className="w-5 h-5 text-gray-800 transition-colors duration-300" />
               </button>
             )}
           </div>

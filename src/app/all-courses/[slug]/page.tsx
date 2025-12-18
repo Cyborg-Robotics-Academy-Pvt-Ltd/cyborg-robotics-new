@@ -37,6 +37,8 @@ import {
   Brush,
   Gamepad2,
   Wifi,
+  ChevronRight,
+  Home,
 } from "lucide-react";
 
 import Testimonials from "@/components/ui/course-accordion";
@@ -950,7 +952,7 @@ const mockData: Record<string, CourseData> = {
       "Combine 3D printing and Arduino to create innovative electronic projects",
     mode: "Offline",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
+    syllabusPath: "/assets/pdf/3D-PRINTING-ARDUINO.pdf",
     syllabusFileName: "3D PRINTING ARDUINO.pdf",
     imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
     imageAlt: "3D Printing + Arduino Course",
@@ -1218,8 +1220,42 @@ export default async function SlugPage({
 
   return (
     <div className="mx-auto max-w-7xl mt-2 md:mt-5 overflow-hidden px-2 sm:px-4 lg:px-8">
+      {/* Breadcrumb */}
+      <nav className="flex mt-13" aria-label="Breadcrumb">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+          <li className="inline-flex items-center">
+            <Link
+              href="/"
+              className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-red-600"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Link>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />
+              <Link
+                href="/all-courses"
+                className="ml-1 text-sm font-medium text-gray-700 hover:text-red-600 md:ml-2"
+              >
+                All Courses
+              </Link>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div className="flex items-center">
+              <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />
+              <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2">
+                {data.title}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
       {/* Hero Section */}
-      <div className="lg:mt-16 mt-4 px-2 sm:px-4 lg:px-0 relative">
+      <div className="lg:mt-8 mt-4 px-2 sm:px-4 lg:px-0 relative">
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
           <div className="w-full md:w-10/12 lg:w-1/2 space-y-4 md:space-y-6">
             <div>

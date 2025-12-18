@@ -97,11 +97,11 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       {
         title: "IoT Projects",
         description: "Create interactive projects and automated solutions",
-        iconName: "Lightbulb",
+        iconName: "Lightbulb", 
       },
     ],
     courseOverview: "Arduino is an open-source electronics platform based on easy-to-use hardware and software. It's intended for anyone making interactive projects. Arduino boards are able to read inputs - light on a sensor, a finger on a button, or a Twitter message - and turn it into an output - activating a motor, turning on an LED, publishing something online. You can tell your board what to do by sending a set of instructions to the microcontroller on the board. Our comprehensive Arduino course covers everything from basic electronics concepts to advanced IoT projects.",
-    ageRange: "9-13",
+    ageRange: "9+",
     category: "Electronics"
   },
   "web-designing": {
@@ -185,7 +185,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Java is a high-level, class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible. It is a general-purpose programming language intended to let programmers write once, run anywhere, meaning that compiled Java code can run on all platforms that support Java without the need to recompile. Our comprehensive Java course covers everything from basic syntax to advanced enterprise development concepts.",
-    ageRange: "11-16",
+    ageRange: "11+",
     category: "Programming"
   },
   
@@ -648,7 +648,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Our 3D Printing + Arduino course combines two powerful technologies to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics. Students will build complete projects that combine 3D printed parts with sensors, motors, LEDs and other electronic components. By the end of the course, students will have the skills to create their own custom electronic devices with professionally designed enclosures and mechanical parts.",
-    ageRange: "12-16",
+    ageRange: "12+",
     category: "Electronics"
   },
  "peecee": {
@@ -866,7 +866,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     },
   ],
   courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
-  ageRange: "11-16",
+  ageRange: "11+",
   category: "Electronics"
 },
 };
