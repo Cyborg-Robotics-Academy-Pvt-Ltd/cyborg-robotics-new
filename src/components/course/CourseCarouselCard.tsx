@@ -92,7 +92,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
       src: imgSrc,
       alt: `${title} course image`,
       fill: true,
-      className: `object-cover transition-all duration-500 ease-out group-hover:scale-110 ${isImageLoading ? "blur-sm" : "blur-0"}`,
+      className: `object-cover transition-all duration-500 ease-out  ${isImageLoading ? "blur-sm" : "blur-0"}`,
       sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
       onError: handleImageError,
       onLoad: handleImageLoad,
@@ -104,7 +104,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="bg-white mx-2 md:mx-1 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 p-4 border border-gray-100 hover:border-red-300 group min-w-[240px] max-w-[280px] h-full flex flex-col overflow-hidden focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 hover:-translate-y-2 backdrop-blur-sm"
+      className="bg-white mx-2 md:mx-1 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500  group min-w-[240px] max-w-[280px] h-full flex flex-col overflow-hidden hover:-translate-y-2 backdrop-blur-sm"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -114,45 +114,45 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
       aria-label={`${title} course card`}
     >
       <div className="mb-3">
-        <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-100 group-hover:ring-red-200 transition-all duration-300">
+        <div className="relative w-full h-36 rounded-tr-2xl rounded-tl-2xl overflow-hidden  transition-all duration-300">
           <Image {...imageProps} />
           {isImageLoading && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200  rounded-2xl" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
       </div>
+      <div className="p-2 ">
+        <h3 className="text-base font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2 transition-colors duration-300">
+          {title}
+        </h3>
 
-      <h3 className="text-base font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2 transition-colors duration-300">
-        {title}
-      </h3>
+        <p className="text-gray-600 text-sm mb-3 flex-grow line-clamp-2 leading-relaxed">
+          {description}
+        </p>
 
-      <p className="text-gray-600 text-sm mb-3 flex-grow line-clamp-2 leading-relaxed">
-        {description}
-      </p>
+        <div className="flex flex-wrap gap-1 mb-3">
+          <Badge
+            variant="secondary"
+            className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 transition-all duration-300 border border-red-100 font-medium shadow-sm"
+          >
+            Age: {ageRange}
+          </Badge>
+          <Badge
+            variant="outline"
+            className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 font-medium shadow-sm"
+          >
+            {category}
+          </Badge>
+        </div>
 
-      <div className="flex flex-wrap gap-1 mb-3">
-        <Badge
-          variant="secondary"
-          className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 transition-all duration-300 border border-red-100 font-medium shadow-sm"
+        <Link
+          href={`/all-courses/${slug}`}
+          className="mt-4 inline-block mx-auto  w-full bg-gradient-to-r from-red-800 to-red-700 text-white px-5 py-2 rounded-full hover:from-red-800 hover:to-red-900 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform  active:scale-95"
+          aria-label={`View details for ${title} course`}
         >
-          Age: {ageRange}
-        </Badge>
-        <Badge
-          variant="outline"
-          className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 font-medium shadow-sm"
-        >
-          {category}
-        </Badge>
+          Explore Course
+        </Link>
       </div>
-
-      <Link
-        href={`/all-courses/${slug}`}
-        className="mt-4 inline-block bg-gradient-to-r from-red-800 to-red-700 text-white px-5 py-2 rounded-full hover:from-red-700 hover:to-red-600 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-105 active:scale-95"
-        aria-label={`View details for ${title} course`}
-      >
-        Explore Course
-      </Link>
     </div>
   );
 };

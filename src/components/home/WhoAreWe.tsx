@@ -99,10 +99,10 @@ export default function WhoAreWe() {
                 </div>
                 <div className="mt-2">
                   <Link
-                    href="/about-us"
+                    href="/all-courses"
                     className="inline-flex items-center px-4 py-2 bg-[#a63534] text-white rounded-lg hover:bg-[#8a2d2d] transition-colors"
                   >
-                    Learn More
+                    View Courses
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 ml-2"
