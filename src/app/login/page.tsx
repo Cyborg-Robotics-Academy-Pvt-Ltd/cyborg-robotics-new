@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut, reload } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { auth, db } from "@/lib/firebase";
@@ -152,6 +152,23 @@ const LoginPage = () => {
         await signOut(auth);
         toast.error(
           `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if user's status is pending or inactive
+      if (userInfo.data.status === "pending") {
+        await signOut(auth);
+        toast.error(
+          "Your account is pending admin approval. Please contact Cyborg Team."
+        );
+        setIsLoading(false);
+        return;
+      } else if (userInfo.data.status === "inactive") {
+        await signOut(auth);
+        toast.error(
+          "Your account access has been revoked. Please contact Cyborg Team."
         );
         setIsLoading(false);
         return;

@@ -120,9 +120,22 @@ const StudentDashboard = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden border-2 border-white border-opacity-50">
-                {studentData?.imageUrls &&
-                Array.isArray(studentData.imageUrls) &&
-                studentData.imageUrls[0] ? (
+                {studentData?.profileimage ? (
+                  <Image
+                    src={studentData.profileimage}
+                    alt={
+                      studentData?.fullName ||
+                      studentData?.name ||
+                      studentData?.username ||
+                      "Student Avatar"
+                    }
+                    width={48}
+                    height={48}
+                    className="w-full h-full object-cover"
+                  />
+                ) : studentData?.imageUrls &&
+                  Array.isArray(studentData.imageUrls) &&
+                  studentData.imageUrls[0] ? (
                   <Image
                     src={studentData.imageUrls[0]}
                     alt={

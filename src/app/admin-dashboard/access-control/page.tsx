@@ -160,10 +160,10 @@ const AccessControlPage = () => {
       const originalUser = users.find((user) => user.id === editingUserId);
       if (!originalUser) return;
 
-      if (originalUser.role !== editFormData.role) {
+      if (editFormData.role && originalUser.role !== editFormData.role) {
         // Role has changed - move document between collections
         const originalCollectionName = `${originalUser.role}s`;
-        const newCollectionName = `${editFormData.role}s`;
+        const newCollectionName = `${editFormData.role || originalUser.role}s`;
 
         // Get the original document data
         const originalDocRef = doc(db, originalCollectionName, editingUserId);
@@ -177,7 +177,7 @@ const AccessControlPage = () => {
           await setDoc(newDocRef, {
             ...originalData,
             ...editFormData,
-            role: editFormData.role,
+            role: editFormData.role || originalUser.role,
             updatedAt: new Date(),
           });
 
@@ -186,7 +186,7 @@ const AccessControlPage = () => {
         }
       } else {
         // Role hasn't changed - just update the document
-        const collectionName = `${editFormData.role}s`;
+        const collectionName = `${editFormData.role || originalUser.role}s`;
         const userDocRef = doc(db, collectionName, editingUserId);
 
         await updateDoc(userDocRef, {
@@ -196,6 +196,8 @@ const AccessControlPage = () => {
           updatedAt: new Date(),
         });
       }
+
+      // Removed email notification when status changes to active
 
       // Update local state
       setUsers(
@@ -260,13 +262,33 @@ const AccessControlPage = () => {
                 Manage user roles, permissions and access levels
               </p>
             </div>
-            <button
-              onClick={() => router.push("/admin-dashboard")}
-              className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
-            >
-              <UserCog className="w-4 h-4" />
-              Back to Dashboard
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={fetchUsers}
+                className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Refresh
+              </button>
+              <button
+                onClick={() => router.push("/admin-dashboard")}
+                className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2"
+              >
+                <UserCog className="w-4 h-4" />
+                Back to Dashboard
+              </button>
+            </div>
           </div>
         </div>
 

@@ -33,6 +33,7 @@ const CreateUser = () => {
   const router = useRouter();
   const [userRole, setUserRole] = useState("student");
   const [email, setEmail] = useState("");
+  const [studentName, setStudentName] = useState("");
   const [PrnNumber, setPrnNumber] = useState("");
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [courseDetails, setCourseDetails] = useState<{
@@ -47,6 +48,11 @@ const CreateUser = () => {
   const [error, setError] = useState("");
   const [studentId, setStudentId] = useState("");
   const [username, setUsername] = useState("");
+  const [searchingStudents, setSearchingStudents] = useState(false);
+  const [studentSuggestions, setStudentSuggestions] = useState<
+    Array<{ id: string; name: string; email: string }>
+  >([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Role options for dropdown
   const roleOptions: DropdownOption[] = [
@@ -98,6 +104,56 @@ const CreateUser = () => {
       setEmailExists(false);
     } finally {
       setEmailChecking(false);
+    }
+  };
+
+  const searchStudentsByName = async (name: string) => {
+    if (!name || name.trim() === "") {
+      setStudentSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setSearchingStudents(true);
+    try {
+      // Query students collection to find students by name
+      const studentsRef = collection(db, "students");
+      const nameTrimmed = name.trim().toLowerCase();
+
+      // Get all students and filter manually since Firestore doesn't support
+      // case-insensitive substring matching well
+      const querySnapshot = await getDocs(studentsRef);
+
+      const suggestions: Array<{ id: string; name: string; email: string }> =
+        [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const fullName = data.fullName || data.name || "";
+        const username = data.username || "";
+        const email = data.email || "";
+        const nameToCheck = (fullName || username).toLowerCase();
+
+        // Check if the name matches
+        if (nameToCheck.includes(nameTrimmed)) {
+          suggestions.push({
+            id: doc.id,
+            name: fullName || username,
+            email: email,
+          });
+        }
+      });
+
+      // Limit to 10 suggestions
+      const limitedSuggestions = suggestions.slice(0, 10);
+
+      setStudentSuggestions(limitedSuggestions);
+      setShowSuggestions(limitedSuggestions.length > 0);
+    } catch (error) {
+      console.error("Error searching students by name:", error);
+      setStudentSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setSearchingStudents(false);
     }
   };
 
@@ -179,6 +235,20 @@ const CreateUser = () => {
     }
   }, [email]);
 
+  // Debounced student name searching
+  useEffect(() => {
+    if (studentName) {
+      const timeoutId = setTimeout(() => {
+        searchStudentsByName(studentName);
+      }, 300); // Wait 300ms after user stops typing
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setStudentSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [studentName]);
+
   // Debounced PRN checking
   useEffect(() => {
     if (PrnNumber) {
@@ -205,6 +275,12 @@ const CreateUser = () => {
       return;
     }
 
+    if (!studentName) {
+      setError("Student name is required");
+      setEnrolling(false);
+      return;
+    }
+
     if (!PrnNumber) {
       setError("PRN Number is required");
       setEnrolling(false);
@@ -215,6 +291,19 @@ const CreateUser = () => {
       setError("Please select at least one course");
       setEnrolling(false);
       return;
+    }
+
+    // Validate class numbers - must be between 1 and 30
+    for (const courseName of selectedCourses) {
+      const classNumberStr = courseDetails[courseName]?.classNumber || "";
+      if (classNumberStr.trim() !== "") {
+        const classNumber = parseInt(classNumberStr, 10);
+        if (isNaN(classNumber) || classNumber < 1 || classNumber > 30) {
+          setError(`Class number for ${courseName} must be between 1 and 30`);
+          setEnrolling(false);
+          return;
+        }
+      }
     }
 
     // Check if PRN already exists for another student
@@ -406,12 +495,91 @@ const CreateUser = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+                  <div className="group relative">
+                    <label
+                      htmlFor="student-name"
+                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
+                    >
+                      Student Name *
+                    </label>
+                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                      <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+                        <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
+                      </div>
+                      <input
+                        id="student-name"
+                        name="studentName"
+                        type="text"
+                        autoComplete="name"
+                        required
+                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
+                          searchingStudents
+                            ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
+                            : studentName && studentSuggestions.length > 0
+                              ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
+                              : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
+                        }`}
+                        placeholder="Enter student name to search"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        onFocus={() =>
+                          studentSuggestions.length > 0 &&
+                          setShowSuggestions(true)
+                        }
+                        onBlur={() =>
+                          setTimeout(() => setShowSuggestions(false), 200)
+                        }
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
+                        {searchingStudents ? (
+                          <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                        ) : studentName && studentSuggestions.length > 0 ? (
+                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                        ) : null}
+                      </div>
+                    </div>
+                    {searchingStudents && (
+                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-yellow-600 flex items-center space-x-1.5 sm:space-x-2">
+                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                        <span>Searching students...</span>
+                      </p>
+                    )}
+                    {showSuggestions && studentSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        {studentSuggestions.map((student) => (
+                          <div
+                            key={student.id}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
+                            onMouseDown={() => {
+                              setStudentName(student.name);
+                              setEmail(student.email);
+                              setUsername(student.name);
+                              setStudentId(student.id);
+                              setShowSuggestions(false);
+                              checkEmailExists(student.email);
+                            }}
+                          >
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {student.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {student.email}
+                              </div>
+                            </div>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="group">
                     <label
                       htmlFor="email-address"
                       className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
                     >
-                      Email Address *
+                      Email Address
                     </label>
                     <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
                       <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
@@ -422,8 +590,8 @@ const CreateUser = () => {
                         name="email"
                         type="email"
                         autoComplete="email"
-                        required
-                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
+                        readOnly
+                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-gray-50 ${
                           emailExists
                             ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
                             : emailChecking
@@ -432,9 +600,8 @@ const CreateUser = () => {
                                 ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
                                 : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
                         }`}
-                        placeholder="Enter student email address"
+                        placeholder="Student email will be populated automatically"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
                         {emailChecking ? (
@@ -465,7 +632,6 @@ const CreateUser = () => {
                       </p>
                     )}
                   </div>
-
                   <div className="group">
                     <label
                       htmlFor="prn-number"
@@ -652,21 +818,31 @@ const CreateUser = () => {
                                 className="w-full"
                               />
                               <input
-                                type="text"
+                                type="number"
+                                min="1"
+                                max="30"
                                 value={
                                   courseDetails[courseName]?.classNumber || ""
                                 }
-                                onChange={(e) =>
-                                  setCourseDetails((prev) => ({
-                                    ...prev,
-                                    [courseName]: {
-                                      ...prev[courseName],
-                                      classNumber: e.target.value,
-                                    },
-                                  }))
-                                }
-                                placeholder="Class #"
-                                className="w-full px-2 py-1.5 sm:px-2.5 sm:py-2 md:px-3 md:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  // Ensure the value is between 1 and 30
+                                  if (
+                                    value === "" ||
+                                    (parseInt(value) >= 1 &&
+                                      parseInt(value) <= 30)
+                                  ) {
+                                    setCourseDetails((prev) => ({
+                                      ...prev,
+                                      [courseName]: {
+                                        ...prev[courseName],
+                                        classNumber: value,
+                                      },
+                                    }));
+                                  }
+                                }}
+                                placeholder="classes (1-30)"
+                                className="w-full px-2 py-1.5 sm:px-2.5 sm:py-2 md:px-1 md:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
                               />
                               <Dropdown
                                 options={[
@@ -723,6 +899,7 @@ const CreateUser = () => {
                   disabled={
                     enrolling ||
                     !email ||
+                    !studentName ||
                     !PrnNumber ||
                     selectedCourses.length === 0 ||
                     !emailExists ||

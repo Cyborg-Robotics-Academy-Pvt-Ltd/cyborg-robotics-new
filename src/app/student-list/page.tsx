@@ -1024,30 +1024,6 @@ const Page = () => {
                                       View Details
                                     </button>
                                   </motion.div>
-                                  <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                  >
-                                    <button
-                                      className="flex hover:bg-[#991b1b] text-red-800 hover:bg-opacity-10 hover:text-white items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm hover:bg-opacity-10 transition-colors rounded-xl"
-                                      onClick={() => {
-                                        if (
-                                          window.confirm(
-                                            `Are you sure you want to delete ${student.username}?`
-                                          )
-                                        ) {
-                                          // Add delete functionality here
-                                          console.log(
-                                            `Deleting student: ${student.id}`
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      <Trash2 className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-                                      Delete Student
-                                    </button>
-                                  </motion.div>
                                 </motion.div>
                               </PortalDropdown>
                             );

@@ -132,10 +132,10 @@ const MediaSection = () => {
 
       const formData = new FormData();
       formData.append("file", compressedFile);
-      formData.append("upload_preset", "shrikant");
+      formData.append("upload_preset", "cyborg_robotics");
 
       const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dz8enfjtx/image/upload",
+        "https://api.cloudinary.com/v1_1/dgbbkclfa/image/upload",
         {
           method: "POST",
           body: formData,

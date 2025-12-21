@@ -120,6 +120,8 @@ const UserProfile = () => {
       // Create FormData for the file upload
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("userId", authUser.uid);
+      formData.append("userType", userRole || "student");
 
       // Upload to Cloudinary via your API route
       const response = await fetch("/api/upload", {
@@ -151,30 +153,15 @@ const UserProfile = () => {
 
       const userDocRef = doc(db, collectionName, authUser.uid);
 
-      // Update with the new image URL
-      // Check what field name is used in the existing data
-      let updateData = {};
-      if (profileData?.imageUrls !== undefined) {
-        // Use imageUrls array field
-        const updatedImageUrls = [
-          data.imageUrl,
-          ...(profileData.imageUrls || []),
-        ];
-        updateData = { imageUrls: updatedImageUrls };
-      } else if (profileData?.imageUrl !== undefined) {
-        // Use single imageUrl field
-        updateData = { imageUrl: data.imageUrl };
-      } else {
-        // Default to imageUrls array field
-        updateData = { imageUrls: [data.imageUrl] };
-      }
+      // Update with the new image URL in the profileimage field
+      const updateData = { profileimage: data.imageUrl };
 
       await updateDoc(userDocRef, updateData);
 
-      // Update local state with the same field structure
+      // Update local state with the profile image
       setProfileData({
         ...profileData,
-        ...updateData,
+        profileimage: data.imageUrl,
       });
     } catch (error: any) {
       console.error("Error uploading profile picture:", error);
@@ -199,7 +186,7 @@ const UserProfile = () => {
   // Format the creation date
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -253,7 +240,15 @@ const UserProfile = () => {
           {/* Photo */}
           <div className="relative -mt-12 flex justify-center">
             <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 relative group">
-              {profileData?.imageUrls && profileData.imageUrls[0] ? (
+              {profileData?.profileimage ? (
+                <Image
+                  src={profileData.profileimage}
+                  alt={profileData?.username || profileData?.name || "User"}
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
+              ) : profileData?.imageUrls && profileData.imageUrls[0] ? (
                 <Image
                   src={profileData.imageUrls[0]}
                   alt={profileData?.username || profileData?.name || "User"}
@@ -277,7 +272,7 @@ const UserProfile = () => {
 
               {/* Camera icon overlay for uploading */}
               <label
-                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                 htmlFor="profile-picture-upload"
               >
                 <Camera className="w-6 h-6 text-white" />

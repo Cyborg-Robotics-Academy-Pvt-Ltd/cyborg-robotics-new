@@ -30,7 +30,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES(x6 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/PYTHON.pdf",
     syllabusFileName: "PYTHON.pdf",
-    imagePath: "/assets/online-course/python.webp",
+    imagePath: "/assets/online-course/python.avif",
     imageAlt: "Python Programming Course",
     price: 14999,
     originalPrice: 24999,
@@ -114,7 +114,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/WEB DESIGN.pdf",
     syllabusFileName: "WEB DESIGN.pdf",
-    imagePath: "/assets/online-course/webdesigning.webp",
+    imagePath: "/assets/online-course/webdesigning.png",
     imageAlt: "Web Designing Course",
     price: 10999,
     originalPrice: 15999,
@@ -283,7 +283,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EV3 ROBOTICS.pdf",
     syllabusFileName: "ROBOTICS EV3.pdf",
-    imagePath: "/assets/classroom-course/ev3.webp",
+    imagePath: "/assets/classroom-course/ev3.png",
     imageAlt: "Robotics EV3 Course",
     price: 11999,
     originalPrice: 16999,
@@ -315,6 +315,57 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "11-16",
     category: "Robotics"
   },
+  "robotics-with-quarky": {
+  id: "roboticsWithQuarky",
+  title: "Robotics with Quarky",
+  subtitle: "Hands-on robotics, AI, and coding using Quarky and PictoBlox",
+  badge: "Robotics & AI Foundation Program",
+  description:
+    "An experiential robotics program where students learn coding, sensors, motion control, and AI concepts by building real-world robots using Quarky and PictoBlox.",
+  mode: "Offline",
+  duration: "28 Classes (2 Levels) | 1 Hour per Class",
+  syllabusPath: "/assets/pdf/ROBOTICS_WITH_QUARKY.pdf",
+  syllabusFileName: "ROBOTICS_WITH_QUARKY.pdf",
+  imagePath: "/assets/classroom-course/Quarky.png",
+  imageAlt: "Robotics with Quarky Course",
+  price: 12999,
+  originalPrice: 17999,
+  currency: "INR",
+  locale: "en-IN",
+
+  keyFeatures: [
+    {
+      title: "Block-Based Coding",
+      description:
+        "Learn programming fundamentals using PictoBlox with Quarky integration",
+      iconName: "Code",
+    },
+    {
+      title: "Sensors & Automation",
+      description:
+        "Work with ultrasonic, IR, touch, and environmental sensors",
+      iconName: "Radar",
+    },
+    {
+      title: "Robotics & Motion Control",
+      description:
+        "Understand motors, servos, steering logic, and autonomous movement",
+      iconName: "Bot",
+    },
+    {
+      title: "AI & Capstone Projects",
+      description:
+        "Build AI-powered robots including object tracking and self-driving systems",
+      iconName: "Brain",
+    },
+  ],
+
+  courseOverview:
+    "Robotics with Quarky is a comprehensive hands-on learning program that introduces students to robotics, automation, and artificial intelligence using the Quarky robot and PictoBlox platform. The course blends coding, electronics, sensors, and mechanical logic to help learners move from screen-based programming to real-world robotic applications. Structured across two progressive levels, students begin with foundational robotics concepts such as sensors, motion, and control logic, and advance to AI-based systems like object tracking, self-driving robots, and automated pick-and-place mechanisms. Each session emphasizes concept clarity, applied learning, and problem-solving, culminating in capstone projects that demonstrate complete robotics workflows.",
+
+  ageRange: "8–12 Years",
+  category: "Robotics",
+},
   "spike-prime": {
     id: "spikePrime",
     title: "Spike Prime",
@@ -325,7 +376,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/Spike Prime.pdf",
     syllabusFileName: "SPIKE PRIME.pdf",
-    imagePath: "/assets/classroom-course/pneumatics.webp",
+    imagePath: "/assets/classroom-course/Spike-Prime.png",
     imageAlt: "SPIKE Prime Course",
     price: 9999,
     originalPrice: 14999,
@@ -367,7 +418,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D PRINTING.pdf",
     syllabusFileName: "3D PRINTING.pdf",
-    imagePath: "/assets/classroom-course/printing3d.webp",
+    imagePath: "/assets/classroom-course/3d-printing.png",
     imageAlt: "3D Printing Course",
     price: 8999,
     originalPrice: 13999,
@@ -441,48 +492,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "5-8",
     category: "Programming"
   },
-  "electronics": {
-    id: "electronics",
-    title: "Electronics",
-    subtitle: "Learn the fundamentals of electronic circuits and electronic components",
-    badge: "Electronics Course",
-    description: "Learn the fundamentals of electronic circuits and electronic components",
-    mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/ELECTRONICS.pdf",
-    syllabusFileName: "ELECTRONICS.pdf",
-    imagePath: "/assets/classroom-course/electronics.webp",
-    imageAlt: "Electronics Course",
-    price: 10999,
-    originalPrice: 15999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Circuit Design",
-        description: "Learn to design and build electronic circuits",
-        iconName: "CircuitBoard",
-      },
-      {
-        title: "Component Knowledge",
-        description: "Understand resistors, capacitors, transistors and more",
-        iconName: "Cpu",
-      },
-      {
-        title: "Practical Projects",
-        description: "Build real electronic devices and gadgets",
-        iconName: "Lightbulb",
-      },
-      {
-        title: "Troubleshooting",
-        description: "Learn to diagnose and fix electronic problems",
-        iconName: "Zap",
-      },
-    ],
-    courseOverview: "Electronics is the foundation of modern technology. Our comprehensive electronics course covers everything from basic circuit theory to advanced electronic systems. Students learn to work with electronic components, design circuits and build practical projects. This course provides hands-on experience with real electronic components and teaches essential skills for understanding and working with electronic devices.",
-    ageRange: "9-13",
-    category: "Electronics"
-  },
+  
   "animation-coding": {
     id: "animationCoding",
     title: "Animation Coding",
@@ -609,6 +619,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "4-6",
     category: "Robotics"
   },
+  
   "3d-printing-arduino": {
     id: "3dPrintingArduino",
     title: "3D Printing + Arduino Course",
@@ -619,7 +630,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
     syllabusFileName: "3D PRINTING ARDUINO.pdf",
-    imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
+    imagePath: "/assets/classroom-course/3d-printing-arduino.png",
     imageAlt: "3D Printing + Arduino Course",
     price: 12999,
     originalPrice: 17999,
@@ -753,7 +764,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
     syllabusFileName: "EARLY_ELECTRONICS.pdf",
-    imagePath: "/assets/classroom-course/early-electronics.webp",
+    imagePath: "/assets/classroom-course/Early_Electronics.png",
     imageAlt: "Early Electronics Course",
     price: 8999,
     originalPrice: 12999,
@@ -795,7 +806,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/DRONE.pdf",
     syllabusFileName: "DRONE.pdf",
-    imagePath: "/assets/classroom-course/drone.webp",
+    imagePath: "/assets/classroom-course/Drone.png",
     imageAlt: "Drone Course",
     price: 9999,
     originalPrice: 14999,
@@ -869,4 +880,6 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   ageRange: "11+",
   category: "Electronics"
 },
+
+
 };

@@ -72,6 +72,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                     // Role invalid, clear and re-check
                     localStorage.removeItem("userRole");
                     checkAllCollections(user.uid);
+                  } else {
+                    // Check if user status is pending or inactive
+                    const data = docSnap.data();
+                    if (
+                      data.status === "pending" ||
+                      data.status === "inactive"
+                    ) {
+                      // User access is restricted, clear role
+                      setUserRole(null);
+                      localStorage.removeItem("userRole");
+                    }
                   }
                 })
                 .catch(() => {
@@ -104,7 +115,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const docRef = doc(db, collection, uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
+            const data = docSnap.data();
             const role = collection.slice(0, -1); // Remove 's' from end
+
+            // If user status is pending or inactive, don't set the role
+            if (data.status === "pending" || data.status === "inactive") {
+              setUserRole(null);
+              localStorage.removeItem("userRole");
+              setLoading(false);
+              return;
+            }
+
             setUserRole(role);
             localStorage.setItem("userRole", role);
             setLoading(false);

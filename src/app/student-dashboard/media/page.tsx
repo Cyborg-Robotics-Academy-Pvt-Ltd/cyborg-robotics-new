@@ -1,18 +1,23 @@
 "use client";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import React, { useState, useEffect, useCallback } from "react";
 import { db } from "../../../lib/firebase";
 import { ArrowLeft, ArrowRight, Download, XCircle } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
+import { useAuth } from "../../../lib/auth-context";
+import AuthLoadingSpinner from "../../../components/AuthLoadingSpinner";
 
 type ViewMode = "grid" | "large";
 type ImageData = {
   url: string;
   id: string;
+  courseId?: string;
+  courseName?: string;
 };
 
 const Page = () => {
+  const { user, userRole, loading: authLoading } = useAuth();
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,47 +26,65 @@ const Page = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "students"));
-        const imageList: string[] = [];
+    if (authLoading) return;
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.imageUrls && Array.isArray(data.imageUrls)) {
-            imageList.push(...data.imageUrls);
-          } else if (data.imageUrls) {
-            if (Array.isArray(data.imageUrls)) {
-              imageList.push(...data.imageUrls);
-            } else {
-              console.error(
-                "Expected an array of image URLs, got something else."
-              );
-            }
-          }
-        });
+    if (!user || userRole !== "student") {
+      setError("Unauthorized access. Please log in as a student.");
+      setLoading(false);
+      return;
+    }
 
-        // Remove duplicates and format for our component
-        const uniqueImages = Array.from(new Set(imageList)).map(
-          (url, index) => ({
-            url,
-            id: `img-${index}`,
-          })
-        );
+    // Set up real-time listener for student data using UID
+    const studentDocRef = doc(db, "students", user.uid);
+    const unsubscribe = onSnapshot(
+      studentDocRef,
+      (doc) => {
+        if (!doc.exists()) {
+          setError("No student data found.");
+          setLoading(false);
+          return;
+        }
 
-        setImages(uniqueImages);
+        const studentData = doc.data();
+        const imageList: ImageData[] = [];
+
+        // Process images with course information if available
+        if (studentData.imageUrls && Array.isArray(studentData.imageUrls)) {
+          studentData.imageUrls.forEach((url: string, index: number) => {
+            imageList.push({
+              url,
+              id: `img-${index}`,
+              courseId: undefined,
+              courseName: undefined,
+            });
+          });
+        }
+
+        // If courses data is available, try to associate images with courses
+        if (studentData.courses && Array.isArray(studentData.courses)) {
+          // For now, we're just showing all images without specific course association
+          // In a more advanced implementation, you might store image metadata with course info
+        }
+
+        // Format for our component
+        const formattedImages = imageList.map((imageData, index) => ({
+          ...imageData,
+          id: imageData.id || `img-${index}`,
+        }));
+
+        setImages(formattedImages);
         setLoading(false);
-      } catch (err) {
-        console.error("Error fetching images:", err);
-        setError(
-          "Failed to fetch images. Please check your console for details."
-        );
+      },
+      (err) => {
+        console.error("Error fetching student data:", err);
+        setError("Failed to fetch your media. Please try again later.");
         setLoading(false);
       }
-    };
+    );
 
-    fetchImages();
-  }, []);
+    // Clean up the listener when component unmounts
+    return () => unsubscribe();
+  }, [user, userRole, authLoading]);
 
   // Filtering images based on search term
   const filteredImages = images.filter((image) => {
@@ -114,17 +137,8 @@ const Page = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [viewMode, selectedImage, filteredImages.length, navigateImage]);
 
-  if (loading) {
-    // Loader removed
-    return (
-      <main
-        role="main"
-        aria-label="Loading Media Gallery"
-        className="min-h-screen flex items-center justify-center bg-gray-50"
-      >
-        {/* TODO: Add loading spinner and better feedback. */}
-      </main>
-    );
+  if (authLoading || loading) {
+    return <AuthLoadingSpinner />;
   }
 
   if (error) {
@@ -134,27 +148,26 @@ const Page = () => {
         aria-label="Media Gallery Error"
         className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-50 to-gray-100"
       >
-        {/* TODO: Add better error message and feedback. */}
-        <div className="p-8 max-w-md bg-white rounded-xl shadow-2xl">
-          <div className="flex items-center text-red-500 mb-6">
-            <svg
-              className="w-8 h-8 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <XCircle className="w-8 h-8" />
-            </svg>
-            <h2 className="text-2xl font-bold">Error</h2>
+        <div className="p-8 max-w-md bg-white rounded-xl shadow-2xl border border-red-100">
+          <div className="flex flex-col items-center text-red-500 mb-6">
+            <XCircle className="w-16 h-16 mb-4" />
+            <h2 className="text-2xl font-bold">Oops! Something went wrong</h2>
           </div>
-          <p className="text-gray-700 text-lg">{error}</p>
-          <button
-            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </button>
+          <p className="text-gray-700 text-lg text-center mb-6">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+            <button
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
+              onClick={() => window.history.back()}
+            >
+              Go Back
+            </button>
+          </div>
         </div>
       </main>
     );
@@ -226,7 +239,12 @@ const Page = () => {
         </div>
 
         <div className="p-4 text-white text-center bg-black bg-opacity-70 text-sm">
-          Use arrow keys (←/→) to navigate or press ESC to exit
+          <div>Use arrow keys (←/→) to navigate or press ESC to exit</div>
+          {currentImage.courseName && (
+            <div className="mt-1 text-xs text-gray-300">
+              Course: {currentImage.courseName}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -258,8 +276,11 @@ const Page = () => {
           <div className="max-w-7xl mx-auto">
             <div className="bg-white rounded-2xl shadow-2xl border border-[#991b1b]/20 p-8 mb-10 mt-32">
               <h1 className="text-3xl font-extrabold text-[#991b1b] mb-2 tracking-tight drop-shadow-sm">
-                Image Gallery
+                My Media Gallery
               </h1>
+              <p className="text-gray-600 mb-6">
+                Browse and view your course media and learning resources
+              </p>
 
               <div className="flex flex-col space-y-6 ">
                 {/* Search and stats */}
@@ -346,6 +367,13 @@ const Page = () => {
                         </div>
                       </div>
                     </div>
+                    {image.courseName && (
+                      <div className="px-4 py-2 bg-[#991b1b]/5 border-t border-[#991b1b]/10">
+                        <p className="text-xs font-medium text-[#991b1b] truncate">
+                          {image.courseName}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

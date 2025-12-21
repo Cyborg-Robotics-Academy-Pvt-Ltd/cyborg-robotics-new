@@ -50,11 +50,7 @@ const roleLinksMap: Record<
       href: "/admin-dashboard",
       icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
     },
-    {
-      label: "Grant Access",
-      href: "/admin-dashboard/create-user",
-      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
-    },
+
     {
       label: "User Profile",
       href: "/user-profile",
@@ -70,11 +66,7 @@ const roleLinksMap: Record<
       href: "/student-list",
       icon: <IconUsers className="h-5 w-5 shrink-0 text-black" />,
     },
-    {
-      label: "Tasks",
-      href: "/admin-dashboard/create-task",
-      icon: <CalendarCheck className="h-5 w-5 shrink-0 text-black" />,
-    },
+
     {
       label: "New Registration",
       href: "/admin-dashboard/new-registration",
@@ -96,11 +88,6 @@ const roleLinksMap: Record<
       icon: <UserLock className="h-5 w-5 shrink-0 text-black" />,
     },
     {
-      label: "Settings",
-      href: "#",
-      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
-    },
-    {
       label: "Logout",
       href: "/login",
       icon: <LogOut className="h-5 w-5 shrink-0 text-black" />,
@@ -117,11 +104,7 @@ const roleLinksMap: Record<
       href: "/user-profile",
       icon: <IconUserBolt className="h-5 w-5 shrink-0 text-black" />,
     },
-    {
-      label: "Create Task",
-      href: "/trainer-dashboard/create-task",
-      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
-    },
+
     {
       label: "Student List",
       href: "/student-list",
@@ -132,11 +115,7 @@ const roleLinksMap: Record<
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-black" />,
     },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <IconSettings className="h-5 w-5 shrink-0 text-black" />,
-    },
+
     {
       label: "Logout",
       href: "/login",
@@ -159,11 +138,7 @@ const roleLinksMap: Record<
       href: "/student-dashboard/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 gradient-text" />,
     },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <IconSettings className="h-5 w-5 shrink-0 gradient-text" />,
-    },
+
     {
       label: "Logout",
       href: "/login",

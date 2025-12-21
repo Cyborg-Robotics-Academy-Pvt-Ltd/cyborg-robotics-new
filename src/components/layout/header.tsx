@@ -462,7 +462,7 @@ export default function Header() {
             <div className="hidden lg:flex items-center gap-4">
               {loading ? (
                 <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-              ) : user ? (
+              ) : user && userRole ? (
                 <Link href={`/${userRole}-dashboard`}>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -529,7 +529,7 @@ export default function Header() {
             <div className="lg:hidden flex items-center gap-2">
               {loading ? (
                 <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-              ) : user ? (
+              ) : user && userRole ? (
                 <Link href={`/${userRole}-dashboard`}>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
