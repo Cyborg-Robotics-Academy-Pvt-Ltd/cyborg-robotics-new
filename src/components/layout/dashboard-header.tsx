@@ -1,19 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "../../../public/assets/logo1.png";
-import { Bell, User, Settings, LogOut, Menu, X } from "lucide-react";
+import { User, Settings, LogOut, Menu, X } from "lucide-react";
 
 export default function DashboardHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const { user, userRole } = useAuth();
   const router = useRouter();
+
+  // Fetch extended user data from Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user && userRole) {
+        try {
+          let collectionName = "";
+          switch (userRole) {
+            case "admin":
+              collectionName = "admins";
+              break;
+            case "trainer":
+              collectionName = "trainers";
+              break;
+            case "student":
+              collectionName = "students";
+              break;
+            default:
+              collectionName = "students";
+          }
+
+          const userDocRef = doc(db, collectionName, user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user, userRole]);
 
   const handleSignOut = async () => {
     try {
@@ -27,8 +64,13 @@ export default function DashboardHeader() {
 
   // Get user display name
   const getUserDisplayName = () => {
-    if (!user) return "User";
+    // First check Firestore user data for username
+    if (userData && userData.username) return userData.username;
+    if (userData && userData.fullName) return userData.fullName;
+    if (userData && userData.name) return userData.name;
 
+    // Fallback to auth user properties
+    if (!user) return "User";
     if (user.displayName) return user.displayName;
     if (user.email) return user.email.split("@")[0];
 
@@ -57,13 +99,6 @@ export default function DashboardHeader() {
           <div className="flex items-center">
             <Link href={`/${userRole}-dashboard`} className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <Image
-                  src={logo}
-                  alt="Cyborg Robotics Academy"
-                  width={32}
-                  height={32}
-                  className="rounded-md h-10 w-10"
-                />
                 <span className="ml-3 text-xl font-bold text-gray-900 hidden sm:block">
                   Dashboard
                 </span>
@@ -73,12 +108,6 @@ export default function DashboardHeader() {
 
           {/* Right side - Profile and Notifications */}
           <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            <button className="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none relative">
-              <Bell className="h-6 w-6" />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white"></span>
-            </button>
-
             {/* Profile dropdown and Mobile menu button combined */}
             <div className="flex items-center">
               <button

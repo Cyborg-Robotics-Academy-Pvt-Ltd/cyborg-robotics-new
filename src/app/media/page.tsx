@@ -22,16 +22,20 @@ const DashboardLayout = dynamic(() => import("@/components/DashboardLayout"), {
 export default function MediaPage() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userRole, setUserRole] = useState<"admin" | "trainer" | "student">(
+    "admin"
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Client-side authorization check
     const checkAuth = () => {
       try {
-        const userRole = localStorage.getItem("userRole");
+        const storedUserRole = localStorage.getItem("userRole");
 
-        if (userRole === "admin" || userRole === "trainer") {
+        if (storedUserRole === "admin" || storedUserRole === "trainer") {
           setIsAuthorized(true);
+          setUserRole(storedUserRole as "admin" | "trainer");
         } else {
           router.push("/login");
         }
@@ -67,7 +71,7 @@ export default function MediaPage() {
   }
 
   return (
-    <DashboardLayout role="admin" name="User">
+    <DashboardLayout role={userRole} name="User">
       <main
         role="main"
         aria-label="Media Section"

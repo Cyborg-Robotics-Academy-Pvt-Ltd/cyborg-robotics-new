@@ -20,12 +20,12 @@ const mentors = [
   {
     id: "Anchal",
     name: "Anchal Mishra",
-    title: "Electronics Specialist",
+    title: "Programming Specialist",
   },
   {
     id: "Mahvish",
     name: "Mahvish Fatima",
-    title: "Research & Development Specialist",
+    title: "Electronics Specialist",
   },
   {
     id: "Pratima",

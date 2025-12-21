@@ -217,20 +217,6 @@ const TrainerDashboard = () => {
 
   const dashboardCards = [
     {
-      title: "Create New Student",
-      description: "Add new students to your classes and manage their profiles",
-      href: "/create-user",
-      icon: UserRoundPlus,
-      color: "red",
-      gradient: "from-red-500 to-pink-500",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-600",
-      hoverColor: "group-hover:text-red-600",
-      action: "Add students",
-      delay: 0,
-    },
-    {
       title: "Student Record",
       description: "View and manage the list of students in your classes",
       href: "/student-list",
@@ -244,20 +230,7 @@ const TrainerDashboard = () => {
       action: "View list",
       delay: 0.1,
     },
-    {
-      title: "Tasks Management",
-      description: "Create and manage tasks and assignments for your students",
-      href: "/trainer-dashboard/create-task",
-      icon: ClipboardCheck,
-      color: "cyan",
-      gradient: "from-cyan-500 to-blue-500",
-      bgColor: "bg-cyan-50",
-      iconBg: "bg-gradient-to-br from-cyan-100 to-cyan-200",
-      textColor: "text-cyan-600",
-      hoverColor: "group-hover:text-cyan-600",
-      action: "Manage tasks",
-      delay: 0.2,
-    },
+
     {
       title: "Media Section",
       description: "View system analytics, reports and key metrics",
@@ -327,11 +300,7 @@ const TrainerDashboard = () => {
         <meta property="og:type" content="website" />
       </Head>
 
-      <main
-        role="main"
-        aria-label="Trainer Dashboard"
-        className={`min-h-[calc(100vh-6rem)] -mt-24 pt-24 ${theme.background}`}
-      >
+      <main role="main" aria-label="Trainer Dashboard" className={``}>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-30 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[length:20px_20px]"></div>
@@ -504,8 +473,7 @@ const TrainerDashboard = () => {
             className="mt-16 text-center"
           >
             <p className={`text-sm ${theme.textMuted}`}>
-              © 2025 Cyborg Robotics Academy. Built with ❤️ for the future of
-              education.
+              © {new Date().getFullYear()} Cyborg Robotics Academy.
             </p>
           </motion.div>
         </div>

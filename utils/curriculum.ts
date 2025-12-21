@@ -114,6 +114,47 @@ export const javaCurriculum = [
     },
   ];
 
+export const RoboticsWithQuarkyCurriculum = [
+  {
+    id: "1",
+    title: "Level 1: Quarky Robotics",
+    subtitle: [
+      "Session 1: Getting Started with PictoBlox",
+      "Session 2: Play Time with Sensors",
+      "Session 3: Meet Your AI Robot",
+      "Session 4: Basics of Robotics",
+      "Session 5: Getting Started with Sensors",
+      "Session 6: Detecting Obstacles",
+      "Session 7: Understanding Actuators",
+      "Session 8: Line Following Concepts",
+      "Session 9: Line Following Robot",
+      "Session 10: Edge Detection Robot",
+      "Session 11: Steering and Motion Control",
+      "Session 12: Four Wheel Drive Mechanics",
+      "Session 13: Capstone – Interactive Control System",
+      "Session 14: Capstone – Line Following Challenge"
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2: Quarky Robotics",
+    subtitle: [
+      "Session 1: Object Tracking Robot",
+      "Session 2: Pick & Place Robot – Assembly (Part 1)",
+      "Session 3: Pick & Place Robot – Control (Part 2)",
+      "Session 4: Building a Robo-Pet",
+      "Session 5: Self-Driving Car – Part 1",
+      "Session 6: Self-Driving Car – Part 2",
+      "Session 7: Advanced Object Tracking Robot",
+      "Session 8: Gripper Mechanism ",
+      "Session 9: Vertical Pick & Place – Part 1",
+      "Session 10: Vertical Pick & Place – Part 2 ",
+      "Session 11: Vertical Pick & Place – Part 3",
+      "Session 13: Capstone – AI Robotics Application ",
+      "Session 14: Capstone – Advanced Automation Challenge "
+    ],
+  },
+];
 
 
   export const AnimationAndCodingCurriculum = [

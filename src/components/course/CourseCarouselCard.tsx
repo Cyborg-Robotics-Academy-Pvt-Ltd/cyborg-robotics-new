@@ -114,7 +114,7 @@ const CourseCarouselCard: React.FC<CourseCardProps> = ({
       aria-label={`${title} course card`}
     >
       <div className="mb-3">
-        <div className="relative w-full h-36 rounded-tr-2xl rounded-tl-2xl overflow-hidden  transition-all duration-300">
+        <div className="relative w-full h-36 rounded-tr-2xl rounded-tl-2xl overflow-hidden   transition-all duration-300">
           <Image {...imageProps} />
           {isImageLoading && (
             <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200  rounded-2xl" />

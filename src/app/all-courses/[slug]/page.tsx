@@ -68,6 +68,7 @@ import {
   EarlyElectronicsCurriculumData,
   DroneCurriculumData,
   ThreeDPrintingArduinoCurriculum,
+  RoboticsWithQuarkyCurriculum,
 } from "../../../../utils/curriculum";
 // Define the type for key features
 interface KeyFeature {
@@ -118,7 +119,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES(x6 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/PYTHON.pdf",
     syllabusFileName: "PYTHON.pdf",
-    imagePath: "/assets/online-course/python.webp",
+    imagePath: "/assets/online-course/python.avif",
     imageAlt: "Python Programming Course",
     price: 14999,
     originalPrice: 24999,
@@ -205,7 +206,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/WEB DESIGN.pdf",
     syllabusFileName: "WEB DESIGN.pdf",
-    imagePath: "/assets/online-course/webdesigning.webp",
+    imagePath: "/assets/online-course/webdesigning.png",
     imageAlt: "Web Designing Course",
     price: 10999,
     originalPrice: 15999,
@@ -377,7 +378,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EV3 ROBOTICS.pdf",
     syllabusFileName: "ROBOTICS EV3.pdf",
-    imagePath: "/assets/classroom-course/ev3.webp",
+    imagePath: "/assets/classroom-course/ev3.png",
     imageAlt: "Robotics EV3 Course",
     price: 11999,
     originalPrice: 16999,
@@ -419,7 +420,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/Spike Prime.pdf",
     syllabusFileName: "SPIKE PRIME.pdf",
-    imagePath: "/assets/classroom-course/pneumatics.webp",
+    imagePath: "/assets/classroom-course/Spike-Prime.png",
     imageAlt: "SPIKE Prime Course",
     price: 9999,
     originalPrice: 14999,
@@ -463,7 +464,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D PRINTING.pdf",
     syllabusFileName: "3D PRINTING.pdf",
-    imagePath: "/assets/classroom-course/printing3d.webp",
+    imagePath: "/assets/classroom-course/3d-printing.png",
     imageAlt: "3D Printing Course",
     price: 8999,
     originalPrice: 13999,
@@ -875,7 +876,7 @@ const mockData: Record<string, CourseData> = {
     duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
     syllabusFileName: "EARLY_ELECTRONICS.pdf",
-    imagePath: "/assets/classroom-course/early-electronics.webp",
+    imagePath: "/assets/classroom-course/Early_Electronics.png",
     imageAlt: "Early Electronics Course",
     price: 8999,
     originalPrice: 12999,
@@ -918,7 +919,7 @@ const mockData: Record<string, CourseData> = {
     duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/DRONE.pdf",
     syllabusFileName: "DRONE.pdf",
-    imagePath: "/assets/classroom-course/drone.webp",
+    imagePath: "/assets/classroom-course/Drone.png",
     imageAlt: "Drone Course",
     price: 9999,
     originalPrice: 14999,
@@ -954,7 +955,7 @@ const mockData: Record<string, CourseData> = {
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D-PRINTING-ARDUINO.pdf",
     syllabusFileName: "3D PRINTING ARDUINO.pdf",
-    imagePath: "/assets/classroom-course/3d-printing-arduino.webp",
+    imagePath: "/assets/classroom-course/3d-printing-arduino.png",
     imageAlt: "3D Printing + Arduino Course",
     price: 12999,
     originalPrice: 17999,
@@ -984,6 +985,50 @@ const mockData: Record<string, CourseData> = {
         description:
           "Develop creative solutions using both technologies together",
         iconName: "Lightbulb",
+      },
+    ],
+  },
+  "robotics-with-quarky": {
+    id: "roboticsWithQuarky",
+    title: "ROBOTICS WITH QUARKY",
+    subtitle: "Hands-on robotics, AI, and coding using Quarky and PictoBlox",
+    badge: "Robotics & AI Foundation Program",
+    description:
+      "An experiential robotics program where students learn coding, sensors, motion control, and AI concepts by building real-world robots using Quarky and PictoBlox.",
+    mode: "Offline",
+    duration: "28 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/ROBOTICS_WITH_QUARKY.pdf",
+    syllabusFileName: "ROBOTICS_WITH_QUARKY.pdf",
+    imagePath: "/assets/classroom-course/Quarky.png",
+    imageAlt: "Robotics with Quarky Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Block-Based Coding",
+        description:
+          "Learn programming fundamentals using PictoBlox with Quarky integration",
+        iconName: "Code",
+      },
+      {
+        title: "Sensors & Automation",
+        description:
+          "Work with ultrasonic, IR, touch, and environmental sensors",
+        iconName: "Radar",
+      },
+      {
+        title: "Robotics & Motion Control",
+        description:
+          "Understand motors, servos, steering logic, and autonomous movement",
+        iconName: "Bot",
+      },
+      {
+        title: "AI & Capstone Projects",
+        description:
+          "Build AI-powered robots including object tracking and self-driving systems",
+        iconName: "Brain",
       },
     ],
   },
@@ -1092,6 +1137,8 @@ export default async function SlugPage({
         return PeeCeeCurriculumData as unknown as CurriculumLevel[];
       case "drone":
         return DroneCurriculumData as unknown as CurriculumLevel[];
+      case "robotics-with-quarky":
+        return RoboticsWithQuarkyCurriculum;
       case "3d-printing-arduino":
         // Transform ThreeDPrintingArduinoCurriculum to match CurriculumLevel[] structure
         return ThreeDPrintingArduinoCurriculum.levels.map((level: any) => ({
@@ -1301,24 +1348,15 @@ export default async function SlugPage({
           </div>
 
           <div className="w-full lg:w-1/2 mt-8 lg:mt-0">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-red-500/10 to-blue-500/10 z-10"></div>
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10 z-10"></div>
-
+            <div className="relative rounded-3xl overflow-hidden shadow-xl">
               <Image
                 src={data.imagePath}
                 alt={data.imageAlt}
                 width={600}
                 height={400}
                 unoptimized
-                className="object-cover w-full h-auto max-h-80 sm:max-h-[400px] transition-transform duration-700 hover:scale-110"
+                className="object-cover w-full h-auto max-h-80 sm:max-h-[400px] "
               />
-
-              {/* Floating elements */}
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl z-20">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              </div>
             </div>
           </div>
         </div>

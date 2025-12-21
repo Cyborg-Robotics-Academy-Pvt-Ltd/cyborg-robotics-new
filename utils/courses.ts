@@ -10,7 +10,6 @@ const courses = [
     "IOT",
     "App Designing",
     "App Lab",
-    "Android Studio",
     "Electronics",
     "Arduino",
     "Web Designing",
@@ -18,6 +17,9 @@ const courses = [
     "Python Language",
     "Artificial Intelligence",
     "Machine Learning",
+    "Drone Technology",
+    "PeeCee"
+
   ];
   
   export default courses;

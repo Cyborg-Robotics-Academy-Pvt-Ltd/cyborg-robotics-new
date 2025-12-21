@@ -20,11 +20,13 @@ import {
   User,
   Mail,
   Lock,
-  GraduationCap,
   AlertCircle,
   Eye,
   EyeOff,
   ChevronDown,
+  BookOpen,
+  Users,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -38,7 +40,7 @@ const SignUpPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    grade: "",
+    role: "student", // Default role
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -48,11 +50,59 @@ const SignUpPage = () => {
   const [studentData, setStudentData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Role selection state
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("student");
+
+  // Role options for dropdown
+  const roleOptions = [
+    {
+      value: "student",
+      label: "Student",
+      icon: BookOpen,
+      description: "Access student dashboard and course materials",
+      color: "text-red-600",
+    },
+    {
+      value: "trainer",
+      label: "Trainer",
+      icon: Users,
+      description: "Manage courses and student progress",
+      color: "text-red-700",
+    },
+  ];
+
+  // Handle role selection
+  const handleRoleSelect = (roleValue: string) => {
+    setSelectedRole(roleValue);
+    setIsRoleDropdownOpen(false);
+    // Update form data
+    setFormData((prev) => ({
+      ...prev,
+      role: roleValue,
+    }));
+  };
+
+  const getSelectedRole = () => {
+    return roleOptions.find((role) => role.value === selectedRole);
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "student":
+        return <BookOpen className="h-4 w-4 text-red-600" />;
+      case "trainer":
+        return <Users className="h-4 w-4 text-red-700" />;
+      default:
+        return <User className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
   // Redirect if already authenticated
   useEffect(() => {
     if (authLoading) return;
 
-    if (user && userRole) {
+    if (user && userRole && user.emailVerified) {
       switch (userRole) {
         case "student":
           router.push("/student-dashboard");
@@ -64,6 +114,11 @@ const SignUpPage = () => {
           router.push("/admin-dashboard");
           break;
       }
+    } else if (user && !user.emailVerified) {
+      // User is signed in but email not verified, redirect to verify email page
+      router.push(
+        `/verify-email?email=${encodeURIComponent(user.email || "")}`
+      );
     } else if (user) {
       // Check if user exists but role is not set
       checkStudentData();
@@ -87,6 +142,11 @@ const SignUpPage = () => {
         // If student has courses, redirect to dashboard
         if (data.courses && data.courses.length > 0) {
           router.push("/student-dashboard");
+        }
+
+        // If student is pending approval, show pending approval message
+        if (data.status === "pending") {
+          // We'll handle this in the render condition
         }
       }
     } catch (error) {
@@ -125,11 +185,6 @@ const SignUpPage = () => {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    // Grade validation
-    if (!formData.grade) {
-      newErrors.grade = "Grade is required";
     }
 
     setErrors(newErrors);
@@ -178,32 +233,33 @@ const SignUpPage = () => {
         displayName: formData.fullName,
       });
 
-      // Create student document in Firestore with explicit role
-      const studentData = {
+      // Create user document in Firestore with explicit role and pending status
+      const userData = {
         uid: user.uid,
         email: formData.email,
         fullName: formData.fullName,
-        grade: formData.grade,
         createdAt: new Date(),
         lastLogin: new Date(),
-        courses: [], // Initially no courses assigned
-        role: "student", // Explicitly set role as student
+        status: "pending", // Set status to pending for admin approval
+        role: formData.role, // Use selected role
       };
 
-      await setDoc(doc(db, "students", user.uid), studentData);
+      // Save to appropriate collection based on role
+      const collectionName = `${formData.role}s`; // students, trainers
+      await setDoc(doc(db, collectionName, user.uid), userData);
 
       // Send email verification
       await sendEmailVerification(user);
 
       // Store role in localStorage
-      localStorage.setItem("userRole", "student");
+      localStorage.setItem("userRole", formData.role);
 
       toast.success(
-        "Account created successfully! Please check your email for verification. Once fees processing is done, you can access your dashboard."
+        "Account created successfully! Please check your email for verification."
       );
 
-      // Don't redirect immediately, let user see the success message
-      // router.push("/student-dashboard");
+      // Set pending approval state instead of redirecting
+      setShowPendingApproval(true);
     } catch (error: any) {
       console.error("Signup error:", error);
       let errorMessage = "Failed to create account. Please try again.";
@@ -229,6 +285,9 @@ const SignUpPage = () => {
       setIsSubmitting(false);
     }
   };
+
+  // If user just signed up and is pending approval, show pending approval message
+  const [showPendingApproval, setShowPendingApproval] = useState(false);
 
   // Show loading indicator while checking auth status
   if (authLoading || loading) {
@@ -297,6 +356,266 @@ const SignUpPage = () => {
                   <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="mt-4 text-gray-600">Loading...</p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Footer text */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+              className="text-center text-gray-600 text-xs mt-4"
+            >
+              Secure authentication
+            </motion.p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user just signed up and is pending approval, show pending approval message
+  if (studentData && studentData.status === "pending") {
+    return (
+      <div className="min-h-screen bg-white relative overflow-hidden mt-12">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 ">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute top-1/4 left-1/4 w-64 h-64   "
+          />
+          <motion.div
+            animate={{
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 180, 0],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute bottom-1/4 right-1/4 w-80 h-80 "
+          />
+        </div>
+
+        <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="w-full max-w-md"
+          >
+            <Card className="bg-white border border-gray-300 shadow-lg overflow-hidden">
+              {/* Top accent line */}
+              <div className="h-[4px] bg-gradient-to-r from-red-700 to-red-800"></div>
+
+              <CardHeader className="space-y-3 pb-3 pt-4 px-6">
+                {/* Logo section */}
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="flex justify-center"
+                >
+                  <div className="relative">
+                    <Image
+                      src="/assets/Cyborg-logo.png"
+                      alt="Logo"
+                      width={200}
+                      height={200}
+                      className="relative z-10 mx-auto"
+                    />
+                  </div>
+                </motion.div>
+              </CardHeader>
+
+              <CardContent className="px-6 pb-6">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.6 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-blue-600" />
+                      <h3 className="text-gray-800 text-md font-semibold">
+                        Account Pending Approval
+                      </h3>
+                    </div>
+
+                    <div className="text-center py-4">
+                      <p className="text-gray-600 mb-4">
+                        Welcome, {studentData.fullName}! Your account has been
+                        created successfully and is pending admin approval.
+                      </p>
+
+                      <div className="bg-blue-50 border border-blue-200 p-4 mb-6 text-left rounded-xl">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <Shield className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-blue-700">
+                              <strong>Next Steps:</strong> Our admin team will
+                              review your account and approve your{" "}
+                              {studentData.role} access shortly. You will
+                              receive an email notification once approved.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => auth.signOut()}
+                          className="w-full sm:w-auto border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </CardContent>
+            </Card>
+
+            {/* Footer text */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+              className="text-center text-gray-600 text-xs mt-4"
+            >
+              Secure authentication
+            </motion.p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user just signed up and is pending approval, show pending approval message
+  if (showPendingApproval) {
+    return (
+      <div className="min-h-screen bg-white relative overflow-hidden mt-12">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 ">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute top-1/4 left-1/4 w-64 h-64   "
+          />
+          <motion.div
+            animate={{
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 180, 0],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute bottom-1/4 right-1/4 w-80 h-80 "
+          />
+        </div>
+
+        <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="w-full max-w-md"
+          >
+            <Card className="bg-white border border-gray-300 shadow-lg overflow-hidden">
+              {/* Top accent line */}
+              <div className="h-[4px] bg-gradient-to-r from-red-700 to-red-800"></div>
+
+              <CardHeader className="space-y-3 pb-3 pt-4 px-6">
+                {/* Logo section */}
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="flex justify-center"
+                >
+                  <div className="relative">
+                    <Image
+                      src="/assets/Cyborg-logo.png"
+                      alt="Logo"
+                      width={200}
+                      height={200}
+                      className="relative z-10 mx-auto"
+                    />
+                  </div>
+                </motion.div>
+              </CardHeader>
+
+              <CardContent className="px-6 pb-6">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.6 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-blue-600" />
+                      <h3 className="text-gray-800 text-md font-semibold">
+                        Account Pending Approval
+                      </h3>
+                    </div>
+
+                    <div className="text-center py-4">
+                      <p className="text-gray-600 mb-4">
+                        Welcome! Your account has been created successfully and
+                        is pending admin approval.
+                      </p>
+
+                      <div className="bg-blue-50 border border-blue-200 p-4 mb-6 text-left rounded-xl">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <Shield className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-blue-700">
+                              <strong>Next Steps:</strong> Our admin team will
+                              review your account and approve your access
+                              shortly. You will receive an email notification
+                              once approved.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => auth.signOut()}
+                          className="w-full sm:w-auto border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               </CardContent>
             </Card>
 
@@ -608,9 +927,163 @@ const SignUpPage = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <User className="h-4 w-4 text-red-700" />
                     <h3 className="text-gray-800 text-md font-semibold">
-                      Student Sign Up
+                      Sign Up
                     </h3>
                   </div>
+
+                  {/* Role Selection */}
+                  <motion.div
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 0.5 }}
+                    className="space-y-1"
+                  >
+                    <Label className="text-gray-600 text-sm font-medium">
+                      Select your role:
+                    </Label>
+
+                    <div className="relative">
+                      {/* Dropdown Trigger */}
+                      <div
+                        onClick={() =>
+                          setIsRoleDropdownOpen(!isRoleDropdownOpen)
+                        }
+                        className={`relative group cursor-pointer`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-100 rounded-xl blur opacity-0 group-hover:opacity-50 transition-all duration-300"></div>
+                        <div
+                          className={`relative flex items-center w-full pl-10 pr-10 py-2.5 bg-white border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md font-medium ${
+                            isRoleDropdownOpen
+                              ? "border-red-400 ring-2 ring-red-200 bg-red-50"
+                              : selectedRole
+                                ? "border-red-200 text-gray-800"
+                                : "border-gray-300 text-gray-500"
+                          }`}
+                        >
+                          {/* Role icon */}
+                          <div className="absolute left-3 z-10">
+                            {selectedRole ? (
+                              getRoleIcon(selectedRole)
+                            ) : (
+                              <User className="h-4 w-4 text-gray-400" />
+                            )}
+                          </div>
+
+                          {/* Selected role display */}
+                          <div className="flex-1 text-left text-sm">
+                            {selectedRole ? (
+                              <span className="flex items-center gap-2 text-gray-800">
+                                <span>{getSelectedRole()?.label}</span>
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">
+                                Choose your role
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Enhanced chevron with animation */}
+                          <motion.div
+                            animate={{
+                              rotate: isRoleDropdownOpen ? 180 : 0,
+                              scale: isRoleDropdownOpen ? 1.1 : 1,
+                            }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="absolute right-3"
+                          >
+                            <ChevronDown
+                              className={`h-4 w-4 transition-colors duration-300 ${
+                                isRoleDropdownOpen
+                                  ? "text-red-600"
+                                  : selectedRole
+                                    ? "text-red-600"
+                                    : "text-gray-400"
+                              }`}
+                            />
+                          </motion.div>
+                        </div>
+
+                        {/* Selection indicator */}
+                        {selectedRole && !isRoleDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full"
+                          />
+                        )}
+                      </div>
+
+                      {/* Dropdown Menu */}
+                      {isRoleDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="absolute top-full mt-1 w-full bg-white border-2 border-red-200 rounded-xl shadow-xl z-50 overflow-hidden"
+                        >
+                          {roleOptions.map((role, index) => (
+                            <motion.div
+                              key={role.value}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{
+                                delay: index * 0.05,
+                                duration: 0.2,
+                              }}
+                              onClick={() => handleRoleSelect(role.value)}
+                              className={`flex items-center justify-center gap-3 px-3 py-3 cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-l-4 hover:border-l-red-500 ${
+                                selectedRole === role.value
+                                  ? "bg-red-50 border-l-4 border-l-red-600"
+                                  : ""
+                              } ${index !== roleOptions.length - 1 ? "border-b border-gray-100" : ""}`}
+                            >
+                              {/* Role Icon */}
+                              <div className="flex-shrink-0">
+                                <role.icon
+                                  className={`h-4 w-4 ${role.color}`}
+                                />
+                              </div>
+
+                              {/* Role Info */}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm text-gray-800">
+                                    {role.label}
+                                  </span>
+                                  {selectedRole === role.value && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="ml-auto"
+                                    >
+                                      <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
+                                    </motion.div>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {role.description}
+                                </p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* Role description for selected item */}
+                    {selectedRole && !isRoleDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-xs text-gray-600 pl-1"
+                      >
+                        {getSelectedRole()?.description}
+                      </motion.div>
+                    )}
+                  </motion.div>
 
                   {/* Full Name */}
                   <motion.div
@@ -690,47 +1163,6 @@ const SignUpPage = () => {
                         transition={{ duration: 0.3 }}
                       >
                         {errors.email}
-                      </motion.div>
-                    )}
-                  </motion.div>
-
-                  {/* Grade */}
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.85, duration: 0.5 }}
-                    className="space-y-1"
-                  >
-                    <Label
-                      htmlFor="grade"
-                      className="text-gray-600 text-sm font-medium"
-                    >
-                      Grade <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gray-200 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                      <div className="relative flex items-center">
-                        <GraduationCap className="absolute left-3 h-4 w-4 text-gray-400 z-10" />
-                        <Input
-                          id="grade"
-                          name="grade"
-                          type="text"
-                          value={formData.grade}
-                          onChange={handleChange}
-                          placeholder="e.g., Grade 5"
-                          required
-                          className={`pl-10 pr-3 py-2 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-gray-400 transition-all duration-300 border-0 ${errors.grade ? "border-red-500" : ""}`}
-                        />
-                      </div>
-                    </div>
-                    {errors.grade && (
-                      <motion.div
-                        className="text-red-600 text-sm bg-red-100 py-2 rounded-xl border border-red-300 px-3"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        {errors.grade}
                       </motion.div>
                     )}
                   </motion.div>

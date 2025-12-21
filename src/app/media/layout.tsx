@@ -8,7 +8,7 @@ export default function MediaLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col min-h-screen pt-16">
+    <div className="flex flex-col min-h-screen ">
       <div className="flex-1">{children}</div>
     </div>
   );

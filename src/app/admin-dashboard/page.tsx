@@ -217,21 +217,6 @@ const AdminDashboard = () => {
 
   const dashboardCards = [
     {
-      title: "Grant Access",
-      description: "Provide system access to newly registered accounts",
-      href: "/admin-dashboard/create-user",
-      icon: UserCog,
-      color: "red",
-      gradient: "from-red-500 to-pink-500",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-600",
-      hoverColor: "group-hover:text-red-600",
-      borderColor: "border-red-200",
-      action: "Manage users",
-      delay: 0,
-    },
-    {
       title: "Access Control",
       description: "Manage user roles, permissions and access levels",
       href: "/admin-dashboard/access-control",
@@ -276,21 +261,7 @@ const AdminDashboard = () => {
       action: "View analytics",
       delay: 0.3,
     },
-    {
-      title: "Tasks Management",
-      description: "Create and manage tasks and to-do lists",
-      href: "/admin-dashboard/create-task",
-      icon: ClipboardCheck,
-      color: "cyan",
-      gradient: "from-cyan-500 to-blue-500",
-      bgColor: "bg-cyan-50",
-      iconBg: "bg-gradient-to-br from-cyan-100 to-cyan-200",
-      textColor: "text-cyan-600",
-      hoverColor: "group-hover:text-cyan-600",
-      borderColor: "border-cyan-200",
-      action: "Manage tasks",
-      delay: 0.4,
-    },
+
     {
       title: "New Registration",
       description: "Register new students to the system",
