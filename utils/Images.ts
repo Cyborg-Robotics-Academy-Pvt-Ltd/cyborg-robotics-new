@@ -34,34 +34,34 @@ export const GalleryImageData = [
 
     {
       title: "Empowering Minds for the Future",
-      imageUrl: "/assets/gallery/gallery (71).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397910/iblvchk1mc38k1nkhxuw.jpg",
     },
     {
       title: "Turning Ideas into Reality",
-      imageUrl: "/assets/gallery/gallery (72).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397914/n9hdfsat4uipvxoxnafd.jpg",
     },
  
 
     {
       title: "Shaping Young Innovators",
-      imageUrl: "/assets/gallery/gallery (74).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397914/aopcdkpbzqsbdpwx9ad7.jpg",
     },
     {
       title: "Creating Future Leaders",
-      imageUrl: "/assets/gallery/gallery (75).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397914/fl6jycqlaofgrscvedln.jpg",
     },
     {
       title: "A Journey of Discovery and Growth",
-      imageUrl: "/assets/gallery/gallery (76).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397912/zealblh77cshb69sp7vz.jpg",
     },
     {
       title: "Where Passion Meets Learning",
-      imageUrl: "/assets/gallery/gallery (77).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397914/c6swhrljbwewiwkb7crn.jpg",
     },
     
     {
       title: "Education That Makes a Difference",
-      imageUrl: "/assets/gallery/gallery (78).jpg",
+      imageUrl: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397912/cab5mwxrymqzyjy2nmnp.jpg",
     },
     
   ];
