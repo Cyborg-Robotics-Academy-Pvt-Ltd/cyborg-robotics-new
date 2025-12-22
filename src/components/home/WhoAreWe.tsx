@@ -122,9 +122,9 @@ export default function WhoAreWe() {
 
             {/* Right Container - Image */}
             <div className="lg:w-1/2">
-              <div className="rounded-2xl overflow-hidden ">
+              <div className="rounded-4xl overflow-hidden ">
                 <Image
-                  src="/assets/whoarewe/latesttechnology.jpg"
+                  src="/assets/events/competition.png"
                   alt="Cyborg Robotics Academy"
                   width={600}
                   height={400}

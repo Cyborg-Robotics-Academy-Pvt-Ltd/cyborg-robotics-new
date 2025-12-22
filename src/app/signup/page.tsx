@@ -9,7 +9,15 @@ import {
   updateProfile,
   sendEmailVerification,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +55,7 @@ const SignUpPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingExisting, setIsCheckingExisting] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -95,6 +104,40 @@ const SignUpPage = () => {
         return <Users className="h-4 w-4 text-red-700" />;
       default:
         return <User className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  // Check if user already exists with the given email
+  const checkExistingUser = async (email: string) => {
+    try {
+      // Check in standard role-based collections
+      const roles = ["student", "trainer", "admin"];
+      for (const role of roles) {
+        const roleCollectionRef = collection(db, `${role}s`);
+        const q = query(roleCollectionRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          return true; // User exists
+        }
+      }
+
+      // Check in other collections if needed
+      const collections = ["registrations", "renewals"];
+      for (const collectionName of collections) {
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          return true; // User exists
+        }
+      }
+
+      return false; // User does not exist
+    } catch (error) {
+      console.error("Error checking existing user:", error);
+      return false; // Assume user doesn't exist if there's an error
     }
   };
 
@@ -213,6 +256,17 @@ const SignUpPage = () => {
 
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    setIsCheckingExisting(true);
+    const userExists = await checkExistingUser(formData.email);
+    setIsCheckingExisting(false);
+
+    if (userExists) {
+      toast.error(
+        "An account with this email already exists. Please sign in instead."
+      );
       return;
     }
 
@@ -1326,10 +1380,10 @@ const SignUpPage = () => {
                   >
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isCheckingExisting}
                       className="w-full h-10 rounded-xl text-md font-semibold bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] hover:from-red-700 hover:to-red-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
-                      {isSubmitting ? (
+                      {isSubmitting || isCheckingExisting ? (
                         <div className="flex items-center justify-center space-x-3">
                           <motion.div
                             animate={{ rotate: 360 }}
@@ -1340,7 +1394,11 @@ const SignUpPage = () => {
                             }}
                             className="rounded-full h-4 w-4 border-2 border-transparent border-t-white"
                           />
-                          <span>Creating Account...</span>
+                          <span>
+                            {isCheckingExisting
+                              ? "Checking Account..."
+                              : "Creating Account..."}
+                          </span>
                         </div>
                       ) : (
                         <span className="flex items-center justify-center gap-2">

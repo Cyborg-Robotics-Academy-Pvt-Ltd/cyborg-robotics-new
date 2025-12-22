@@ -20,6 +20,29 @@ import { useAuth } from "@/lib/auth-context";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function ImageContentCardSkeleton() {
+  return (
+    <div className="rounded-xl  bg-card p-3 space-y-3">
+      {/* Image */}
+      <Skeleton className="h-48 w-full rounded-lg" />
+
+      {/* Title */}
+      <Skeleton className="h-4 w-3/4" />
+
+      {/* Description / subtitle */}
+      <Skeleton className="h-3 w-full" />
+      <Skeleton className="h-3 w-5/6" />
+
+      {/* Footer (optional) */}
+      <div className="flex justify-between items-center pt-2">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+    </div>
+  );
+}
 
 export default function GalleryDataPage() {
   const { userRole, loading: authLoading } = useAuth();
@@ -373,7 +396,7 @@ export default function GalleryDataPage() {
               <button
                 onClick={handleUploadClick}
                 disabled={isUploading}
-                className="px-6 py-3 bg-red-800 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center disabled:opacity-50"
+                className="px-4 py-3 bg-red-800 text-white rounded-3xl hover:bg-red-900 transition-colors flex items-center disabled:opacity-50"
               >
                 {isUploading ? (
                   <>
@@ -403,8 +426,10 @@ export default function GalleryDataPage() {
             </h2>
 
             {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <ImageContentCardSkeleton key={index} />
+                ))}
               </div>
             ) : activeTab === "galleryImage" ? (
               galleryImages.length === 0 ? (

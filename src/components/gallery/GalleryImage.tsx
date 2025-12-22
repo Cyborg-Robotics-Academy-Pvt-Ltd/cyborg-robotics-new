@@ -335,7 +335,7 @@ export default function Gallery() {
                 height={700}
                 alt={`Gallery image of ${`item ${image.id}`}`}
                 className="w-full object-cover h-full"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 400px"
+                sizes="(max-width: 740px) 50vw, (max-width: 1024px) 33vw, 400px"
                 // Priority load first two images for better LCP
                 priority={index < 2 && currentPage === 1}
                 loading={index < 2 && currentPage === 1 ? "eager" : "lazy"}
