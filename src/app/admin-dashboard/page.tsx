@@ -292,6 +292,21 @@ const AdminDashboard = () => {
       action: "Manage renewals",
       delay: 0.6,
     },
+    {
+      title: "Gallery Data",
+      description: "Upload, view and manage gallery images",
+      href: "/admin-dashboard/gallery-data",
+      icon: BarChart3,
+      color: "pink",
+      gradient: "from-pink-500 to-rose-500",
+      bgColor: "bg-pink-50",
+      iconBg: "bg-gradient-to-br from-pink-100 to-pink-200",
+      textColor: "text-pink-600",
+      hoverColor: "group-hover:text-pink-600",
+      borderColor: "border-pink-200",
+      action: "Manage gallery",
+      delay: 0.4,
+    },
   ];
 
   const theme = themes[currentTheme];
