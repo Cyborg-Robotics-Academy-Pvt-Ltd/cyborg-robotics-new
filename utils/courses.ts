@@ -1,16 +1,16 @@
 const courses = [
     "Bambino Coding",
     "3D Printing",
+    "3D Printing + arduino",
+    "Arduino",
     "Early Simple Machines",
     "EV3 Robotics",
     "Animation & Coding",
     "Simple & Powered Machines",
-    "Spike Essential + Pneumatics",
+    "Spike Essential",
     "Spike Prime",
     "IOT",
     "App Designing",
-    "App Lab",
-    "Electronics",
     "Arduino",
     "Web Designing",
     "Java",
@@ -18,8 +18,10 @@ const courses = [
     "Artificial Intelligence",
     "Machine Learning",
     "Drone Technology",
-    "PeeCee"
-
+    "PeeCee",
+    "Quarky",
+    "AI with Pictoblox"
+    
   ];
   
   export default courses;

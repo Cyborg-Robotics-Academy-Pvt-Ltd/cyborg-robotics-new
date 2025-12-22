@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
   return (
     <>
       {/* Template Image Modal */}
-      <TemplateCarousel showModal={showModal} closeModal={closeModal} />
+      {/* <TemplateCarousel showModal={showModal} closeModal={closeModal} /> */}
 
       {/* Page Content */}
       <div className="bg-white text-black">
