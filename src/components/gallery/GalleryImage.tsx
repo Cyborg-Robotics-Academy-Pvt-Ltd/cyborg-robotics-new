@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -12,26 +12,67 @@ import {
 } from "@/components/ui/pagination";
 import { GalleryImageData } from "../../../utils/Images";
 import { motion, AnimatePresence } from "framer-motion";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { useAuth } from "@/lib/auth-context";
 
 const ITEMS_PER_PAGE = 6;
 const MAX_VISIBLE_PAGES = 5; // Limit visible pagination numbers
 
 export default function Gallery() {
+  const { userRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [isClient, setIsClient] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Hydration fix - ensure component renders the same on server and client
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Fetch images from Firebase
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const q = query(
+          collection(db, "galleryImage"),
+          orderBy("uploadedAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const images: any[] = [];
+        let index = 1;
+        querySnapshot.forEach((doc) => {
+          const { fileId, ...rest } = doc.data();
+          images.push({
+            id: String(index++),
+            ...rest,
+          });
+        });
+        setGalleryImages(images);
+      } catch (error) {
+        console.error("Error fetching images:", error);
+        // Fallback to static data if Firebase fetch fails
+        setGalleryImages(GalleryImageData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isClient) {
+      fetchImages();
+    }
+  }, [isClient]);
+
   const totalPages = Math.min(
     100,
-    Math.ceil(GalleryImageData.length / ITEMS_PER_PAGE)
+    Math.ceil(galleryImages.length / ITEMS_PER_PAGE)
   );
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const selectedImages = GalleryImageData.slice(
+  const selectedImages = galleryImages.slice(
     startIndex,
     startIndex + ITEMS_PER_PAGE
   );
@@ -41,6 +82,77 @@ export default function Gallery() {
       setCurrentPage(newPage);
       // Scroll to top of gallery on page change
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      // Upload each file
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/gallery-upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        return await response.json();
+      });
+
+      const results = await Promise.all(uploadPromises);
+
+      // Check if all uploads were successful
+      const successfulUploads = results.filter((result) => result.imageUrl);
+      const failedUploads = results.filter((result) => !result.imageUrl);
+
+      if (successfulUploads.length > 0) {
+        console.log("Successfully uploaded images:", successfulUploads);
+        // Refresh the gallery to show the new images
+        const q = query(
+          collection(db, "galleryImage"),
+          orderBy("uploadedAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const images: any[] = [];
+        let index = 1;
+        querySnapshot.forEach((doc) => {
+          const { fileId, ...rest } = doc.data();
+          images.push({
+            id: String(index++),
+            ...rest,
+          });
+        });
+        setGalleryImages(images);
+
+        if (failedUploads.length > 0) {
+          alert(
+            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`
+          );
+        } else {
+          alert(`Uploaded ${successfulUploads.length} images successfully!`);
+        }
+      } else {
+        console.error("All uploads failed:", results);
+        alert("All uploads failed: " + results.map((r) => r.error).join(", "));
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed: " + error);
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -134,9 +246,12 @@ export default function Gallery() {
   };
 
   // Don't render until after hydration to prevent mismatch
-  if (!isClient) {
-    // Loader removed
-    return null;
+  if (!isClient || loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
+      </div>
+    );
   }
 
   return (
@@ -146,6 +261,55 @@ export default function Gallery() {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
     >
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        multiple
+        className="hidden"
+      />
+
+      {/* Upload button - only show for admin users */}
+      {userRole === "admin" && (
+        <div className="mb-6 flex justify-center">
+          <button
+            onClick={handleUploadClick}
+            disabled={isUploading}
+            className="px-6 py-3 bg-red-800 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center disabled:opacity-50"
+          >
+            {isUploading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Uploading...
+              </>
+            ) : (
+              "Upload Image"
+            )}
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:gap-4 gap-2">
         <AnimatePresence mode="wait">
           {selectedImages.map((image, index) => (
