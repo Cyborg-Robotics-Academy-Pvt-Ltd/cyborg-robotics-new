@@ -8,7 +8,7 @@ import { Poppins } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebsiteLoadingProvider } from "@/components/WebsiteLoading";
-import { Toaster } from "sonner";
+import toast, { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Analytics />
 
             <SpeedInsights />
-            <Toaster />
+            <Toaster position="top-right" />
           </AuthProvider>
         </WebsiteLoadingProvider>
       </body>

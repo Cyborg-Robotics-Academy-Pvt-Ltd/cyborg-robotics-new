@@ -62,7 +62,7 @@ const roleLinksMap: Record<
       icon: <IconUserPlus className="h-5 w-5 shrink-0 text-black" />,
     },
     {
-      label: "Student List",
+      label: "Student Record",
       href: "/student-list",
       icon: <IconUsers className="h-5 w-5 shrink-0 text-black" />,
     },
@@ -106,7 +106,7 @@ const roleLinksMap: Record<
     },
 
     {
-      label: "Student List",
+      label: "Student Record",
       href: "/student-list",
       icon: <IconUsers className="h-5 w-5 shrink-0 text-black" />,
     },
