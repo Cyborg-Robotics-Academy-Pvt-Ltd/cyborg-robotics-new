@@ -564,13 +564,8 @@ const Page = ({
           courseName,
         });
 
-        // If no filtered tasks found, fallback to all completed tasks
-        const finalCompletedTasks =
-          filtered.length > 0
-            ? completedTasksForCourse
-            : (studentData.tasks || []).filter((t) => t.status === "complete");
-
-        setCompletedTasks(finalCompletedTasks);
+        // Only show tasks that match the specific course and level - no fallback
+        setCompletedTasks(completedTasksForCourse);
         // Status data for pie chart
         const statusCount: Record<string, number> = {};
         filtered.forEach((task) => {
