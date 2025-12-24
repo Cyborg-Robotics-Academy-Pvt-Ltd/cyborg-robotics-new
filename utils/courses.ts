@@ -11,7 +11,6 @@ const courses = [
     "Spike Prime",
     "IOT",
     "App Designing",
-    "Arduino",
     "Web Designing",
     "Java",
     "Python Language",

@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import {
   User,
   Mail,
@@ -58,6 +58,14 @@ const SignUpPage = () => {
   const [isCheckingExisting, setIsCheckingExisting] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Password strength validation state
+  const isLowercasePresent = /(?=.*[a-z])/.test(formData.password);
+  const isUppercasePresent = /(?=.*[A-Z])/.test(formData.password);
+  const isNumberPresent = /(?=.*[0-9])/.test(formData.password);
+  const isSpecialCharPresent =
+    /(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(formData.password);
+  const isLengthValid = formData.password.length >= 8;
 
   // Role selection state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -105,6 +113,60 @@ const SignUpPage = () => {
       default:
         return <User className="h-4 w-4 text-gray-600" />;
     }
+  };
+
+  // Password strength indicator function
+  const renderPasswordStrength = () => {
+    const strengthConditions = [
+      isLowercasePresent,
+      isUppercasePresent,
+      isNumberPresent,
+      isSpecialCharPresent,
+      isLengthValid,
+    ];
+
+    const fulfilledConditions = strengthConditions.filter(Boolean).length;
+    let strengthLabel = "Very Weak";
+    let strengthColor = "bg-red-500";
+
+    if (fulfilledConditions === 0) {
+      strengthLabel = "Very Weak";
+      strengthColor = "bg-red-500";
+    } else if (fulfilledConditions === 1) {
+      strengthLabel = "Weak";
+      strengthColor = "bg-red-500";
+    } else if (fulfilledConditions === 2) {
+      strengthLabel = "Fair";
+      strengthColor = "bg-yellow-500";
+    } else if (fulfilledConditions === 3) {
+      strengthLabel = "Good";
+      strengthColor = "bg-blue-500";
+    } else if (fulfilledConditions === 4) {
+      strengthLabel = "Strong";
+      strengthColor = "bg-blue-500";
+    } else if (fulfilledConditions === 5) {
+      strengthLabel = "Very Strong";
+      strengthColor = "bg-green-500";
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden flex">
+          {[1, 2, 3, 4, 5].map((index) => (
+            <div
+              key={index}
+              className={`h-full ${index <= fulfilledConditions ? strengthColor : "bg-gray-200"}`}
+              style={{ width: "20%" }}
+            />
+          ))}
+        </div>
+        <span
+          className={`text-xs font-medium ${strengthColor.replace("bg-", "text-")}`}
+        >
+          {strengthLabel}
+        </span>
+      </div>
+    );
   };
 
   // Check if user already exists with the given email
@@ -207,6 +269,8 @@ const SignUpPage = () => {
       newErrors.fullName = "Full name is required";
     } else if (formData.fullName.trim().length < 2) {
       newErrors.fullName = "Full name must be at least 2 characters";
+    } else if (/\d/.test(formData.fullName)) {
+      newErrors.fullName = "Full name cannot contain numbers";
     }
 
     // Email validation
@@ -219,8 +283,24 @@ const SignUpPage = () => {
     // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else {
+      // Check password strength
+      if (formData.password.length < 8) {
+        newErrors.password = "Password must be at least 8 characters long";
+      } else if (!/(?=.*[a-z])/.test(formData.password)) {
+        newErrors.password =
+          "Password must contain at least one lowercase letter";
+      } else if (!/(?=.*[A-Z])/.test(formData.password)) {
+        newErrors.password =
+          "Password must contain at least one uppercase letter";
+      } else if (!/(?=.*[0-9])/.test(formData.password)) {
+        newErrors.password = "Password must contain at least one number";
+      } else if (
+        !/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(formData.password)
+      ) {
+        newErrors.password =
+          "Password must contain at least one special character";
+      }
     }
 
     // Confirm password validation
@@ -242,13 +322,34 @@ const SignUpPage = () => {
     }));
 
     // Clear error when user types
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      if (newErrors[name]) {
         delete newErrors[name];
-        return newErrors;
-      });
-    }
+      }
+
+      // Validate confirm password in real-time when either password field changes
+      if (name === "password" || name === "confirmPassword") {
+        if (name === "confirmPassword" && value !== formData.password) {
+          newErrors.confirmPassword = "Passwords do not match";
+        } else if (
+          name === "password" &&
+          formData.confirmPassword &&
+          value !== formData.confirmPassword
+        ) {
+          newErrors.confirmPassword = "Passwords do not match";
+        } else if (
+          name === "password" &&
+          formData.confirmPassword &&
+          value === formData.confirmPassword &&
+          newErrors.confirmPassword?.includes("match")
+        ) {
+          delete newErrors.confirmPassword; // Clear the mismatch error if passwords now match
+        }
+      }
+
+      return newErrors;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1271,6 +1372,86 @@ const SignUpPage = () => {
                         {errors.password}
                       </motion.div>
                     )}
+                    {/* Password Strength Indicator */}
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-600">
+                          Password strength:
+                        </span>
+                        {renderPasswordStrength()}
+                      </div>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        {!isLowercasePresent && (
+                          <motion.p
+                            className="text-gray-400"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            • Lowercase letter ✗
+                          </motion.p>
+                        )}
+                        {!isUppercasePresent && (
+                          <motion.p
+                            className="text-gray-400"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            • Uppercase letter ✗
+                          </motion.p>
+                        )}
+                        {!isNumberPresent && (
+                          <motion.p
+                            className="text-gray-400"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            • Number ✗
+                          </motion.p>
+                        )}
+                        {!isSpecialCharPresent && (
+                          <motion.p
+                            className="text-gray-400"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            • Special character ✗
+                          </motion.p>
+                        )}
+                        {!isLengthValid && (
+                          <motion.p
+                            className="text-gray-400"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            • At least 8 characters ✗
+                          </motion.p>
+                        )}
+                        {isLowercasePresent &&
+                          isUppercasePresent &&
+                          isNumberPresent &&
+                          isSpecialCharPresent &&
+                          isLengthValid && (
+                            <motion.p
+                              className="text-green-600"
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              • All requirements met ✓
+                            </motion.p>
+                          )}
+                      </div>
+                    </div>
                   </motion.div>
 
                   {/* Confirm Password */}

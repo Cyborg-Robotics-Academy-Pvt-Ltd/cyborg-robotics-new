@@ -111,11 +111,30 @@ export default function DashboardHeader() {
             {/* Profile dropdown and Mobile menu button combined */}
             <div className="flex items-center">
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => {
+                  router.push("/user-profile");
+                  setIsMobileMenuOpen(false);
+                }}
                 className="flex items-center space-x-2 focus:outline-none user-dropdown"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-red-600 to-orange-500 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-red-600 to-orange-500 flex items-center justify-center overflow-hidden">
+                  {userData?.profileimage ? (
+                    <Image
+                      src={userData.profileimage}
+                      alt={getUserDisplayName()}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.parentElement!.innerHTML =
+                          '<svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                      }}
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-white" />
+                  )}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-gray-700">
                   {getUserDisplayName()}
@@ -176,8 +195,24 @@ export default function DashboardHeader() {
 
           <div className="border-t border-gray-200 pt-4 pb-3  ">
             <div className="flex items-center px-4">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-red-800 to-red-500 flex items-center justify-center">
-                <User className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-red-800 to-red-500 flex items-center justify-center overflow-hidden">
+                {userData?.profileimage ? (
+                  <Image
+                    src={userData.profileimage}
+                    alt={getUserDisplayName()}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.parentElement!.innerHTML =
+                        '<svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                    }}
+                  />
+                ) : (
+                  <User className="h-5 w-5 text-white" />
+                )}
               </div>
               <div className="ml-3">
                 <div className="text-base font-medium text-gray-800">

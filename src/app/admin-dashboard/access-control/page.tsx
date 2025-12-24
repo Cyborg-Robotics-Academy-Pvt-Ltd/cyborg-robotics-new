@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import Image from "next/image";
 import {
   collection,
   getDocs,
@@ -37,6 +39,7 @@ interface UserData {
   role: string;
   status: string;
   createdAt: Date;
+  profileimage?: string;
 }
 
 const AccessControlPage = () => {
@@ -99,6 +102,11 @@ const AccessControlPage = () => {
             role: collectionName.slice(0, -1), // Remove 's' from end
             status: data.status || "active",
             createdAt: data.createdAt?.toDate() || new Date(),
+            profileimage:
+              data.profileimage ||
+              data.imageUrl ||
+              data.imageUrls?.[0] ||
+              undefined,
           });
         });
       }
@@ -158,26 +166,34 @@ const AccessControlPage = () => {
     try {
       // If role has changed, we need to move the user document between collections
       const originalUser = users.find((user) => user.id === editingUserId);
-      if (!originalUser) return;
+      if (!originalUser) {
+        alert(
+          "Original user not found. Please refresh the page and try again."
+        );
+        return;
+      }
 
       if (editFormData.role && originalUser.role !== editFormData.role) {
         // Role has changed - move document between collections
         const originalCollectionName = `${originalUser.role}s`;
-        const newCollectionName = `${editFormData.role || originalUser.role}s`;
+        const newCollectionName = `${editFormData.role}s`; // Use editFormData.role directly since we already checked it exists
 
         // Get the original document data
         const originalDocRef = doc(db, originalCollectionName, editingUserId);
         const originalDocSnapshot = await getDoc(originalDocRef);
 
         if (originalDocSnapshot.exists()) {
-          const originalData = originalDocSnapshot.data();
+          const originalData = originalDocSnapshot.data() as DocumentData;
 
           // Create new document in the new collection
           const newDocRef = doc(db, newCollectionName, editingUserId);
           await setDoc(newDocRef, {
             ...originalData,
-            ...editFormData,
-            role: editFormData.role || originalUser.role,
+            name: editFormData.name || originalData.name,
+            status: editFormData.status || originalData.status,
+            role: editFormData.role, // Use the new role
+            profileimage:
+              editFormData.profileimage || originalData.profileimage,
             updatedAt: new Date(),
           });
 
@@ -186,15 +202,24 @@ const AccessControlPage = () => {
         }
       } else {
         // Role hasn't changed - just update the document
-        const collectionName = `${editFormData.role || originalUser.role}s`;
+        const collectionName = `${originalUser.role}s`; // Use originalUser.role to ensure we update the correct collection
         const userDocRef = doc(db, collectionName, editingUserId);
 
-        await updateDoc(userDocRef, {
-          name: editFormData.name,
-          email: editFormData.email,
-          status: editFormData.status,
+        // Prepare update data, only update fields that are defined
+        const updateData: any = {
           updatedAt: new Date(),
-        });
+        };
+
+        if (editFormData.name !== undefined)
+          updateData.name = editFormData.name;
+        if (editFormData.status !== undefined)
+          updateData.status = editFormData.status;
+        if (editFormData.profileimage !== undefined)
+          updateData.profileimage = editFormData.profileimage;
+        if (editFormData.role !== undefined)
+          updateData.role = editFormData.role; // Update role even if it didn't change collections
+
+        await updateDoc(userDocRef, updateData);
       }
 
       // Removed email notification when status changes to active
@@ -203,7 +228,13 @@ const AccessControlPage = () => {
       setUsers(
         users.map((user) =>
           user.id === editingUserId
-            ? ({ ...user, ...editFormData } as UserData)
+            ? ({
+                ...user,
+                name: editFormData.name || user.name,
+                status: editFormData.status || user.status,
+                role: editFormData.role || user.role,
+                profileimage: editFormData.profileimage || user.profileimage,
+              } as UserData)
             : user
         )
       );
@@ -212,7 +243,10 @@ const AccessControlPage = () => {
       setEditFormData({});
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("Error updating user. Please try again.");
+      alert(
+        "Error updating user. Please try again. Details: " +
+          (error as Error).message
+      );
     }
   };
 
@@ -447,8 +481,24 @@ const AccessControlPage = () => {
                         <>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-red-800" />
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center overflow-hidden">
+                                {user.profileimage ? (
+                                  <Image
+                                    src={user.profileimage}
+                                    alt={user.name}
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.onerror = null;
+                                      target.src = "/assets/logo1.png"; // fallback image
+                                    }}
+                                  />
+                                ) : (
+                                  <User className="h-5 w-5 text-red-800" />
+                                )}
                               </div>
                               <div className="ml-4">
                                 <input
@@ -464,18 +514,9 @@ const AccessControlPage = () => {
                                   }
                                 />
                                 <div className="text-sm text-gray-500 mt-1">
-                                  <input
-                                    type="email"
-                                    className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
-                                    value={editFormData.email || ""}
-                                    placeholder="Enter email"
-                                    onChange={(e) =>
-                                      setEditFormData({
-                                        ...editFormData,
-                                        email: e.target.value,
-                                      })
-                                    }
-                                  />
+                                  <div className="text-sm text-gray-900">
+                                    {user.email}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -531,8 +572,24 @@ const AccessControlPage = () => {
                         <>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                                <User className="h-5 w-5 text-red-800" />
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center overflow-hidden">
+                                {user.profileimage ? (
+                                  <Image
+                                    src={user.profileimage}
+                                    alt={user.name}
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.onerror = null;
+                                      target.src = "/assets/logo1.png"; // fallback image
+                                    }}
+                                  />
+                                ) : (
+                                  <User className="h-5 w-5 text-red-800" />
+                                )}
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">

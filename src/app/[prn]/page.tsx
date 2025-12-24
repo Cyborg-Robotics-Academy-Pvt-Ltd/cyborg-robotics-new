@@ -125,6 +125,9 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
   const [newClassNumber, setNewClassNumber] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [classNumberError, setClassNumberError] = React.useState<string | null>(
+    null
+  );
 
   React.useEffect(() => {
     getStudentData(prn).then(setStudent);
@@ -157,10 +160,24 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const handleCancel = () => {
     setEditingIndex(null);
     setNewClassNumber("");
+    setClassNumberError(null);
   };
 
   const handleSave = async (index: number) => {
     if (!student) return;
+
+    // Validate class number is between 1 and 30
+    const classNumberValue = parseInt(newClassNumber, 10);
+    if (
+      isNaN(classNumberValue) ||
+      classNumberValue < 1 ||
+      classNumberValue > 30
+    ) {
+      setClassNumberError("Class number must be between 1 and 30");
+      return;
+    }
+    setClassNumberError(null);
+
     setLoading(true);
     try {
       const updatedCourses = [...student.courses];
@@ -412,13 +429,22 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                                 <div className="flex items-center space-x-2">
                                   <input
                                     type="text"
-                                    className="border rounded px-2 py-1 text-sm w-20 focus:ring-2 focus:ring-red-300 focus:outline-none"
+                                    className={`border rounded px-2 py-1 text-sm w-20 focus:ring-2 focus:ring-red-300 focus:outline-none ${classNumberError ? "border-red-500" : ""}`}
                                     value={newClassNumber}
-                                    onChange={(e) =>
-                                      setNewClassNumber(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                      setNewClassNumber(e.target.value);
+                                      // Clear error when user starts typing
+                                      if (classNumberError) {
+                                        setClassNumberError(null);
+                                      }
+                                    }}
                                     disabled={loading}
                                   />
+                                  {classNumberError && (
+                                    <div className="text-red-500 text-xs mt-1">
+                                      {classNumberError}
+                                    </div>
+                                  )}
                                   <button
                                     className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 border border-green-300 transition-all duration-200"
                                     onClick={(e) => {

@@ -441,6 +441,11 @@ const Page = () => {
   };
 
   const handleAddClass = (student: Student) => {
+    // Check if PRN is not assigned
+    if (!student.PrnNumber) {
+      toast.error("Contact to admin for PRN");
+      return;
+    }
     setSelectedStudent(student);
     // Find the last completed course from student's tasks
     const lastCompletedTask = student.tasks
@@ -837,7 +842,14 @@ const Page = () => {
                       className={`transition-colors duration-200 cursor-pointer ${
                         idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                       } hover:bg-gray-100`}
-                      onClick={() => router.push(`/${student.PrnNumber}`)}
+                      onClick={() => {
+                        // Check if PRN is not assigned
+                        if (!student.PrnNumber) {
+                          toast.error("Contact to admin for PRN");
+                          return;
+                        }
+                        router.push(`/${student.PrnNumber}`);
+                      }}
                     >
                       <TableCell className="font-mono text-gray-800 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.PrnNumber}
@@ -999,6 +1011,11 @@ const Page = () => {
                                   >
                                     <button
                                       onClick={() => {
+                                        // Check if PRN is not assigned
+                                        if (!student.PrnNumber) {
+                                          toast.error("contact to admin for");
+                                          return;
+                                        }
                                         setShowDropdown(null);
                                         setCourseStudent(student);
                                         setShowNewCourseModal(true);
@@ -1015,9 +1032,16 @@ const Page = () => {
                                     transition={{ delay: 0.15 }}
                                   >
                                     <button
-                                      onClick={() =>
-                                        router.push(`/${student.PrnNumber}`)
-                                      }
+                                      onClick={() => {
+                                        // Check if PRN is not assigned
+                                        if (!student.PrnNumber) {
+                                          toast.error(
+                                            "Contact to admin for PRN"
+                                          );
+                                          return;
+                                        }
+                                        router.push(`/${student.PrnNumber}`);
+                                      }}
                                       className="flex items-center px-3 md:px-4  hover:bg-opacity-10 hover:text-white py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10  transition-colors w-full text-left rounded-xl"
                                     >
                                       <Eye className="h-3 w-3 md:h-4 md:w-4 mr-2" />
