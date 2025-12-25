@@ -187,15 +187,24 @@ const AccessControlPage = () => {
 
           // Create new document in the new collection
           const newDocRef = doc(db, newCollectionName, editingUserId);
-          await setDoc(newDocRef, {
+
+          // Prepare data for the new document, avoiding undefined values
+          const newDocData: any = {
             ...originalData,
             name: editFormData.name || originalData.name,
             status: editFormData.status || originalData.status,
             role: editFormData.role, // Use the new role
-            profileimage:
-              editFormData.profileimage || originalData.profileimage,
             updatedAt: new Date(),
-          });
+          };
+
+          // Only add profileimage if it exists to avoid Firestore errors
+          const profileImageValue =
+            editFormData.profileimage || originalData.profileimage;
+          if (profileImageValue !== undefined) {
+            newDocData.profileimage = profileImageValue;
+          }
+
+          await setDoc(newDocRef, newDocData);
 
           // Delete the original document
           await deleteDoc(originalDocRef);
@@ -216,6 +225,12 @@ const AccessControlPage = () => {
           updateData.status = editFormData.status;
         if (editFormData.profileimage !== undefined)
           updateData.profileimage = editFormData.profileimage;
+        else if (
+          editFormData.profileimage === undefined &&
+          originalUser.profileimage !== undefined
+        )
+          // If profileimage is undefined in editFormData but existed in original data, remove it
+          updateData.profileimage = originalUser.profileimage;
         if (editFormData.role !== undefined)
           updateData.role = editFormData.role; // Update role even if it didn't change collections
 
@@ -233,7 +248,10 @@ const AccessControlPage = () => {
                 name: editFormData.name || user.name,
                 status: editFormData.status || user.status,
                 role: editFormData.role || user.role,
-                profileimage: editFormData.profileimage || user.profileimage,
+                profileimage:
+                  editFormData.profileimage !== undefined
+                    ? editFormData.profileimage
+                    : user.profileimage,
               } as UserData)
             : user
         )
