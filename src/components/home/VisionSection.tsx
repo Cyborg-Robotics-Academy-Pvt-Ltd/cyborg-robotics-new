@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const VisionSection = () => {
   return (
-    <div className="relative w-full h-[35vh] py-4  md:h-[80vh] lg:h-[140vh]">
+    <div className="relative w-full h-[45vh] py-4   lg:h-[140vh]">
       <Image
         src="https://res.cloudinary.com/dgbbkclfa/image/upload/v1761889889/To_be_competitive_you_ll_have_to_be_some_version_of_a_cyborg._qafuq5.png"
         alt="Vision Image"

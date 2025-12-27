@@ -11,7 +11,6 @@ function generateOTP() {
 async function storeOTP(email: string, otp: string) {
   const expiresAt = new Date();
   expiresAt.setMinutes(expiresAt.getMinutes() + 10); // OTP expires in 10 minutes
-  
   const otpData = {
     email,
     otp,
@@ -35,7 +34,6 @@ async function verifyOTP(email: string, otp: string) {
   if (querySnapshot.empty) {
     return { valid: false, message: 'Invalid OTP' };
   }
-  
   const otpDoc = querySnapshot.docs[0];
   const otpData = otpDoc.data();
   

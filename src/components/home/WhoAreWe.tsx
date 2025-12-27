@@ -121,7 +121,7 @@ export default function WhoAreWe() {
             </div>
 
             {/* Right Container - Image */}
-            <div className="lg:w-1/2">
+            <div className="lg:w-1/2 md:mb-8 lg:mb-2">
               <div className="rounded-4xl overflow-hidden ">
                 <Image
                   src="/assets/events/competition.png"
