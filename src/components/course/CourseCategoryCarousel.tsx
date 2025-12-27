@@ -34,7 +34,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
         } else if (window.innerWidth < 1024) {
           setItemsPerView(2); // Tablets
         } else if (window.innerWidth < 1280) {
-          setItemsPerView(4); // Laptop
+          setItemsPerView(5); // Laptop
         } else {
           setItemsPerView(4); // Desktop and above
         }

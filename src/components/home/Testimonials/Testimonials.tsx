@@ -20,7 +20,7 @@ const Testimonials = () => {
         Hear from parents and students about their learning journeys with us.
       </h2>
 
-      <div className="w-[90%] max-w-6xl grid md:grid-cols-2 grid-cols-1 gap-5 md:gap-6 lg:gap-6">
+      <div className="w-[90%] max-w-6xl grid lg:grid-cols-2 grid-cols-1 gap-5 md:gap-6 lg:gap-6">
         <div className="flex-1">
           <Parents />
         </div>
