@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { GalleryImageData } from "../../../utils/Images";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
@@ -55,7 +55,6 @@ export default function Gallery() {
       } catch (error) {
         console.error("Error fetching images:", error);
         // Fallback to static data if Firebase fetch fails
-        setGalleryImages(GalleryImageData);
       } finally {
         setLoading(false);
       }
