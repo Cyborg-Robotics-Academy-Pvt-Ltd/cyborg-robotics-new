@@ -93,21 +93,19 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "fixed left-0  h-[calc(100vh-4rem)]  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar shadow-xl", // changed to fixed and adjusted for header
+          "fixed left-0  h-screen  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar ", // changed to use full screen height
           open ? "px-4" : "px-2",
           className
         )}
         animate={{
-          width: animate ? (open ? "300px" : "60px") : "300px",
+          width: animate ? (open ? "250px" : "60px") : "300px",
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        onMouseEnter={() => {
-          if (!open) setOpen(true);
-        }}
-        onMouseLeave={() => {
-          if (open) setOpen(false);
-        }}
-        style={{ willChange: "width" }}
+        style={
+          {
+            willChange: "width",
+          } as React.CSSProperties
+        }
         {...props}
       >
         {children}
@@ -126,11 +124,11 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden shadow-2xl  items-center justify-between bg-neutral-100  w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden   items-center justify-between bg-neutral-100  w-full"
         )}
         {...props}
       >
-        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-16 right-2 bg-white">
+        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-4 right-2 bg-white">
           <Menu className="text-neutral-800 " onClick={() => setOpen(!open)} />
         </div>
         <AnimatePresence>
@@ -149,7 +147,7 @@ export const MobileSidebar = ({
               )}
             >
               <div
-                className="absolute right-0 top-[70px] bg-red-800 rounded-full p-[2px]  z-50 text-black cursor-pointer"
+                className="absolute right-0 top-4 bg-red-800 rounded-full p-[2px]  z-50 text-black cursor-pointer"
                 onClick={() => setOpen(!open)}
               >
                 <IconX color="white" />
