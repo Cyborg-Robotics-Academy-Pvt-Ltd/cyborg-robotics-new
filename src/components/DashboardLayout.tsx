@@ -19,10 +19,13 @@ import { auth } from "@/lib/firebase";
 import {
   CalendarCheck,
   Clapperboard,
+  LayoutDashboard,
   LogOut,
   NotepadText,
   UserLock,
 } from "lucide-react";
+import { PanelRightOpen, PanelRightClose } from "@/components/ui/panel-buttons";
+import Link from "next/link";
 
 type Role = "admin" | "trainer" | "student";
 
@@ -48,7 +51,7 @@ const roleLinksMap: Record<
     {
       label: "Dashboard",
       href: "/admin-dashboard",
-      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+      icon: <LayoutDashboard className="h-5 w-5 shrink-0 text-black" />,
     },
 
     {
@@ -97,7 +100,7 @@ const roleLinksMap: Record<
     {
       label: "Dashboard",
       href: "/trainer-dashboard",
-      icon: <IconHome className="h-5 w-5 shrink-0 text-black" />,
+      icon: <LayoutDashboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "User Profile",
@@ -126,7 +129,7 @@ const roleLinksMap: Record<
     {
       label: "Dashboard",
       href: "/student-dashboard",
-      icon: <IconHome className="h-5 w-5 shrink-0 gradient-text" />,
+      icon: <LayoutDashboard className="h-5 w-5 shrink-0 text-black" />,
     },
     {
       label: "User Profile",
@@ -153,7 +156,7 @@ export default function DashboardLayout({
   children,
   linkOverrides,
 }: DashboardLayoutProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const links = roleLinksMap[role];
   const router = useRouter();
 
@@ -183,14 +186,14 @@ export default function DashboardLayout({
   return (
     <div
       className={cn(
-        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row pt-16",
-        "min-h-[calc(100vh-6rem)]"
+        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row",
+        "min-h-screen"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 bg-white shadow-2xl">
+        <SidebarBody className="justify-between gap-10 bg-white shadow-lg">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
-            {open ? <Logo /> : <LogoIcon />}
+            {open ? <Logo setOpen={setOpen} /> : <LogoIcon setOpen={setOpen} />}
             <div className="mt-2 flex flex-col gap-2">
               {linksWithHandlers.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
@@ -222,8 +225,10 @@ export default function DashboardLayout({
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="flex flex-1 md:ml-[60px]  ">
-        <div className="flex h-full w-full flex-1 flex-col bg-white md:w-[85%] shadow-xl ">
+      <div className="flex flex-1">
+        <div
+          className={`flex h-full w-full flex-1 flex-col bg-white  md:pl-[60px] transition-all duration-200 ease-out ${open ? "md:pl-[250px]" : "md:pl-[60px]"}`}
+        >
           {children}
         </div>
       </div>
@@ -231,43 +236,55 @@ export default function DashboardLayout({
   );
 }
 
-export const Logo = () => {
+interface LogoProps {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const Logo: React.FC<LogoProps> = ({ setOpen }) => {
   return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 mt-14 md:mt-1 text-sm font-normal text-black"
-    >
-      <Image
-        src={logo}
-        width={150}
-        height={60}
-        alt="Cyborg Robotics Academy"
-        className="h-7 w-auto"
-      />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-semibold text-black whitespace-pre"
-      >
-        Cyborg Robotics Academy
-      </motion.span>
-    </a>
+    <div className="relative z-20 flex items-center justify-between w-full py-1 mt-14 md:mt-1 text-sm font-normal text-black">
+      <Link href="/" className="flex items-center space-x-2">
+        <Image
+          src={logo}
+          width={150}
+          height={60}
+          alt="Cyborg Robotics Academy"
+          className="h-7 w-auto"
+        />
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-semibold text-black whitespace-pre-wrap"
+        >
+          Cyborg Robotics Academy
+        </motion.span>
+      </Link>
+      <div className="ml-auto bg-white shadow-md rounded-lg border border-gray-100 ">
+        <PanelRightOpen onClick={() => setOpen(false)} />
+      </div>
+    </div>
   );
 };
 
-export const LogoIcon = () => {
+interface LogoIconProps {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const LogoIcon: React.FC<LogoIconProps> = ({ setOpen }) => {
   return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black "
-    >
-      <Image
-        src={logo}
-        width={28}
-        height={28}
-        alt="Cyborg Robotics Academy"
-        className="h-7 w-7"
-      />
-    </a>
+    <div className="relative z-20 flex flex-col items-center justify-between w-full py-1 text-sm font-normal text-black">
+      <div className="ml-auto bg-white shadow-md rounded-lg mb-3 border border-gray-100">
+        <PanelRightClose onClick={() => setOpen(true)} />
+      </div>
+      <Link href="/" className="flex items-center space-x-2">
+        <Image
+          src={logo}
+          width={150}
+          height={50}
+          alt="Cyborg Robotics Academy"
+          className="h-7 w-12"
+        />
+      </Link>
+    </div>
   );
 };
