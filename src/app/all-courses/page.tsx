@@ -20,6 +20,7 @@ import {
 } from "@/data/enhancedCourseData";
 import { useScrollToSection } from "@/hooks/useScrollToSection";
 import Footer from "@/components/home/Footer";
+import Header from "@/components/layout/header";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -367,15 +368,18 @@ const AllCoursesPageContent = () => {
           </div>
         )}
       </div>
-      <Footer />
     </div>
   );
 };
 
 export default function AllCoursesPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AllCoursesPageContent />
-    </Suspense>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <Header />
+      <Suspense fallback={<div>Loading...</div>}>
+        <AllCoursesPageContent />
+      </Suspense>
+      <Footer />
+    </div>
   );
 }
