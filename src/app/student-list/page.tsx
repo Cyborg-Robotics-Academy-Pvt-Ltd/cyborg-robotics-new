@@ -35,7 +35,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MdAdd, MdClose } from "react-icons/md";
 import { format } from "date-fns";
-import { toast } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import courses from "../../../utils/courses";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -568,8 +568,8 @@ const Page = () => {
   }
 
   return (
-    <div className="min-h-screen -mt-16 bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
-      <header className="bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-xl md:mt-16  mt-10">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans">
+      <header className="bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white shadow-xl md:mt-16  ">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
@@ -586,7 +586,7 @@ const Page = () => {
               className="inline-flex items-center px-4 py-2 bg-white text-black bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
             >
               <UserPlus className="h-4 w-4 mr-2" color="black" />
-              Add Student
+              Assign PRN
             </Link>
           </div>
         </div>
@@ -1092,6 +1092,29 @@ const Page = () => {
           )}
         </div>
       </main>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#991b1b",
+            color: "white",
+            zIndex: 9999,
+          },
+          success: {
+            style: {
+              background: "#16a34a",
+              color: "white",
+            },
+          },
+          error: {
+            style: {
+              background: "#dc2626",
+              color: "white",
+            },
+          },
+        }}
+      />
 
       {/* Add Modal for Adding Classes */}
       {isModalOpen && (

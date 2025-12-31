@@ -221,7 +221,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className="min-h-full bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-xs">
         {/* ID Card */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative">
@@ -298,7 +298,7 @@ const UserProfile = () => {
           </div>
 
           {/* Name */}
-          <div className="text-center mt-3 px-4">
+          <div className="text-center  px-4">
             {isEditingUsername ? (
               <div className="flex flex-col items-center gap-3 py-2">
                 <input

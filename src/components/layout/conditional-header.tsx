@@ -19,8 +19,8 @@ export default function ConditionalHeader() {
     return null;
   }
 
-  // Check if current path is a dashboard route
-  // More precise detection: paths that start with dashboard routes
+  // Check if current path is a dashboard route or PRN route
+  // More precise detection: paths that start with dashboard routes or PRN routes
   const isDashboardRoute =
     pathname?.startsWith("/admin-dashboard") ||
     pathname?.startsWith("/student-dashboard") ||
@@ -30,8 +30,21 @@ export default function ConditionalHeader() {
     pathname === "/create-user" ||
     pathname?.startsWith("/media");
 
+  // Check if current path is a PRN route (e.g., /[prn] or /[prn]/[sub])
+  const isPrnRoute =
+    pathname &&
+    (pathname.match(/^\/[^\/]+$/) || pathname.match(/^\/[^\/]+\/[^\/]+$/)) && // Matches /[prn] or /[prn]/[sub] format
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next") &&
+    pathname !== "/"; // Exclude homepage
+
   // Don't show any header on dashboard routes
   if (user && userRole && isDashboardRoute) {
+    return null;
+  }
+
+  // Don't show any header on PRN routes (both /[prn] and /[prn]/[sub])
+  if (isPrnRoute) {
     return null;
   }
 

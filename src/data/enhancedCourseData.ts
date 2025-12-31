@@ -880,6 +880,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   ageRange: "11+",
   category: "Electronics"
 },
+  "coding-ai-pictoblox": {
+    id: "codingAiPictoblox",
+    title: "Coding with AI and Pictoblox",
+    subtitle: "Learn to code using AI and Pictoblox",
+    badge: "Coding with AI Course",
+    description: "Learn to code using AI and Pictoblox",
+    mode: "Online & Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/CODING WITH AI.pdf",
+    syllabusFileName: "CODING WITH AI.pdf",
+    imagePath: "/assets/classroom-course/picto-ai.png",
+    imageAlt: "Coding with AI Course",
+    price: 16999,
+    originalPrice: 23999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "AI Integration",
+        description: "Learn to integrate AI into your code",
+        iconName: "Zap",
+      },
+      {
+        title: "Pictoblox Coding",
+        description: "Learn to code using Pictoblox",
+        iconName: "Cpu",
+      },
+      {
+        title: "Automation",
+        description: "Create automated systems using AI and Pictoblox",
+        iconName: "Bot",
+      },
+      {
+        title: "Problem Solving",
+        description: "Develop problem-solving skills through coding",
+        iconName: "Lightbulb",
+      },
+    ],
+    courseOverview: "Our Coding with AI course teaches students how to integrate AI into their code using Pictoblox. Students learn about AI concepts, programming fundamentals and how to use Pictoblox to create automated systems. This course provides a fun and engaging way to learn about coding, problem-solving and automation.",
+    ageRange: "11+",
+    category: "Programming"
+  },
 
 
 };

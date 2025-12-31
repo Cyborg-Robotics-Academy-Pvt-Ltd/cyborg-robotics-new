@@ -69,6 +69,7 @@ import {
   DroneCurriculumData,
   ThreeDPrintingArduinoCurriculum,
   RoboticsWithQuarkyCurriculum,
+  CodingAIWithPictoBloxCurriculum,
 } from "../../../../utils/curriculum";
 // Define the type for key features
 interface KeyFeature {
@@ -1032,6 +1033,45 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "coding-ai-pictoblox": {
+    id: "codingAiPictoblox",
+    title: "Coding with AI and Pictoblox",
+    subtitle: "Learn to code using AI and Pictoblox",
+    badge: "Coding with AI Course",
+    description: "Learn to code using AI and Pictoblox",
+    mode: "Online & Offline",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/CODING WITH AI.pdf",
+    syllabusFileName: "CODING WITH AI.pdf",
+    imagePath: "/assets/classroom-course/picto-ai.png",
+    imageAlt: "Coding with AI Course",
+    price: 16999,
+    originalPrice: 23999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "AI Integration",
+        description: "Learn to integrate AI into your code",
+        iconName: "Zap",
+      },
+      {
+        title: "Pictoblox Coding",
+        description: "Learn to code using Pictoblox",
+        iconName: "Cpu",
+      },
+      {
+        title: "Automation",
+        description: "Create automated systems using AI and Pictoblox",
+        iconName: "Bot",
+      },
+      {
+        title: "Problem Solving",
+        description: "Develop problem-solving skills through coding",
+        iconName: "Lightbulb",
+      },
+    ],
+  },
 };
 
 // Server Component - properly handle params according to Next.js docs
@@ -1087,6 +1127,20 @@ export default async function SlugPage({
         return ArtificialIntelligenceCurriculum;
       case "robotics-ev3":
         return RoboticsCurriculum;
+      case "coding-ai-pictoblox":
+        // Transform CodingAIWithPictoBloxCurriculum to match CurriculumLevel[] structure
+        return CodingAIWithPictoBloxCurriculum.levels.map((level: any) => ({
+          id: level.id,
+          title: level.title,
+          subtitle: [
+            ...level.modules.map(
+              (module: any) => `${module.title}: ${module.topics.join(", ")}`
+            ),
+            ...level.megaProjects.map(
+              (project: string) => `Mega Project: ${project}`
+            ),
+          ],
+        }));
       case "spike-prime":
         return SpikePrimeCurriculum;
       case "3d-printing":
@@ -1134,9 +1188,19 @@ export default async function SlugPage({
       case "app-lab":
         return AppLabCurriculum;
       case "peecee":
-        return PeeCeeCurriculumData as unknown as CurriculumLevel[];
+        // Transform PeeCeeCurriculumData to match CurriculumLevel[] structure
+        return PeeCeeCurriculumData.map((level: any) => ({
+          id: level.id.toString(),
+          title: level.title,
+          subtitle: level.subtitle,
+        }));
       case "drone":
-        return DroneCurriculumData as unknown as CurriculumLevel[];
+        // Transform DroneCurriculumData to match CurriculumLevel[] structure
+        return DroneCurriculumData.map((level: any) => ({
+          id: level.id.toString(),
+          title: level.title,
+          subtitle: level.subtitle,
+        }));
       case "robotics-with-quarky":
         return RoboticsWithQuarkyCurriculum;
       case "3d-printing-arduino":
@@ -1152,7 +1216,7 @@ export default async function SlugPage({
               (project: string) => `Mega Project: ${project}`
             ),
           ],
-        })) as unknown as CurriculumLevel[];
+        }));
       default:
         // Return default curriculum data if no specific curriculum is found
         return [
