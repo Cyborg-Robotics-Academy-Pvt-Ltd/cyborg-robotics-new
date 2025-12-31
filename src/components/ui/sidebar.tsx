@@ -93,17 +93,17 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "fixed left-0  h-screen  hidden md:flex md:flex-col bg-white w-[300px] z-40 hide-scrollbar ", // changed to use full screen height
-          open ? "px-4" : "px-2",
+          "fixed left-0  h-screen  hidden md:flex md:flex-col bg-white z-40 hide-scrollbar ", // changed to use full screen height
+          open ? "w-[250px] px-4" : "w-[60px] px-2",
           className
         )}
         animate={{
           width: animate ? (open ? "250px" : "60px") : "300px",
         }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
         style={
           {
-            willChange: "width",
+            overflow: "hidden",
           } as React.CSSProperties
         }
         {...props}
@@ -124,13 +124,10 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden   items-center justify-between bg-neutral-100  w-full"
+          " px-4  flex flex-row md:hidden   items-center justify-between bg-neutral-100  w-full"
         )}
         {...props}
       >
-        <div className="fixed justify-start z-20 shadow-xl items-center p-1 rounded-full top-4 right-2 bg-white">
-          <Menu className="text-neutral-800 " onClick={() => setOpen(!open)} />
-        </div>
         <AnimatePresence>
           {open && (
             <motion.div
@@ -146,12 +143,6 @@ export const MobileSidebar = ({
                 className
               )}
             >
-              <div
-                className="absolute right-0 top-4 bg-red-800 rounded-full p-[2px]  z-50 text-black cursor-pointer"
-                onClick={() => setOpen(!open)}
-              >
-                <IconX color="white" />
-              </div>
               {children}
             </motion.div>
           )}
@@ -168,7 +159,7 @@ const SidebarLinkComponent = ({
   link: Links;
   className?: string;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar();
   const pathname = usePathname();
   const isActive =
     (typeof link.activeWhen === "function" && link.activeWhen(pathname)) ||
@@ -192,7 +183,8 @@ const SidebarLinkComponent = ({
       );
     }
     return link.icon;
-  }, [link.icon, isActive]);
+  }, [link.icon, isActive, open]);
+
   return (
     <Link
       href={link.href}
@@ -204,7 +196,13 @@ const SidebarLinkComponent = ({
       onClick={(e) => {
         if (link.onClick) {
           e.preventDefault();
+          e.stopPropagation();
           link.onClick();
+        }
+
+        // Close sidebar on mobile after clicking a link
+        if (window.innerWidth < 768) {
+          setOpen(false);
         }
       }}
     >
@@ -216,18 +214,20 @@ const SidebarLinkComponent = ({
         )}
       />
       {iconElement}
-      <motion.span
-        animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: animate ? (open ? 1 : 0) : 1,
-        }}
-        className={cn(
-          "text-black  text-sm group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
-          isActive && "text-[#B13133] font-bold"
-        )}
-      >
-        {link.label}
-      </motion.span>
+      {open && (
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className={cn(
+            "text-black text-sm group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+            isActive && "text-[#B13133] font-bold"
+          )}
+        >
+          {link.label}
+        </motion.span>
+      )}
     </Link>
   );
 };

@@ -302,7 +302,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
             >
               <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white text-base font-semibold rounded-xl shadow-lg hover:from-red-800 hover:to-red-900 hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:-translate-y-0.5">
                 <Calendar className="w-5 h-5 mr-2" />
-                Student List
+                Student Record
               </button>
             </Link>
           </div>

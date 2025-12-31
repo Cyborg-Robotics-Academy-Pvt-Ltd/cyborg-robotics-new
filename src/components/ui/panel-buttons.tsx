@@ -17,7 +17,7 @@ export const PanelRightOpen = ({
   return (
     <button
       className={cn(
-        "p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center",
+        "p-1 rounded-md hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center",
         className
       )}
       onClick={onClick}
@@ -36,7 +36,7 @@ export const PanelRightClose = ({
   return (
     <button
       className={cn(
-        "p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center",
+        "p-1 rounded-md hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center",
         className
       )}
       onClick={onClick}

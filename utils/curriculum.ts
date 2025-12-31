@@ -1427,3 +1427,240 @@ export const ThreeDPrintingArduinoCurriculum = {
     }
   ]
 };
+export const CodingAIWithPictoBloxCurriculum = {
+  meta: {
+    title: "CODING & AI WITH PICTOBLOX",
+    teacher: "Certified Trainer",
+    duration: "14 Classes (1 Hour per Class)",
+    mode: "Offline / Online",
+    description:
+      "A hands-on, concept-driven program that bridges foundational coding with Artificial Intelligence using PictoBlox. Students build interactive programs, games, and AI-powered projects while developing logical reasoning, computational thinking, and problem-solving skills through real-world applications."
+  },
+
+  levels: [
+    {
+      id: "1",
+      title: "Level 1: Coding & AI Foundations with PictoBlox",
+      modules: [
+        {
+          title: "Getting Started with PictoBlox",
+          topics: [
+            "Installing and setting up PictoBlox",
+            "Exploring interface, block categories, sprites, and stage",
+            "Activity: Make Tobi Walk"
+          ]
+        },
+        {
+          title: "Sprites & Animation",
+          topics: [
+            "Sprite motion and positioning",
+            "Backdrops and costumes",
+            "Creating simple animations"
+          ]
+        },
+        {
+          title: "Drawing with Code",
+          topics: [
+            "Pen extension introduction",
+            "Coordinates and direction",
+            "Drawing square and triangle using logic"
+          ]
+        },
+        {
+          title: "Variables – The Multitaskers",
+          topics: [
+            "Understanding variables and data storage",
+            "Creating and updating variables",
+            "Sprite tracker and input-based game"
+          ]
+        },
+        {
+          title: "Operators in Action",
+          topics: [
+            "Arithmetic operators",
+            "Relational and logical operators",
+            "Building a math quiz game"
+          ]
+        },
+        {
+          title: "Conditional Statements",
+          topics: [
+            "If–Else logic",
+            "Decision-based programs",
+            "Guess the Number game"
+          ]
+        },
+        {
+          title: "Loops for Automation",
+          topics: [
+            "Repetition and automation",
+            "Repeating motion and patterns",
+            "Dancing sprite or pattern animation"
+          ]
+        },
+        {
+          title: "Fun with Music",
+          topics: [
+            "Sound and music blocks",
+            "Interactive sound effects",
+            "Touch-based piano and dance party"
+          ]
+        },
+        {
+          title: "Play Time with Sensors",
+          topics: [
+            "Sensor-based inputs",
+            "Event-driven programming",
+            "Catch the Fruit game"
+          ]
+        },
+        {
+          title: "Introduction to AI & Coding",
+          topics: [
+            "Human vs machine intelligence",
+            "Real-world AI applications",
+            "AI Around Us poster activity"
+          ]
+        },
+        {
+          title: "Introduction to Artificial Intelligence",
+          topics: [
+            "What AI is and how it works",
+            "Everyday AI use cases",
+            "Activity-based AI exploration"
+          ]
+        },
+        {
+          title: "Introduction to Computer Vision",
+          topics: [
+            "Image recognition concepts",
+            "Object and face identification",
+            "Using vision-based AI models"
+          ]
+        }
+      ],
+      megaProjects: [
+        "BMI Calculator (Variables + Conditions + Operators)",
+        "Air Draw (Gesture-based Computer Vision Project)"
+      ]
+    },
+
+    {
+      id: "2",
+      title: "Level 2: Applied AI & Machine Learning with PictoBlox",
+      modules: [
+        {
+          title: "Face Detection",
+          topics: [
+            "Face detection concepts",
+            "Facial features and expressions",
+            "Face Mimic with Quarky"
+          ]
+        },
+        {
+          title: "Optical Character Recognition (OCR)",
+          topics: [
+            "Text recognition using AI",
+            "Extracting text from images",
+            "Postman – Read Text from Image"
+          ]
+        },
+        {
+          title: "Speech Recognition",
+          topics: [
+            "Speech-to-text systems",
+            "Voice command mapping",
+            "Make Your Own Alexa"
+          ]
+        },
+        {
+          title: "Machine Learning Basics",
+          topics: [
+            "Training data and models",
+            "Classification concepts",
+            "Cat vs Dog classifier"
+          ]
+        },
+        {
+          title: "Pose Classifier",
+          topics: [
+            "Pose detection concepts",
+            "Training pose models",
+            "Howdy Tobi! interaction"
+          ]
+        },
+        {
+          title: "AI Game Development – Rock Paper Scissors (Part 1)",
+          topics: [
+            "AI-based game logic",
+            "Data collection and labeling",
+            "Initial model training"
+          ]
+        },
+        {
+          title: "AI Game Development – Rock Paper Scissors (Part 2)",
+          topics: [
+            "Model evaluation",
+            "Improving accuracy",
+            "Handling incorrect predictions"
+          ]
+        },
+        {
+          title: "AI Game Development – Rock Paper Scissors (Part 3)",
+          topics: [
+            "Integrating AI with gameplay",
+            "Final testing and debugging",
+            "Demonstration of AI game"
+          ]
+        },
+        {
+          title: "Ethics in AI",
+          topics: [
+            "Bias and fairness in AI",
+            "Responsible AI usage",
+            "Debate: AI in education"
+          ]
+        },
+        {
+          title: "Real-World AI – Weather Monitoring",
+          topics: [
+            "Environmental data collection",
+            "Using sensors with Quarky",
+            "Real-time weather display"
+          ]
+        },
+        {
+          title: "Smart Waste Management",
+          topics: [
+            "Object classification concepts",
+            "AI-based waste sorting",
+            "Automation logic design"
+          ]
+        },
+        {
+          title: "Home Automation System",
+          topics: [
+            "Voice-controlled automation",
+            "Natural Language Processing basics",
+            "Smart home system using AI"
+          ]
+        },
+        {
+          title: "Road Safety & Smart Cities",
+          topics: [
+            "AI for public safety",
+            "Road safety simulations",
+            "Smart city AI applications"
+          ]
+        }
+      ],
+      megaProjects: [
+        "AI-Based Rock Paper Scissors Game",
+        "Smart Weather Monitoring System",
+        "AI-Powered Waste Management Solution",
+        "Voice-Controlled Smart Home"
+      ]
+    }
+  ]
+};
+

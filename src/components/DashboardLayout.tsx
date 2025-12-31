@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef as useReactRef,
+} from "react";
+import { useEffect, useRef } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
   IconBrandTabler,
@@ -15,12 +21,14 @@ import Image from "next/image";
 import logo from "../../public/assets/logo1.png";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
   CalendarCheck,
   Clapperboard,
   LayoutDashboard,
   LogOut,
+  Menu,
   NotepadText,
   UserLock,
 } from "lucide-react";
@@ -156,7 +164,90 @@ export default function DashboardLayout({
   children,
   linkOverrides,
 }: DashboardLayoutProps) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedOpen = localStorage.getItem("sidebarOpen");
+      return savedOpen !== null ? JSON.parse(savedOpen) : true;
+    }
+    return true;
+  });
+
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileEmail, setProfileEmail] = useState<string | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const openRef = useRef(open);
+  const profileMenuRef = useReactRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (openRef.current !== open) {
+      localStorage.setItem("sidebarOpen", JSON.stringify(open));
+      openRef.current = open;
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (typeof window !== "undefined" && auth.currentUser) {
+        try {
+          // Set email from Firebase auth
+          setProfileEmail(auth.currentUser.email);
+
+          let collectionName = "";
+          switch (role) {
+            case "admin":
+              collectionName = "admins";
+              break;
+            case "trainer":
+              collectionName = "trainers";
+              break;
+            case "student":
+              collectionName = "students";
+              break;
+            default:
+              collectionName = "students";
+          }
+
+          const userDocRef = doc(db, collectionName, auth.currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            // Check for profile image in different possible fields
+            const profileImg =
+              data.profileimage || data.imageUrls?.[0] || data.imageUrl || null;
+            setProfileImage(profileImg);
+
+            // Update email if it's stored in the document
+            if (data.email) {
+              setProfileEmail(data.email);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching profile data:", error);
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, [role]);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const links = roleLinksMap[role];
   const router = useRouter();
 
@@ -181,7 +272,7 @@ export default function DashboardLayout({
       const override = linkOverrides?.[link.label] || {};
       return { ...base, ...override };
     });
-  }, [links, handleLogout, linkOverrides]);
+  }, [links, handleLogout, linkOverrides, open]);
 
   return (
     <div
@@ -201,27 +292,92 @@ export default function DashboardLayout({
             </div>
           </div>
           <div>
-            <SidebarLink
-              link={{
-                label:
-                  name ||
-                  (role === "admin"
-                    ? "Admin"
-                    : role === "trainer"
-                      ? "Trainer"
-                      : "Student"),
-                href: "#",
-                icon: (
-                  <Image
-                    src="/assets/logo1.png"
-                    className="h-7 w-7 shrink-0 rounded-full"
-                    width={28}
-                    height={28}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center gap-2 w-full p-1 rounded-lg hover:bg-gray-100 transition-colors text-left"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  {profileImage ? (
+                    <Image
+                      src={profileImage}
+                      className="h-7 w-7 shrink-0 rounded-full object-cover"
+                      width={28}
+                      height={28}
+                      alt="User Profile"
+                    />
+                  ) : (
+                    <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
+                      {name
+                        ? name.charAt(0).toUpperCase()
+                        : role.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium">
+                    {name ||
+                      (role === "admin"
+                        ? "Admin"
+                        : role === "trainer"
+                          ? "Trainer"
+                          : "Student")}
+                  </span>
+                </div>
+              </button>
+
+              {showProfileMenu && (
+                <div className="absolute bottom-full mb-2 left-0 w-56 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+                  <div className="p-3 bg-gradient-to-r from-red-700 to-red-800 text-white">
+                    <div className="flex items-center gap-3">
+                      {profileImage ? (
+                        <Image
+                          src={profileImage}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                          width={48}
+                          height={48}
+                          alt="User Profile"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-lg">
+                          {name
+                            ? name.charAt(0).toUpperCase()
+                            : role.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm truncate">
+                          {name ||
+                            (role === "admin"
+                              ? "Admin"
+                              : role === "trainer"
+                                ? "Trainer"
+                                : "Student")}
+                        </h3>
+                        <p className="text-xs text-white text-opacity-80 truncate">
+                          {profileEmail || "No email"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <Link
+                      href="/user-profile"
+                      className="flex items-center gap-2 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <IconUserBolt className="h-4 w-4 text-gray-600" />
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
+                    >
+                      <LogOut className="h-4 w-4 text-gray-600" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </SidebarBody>
       </Sidebar>
@@ -229,6 +385,97 @@ export default function DashboardLayout({
         <div
           className={`flex h-full w-full flex-1 flex-col bg-white  md:pl-[60px] transition-all duration-200 ease-out ${open ? "md:pl-[250px]" : "md:pl-[60px]"}`}
         >
+          {/* Mobile-only header */}
+          <div className="md:hidden flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setOpen(!open)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Toggle sidebar"
+              >
+                <Menu className="h-6 w-6 text-gray-700" />
+              </button>
+              <span className="text-lg font-semibold text-gray-800">
+                Dashboard
+              </span>
+            </div>
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center space-x-2"
+              >
+                {profileImage ? (
+                  <Image
+                    src={profileImage}
+                    className="h-8 w-8 rounded-full object-cover"
+                    width={32}
+                    height={32}
+                    alt="User Profile"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
+                    {name
+                      ? name.charAt(0).toUpperCase()
+                      : role.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </button>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+                  <div className="p-4 bg-gradient-to-r from-red-700 to-red-800 text-white">
+                    <div className="flex items-center gap-3">
+                      {profileImage ? (
+                        <Image
+                          src={profileImage}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                          width={48}
+                          height={48}
+                          alt="User Profile"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-lg">
+                          {name
+                            ? name.charAt(0).toUpperCase()
+                            : role.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm truncate">
+                          {name ||
+                            (role === "admin"
+                              ? "Admin"
+                              : role === "trainer"
+                                ? "Trainer"
+                                : "Student")}
+                        </h3>
+                        <p className="text-xs text-white text-opacity-80 truncate">
+                          {profileEmail || "No email"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <Link
+                      href="/user-profile"
+                      className=" items-center gap-2 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm block"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <IconUserBolt className="h-4 w-4 text-gray-600" />
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-red-500 transition-colors text-sm text-left bg-red-800"
+                    >
+                      <LogOut className="h-4 w-4 text-gray-600" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           {children}
         </div>
       </div>
@@ -242,8 +489,8 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ setOpen }) => {
   return (
-    <div className="relative z-20 flex items-center justify-between w-full py-1 mt-14 md:mt-1 text-sm font-normal text-black">
-      <Link href="/" className="flex items-center space-x-2">
+    <div className="relative z-20 flex items-center justify-between w-full py-1   text-sm font-normal text-black">
+      <Link href="/" className="flex items-center space-x-2 mt-4">
         <Image
           src={logo}
           width={150}
@@ -259,8 +506,14 @@ export const Logo: React.FC<LogoProps> = ({ setOpen }) => {
           Cyborg Robotics Academy
         </motion.span>
       </Link>
-      <div className="ml-auto bg-white shadow-md rounded-lg border border-gray-100 ">
-        <PanelRightOpen onClick={() => setOpen(false)} />
+      <div className=" bg-white shadow-md rounded-lg border border-gray-100 ">
+        <PanelRightOpen
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(false);
+          }}
+        />
       </div>
     </div>
   );
@@ -273,8 +526,14 @@ interface LogoIconProps {
 export const LogoIcon: React.FC<LogoIconProps> = ({ setOpen }) => {
   return (
     <div className="relative z-20 flex flex-col items-center justify-between w-full py-1 text-sm font-normal text-black">
-      <div className="ml-auto bg-white shadow-md rounded-lg mb-3 border border-gray-100">
-        <PanelRightClose onClick={() => setOpen(true)} />
+      <div className=" bg-white shadow-md rounded-lg mb-3 border border-gray-100">
+        <PanelRightClose
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(true);
+          }}
+        />
       </div>
       <Link href="/" className="flex items-center space-x-2">
         <Image
