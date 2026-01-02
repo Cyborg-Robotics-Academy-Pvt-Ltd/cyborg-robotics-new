@@ -465,15 +465,6 @@ const CreateUser = () => {
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight gradient-text mb-3 sm:mb-4">
                 Assign PRN & Enroll Courses
               </h2>
-
-              <div className="mt-3 sm:mt-4 md:mt-6 p-3 sm:p-4 bg-red-50 rounded-lg border border-red-200">
-                <p className="text-xs sm:text-sm md:text-base text-red-800 font-medium">
-                  Note: This page is for assigning PRN numbers and enrolling
-                  courses for existing students. To create new users with
-                  different roles, please use the "Create New User" option in
-                  the Admin Dashboard.
-                </p>
-              </div>
             </div>
           </div>
 

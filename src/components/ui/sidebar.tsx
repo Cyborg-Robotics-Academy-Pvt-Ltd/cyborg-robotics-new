@@ -186,49 +186,49 @@ const SidebarLinkComponent = ({
   }, [link.icon, isActive, open]);
 
   return (
-    <Link
-      href={link.href}
-      className={cn(
-        "relative flex items-center group/sidebar py-2 ",
-        open ? "justify-start gap-2 pl-3" : "justify-center gap-0 pl-0",
-        className
-      )}
-      onClick={(e) => {
-        if (link.onClick) {
-          e.preventDefault();
-          e.stopPropagation();
-          link.onClick();
-        }
-
-        // Close sidebar on mobile after clicking a link
-        if (window.innerWidth < 768) {
-          setOpen(false);
-        }
-      }}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
-      <span
+      <Link
+        href={link.href}
         className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded bg-[#B13133] opacity-0 transition-opacity duration-150 group-hover/sidebar:opacity-100",
-          open ? "block" : "hidden",
-          isActive && "opacity-100"
+          "relative flex items-center group/sidebar py-2 ",
+          open ? "justify-start gap-2 pl-3" : "justify-center gap-0 pl-0",
+          isActive && "bg-red-200 rounded-md",
+          "transition-colors duration-200",
+          className
         )}
-      />
-      {iconElement}
-      {open && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className={cn(
-            "text-black text-sm group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
-            isActive && "text-[#B13133] font-bold"
-          )}
-        >
-          {link.label}
-        </motion.span>
-      )}
-    </Link>
+        onClick={(e) => {
+          if (link.onClick) {
+            e.preventDefault();
+            e.stopPropagation();
+            link.onClick();
+          }
+
+          // Close sidebar on mobile after clicking a link
+          if (window.innerWidth < 768) {
+            setOpen(false);
+          }
+        }}
+      >
+        {iconElement}
+        {open && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className={cn(
+              "text-gray-700 text-[15px] group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
+              isActive && "text-[#B13133] font-semibold "
+            )}
+          >
+            {link.label}
+          </motion.span>
+        )}
+      </Link>
+    </motion.div>
   );
 };
 

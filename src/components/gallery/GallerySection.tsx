@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -21,12 +21,16 @@ import { useAuth } from "@/lib/auth-context";
 
 // Import custom styles
 import "./swiper.css";
+import { X } from "lucide-react";
+import Image from "next/image";
 
 const GallerySection = () => {
   const { userRole } = useAuth();
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch images from Firebase
@@ -51,32 +55,6 @@ const GallerySection = () => {
       } catch (error) {
         console.error("Error fetching images:", error);
         // Fallback to static data if Firebase fetch fails
-        setGalleryImages([
-          {
-            id: "1",
-            src: "/assets/moments/IMG_2472.PNG",
-          },
-          {
-            id: "2",
-            src: "/assets/moments/wsro_national.png",
-          },
-          {
-            id: "3",
-            src: "/assets/moments/IMG_2470.PNG",
-          },
-          {
-            id: "4",
-            src: "/assets/moments/IMG_2467.PNG",
-          },
-          {
-            id: "5",
-            src: "/assets/moments/IMG_2468.PNG",
-          },
-          {
-            id: "6",
-            src: "/assets/moments/IMG_2471.PNG",
-          },
-        ]);
       } finally {
         setLoading(false);
       }
@@ -155,6 +133,60 @@ const GallerySection = () => {
       }
     }
   };
+
+  // Function to open the image modal
+  const openImageModal = (image: any, index: number) => {
+    setSelectedImage(image);
+    setCurrentImageIndex(index);
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
+  };
+
+  // Function to close the image modal
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    document.body.style.overflow = "auto"; // Re-enable scrolling
+  };
+
+  // Function to navigate to the next image
+  const goToNextImage = () => {
+    if (galleryImages.length > 0) {
+      const nextIndex = (currentImageIndex + 1) % galleryImages.length;
+      setCurrentImageIndex(nextIndex);
+      setSelectedImage(galleryImages[nextIndex]);
+    }
+  };
+
+  // Function to navigate to the previous image
+  const goToPreviousImage = () => {
+    if (galleryImages.length > 0) {
+      const prevIndex =
+        currentImageIndex === 0
+          ? galleryImages.length - 1
+          : currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      setSelectedImage(galleryImages[prevIndex]);
+    }
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImage) {
+        if (e.key === "Escape") {
+          closeImageModal();
+        } else if (e.key === "ArrowRight") {
+          goToNextImage();
+        } else if (e.key === "ArrowLeft") {
+          goToPreviousImage();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedImage, currentImageIndex, galleryImages]);
 
   if (loading) {
     return (
@@ -260,16 +292,109 @@ const GallerySection = () => {
           className="mySwiper"
           initialSlide={0}
         >
-          {galleryImages.map((item: any) => (
+          {galleryImages.map((item: any, index) => (
             <SwiperSlide key={item.id}>
               <img
                 src={item.imageUrl || item.src}
                 alt={`Gallery item ${item.id}`}
+                className="cursor-pointer"
+                onClick={() => openImageModal(item, index)}
               />
             </SwiperSlide>
           ))}
         </Swiper>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={closeImageModal}
+        >
+          <div
+            className="relative max-w-6xl max-h-full w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+              onClick={closeImageModal}
+              aria-label="Close image"
+            >
+              <X className="w-6 h-6 bg-white text-black rounded-2xl" />
+            </button>
+
+            {/* Navigation buttons */}
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPreviousImage();
+                  }}
+                  aria-label="Previous image"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  aria-label="Next image"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            <div className="flex justify-center items-center h-full ">
+              <Image
+                width={500}
+                height={500}
+                src={selectedImage.imageUrl || selectedImage.src}
+                alt={`Gallery item ${selectedImage.id}`}
+                className="max-h-[80vh] max-w-[90vw] object-contain rounded-2xl"
+              />
+            </div>
+
+            {/* Image counter */}
+            {galleryImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm">
+                {currentImageIndex + 1} / {galleryImages.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
