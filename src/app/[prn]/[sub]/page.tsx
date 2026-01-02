@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
-import Image from "next/image";
+
 import { toast } from "react-hot-toast";
 
 // Task type
@@ -73,6 +73,12 @@ interface Student {
     certificate?: boolean;
   }[];
   nextCourse?: string;
+  profileimage?: string;
+  imageUrls?: string[];
+  fullName?: string;
+  grade?: string;
+  status?: string;
+  uid?: string;
 }
 
 // Helper to convert slug to course name and level
@@ -309,6 +315,19 @@ const Page = ({
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
 
+  // Debug student state changes
+  useEffect(() => {
+    if (student) {
+      console.log("Student state updated:", {
+        id: student.id,
+        profileimage: student.profileimage,
+        username: student.username,
+        hasProfileImage: !!student.profileimage,
+        profileImageLength: student.profileimage?.length || 0,
+      });
+    }
+  }, [student]);
+
   useEffect(() => {
     params.then(setResolvedParams);
   }, [params]);
@@ -499,6 +518,10 @@ const Page = ({
 
   useEffect(() => {
     if (!resolvedParams) return;
+    console.log(
+      "Params changed, fetching student for PRN:",
+      resolvedParams.prn
+    );
     const fetchStudent = async () => {
       setLoading(true);
       setError(null);
@@ -532,9 +555,17 @@ const Page = ({
           tasks: data.tasks || [],
           courses: data.courses || [],
           nextCourse: data.nextCourse || "",
+          profileimage: data.profileimage || "",
+          imageUrls: data.imageUrls || [],
+          fullName: data.fullName || "",
+          grade: data.grade || "",
+          status: data.status || "",
+          uid: data.uid || "",
         };
         console.log("Processed student data:", studentData);
+        console.log("Profile image URL:", studentData.profileimage);
         setStudent(studentData);
+        console.log("Student state after setting:", studentData);
 
         // Filter tasks for this course - strict matching with level support
         const { courseName: currentCourseName, level: currentLevel } =
@@ -897,15 +928,53 @@ const Page = ({
                 {/* Avatar */}
                 <div className="flex-shrink-0 relative">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-red-700 p-0.5">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">
-                      {student.username ? (
-                        student.username
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                      {student.profileimage ? (
+                        <img
+                          src={student.profileimage}
+                          alt={
+                            student.fullName || student.username || "Student"
+                          }
+                          className="w-full h-full object-cover rounded-full"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null; // Prevent infinite loop
+                            if (target.parentNode) {
+                              const parent = target.parentNode as HTMLElement;
+                              parent.innerHTML = "";
+                              const nameToUse =
+                                student.fullName || student.username || "";
+                              const initials = nameToUse
+                                ? nameToUse
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .slice(0, 2)
+                                : "";
+                              parent.className =
+                                "w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800";
+                              parent.textContent = initials || "";
+                            }
+                          }}
+                          onLoad={(e) => {
+                            console.log(
+                              "Profile image loaded successfully:",
+                              student.profileimage
+                            );
+                          }}
+                        />
+                      ) : student.fullName || student.username ? (
+                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">
+                          {(student.fullName || student.username)
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </div>
                       ) : (
-                        <User size={16} />
+                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">
+                          <User size={16} />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -914,7 +983,7 @@ const Page = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h1 className="text-lg font-bold truncate">
-                      {student.username}
+                      {student.fullName || student.username}
                     </h1>
                     {student.role && (
                       <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold uppercase tracking-wide">

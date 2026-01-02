@@ -71,6 +71,7 @@ import {
   RoboticsWithQuarkyCurriculum,
   CodingAIWithPictoBloxCurriculum,
 } from "../../../../utils/curriculum";
+import Header from "@/components/layout/header";
 // Define the type for key features
 interface KeyFeature {
   title: string;
@@ -1041,8 +1042,8 @@ const mockData: Record<string, CourseData> = {
     description: "Learn to code using AI and Pictoblox",
     mode: "Online & Offline",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/CODING WITH AI.pdf",
-    syllabusFileName: "CODING WITH AI.pdf",
+    syllabusPath: "/assets/pdf/AI-with-Pictoblox.pdf",
+    syllabusFileName: "AI-with-Pictoblox.pdf",
     imagePath: "/assets/classroom-course/picto-ai.png",
     imageAlt: "Coding with AI Course",
     price: 16999,
@@ -1332,6 +1333,7 @@ export default async function SlugPage({
   return (
     <div className="mx-auto max-w-7xl mt-2 md:mt-5 overflow-hidden px-2 sm:px-4 lg:px-8">
       {/* Breadcrumb */}
+      <Header />
       <nav className="flex mt-13" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
