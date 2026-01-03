@@ -119,7 +119,6 @@ const Page = () => {
         reg.fatherName?.toLowerCase().includes(term) ||
         reg.motherName?.toLowerCase().includes(term) ||
         reg.schoolName?.toLowerCase().includes(term) ||
-        reg.registrationDate?.toLowerCase().includes(term) ||
         reg.dateOfRegistration?.toLowerCase().includes(term)
     );
     setFilteredRegistrations(filtered);
@@ -151,7 +150,7 @@ const Page = () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Registrations");
       worksheet.columns = [
-        { header: "Registration Date", key: "registrationDate", width: 20 },
+        { header: "Registration Date", key: "dateOfRegistration", width: 20 },
         { header: "Student Name", key: "studentName", width: 25 },
         { header: "DOB", key: "dateOfBirth", width: 15 },
         { header: "Age", key: "currentAge", width: 10 },
@@ -244,7 +243,7 @@ const Page = () => {
                   <TableHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white sticky top-0 z-10">
                     <TableRow>
                       {[
-                        { key: "registrationDate", label: "Date" },
+                        { key: "dateOfRegistration", label: "Date" },
                         { key: "studentName", label: "Name" },
                         { key: "dateOfBirth", label: "DOB" },
                         { key: "currentAge", label: "Age" },
@@ -278,7 +277,7 @@ const Page = () => {
                         key={reg.id}
                         className={`${i % 2 ? "bg-gray-50" : "bg-white"}`}
                       >
-                        <TableCell>{reg.registrationDate || "-"}</TableCell>
+                        <TableCell>{reg.dateOfRegistration || "-"}</TableCell>
                         <TableCell>{reg.studentName || "-"}</TableCell>
                         <TableCell>{reg.dateOfBirth || "-"}</TableCell>
                         <TableCell>{reg.currentAge || "-"}</TableCell>

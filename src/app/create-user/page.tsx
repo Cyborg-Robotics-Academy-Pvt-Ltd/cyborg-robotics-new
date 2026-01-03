@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Dropdown, { DropdownOption } from "../../components/ui/dropdown";
 import courses from "../../../utils/courses";
+import { enhancedCourseData } from "../../data/enhancedCourseData";
 import Head from "next/head";
 import Image from "next/image";
 
@@ -53,6 +54,8 @@ const CreateUser = () => {
     Array<{ id: string; name: string; email: string }>
   >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [filteredCourses, setFilteredCourses] = useState<string[]>(courses);
 
   // Role options for dropdown
   const roleOptions: DropdownOption[] = [
@@ -262,6 +265,52 @@ const CreateUser = () => {
       setPrnChecking(false);
     }
   }, [PrnNumber]);
+
+  // Filter courses based on search query
+  useEffect(() => {
+    if (!courseSearchQuery.trim()) {
+      setFilteredCourses(courses);
+    } else {
+      const query = courseSearchQuery.toLowerCase();
+      const filtered = courses.filter((courseName) => {
+        // Check if course name matches
+        if (courseName.toLowerCase().includes(query)) {
+          return true;
+        }
+
+        // Create a mapping from course titles to their keys in enhancedCourseData
+        // We need to find the enhanced course data that corresponds to this course name
+        const matchingCourseKey = Object.keys(enhancedCourseData).find(
+          (key) => {
+            const courseData = enhancedCourseData[key];
+            // Match based on title or common variations
+            return (
+              courseData.title.toLowerCase() === courseName.toLowerCase() ||
+              courseData.title.toLowerCase() + " course" ===
+                courseName.toLowerCase() ||
+              courseName
+                .toLowerCase()
+                .includes(courseData.title.toLowerCase()) ||
+              courseData.title.toLowerCase().includes(courseName.toLowerCase())
+            );
+          }
+        );
+
+        if (matchingCourseKey) {
+          const courseData = enhancedCourseData[matchingCourseKey];
+          return (
+            courseData.title.toLowerCase().includes(query) ||
+            courseData.description.toLowerCase().includes(query) ||
+            courseData.category.toLowerCase().includes(query) ||
+            courseData.ageRange.toLowerCase().includes(query)
+          );
+        }
+
+        return false;
+      });
+      setFilteredCourses(filtered);
+    }
+  }, [courseSearchQuery]);
 
   const handleEnrollCourses = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -700,10 +749,30 @@ const CreateUser = () => {
                   >
                     Select Courses *
                   </label>
+                  <div className="relative transform transition-all duration-300 mb-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search courses..."
+                        value={courseSearchQuery}
+                        onChange={(e) => setCourseSearchQuery(e.target.value)}
+                        className="w-full pl-4 pr-10 py-2.5 border-2 border-gray-200 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
+                      />
+                      {courseSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setCourseSearchQuery("")}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <XCircle className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <div className="relative transform transition-all duration-300">
                     <div className="max-h-48 sm:max-h-56 md:max-h-64 overflow-y-auto border-2 border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                        {courses.map((courseName) => (
+                        {filteredCourses.map((courseName) => (
                           <div
                             key={courseName}
                             className="flex items-center space-x-2 sm:space-x-3 p-1.5 sm:p-2 hover:bg-gray-50 rounded-lg sm:rounded-xl transition-colors duration-200"
