@@ -100,11 +100,6 @@ const roleLinksMap: Record<
       href: "/admin-dashboard/access-control",
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
     },
-    {
-      label: "Logout",
-      href: "/login",
-      icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
   ],
   trainer: [
     {
@@ -128,12 +123,6 @@ const roleLinksMap: Record<
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },
-
-    {
-      label: "Logout",
-      href: "/login",
-      icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
   ],
   student: [
     {
@@ -150,12 +139,6 @@ const roleLinksMap: Record<
       label: "Media",
       href: "/student-dashboard/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 gradient-text" />,
-    },
-
-    {
-      label: "Logout",
-      href: "/login",
-      icon: <LogOut className="h-5 w-5 shrink-0 gradient-text" />,
     },
   ],
 };
@@ -176,6 +159,7 @@ export default function DashboardLayout({
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileEmail, setProfileEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | undefined>(name);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const openRef = useRef(open);
   const profileMenuRef = useReactRef<HTMLDivElement>(null);
@@ -223,6 +207,13 @@ export default function DashboardLayout({
             if (data.email) {
               setProfileEmail(data.email);
             }
+
+            // Update name if it's stored in the document
+            const documentName =
+              data.name || data.displayName || data.username || data.fullName;
+            if (documentName) {
+              setDisplayName(documentName);
+            }
           }
         } catch (error) {
           console.error("Error fetching profile data:", error);
@@ -265,6 +256,10 @@ export default function DashboardLayout({
     }
   }, [router]);
 
+  const getDisplayText = (): string => {
+    return displayName || name || "";
+  };
+
   const linksWithHandlers = useMemo(() => {
     return links.map((link) => {
       const base =
@@ -274,7 +269,7 @@ export default function DashboardLayout({
       const override = linkOverrides?.[link.label] || {};
       return { ...base, ...override };
     });
-  }, [links, handleLogout, linkOverrides, open]);
+  }, [links, handleLogout, linkOverrides, open, displayName, name]);
 
   return (
     <div
@@ -289,7 +284,7 @@ export default function DashboardLayout({
             {open ? <Logo setOpen={setOpen} /> : <LogoIcon setOpen={setOpen} />}
             <div className="mt-2 flex flex-col gap-2">
               {open && (
-                <div className="px-3 py-2 w-full text-center bg-red-200 text-xs font-semibold text-red-800 uppercase tracking-wider rounded-lg">
+                <div className="px-3 py-2 w-full text-center bg-red-800 text-xs font-semibold text-white uppercase tracking-wider rounded-lg">
                   {role === "admin"
                     ? "Admin Panel"
                     : role === "trainer"
@@ -322,9 +317,8 @@ export default function DashboardLayout({
                     />
                   ) : (
                     <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
-                      {name
-                        ? name.charAt(0).toUpperCase()
-                        : role.charAt(0).toUpperCase()}
+                      {getDisplayText()?.charAt(0).toUpperCase() ||
+                        role.charAt(0).toUpperCase()}
                     </div>
                   )}
                   {open && (
@@ -335,7 +329,7 @@ export default function DashboardLayout({
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                       className="text-md font-bold"
                     >
-                      {name ||
+                      {getDisplayText() ||
                         (role === "admin"
                           ? "Admin"
                           : role === "trainer"
@@ -360,14 +354,13 @@ export default function DashboardLayout({
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-lg">
-                          {name
-                            ? name.charAt(0).toUpperCase()
-                            : role.charAt(0).toUpperCase()}
+                          {getDisplayText()?.charAt(0).toUpperCase() ||
+                            role.charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm truncate">
-                          {name ||
+                          {getDisplayText() ||
                             (role === "admin"
                               ? "Admin"
                               : role === "trainer"
@@ -437,9 +430,8 @@ export default function DashboardLayout({
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
-                      {name
-                        ? name.charAt(0).toUpperCase()
-                        : role.charAt(0).toUpperCase()}
+                      {getDisplayText()?.charAt(0).toUpperCase() ||
+                        role.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </button>

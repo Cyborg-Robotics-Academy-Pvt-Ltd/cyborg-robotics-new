@@ -180,199 +180,380 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* Assigned Courses Section */}
+        {/* Ongoing Courses Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Assigned Courses
+            Ongoing Courses
           </h2>
           {studentData?.courses && studentData.courses.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {studentData.courses.map(
-                (
-                  course: {
-                    name: string;
-                    level: string;
-                    classNumber: string;
-                    completed?: boolean;
-                    certificate?: boolean;
-                  },
-                  idx: number
-                ) => {
-                  // Demo: course icon (use emoji or static image, or map to real icons if available)
-                  const courseIcons: Record<string, string> = {
-                    Python: "🐍",
-                    Java: "☕",
-                    Arduino: "🔌",
-                    "3D Printing": "🖨️",
-                    "Web Designing": "💻",
-                    // Add more mappings as needed
-                  };
-                  const icon = courseIcons[course.name] || "📘";
+            (() => {
+              const ongoingCourses = studentData.courses.filter(
+                (course: any) => !course.completed
+              );
+              return ongoingCourses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {ongoingCourses.map(
+                    (
+                      course: {
+                        name: string;
+                        level: string;
+                        classNumber: string;
+                        completed?: boolean;
+                        certificate?: boolean;
+                      },
+                      idx: number
+                    ) => {
+                      // Demo: course icon (use emoji or static image, or map to real icons if available)
+                      const courseIcons: Record<string, string> = {
+                        Python: "🐍",
+                        Java: "☕",
+                        Arduino: "🔌",
+                        "3D Printing": "🖨️",
+                        "Web Designing": "💻",
+                        // Add more mappings as needed
+                      };
+                      const icon = courseIcons[course.name] || "📘";
 
-                  // Create slug for course URL
-                  const toSlug = (courseName: string, level?: string) => {
-                    if (typeof courseName !== "string" || !courseName) {
-                      return "";
-                    }
-                    let slug = courseName
-                      .toLowerCase()
-                      .replace(/ & /g, "-and-")
-                      .replace(/ \+ /g, "-plus-")
-                      .replace(/ /g, "-")
-                      .replace(/[^\w-]+/g, "");
+                      // Create slug for course URL
+                      const toSlug = (courseName: string, level?: string) => {
+                        if (typeof courseName !== "string" || !courseName) {
+                          return "";
+                        }
+                        let slug = courseName
+                          .toLowerCase()
+                          .replace(/ & /g, "-and-")
+                          .replace(/ \+ /g, "-plus-")
+                          .replace(/ /g, "-")
+                          .replace(/[^\w-]+/g, "");
 
-                    // Add level to the slug if provided
-                    if (level) {
-                      // Convert numeric level to text if needed
-                      let levelText = level;
-                      if (level === "1") levelText = "beginner";
-                      else if (level === "2") levelText = "intermediate";
-                      else if (level === "3") levelText = "advanced";
-                      else if (level === "4") levelText = "expert";
+                        // Add level to the slug if provided
+                        if (level) {
+                          // Convert numeric level to text if needed
+                          let levelText = level;
+                          if (level === "1") levelText = "beginner";
+                          else if (level === "2") levelText = "intermediate";
+                          else if (level === "3") levelText = "advanced";
+                          else if (level === "4") levelText = "expert";
 
-                      slug += `-level-${levelText}`;
-                    }
+                          slug += `-level-${levelText}`;
+                        }
 
-                    return slug;
-                  };
+                        return slug;
+                      };
 
-                  // Helper function to format level display
-                  const formatLevel = (level: string | number) => {
-                    if (!level) return "N/A";
+                      // Helper function to format level display
+                      const formatLevel = (level: string | number) => {
+                        if (!level) return "N/A";
 
-                    const levelStr = String(level).toLowerCase();
-                    switch (levelStr) {
-                      case "1":
-                      case "beginner":
-                        return "Beginner";
-                      case "2":
-                      case "intermediate":
-                        return "Intermediate";
-                      case "3":
-                      case "advanced":
-                        return "Advanced";
-                      case "4":
-                      case "expert":
-                        return "Expert";
-                      default:
-                        return `Level ${level}`;
-                    }
-                  };
+                        const levelStr = String(level).toLowerCase();
+                        switch (levelStr) {
+                          case "1":
+                          case "beginner":
+                            return "Beginner";
+                          case "2":
+                          case "intermediate":
+                            return "Intermediate";
+                          case "3":
+                          case "advanced":
+                            return "Advanced";
+                          case "4":
+                          case "expert":
+                            return "Expert";
+                          default:
+                            return `Level ${level}`;
+                        }
+                      };
 
-                  const courseSlug = toSlug(course.name, course.level);
-                  const courseUrl = `/${studentData.PrnNumber}/${courseSlug}`;
+                      const courseSlug = toSlug(course.name, course.level);
+                      const courseUrl = `/${studentData.PrnNumber}/${courseSlug}`;
 
-                  // Debug logging
-                  console.log("Course data:", {
-                    name: course.name,
-                    level: course.level,
-                    levelType: typeof course.level,
-                    formattedLevel: formatLevel(course.level),
-                  });
+                      // Debug logging
+                      console.log("Course data:", {
+                        name: course.name,
+                        level: course.level,
+                        levelType: typeof course.level,
+                        formattedLevel: formatLevel(course.level),
+                      });
 
-                  return (
-                    <Link key={idx} href={courseUrl}>
-                      <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border-l-8 border-[#991b1b] cursor-pointer group relative overflow-hidden">
-                        {/* Completed Badge */}
-                        {course.completed && (
-                          <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-green-600 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                            <svg
-                              className="w-4 h-4 text-white"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 13l4 4L19 7"
+                      return (
+                        <Link key={idx} href={courseUrl}>
+                          <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border-l-8 border-[#991b1b] cursor-pointer group relative overflow-hidden">
+                            {/* Certificate Badge */}
+                            {course.certificate && (
+                              <Image
+                                src="/assets/certificate.png"
+                                alt="Certificate"
+                                width={64}
+                                height={64}
+                                className="absolute top-2 right-2 object-contain z-20"
+                                style={{
+                                  right: "0.5rem",
+                                }}
                               />
-                            </svg>
-                            Completed
+                            )}
+
+                            {/* Icon */}
+                            <div className="absolute top-4 right-4 text-4xl opacity-20 group-hover:opacity-30 transition-opacity">
+                              {icon}
+                            </div>
+
+                            <div className="flex items-center mb-2">
+                              <span className="text-2xl mr-3">{icon}</span>
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {course.name}
+                              </h3>
+                              <span className="ml-auto bg-[#f3d6d6] text-[#991b1b] text-xs font-bold px-2 py-1 rounded-full">
+                                {formatLevel(course.level)}
+                              </span>
+                            </div>
+
+                            <p className="text-gray-600 mb-1">
+                              Class: {course.classNumber}
+                            </p>
+
+                            {/* Status Indicators */}
+                            <div className="flex items-center gap-2 mt-3">
+                              {course.certificate && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                  <svg
+                                    className="w-3 h-3"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                  </svg>
+                                  Certificate
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-2">
+                              Click to view course details
+                            </p>
                           </div>
-                        )}
+                        </Link>
+                      );
+                    }
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-500">
+                  No ongoing courses at the moment.
+                </div>
+              );
+            })()
+          ) : (
+            <div className="text-gray-500">No courses assigned yet.</div>
+          )}
+        </div>
 
-                        {/* Certificate Badge */}
-                        {course.certificate && (
-                          <Image
-                            src="/assets/certificate.png"
-                            alt="Certificate"
-                            width={64}
-                            height={64}
-                            className="absolute top-2 right-2 object-contain z-20"
-                            style={{
-                              top: course.completed ? "2.5rem" : "0.5rem",
-                              right: "0.5rem",
-                            }}
-                          />
-                        )}
+        {/* Completed Courses Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Completed Courses
+          </h2>
+          {studentData?.courses && studentData.courses.length > 0 ? (
+            (() => {
+              const completedCourses = studentData.courses.filter(
+                (course: any) => course.completed
+              );
+              return completedCourses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {completedCourses.map(
+                    (
+                      course: {
+                        name: string;
+                        level: string;
+                        classNumber: string;
+                        completed?: boolean;
+                        certificate?: boolean;
+                      },
+                      idx: number
+                    ) => {
+                      // Demo: course icon (use emoji or static image, or map to real icons if available)
+                      const courseIcons: Record<string, string> = {
+                        Python: "🐍",
+                        Java: "☕",
+                        Arduino: "🔌",
+                        "3D Printing": "🖨️",
+                        "Web Designing": "💻",
+                        // Add more mappings as needed
+                      };
+                      const icon = courseIcons[course.name] || "📘";
 
-                        {/* Icon */}
-                        <div className="absolute top-4 right-4 text-4xl opacity-20 group-hover:opacity-30 transition-opacity">
-                          {icon}
-                        </div>
+                      // Create slug for course URL
+                      const toSlug = (courseName: string, level?: string) => {
+                        if (typeof courseName !== "string" || !courseName) {
+                          return "";
+                        }
+                        let slug = courseName
+                          .toLowerCase()
+                          .replace(/ & /g, "-and-")
+                          .replace(/ \+ /g, "-plus-")
+                          .replace(/ /g, "-")
+                          .replace(/[^\w-]+/g, "");
 
-                        <div className="flex items-center mb-2">
-                          <span className="text-2xl mr-3">{icon}</span>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {course.name}
-                          </h3>
-                          <span className="ml-auto bg-[#f3d6d6] text-[#991b1b] text-xs font-bold px-2 py-1 rounded-full">
-                            {formatLevel(course.level)}
-                          </span>
-                        </div>
+                        // Add level to the slug if provided
+                        if (level) {
+                          // Convert numeric level to text if needed
+                          let levelText = level;
+                          if (level === "1") levelText = "beginner";
+                          else if (level === "2") levelText = "intermediate";
+                          else if (level === "3") levelText = "advanced";
+                          else if (level === "4") levelText = "expert";
 
-                        <p className="text-gray-600 mb-1">
-                          Class: {course.classNumber}
-                        </p>
+                          slug += `-level-${levelText}`;
+                        }
 
-                        {/* Status Indicators */}
-                        <div className="flex items-center gap-2 mt-3">
-                          {course.completed && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                              <svg
-                                className="w-3 h-3"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                              Completed
-                            </span>
-                          )}
-                          {course.certificate && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                              <svg
-                                className="w-3 h-3"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              Certificate
-                            </span>
-                          )}
-                        </div>
+                        return slug;
+                      };
 
-                        <p className="text-xs text-gray-500 mt-2">
-                          Click to view course details
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                }
-              )}
-            </div>
+                      // Helper function to format level display
+                      const formatLevel = (level: string | number) => {
+                        if (!level) return "N/A";
+
+                        const levelStr = String(level).toLowerCase();
+                        switch (levelStr) {
+                          case "1":
+                          case "beginner":
+                            return "Beginner";
+                          case "2":
+                          case "intermediate":
+                            return "Intermediate";
+                          case "3":
+                          case "advanced":
+                            return "Advanced";
+                          case "4":
+                          case "expert":
+                            return "Expert";
+                          default:
+                            return `Level ${level}`;
+                        }
+                      };
+
+                      const courseSlug = toSlug(course.name, course.level);
+                      const courseUrl = `/${studentData.PrnNumber}/${courseSlug}`;
+
+                      // Debug logging
+                      console.log("Course data:", {
+                        name: course.name,
+                        level: course.level,
+                        levelType: typeof course.level,
+                        formattedLevel: formatLevel(course.level),
+                      });
+
+                      return (
+                        <Link key={idx} href={courseUrl}>
+                          <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border-l-8 border-green-500 cursor-pointer group relative overflow-hidden">
+                            {/* Completed Badge */}
+                            {course.completed && (
+                              <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-green-600 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                                <svg
+                                  className="w-4 h-4 text-white"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                                Completed
+                              </div>
+                            )}
+
+                            {/* Certificate Badge */}
+                            {course.certificate && (
+                              <Image
+                                src="/assets/certificate.png"
+                                alt="Certificate"
+                                width={64}
+                                height={64}
+                                className="absolute top-2 right-2 object-contain z-20"
+                                style={{
+                                  top: course.completed ? "2.5rem" : "0.5rem",
+                                  right: "0.5rem",
+                                }}
+                              />
+                            )}
+
+                            {/* Icon */}
+                            <div className="absolute top-4 right-4 text-4xl opacity-20 group-hover:opacity-30 transition-opacity">
+                              {icon}
+                            </div>
+
+                            <div className="flex items-center mb-2">
+                              <span className="text-2xl mr-3">{icon}</span>
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {course.name}
+                              </h3>
+                              <span className="ml-auto bg-[#f3d6d6] text-[#991b1b] text-xs font-bold px-2 py-1 rounded-full">
+                                {formatLevel(course.level)}
+                              </span>
+                            </div>
+
+                            <p className="text-gray-600 mb-1">
+                              Class: {course.classNumber}
+                            </p>
+
+                            {/* Status Indicators */}
+                            <div className="flex items-center gap-2 mt-3">
+                              {course.completed && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                  <svg
+                                    className="w-3 h-3"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  Completed
+                                </span>
+                              )}
+                              {course.certificate && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                  <svg
+                                    className="w-3 h-3"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                  </svg>
+                                  Certificate
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-2">
+                              Click to view course details
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    }
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-500">No completed courses yet.</div>
+              );
+            })()
           ) : (
             <div className="text-gray-500">No courses assigned yet.</div>
           )}
