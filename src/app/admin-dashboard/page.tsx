@@ -17,6 +17,7 @@ import {
   RefreshCw,
   User,
   Shield,
+  BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
@@ -306,6 +307,21 @@ const AdminDashboard = () => {
       borderColor: "border-pink-200",
       action: "Manage gallery",
       delay: 0.4,
+    },
+    {
+      title: "Student Class Management",
+      description: "Manage student classes and assignments",
+      href: "/admin-dashboard/student-class-management",
+      icon: BookOpen,
+      color: "orange",
+      gradient: "from-orange-500 to-red-500",
+      bgColor: "bg-orange-50",
+      iconBg: "bg-gradient-to-br from-orange-100 to-orange-200",
+      textColor: "text-orange-600",
+      hoverColor: "group-hover:text-orange-600",
+      borderColor: "border-orange-200",
+      action: "Manage classes",
+      delay: 0.7,
     },
   ];
 
