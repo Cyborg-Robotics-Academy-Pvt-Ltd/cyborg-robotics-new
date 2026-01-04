@@ -65,7 +65,6 @@ const Page = () => {
     id: string;
     PrnNumber: string;
     username: string;
-    email: string;
     completedTasks: number;
     ongoingTasks: number;
     tasks: Task[];
@@ -82,7 +81,6 @@ const Page = () => {
   interface StudentData {
     PrnNumber: string;
     username: string;
-    email?: string;
     tasks?: Task[];
   }
 
@@ -90,7 +88,7 @@ const Page = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<
-    "PrnNumber" | "username" | "email" | "completedTasks"
+    "PrnNumber" | "username" | "completedTasks"
   >("PrnNumber");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
@@ -149,7 +147,6 @@ const Page = () => {
             data.username ||
             data.email?.split("@")[0] ||
             "",
-          email: data.email || "",
           completedTasks: completedTasksCount,
           ongoingTasks: ongoingTasksCount,
           tasks: tasks,
@@ -223,7 +220,6 @@ const Page = () => {
       // Search filter (keep your existing logic)
       return (
         student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.PrnNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.completedTasks.toString().includes(searchTerm.toLowerCase())
       );
@@ -264,9 +260,7 @@ const Page = () => {
       }
     });
 
-  const handleSort = (
-    column: "PrnNumber" | "username" | "email" | "completedTasks"
-  ) => {
+  const handleSort = (column: "PrnNumber" | "username" | "completedTasks") => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -301,7 +295,6 @@ const Page = () => {
       const term = searchTerm.toLowerCase();
       return (
         student.username.toLowerCase().includes(term) ||
-        student.email.toLowerCase().includes(term) ||
         student.PrnNumber.toLowerCase().includes(term) ||
         student.completedTasks.toString().includes(term)
       );
@@ -316,7 +309,6 @@ const Page = () => {
     const headers = [
       "PRN Number",
       "Student Name",
-      "Email",
       "Course",
       "Level",
       "Class Number",
@@ -366,7 +358,6 @@ const Page = () => {
           return {
             "PRN Number": student.PrnNumber,
             "Student Name": student.username,
-            Email: student.email,
             Course: typeof course === "string" ? course : course?.name || "",
             Level: typeof course === "string" ? "" : course?.level || "",
             "Class Number":
@@ -526,7 +517,6 @@ const Page = () => {
             id: doc.id,
             PrnNumber: data.PrnNumber || "",
             username: data.username || data.email?.split("@")[0] || "",
-            email: data.email || "",
             completedTasks: completedTasksCount,
             ongoingTasks: ongoingTasksCount,
             tasks: tasks,
@@ -624,7 +614,7 @@ const Page = () => {
                 <input
                   type="text"
                   className="block w-full pl-12 pr-12 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none transition-all duration-300"
-                  placeholder="Search by name, email, PRN, or classes..."
+                  placeholder="Search by name, PRN, or classes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   aria-label="Search students"
@@ -760,13 +750,11 @@ const Page = () => {
             <div className="overflow-x-auto overflow-visible rounded-xl shadow-lg border border-gray-200">
               <Table className="min-w-full divide-y divide-gray-200">
                 <colgroup>
-                  <col className="w-28 md:w-36" />
+                  <col className="w-2 md:w-2" />
                   <col className="w-28 md:w-36" />
                   <col className="w-36 md:w-44 hidden md:table-cell" />
-                  <col className="w-28 md:w-36" />
+                  <col className="w-28 md:w-52" />
                   {activeTab === "hold" && <col className="w-28 md:w-36" />}
-                  <col className="w-32 md:w-40" />
-                  <col className="w-16 md:w-20" />
                 </colgroup>
                 <TableHeader>
                   <TableRow className="bg-gray-50 border-b border-gray-200">
@@ -796,19 +784,7 @@ const Page = () => {
                         )}
                       </div>
                     </TableHead>
-                    <TableHead
-                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm hidden md:table-cell"
-                      onClick={() => handleSort("email")}
-                    >
-                      <div className="flex items-center">
-                        Email Address
-                        {sortColumn === "email" && (
-                          <ChevronDown
-                            className={`ml-2 h-4 w-4 transform transition-transform ${sortDirection === "desc" ? "rotate-180" : ""}`}
-                          />
-                        )}
-                      </div>
-                    </TableHead>
+
                     <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-xs md:text-sm">
                       Courses
                     </TableHead>
@@ -857,9 +833,7 @@ const Page = () => {
                       <TableCell className="font-medium text-gray-900 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.username}
                       </TableCell>
-                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm hidden md:table-cell">
-                        {student.email}
-                      </TableCell>
+
                       <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
                         <div className="relative group">
                           <span className="truncate max-w-[120px] inline-block">
