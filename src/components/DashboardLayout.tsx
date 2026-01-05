@@ -100,6 +100,11 @@ const roleLinksMap: Record<
       href: "/admin-dashboard/access-control",
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
     },
+    {
+      label: "Logout",
+      href: "/login",
+      icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
+    },
   ],
   trainer: [
     {
@@ -123,6 +128,11 @@ const roleLinksMap: Record<
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },
+    {
+      label: "Logout",
+      href: "/login",
+      icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
+    },
   ],
   student: [
     {
@@ -139,6 +149,11 @@ const roleLinksMap: Record<
       label: "Media",
       href: "/student-dashboard/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 gradient-text" />,
+    },
+    {
+      label: "Logout",
+      href: "/login",
+      icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
     },
   ],
 };
@@ -383,7 +398,12 @@ export default function DashboardLayout({
                       My Profile
                     </Link>
                     <button
-                      onClick={handleLogout}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLogout();
+                        setShowProfileMenu(false);
+                      }}
                       className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
                     >
                       <LogOut className="h-4 w-4 text-gray-600" />
