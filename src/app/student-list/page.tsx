@@ -226,17 +226,15 @@ const Page = () => {
     })
     .sort((a, b) => {
       if (activeTab === "ongoing") {
-        // Sort by latest ongoing task date (descending)
-        const getLatestOngoingDate = (student: Student) => {
-          const ongoingTasks = (student.tasks || []).filter(
-            (t: Task) => t.status && t.status.toLowerCase() === "ongoing"
-          );
-          if (ongoingTasks.length === 0) return 0;
+        // Sort by most recent task update time to reflect real-time progress
+        const getLatestTaskDate = (student: Student) => {
+          const allTasks = student.tasks || [];
+          if (allTasks.length === 0) return 0;
           return Math.max(
-            ...ongoingTasks.map((t: Task) => new Date(t.dateTime).getTime())
+            ...allTasks.map((t: Task) => new Date(t.dateTime).getTime())
           );
         };
-        return getLatestOngoingDate(b) - getLatestOngoingDate(a);
+        return getLatestTaskDate(b) - getLatestTaskDate(a);
       }
       let valA, valB;
       if (sortColumn === "completedTasks") {
@@ -794,7 +792,7 @@ const Page = () => {
                       </TableHead>
                     )}
                     <TableHead
-                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-gray-700  py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("completedTasks")}
                     >
                       <div className="flex items-center">
@@ -828,7 +826,13 @@ const Page = () => {
                       }}
                     >
                       <TableCell className="font-mono text-gray-800 py-3 px-3 md:px-4 text-xs md:text-sm">
-                        {student.PrnNumber}
+                        {student.PrnNumber ? (
+                          student.PrnNumber
+                        ) : (
+                          <span className="text-red-600 font-semibold">
+                            Assign PRN
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="font-medium text-gray-900 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.username}
@@ -837,18 +841,25 @@ const Page = () => {
                       <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
                         <div className="relative group">
                           <span className="truncate max-w-[120px] inline-block">
-                            {student.courses && student.courses.length > 0
-                              ? student.courses
-                                  .map((course) =>
-                                    typeof course === "string"
-                                      ? course
-                                      : course?.name || ""
-                                  )
-                                  .filter(Boolean)
-                                  .slice(0, 2)
-                                  .join(", ") +
-                                (student.courses.length > 2 ? "..." : "")
-                              : "-"}
+                            {student.courses && student.courses.length > 0 ? (
+                              student.courses
+                                .map((course) =>
+                                  typeof course === "string"
+                                    ? course
+                                    : course?.name +
+                                        (course?.level
+                                          ? ` (Lvl ${course.level})`
+                                          : "") || ""
+                                )
+                                .filter(Boolean)
+                                .slice(0, 2)
+                                .join(", ") +
+                              (student.courses.length > 2 ? "..." : "")
+                            ) : (
+                              <span className="text-red-600 font-semibold">
+                                No courses
+                              </span>
+                            )}
                           </span>
                           {student.courses && student.courses.length > 0 && (
                             <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
@@ -857,7 +868,10 @@ const Page = () => {
                                 .map((course) =>
                                   typeof course === "string"
                                     ? course
-                                    : course?.name || ""
+                                    : course?.name +
+                                        (course?.level
+                                          ? ` (Lvl ${course.level})`
+                                          : "") || ""
                                 )
                                 .filter(Boolean)
                                 .join(", ")}
@@ -869,22 +883,48 @@ const Page = () => {
                       {activeTab === "hold" && (
                         <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
                           <div className="flex items-center">
-                            <span className="text-xs">
-                              {student.nextCourse || "-"}
-                            </span>
+                            {student.nextCourse ? (
+                              <div className="flex flex-col">
+                                {student.nextCourse.startsWith(
+                                  "Not Interested: "
+                                ) ? (
+                                  <div className="flex items-center gap-1">
+                                    <span className="inline-block px-2 py-0.5 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
+                                      Not Interested
+                                    </span>
+                                    <span className="text-xs text-gray-600 ml-1">
+                                      {student.nextCourse.substring(
+                                        "Not Interested: ".length
+                                      )}
+                                    </span>
+                                  </div>
+                                ) : student.nextCourse.startsWith(
+                                    "Join Soon: "
+                                  ) ? (
+                                  <div className="flex items-center gap-1">
+                                    <span className="inline-block px-2 py-0.5 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
+                                      Join Soon
+                                    </span>
+                                    <span className="text-xs text-gray-600 ml-1">
+                                      {student.nextCourse.substring(
+                                        "Join Soon: ".length
+                                      )}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs">
+                                    {student.nextCourse}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span>-</span>
+                            )}
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
+                      <TableCell className="text-gray-600 py-4 px-3 md:px-4 text-xs md:text-sm">
                         <div className="space-y-1 relative group">
-                          <div className="flex items-center">
-                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                              {student.completedTasks} Comp
-                            </span>
-                            <span className="ml-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                              {student.ongoingTasks} Ong
-                            </span>
-                          </div>
                           {student.tasks
                             .filter(
                               (t) => t.status.toLowerCase() === "complete"
@@ -894,22 +934,8 @@ const Page = () => {
                                 new Date(b.dateTime).getTime() -
                                 new Date(a.dateTime).getTime()
                             )
-                            .slice(0, 1)
-                            .map((task, i) => (
-                              <div
-                                key={i}
-                                className="text-xs text-gray-500 truncate max-w-[120px]"
-                              >
-                                {task.course}: {task.task}
-                              </div>
-                            ))}
-                          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
-                            <div className="font-medium mb-1">
-                              Task Summary:
-                            </div>
-                            <div>Completed: {student.completedTasks}</div>
-                            <div>Ongoing: {student.ongoingTasks}</div>
-                            {student.tasks
+                            .slice(0, 1).length > 0 ? (
+                            student.tasks
                               .filter(
                                 (t) => t.status.toLowerCase() === "complete"
                               )
@@ -918,10 +944,34 @@ const Page = () => {
                                   new Date(b.dateTime).getTime() -
                                   new Date(a.dateTime).getTime()
                               )
-                              .slice(0, 3)
+                              .slice(0, 1)
+                              .map((task, i) => (
+                                <div
+                                  key={i}
+                                  className="text-xs text-gray-500 truncate max-w-[120px]"
+                                >
+                                  {task.course}: {task.task}
+                                </div>
+                              ))
+                          ) : (
+                            <div className="text-xs text-red-600 font-semibold truncate max-w-[120px]">
+                              No latest classes
+                            </div>
+                          )}
+                          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
+                            <div className="font-medium mb-1">
+                              Recent Tasks:
+                            </div>
+                            {student.tasks
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.dateTime).getTime() -
+                                  new Date(a.dateTime).getTime()
+                              )
+                              .slice(0, 1)
                               .map((task, i) => (
                                 <div key={i} className="mt-1 truncate">
-                                  • {task.course}: {task.task}
+                                  • {task.course}: {task.task} ({task.status})
                                 </div>
                               ))}
                             <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-gray-800"></div>
@@ -1187,9 +1237,7 @@ const Page = () => {
                               value={c.name + (c.level ? `|${c.level}` : "")}
                             >
                               {c.name}
-                              {sameNameCount > 1 && c.level
-                                ? ` (Level ${c.level})`
-                                : ""}
+                              {c.level ? ` (Level ${c.level})` : ""}
                             </option>
                           );
                         }
