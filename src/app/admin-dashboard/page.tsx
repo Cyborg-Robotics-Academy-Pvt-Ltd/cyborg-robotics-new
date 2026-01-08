@@ -121,6 +121,9 @@ const AdminDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, userRole, loading: authLoading } = useAuth();
 
+  // State for current date and time
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -174,6 +177,16 @@ const AdminDashboard = () => {
 
     checkAdminAuth();
   }, [user, userRole, authLoading, router]);
+
+  // Update current date/time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 60000); // Update every minute
+
+    // Clean up interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   // Function to refresh admin data
   const refreshAdminData = useCallback(async () => {
@@ -322,6 +335,21 @@ const AdminDashboard = () => {
       borderColor: "border-orange-200",
       action: "Manage classes",
       delay: 0.7,
+    },
+    {
+      title: "Create Multiple Accounts",
+      description: "Create multiple user accounts without email verification",
+      href: "/admin-dashboard/create-user",
+      icon: UserRoundPlus,
+      color: "violet",
+      gradient: "from-violet-500 to-purple-500",
+      bgColor: "bg-violet-50",
+      iconBg: "bg-gradient-to-br from-violet-100 to-violet-200",
+      textColor: "text-violet-600",
+      hoverColor: "group-hover:text-violet-600",
+      borderColor: "border-violet-200",
+      action: "Create accounts",
+      delay: 0.8,
     },
   ];
 
@@ -523,8 +551,11 @@ const AdminDashboard = () => {
             className="mt-16 text-center"
           >
             <p className={`text-sm ${theme.textMuted}`}>
-              © 2025 Cyborg Robotics Academy. Built with ❤️ for the future of
-              education.
+              © {currentDateTime.getFullYear()} Cyborg Robotics Academy. Built
+              with ❤️ for the future of education.
+            </p>
+            <p className={`text-xs ${theme.textMuted} mt-1`}>
+              Current Date & Time: {currentDateTime.toLocaleString()}
             </p>
           </motion.div>
         </div>

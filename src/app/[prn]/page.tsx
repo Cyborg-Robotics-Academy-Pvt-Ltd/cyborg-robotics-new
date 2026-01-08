@@ -7,6 +7,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
@@ -16,6 +17,9 @@ import {
   Award,
   Calendar,
   UserCheck,
+  Trash2,
+  X,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import Head from "next/head";
@@ -128,6 +132,9 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [classNumberError, setClassNumberError] = React.useState<string | null>(
     null
   );
+  const [deletingIndex, setDeletingIndex] = React.useState<number | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] =
+    React.useState(false);
 
   React.useEffect(() => {
     getStudentData(prn).then(setStudent);
@@ -201,6 +208,44 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteClick = (index: number) => {
+    setDeletingIndex(index);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!student || deletingIndex === null) return;
+
+    setLoading(true);
+    try {
+      const updatedCourses = [...student.courses];
+      updatedCourses.splice(deletingIndex, 1); // Remove the course at the specified index
+
+      // Update Firestore
+      const studentsRef = collection(db, "students");
+      const q = query(studentsRef, where("PrnNumber", "==", student.PrnNumber));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const studentDocRef = doc(db, "students", querySnapshot.docs[0].id);
+        await updateDoc(studentDocRef, { courses: updatedCourses });
+        setStudent({ ...student, courses: updatedCourses });
+      }
+
+      setDeletingIndex(null);
+      setShowDeleteConfirmation(false);
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeletingIndex(null);
+    setShowDeleteConfirmation(false);
   };
 
   if (student === null) {
@@ -491,6 +536,22 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                                 </div>
                               )}
                             </div>
+
+                            {/* Delete button for admin only */}
+                            {userChecked && isAdmin && (
+                              <div className="mt-4 pt-4 border-t border-gray-100">
+                                <button
+                                  className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleDeleteClick(realIndex);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  Delete Course
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -501,6 +562,52 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
             </RoboticsCard>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-red-800">
+                  Confirm Deletion
+                </h3>
+                <button
+                  onClick={handleDeleteCancel}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to delete this course? This action cannot
+                be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  onClick={handleDeleteCancel}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 text-white bg-red-700 rounded-lg hover:bg-red-800 transition-colors flex items-center"
+                  onClick={handleDeleteConfirm}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span>Deleting...</span>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );

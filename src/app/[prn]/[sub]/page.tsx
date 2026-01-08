@@ -314,6 +314,11 @@ const Page = ({
   const [showNextCourseModal, setShowNextCourseModal] = useState(false);
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
+  const [nextCourseOption, setNextCourseOption] = useState<
+    "interested" | "not-interested" | "join-soon" | ""
+  >("");
+  const [nextCourseComment, setNextCourseComment] = useState("");
+  const [joinSoonTime, setJoinSoonTime] = useState("");
 
   // Debug student state changes
   useEffect(() => {
@@ -444,14 +449,34 @@ const Page = ({
   };
 
   const handleSaveNextCourse = async () => {
-    if (!student || !nextCourseInput.trim()) {
+    if (!student) {
+      toast.error("No student found");
+      return;
+    }
+
+    // Validate based on selected option
+    if (nextCourseOption === "interested" && !nextCourseInput.trim()) {
       toast.error("Please enter a course name");
       return;
     }
 
-    console.log("Saving next course:", {
+    if (nextCourseOption === "not-interested" && !nextCourseComment.trim()) {
+      toast.error(
+        "Please provide a comment explaining why the student is not interested"
+      );
+      return;
+    }
+
+    if (nextCourseOption === "join-soon" && !joinSoonTime.trim()) {
+      toast.error("Please specify when the student will join");
+      return;
+    }
+
+    console.log("Saving next course data:", {
       studentId: student.id,
+      nextCourseOption,
       nextCourse: nextCourseInput.trim(),
+      nextCourseComment: nextCourseComment.trim(),
       studentData: student,
     });
 
@@ -459,7 +484,20 @@ const Page = ({
       const studentRef = doc(db, "students", student.id);
       console.log("Student reference:", studentRef);
 
-      const updateData = { nextCourse: nextCourseInput.trim() };
+      let updateData;
+
+      if (nextCourseOption === "interested") {
+        updateData = { nextCourse: nextCourseInput.trim() };
+      } else if (nextCourseOption === "not-interested") {
+        updateData = {
+          nextCourse: `Not Interested: ${nextCourseComment.trim()}`,
+        };
+      } else if (nextCourseOption === "join-soon") {
+        updateData = { nextCourse: `Join Soon: ${joinSoonTime.trim()}` };
+      } else {
+        updateData = { nextCourse: "" };
+      }
+
       console.log("Update data:", updateData);
 
       await updateDoc(studentRef, updateData);
@@ -467,11 +505,13 @@ const Page = ({
 
       // Update local state
       setStudent((prev) =>
-        prev ? { ...prev, nextCourse: nextCourseInput.trim() } : null
+        prev ? { ...prev, nextCourse: updateData.nextCourse } : null
       );
 
       setShowNextCourseModal(false);
       setNextCourseInput("");
+      setNextCourseOption("");
+      setNextCourseComment("");
       setIsEditingNextCourse(false);
       toast.success("Next course saved successfully!");
     } catch (error: unknown) {
@@ -485,7 +525,28 @@ const Page = ({
   };
 
   const handleEditNextCourse = () => {
-    setNextCourseInput(student?.nextCourse || "");
+    const nextCourseValue = student?.nextCourse || "";
+
+    // Check if the next course indicates not interested status
+    if (nextCourseValue.startsWith("Not Interested: ")) {
+      setNextCourseOption("not-interested");
+      setNextCourseComment(
+        nextCourseValue.substring("Not Interested: ".length)
+      );
+      setNextCourseInput("");
+      setJoinSoonTime("");
+    } else if (nextCourseValue.startsWith("Join Soon: ")) {
+      setNextCourseOption("join-soon");
+      setJoinSoonTime(nextCourseValue.substring("Join Soon: ".length));
+      setNextCourseInput("");
+      setNextCourseComment("");
+    } else {
+      setNextCourseOption("interested");
+      setNextCourseInput(nextCourseValue);
+      setNextCourseComment("");
+      setJoinSoonTime("");
+    }
+
     setIsEditingNextCourse(true);
     setShowNextCourseModal(true);
   };
@@ -504,6 +565,11 @@ const Page = ({
 
       // Update local state
       setStudent((prev) => (prev ? { ...prev, nextCourse: "" } : null));
+
+      // Reset the radio option and comment
+      setNextCourseOption("");
+      setNextCourseComment("");
+      setJoinSoonTime("");
 
       toast.success("Next course removed successfully!");
     } catch (error: unknown) {
@@ -1146,6 +1212,9 @@ const Page = ({
                 onClick={() => {
                   setShowNextCourseModal(false);
                   setNextCourseInput("");
+                  setNextCourseOption("");
+                  setNextCourseComment("");
+                  setJoinSoonTime("");
                   setIsEditingNextCourse(false);
                 }}
                 aria-label="Close"
@@ -1161,31 +1230,139 @@ const Page = ({
                   : "Specify what course the student should take next"}
               </p>
 
-              <label
-                htmlFor="next-course-modal"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Course Name
-              </label>
-              <div className="flex gap-2 mb-4">
-                <input
-                  id="next-course-modal"
-                  type="text"
-                  placeholder="Enter next course name"
-                  className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm flex-1"
-                  value={nextCourseInput}
-                  onChange={(e) => setNextCourseInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      handleSaveNextCourse();
-                    }
-                  }}
-                />
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  How is the student interested in the next course?
+                </label>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="interested"
+                      name="nextCourseOption"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500"
+                      checked={nextCourseOption === "interested"}
+                      onChange={() => setNextCourseOption("interested")}
+                    />
+                    <label
+                      htmlFor="interested"
+                      className="ml-2 block text-sm text-gray-700"
+                    >
+                      Interested - Specify what course the student should take
+                      next
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="not-interested"
+                      name="nextCourseOption"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500"
+                      checked={nextCourseOption === "not-interested"}
+                      onChange={() => setNextCourseOption("not-interested")}
+                    />
+                    <label
+                      htmlFor="not-interested"
+                      className="ml-2 block text-sm text-gray-700"
+                    >
+                      Not Interested - Comment why
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id="join-soon"
+                      name="nextCourseOption"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500"
+                      checked={nextCourseOption === "join-soon"}
+                      onChange={() => setNextCourseOption("join-soon")}
+                    />
+                    <label
+                      htmlFor="join-soon"
+                      className="ml-2 block text-sm text-gray-700"
+                    >
+                      Join Soon - Specify when student will join
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {nextCourseOption === "interested" && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="next-course-modal"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Course Name
+                  </label>
+                  <input
+                    id="next-course-modal"
+                    type="text"
+                    placeholder="Enter next course name"
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={nextCourseInput}
+                    onChange={(e) => setNextCourseInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handleSaveNextCourse();
+                      }
+                    }}
+                  />
+                </div>
+              )}
+
+              {nextCourseOption === "not-interested" && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="next-course-comment"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Why is the student not interested?
+                  </label>
+                  <textarea
+                    id="next-course-comment"
+                    placeholder="Enter comment explaining why the student is not interested"
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={nextCourseComment}
+                    onChange={(e) => setNextCourseComment(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              )}
+
+              {nextCourseOption === "join-soon" && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="join-soon-time"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    When will the student join?
+                  </label>
+                  <input
+                    id="join-soon-time"
+                    type="text"
+                    placeholder="Enter expected joining time (e.g., next week, February 2024, etc.)"
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={joinSoonTime}
+                    onChange={(e) => setJoinSoonTime(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end">
                 <button
                   type="button"
                   className="px-4 py-2.5 rounded-xl bg-red-700 text-white font-semibold text-sm hover:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleSaveNextCourse}
-                  disabled={!nextCourseInput.trim()}
+                  disabled={
+                    (nextCourseOption === "interested" &&
+                      !nextCourseInput.trim()) ||
+                    (nextCourseOption === "not-interested" &&
+                      !nextCourseComment.trim()) ||
+                    (nextCourseOption === "join-soon" &&
+                      !joinSoonTime.trim()) ||
+                    nextCourseOption === ""
+                  }
                 >
                   {isEditingNextCourse ? "Update" : "Save"}
                 </button>
@@ -1309,9 +1486,41 @@ const Page = ({
                       <p className="text-sm font-medium text-gray-600">
                         Next Course
                       </p>
-                      <p className="text-lg font-bold text-gray-900 mt-1 truncate max-w-[120px]">
-                        {student?.nextCourse || "Not Set"}
-                      </p>
+                      {student?.nextCourse ? (
+                        <div>
+                          {student.nextCourse.startsWith("Not Interested: ") ? (
+                            <div className="mt-1">
+                              <span className="inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
+                                Not Interested
+                              </span>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {student.nextCourse.substring(
+                                  "Not Interested: ".length
+                                )}
+                              </p>
+                            </div>
+                          ) : student.nextCourse.startsWith("Join Soon: ") ? (
+                            <div className="mt-1">
+                              <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
+                                Join Soon
+                              </span>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {student.nextCourse.substring(
+                                  "Join Soon: ".length
+                                )}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-lg font-bold text-gray-900 mt-1 truncate max-w-[120px]">
+                              {student.nextCourse}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-lg font-bold text-gray-900 mt-1">
+                          Not Set
+                        </p>
+                      )}
                     </div>
                     <div className="bg-purple-100 p-3 rounded-full">
                       <GraduationCap className="h-6 w-6 text-purple-600" />
@@ -1471,6 +1680,11 @@ const Page = ({
                         className="flex items-center p-4 border-l-4 rounded-r-lg bg-gradient-to-r from-gray-50 to-white shadow-sm transition-all hover:shadow-md"
                         style={{ borderLeftColor: statusColor }}
                       >
+                        <div className="mr-4 flex-shrink-0">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-800 font-bold text-sm">
+                            {index + 1}
+                          </div>
+                        </div>
                         <div className="flex-1 mr-4">
                           <div className="font-medium text-gray-900">
                             {task?.task}

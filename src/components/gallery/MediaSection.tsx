@@ -178,15 +178,31 @@ const MediaSection = () => {
     } else if (selectedFiles.target.files) {
       filesArray = Array.from(selectedFiles.target.files);
     }
-    if (!filesArray.length) return;
+
+    // Filter only image files
+    const imageFiles = filesArray.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    // Check if any non-image files were rejected
+    const nonImageFiles = filesArray.filter(
+      (file) => !file.type.startsWith("image/")
+    );
+    if (nonImageFiles.length > 0) {
+      setError(
+        `${nonImageFiles.length} non-image file(s) were rejected. Only image files are allowed.`
+      );
+    }
+
+    if (!imageFiles.length) return;
 
     setLoading(true);
     const uploadPromises: Promise<FileData | null>[] = [];
     const newFiles: FileData[] = [];
 
     // Process files and create preview
-    for (let i = 0; i < filesArray.length; i++) {
-      const file = filesArray[i];
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
       newFiles.push({
         name: file.name,
         type: file.type,
@@ -203,8 +219,8 @@ const MediaSection = () => {
     setFiles([...files, ...newFiles]);
 
     // Compress and upload each file
-    for (let i = 0; i < filesArray.length; i++) {
-      uploadPromises.push(handleUpload(filesArray[i]));
+    for (let i = 0; i < imageFiles.length; i++) {
+      uploadPromises.push(handleUpload(imageFiles[i]));
     }
 
     try {
@@ -445,7 +461,43 @@ const MediaSection = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      // Keep uploaded images and selection so user can assign again without re-uploading
+
+      // Clear the uploaded images and reset selection after successful assignment
+      if (selectedImageIndex !== null) {
+        // Remove the assigned image from both uploadedImages and files
+        const imageToAssign = uploadedImages[selectedImageIndex];
+
+        // Filter out the assigned image from uploadedImages
+        const updatedUploadedImages = uploadedImages.filter(
+          (img, index) => index !== selectedImageIndex
+        );
+        setUploadedImages(updatedUploadedImages);
+
+        // Also filter out the same image from files
+        const updatedFiles = files.filter(
+          (file) => file.secure_url !== imageToAssign?.secure_url
+        );
+        setFiles(updatedFiles);
+
+        // Reset selected image index
+        setSelectedImageIndex(null);
+      } else if (uploadedImages.length > 0) {
+        // If no specific image was selected, remove the first image
+        const updatedUploadedImages = uploadedImages.slice(1);
+        setUploadedImages(updatedUploadedImages);
+
+        // Also update the files array
+        if (files.length > 0) {
+          const imageToAssign = uploadedImages[0];
+          const updatedFiles = files.filter(
+            (file) => file.secure_url !== imageToAssign?.secure_url
+          );
+          setFiles(updatedFiles);
+        }
+
+        // Reset selected image index
+        setSelectedImageIndex(null);
+      }
     } catch (error) {
       console.error("Error storing image URL:", error);
       setError(
@@ -551,9 +603,6 @@ const MediaSection = () => {
                       <p className="text-xs text-gray-500 mt-1">
                         {file.compressedSize ? (
                           <span>
-                            <span className="line-through text-gray-400">
-                              {formatFileSize(file.size)}
-                            </span>
                             <span className="ml-1 text-green-600 font-medium">
                               {formatFileSize(file.compressedSize)}
                             </span>
@@ -589,127 +638,6 @@ const MediaSection = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Compression Statistics */}
-              {uploadedImages.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="text-md font-medium mb-3 text-gray-700 flex items-center">
-                    <span className="bg-green-100 p-1 rounded-md mr-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    </span>
-                    Compression Statistics
-                  </h4>
-                  <div className="bg-white border rounded-lg p-4 shadow-md">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                          {uploadedImages.length}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Files Processed
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {uploadedImages.reduce(
-                            (total, img) => total + (img.size || 0),
-                            0
-                          ) /
-                            1024 /
-                            1024 >
-                          1
-                            ? `${(uploadedImages.reduce((total, img) => total + (img.size || 0), 0) / 1024 / 1024).toFixed(1)} MB`
-                            : `${(uploadedImages.reduce((total, img) => total + (img.size || 0), 0) / 1024).toFixed(1)} KB`}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Original Size
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-[#991b1b]">
-                          {uploadedImages.reduce(
-                            (total, img) => total + (img.compressedSize || 0),
-                            0
-                          ) /
-                            1024 /
-                            1024 >
-                          1
-                            ? `${(uploadedImages.reduce((total, img) => total + (img.compressedSize || 0), 0) / 1024 / 1024).toFixed(1)} MB`
-                            : `${(uploadedImages.reduce((total, img) => total + (img.compressedSize || 0), 0) / 1024).toFixed(1)} KB`}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Compressed Size
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-center">
-                      <div className="text-lg font-semibold text-gray-800">
-                        {Math.round(
-                          (1 -
-                            uploadedImages.reduce(
-                              (total, img) => total + (img.compressedSize || 0),
-                              0
-                            ) /
-                              uploadedImages.reduce(
-                                (total, img) => total + (img.size || 0),
-                                0
-                              )) *
-                            100
-                        )}
-                        % Size Reduction
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Display Cloudinary URLs */}
-              {uploadedImages.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="text-md font-medium mb-3 text-gray-700 flex items-center">
-                    <span className="bg-red-100 p-1 rounded-md mr-2">
-                      <CheckCircle className="w-4 h-4 text-[#991b1b]" />
-                    </span>
-                    Cloudinary URLs
-                  </h4>
-                  <div className="bg-white border rounded-lg p-4 max-h-48 overflow-y-auto shadow-md">
-                    <ul className="divide-y">
-                      {uploadedImages.map((img, index) => (
-                        <li key={index} className="py-2">
-                          <div className="flex items-center">
-                            <Image
-                              src={img.secure_url || "/placeholder.png"}
-                              alt={img.name || "Uploaded image"}
-                              width={40}
-                              height={40}
-                              className="w-10 h-10 mr-3 rounded object-cover"
-                            />
-                            <div className="flex-1">
-                              <a
-                                href={img.secure_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#991b1b] hover:underline text-sm break-all"
-                              >
-                                {img.secure_url}
-                              </a>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {img.compressedSize && (
-                                  <span>
-                                    Compressed:{" "}
-                                    {formatFileSize(img.compressedSize)}
-                                    (from {formatFileSize(img.size)})
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}

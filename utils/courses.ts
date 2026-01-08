@@ -10,6 +10,8 @@ const courses = [
     "Spike Essential",
     "Spike Prime",
     "IOT",
+    "Early electronics",
+    "Mini Electronics",
     "App Designing",
     "Web Designing",
     "Java",
@@ -19,7 +21,8 @@ const courses = [
     "Drone Technology",
     "PeeCee",
     "Quarky",
-    "AI with Pictoblox"
+    "AI with Pictoblox",
+    "Competition"
     
   ];
   

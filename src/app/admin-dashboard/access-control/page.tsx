@@ -40,6 +40,7 @@ interface UserData {
   status: string;
   createdAt: Date;
   profileimage?: string;
+  superAdmin?: boolean;
 }
 
 const AccessControlPage = () => {
@@ -53,6 +54,7 @@ const AccessControlPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -82,6 +84,16 @@ const AccessControlPage = () => {
     checkAdminDocument();
   }, [user, userRole, authLoading, router]);
 
+  // Check if current user is a super admin
+  useEffect(() => {
+    if (user && users.length > 0) {
+      const currentUser = users.find((u) => u.email === user.email);
+      if (currentUser && currentUser.superAdmin) {
+        setIsSuperAdmin(true);
+      }
+    }
+  }, [user, users]);
+
   // Fetch all users from different collections
   const fetchUsers = async () => {
     try {
@@ -107,6 +119,7 @@ const AccessControlPage = () => {
               data.imageUrl ||
               data.imageUrls?.[0] ||
               undefined,
+            superAdmin: data.superAdmin || false,
           });
         });
       }
@@ -622,15 +635,19 @@ const AccessControlPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                user.role === "admin"
-                                  ? "bg-purple-100 text-purple-800"
-                                  : user.role === "trainer"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-blue-100 text-blue-800"
+                                user.superAdmin
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : user.role === "admin"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : user.role === "trainer"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-blue-100 text-blue-800"
                               }`}
                             >
-                              {user.role.charAt(0).toUpperCase() +
-                                user.role.slice(1)}
+                              {user.superAdmin
+                                ? "Super Admin"
+                                : user.role.charAt(0).toUpperCase() +
+                                  user.role.slice(1)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -659,15 +676,17 @@ const AccessControlPage = () => {
                               >
                                 <Edit className="w-5 h-5" />
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteUser(user.id, user.role)
-                                }
-                                className="text-red-600 hover:text-red-900 p-1"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
+                              {isSuperAdmin && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteUser(user.id, user.role)
+                                  }
+                                  className="text-red-600 hover:text-red-900 p-1"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </>
