@@ -35,6 +35,7 @@ interface StudentData {
   createdByRole?: string;
   lastLogin?: any;
   role?: string;
+  status?: string;
   tasks?: any[];
   nextCourse?: string;
   profileimage?: string;
@@ -96,6 +97,7 @@ const StudentDetailsPage = () => {
           createdByRole: data.createdByRole || "",
           lastLogin: data.lastLogin || null,
           role: data.role || "",
+          status: data.status || "active", // Default to active if no status provided
           tasks: data.tasks || [],
           nextCourse: data.nextCourse || "",
           profileimage: data.profileimage || "",

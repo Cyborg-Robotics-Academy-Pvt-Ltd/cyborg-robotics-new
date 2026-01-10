@@ -401,21 +401,47 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {profileData?.PrnNumber && (
-              <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-                <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-cyan-600" />
+            <>
+              {profileData?.PrnNumber && (
+                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
+                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-cyan-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500 font-medium">
+                      PRN NUMBER
+                    </p>
+                    <p className="text-sm text-gray-800 font-semibold truncate">
+                      {profileData.PrnNumber}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 font-medium">
-                    PRN NUMBER
-                  </p>
-                  <p className="text-sm text-gray-800 font-semibold truncate">
-                    {profileData.PrnNumber}
-                  </p>
+              )}
+              {profileData?.status && (
+                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500 font-medium">STATUS</p>
+                    <p className="text-sm text-gray-800 font-semibold truncate">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          profileData.status === "active"
+                            ? "bg-green-100 text-green-800 border border-green-200"
+                            : profileData.status === "inactive"
+                              ? "bg-red-100 text-red-800 border border-red-200"
+                              : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                        }`}
+                      >
+                        {profileData.status.charAt(0).toUpperCase() +
+                          profileData.status.slice(1)}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </>
           </div>
 
           {/* Footer */}

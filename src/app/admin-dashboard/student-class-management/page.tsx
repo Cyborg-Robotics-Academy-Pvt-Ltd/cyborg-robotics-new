@@ -134,7 +134,7 @@ const StudentClassManagement = () => {
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Course Name
                   </TableHead>
-                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-gray-200">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -151,7 +151,10 @@ const StudentClassManagement = () => {
                     <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {student.courseNames.join(", ")}
                     </TableCell>
-                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <TableCell
+                      className="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                      variant="action"
+                    >
                       <Link
                         href={`/admin-dashboard/student-class-management/${student.prn}`}
                       >
