@@ -172,11 +172,28 @@ const StudentDashboard = () => {
               </h1>
             </div>
 
-            {studentData?.PrnNumber && (
-              <p className="mt-1 text-red-100 text-sm">
-                PRN: {studentData.PrnNumber}
-              </p>
-            )}
+            <div className="flex flex-col gap-1">
+              {studentData?.PrnNumber && (
+                <p className="mt-1 text-red-100 text-sm">
+                  PRN: {studentData.PrnNumber}
+                </p>
+              )}
+              {studentData?.status && (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    studentData.status === "active"
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : studentData.status === "inactive"
+                        ? "bg-red-100 text-red-800 border border-red-200"
+                        : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                  }`}
+                >
+                  Status:{" "}
+                  {studentData.status.charAt(0).toUpperCase() +
+                    studentData.status.slice(1)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

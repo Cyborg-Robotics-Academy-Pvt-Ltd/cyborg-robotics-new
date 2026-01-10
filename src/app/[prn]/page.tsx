@@ -43,6 +43,7 @@ interface Student {
   courseClassNumbers?: {
     [key: string]: string;
   };
+  status?: string;
 }
 
 async function getStudentData(prn: string) {
@@ -340,6 +341,23 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                 <UserCheck className="w-4 h-4 mr-2" />
                 PRN: {student.PrnNumber}
               </p>
+              <div className="mt-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    student.status === "active"
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : student.status === "inactive"
+                        ? "bg-red-100 text-[#9F0712] border border-[#9F0712]"
+                        : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                  }`}
+                >
+                  Status:{" "}
+                  {student.status
+                    ? student.status.charAt(0).toUpperCase() +
+                      student.status.slice(1)
+                    : "Active"}
+                </span>
+              </div>
             </div>
             <Link
               href="/student-list"
@@ -389,13 +407,8 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                       course{student.courses.length !== 1 ? "s" : ""}
                     </p>
                   </div>
-                  <div className="bg-red-100 text-red-800 px-4 py-2 rounded-full flex items-center">
-                    <Award className="w-5 h-5 mr-2" />
-                    <span className="font-semibold">Active</span>
-                  </div>
                 </div>
               </div>
-
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {[...student.courses].reverse().map((course, index) => {
                   // Reverse index for correct mapping

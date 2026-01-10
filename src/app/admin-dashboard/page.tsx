@@ -18,6 +18,7 @@ import {
   User,
   Shield,
   BookOpen,
+  Gamepad2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";

@@ -486,7 +486,7 @@ const CreateTasks = () => {
                   <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Course
                   </TableHead>
-                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <TableHead className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-left text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-l border-gray-200">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -544,7 +544,10 @@ const CreateTasks = () => {
                             {task.course}
                           </span>
                         </TableCell>
-                        <TableCell className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs whitespace-nowrap">
+                        <TableCell
+                          className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-6 text-[10px] sm:text-xs whitespace-nowrap"
+                          variant="action"
+                        >
                           <div className="flex gap-1 sm:gap-2">
                             <button
                               onClick={(e) => {

@@ -472,6 +472,15 @@ const Page = ({
       return;
     }
 
+    // Validate date format if join-soon option is selected
+    if (nextCourseOption === "join-soon" && joinSoonTime.trim()) {
+      const date = new Date(joinSoonTime);
+      if (isNaN(date.getTime())) {
+        toast.error("Please select a valid date");
+        return;
+      }
+    }
+
     console.log("Saving next course data:", {
       studentId: student.id,
       nextCourseOption,
@@ -493,7 +502,16 @@ const Page = ({
           nextCourse: `Not Interested: ${nextCourseComment.trim()}`,
         };
       } else if (nextCourseOption === "join-soon") {
-        updateData = { nextCourse: `Join Soon: ${joinSoonTime.trim()}` };
+        // Format the date for display
+        const date = new Date(joinSoonTime);
+        const formattedDate = isNaN(date.getTime())
+          ? joinSoonTime.trim()
+          : date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+        updateData = { nextCourse: `Join Soon: ${formattedDate}` };
       } else {
         updateData = { nextCourse: "" };
       }
@@ -537,7 +555,20 @@ const Page = ({
       setJoinSoonTime("");
     } else if (nextCourseValue.startsWith("Join Soon: ")) {
       setNextCourseOption("join-soon");
-      setJoinSoonTime(nextCourseValue.substring("Join Soon: ".length));
+      const dateString = nextCourseValue.substring("Join Soon: ".length);
+      // Try to parse the date string and convert to date format if it's a valid date
+      try {
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          // Format to YYYY-MM-DD for date input
+          const formattedDate = date.toISOString().split("T")[0];
+          setJoinSoonTime(formattedDate);
+        } else {
+          setJoinSoonTime(dateString);
+        }
+      } catch (e) {
+        setJoinSoonTime(dateString);
+      }
       setNextCourseInput("");
       setNextCourseComment("");
     } else {
@@ -1336,12 +1367,11 @@ const Page = ({
                     htmlFor="join-soon-time"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    When will the student join?
+                    Select expected joining date
                   </label>
                   <input
                     id="join-soon-time"
-                    type="text"
-                    placeholder="Enter expected joining time (e.g., next week, February 2024, etc.)"
+                    type="date"
                     className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
                     value={joinSoonTime}
                     onChange={(e) => setJoinSoonTime(e.target.value)}
@@ -1505,9 +1535,21 @@ const Page = ({
                                 Join Soon
                               </span>
                               <p className="text-sm text-gray-600 mt-1">
-                                {student.nextCourse.substring(
-                                  "Join Soon: ".length
-                                )}
+                                {(() => {
+                                  const dateString =
+                                    student.nextCourse.substring(
+                                      "Join Soon: ".length
+                                    );
+                                  try {
+                                    const date = new Date(dateString);
+                                    if (!isNaN(date.getTime())) {
+                                      return date.toLocaleDateString();
+                                    }
+                                    return dateString; // fallback if not a valid date
+                                  } catch (e) {
+                                    return dateString; // fallback if parsing fails
+                                  }
+                                })()}
                               </p>
                             </div>
                           ) : (

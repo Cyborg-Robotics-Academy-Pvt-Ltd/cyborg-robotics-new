@@ -34,12 +34,10 @@ interface Registration {
   schoolName?: string;
   class?: string;
   board?: string;
-  fatherName?: string;
-  fatherContact?: string;
-  fatherEmail?: string;
-  motherName?: string;
-  motherContact?: string;
-  motherEmail?: string;
+  primaryParentType?: string;
+  primaryParentName?: string;
+  primaryParentContact?: string;
+  primaryParentEmail?: string;
   currentAddress?: string;
   permanentAddress?: string;
   studentPRN?: string;
@@ -116,8 +114,7 @@ const Page = () => {
     const filtered = registrations.filter(
       (reg) =>
         reg.studentName?.toLowerCase().includes(term) ||
-        reg.fatherName?.toLowerCase().includes(term) ||
-        reg.motherName?.toLowerCase().includes(term) ||
+        reg.primaryParentName?.toLowerCase().includes(term) ||
         reg.schoolName?.toLowerCase().includes(term) ||
         reg.dateOfRegistration?.toLowerCase().includes(term)
     );
@@ -157,8 +154,11 @@ const Page = () => {
         { header: "School", key: "schoolName", width: 25 },
         { header: "Class", key: "class", width: 10 },
         { header: "Board", key: "board", width: 15 },
-        { header: "Father", key: "fatherName", width: 20 },
-        { header: "Mother", key: "motherName", width: 20 },
+        { header: "Primary Parent", key: "primaryParentName", width: 20 },
+        { header: "Primary Contact", key: "primaryParentContact", width: 15 },
+        { header: "Primary Email", key: "primaryParentEmail", width: 20 },
+        { header: "Current Address", key: "currentAddress", width: 25 },
+        { header: "Permanent Address", key: "permanentAddress", width: 25 },
       ];
       sortedRegistrations.forEach((reg) => worksheet.addRow(reg));
       const buffer = await workbook.xlsx.writeBuffer();
@@ -249,7 +249,9 @@ const Page = () => {
                         { key: "currentAge", label: "Age" },
                         { key: "schoolName", label: "School" },
                         { key: "class", label: "Class" },
-                        { key: "board", label: "Board" },
+                        { key: "primaryParentName", label: "Parent" },
+                        { key: "primaryParentContact", label: "Contact" },
+                        { key: "currentAddress", label: "Current Addr" },
                       ].map((col) => (
                         <TableHead
                           key={col.label}
@@ -283,7 +285,9 @@ const Page = () => {
                         <TableCell>{reg.currentAge || "-"}</TableCell>
                         <TableCell>{reg.schoolName || "-"}</TableCell>
                         <TableCell>{reg.class || "-"}</TableCell>
-                        <TableCell>{reg.board || "-"}</TableCell>
+                        <TableCell>{reg.primaryParentName || "-"}</TableCell>
+                        <TableCell>{reg.primaryParentContact || "-"}</TableCell>
+                        <TableCell>{reg.currentAddress || "-"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

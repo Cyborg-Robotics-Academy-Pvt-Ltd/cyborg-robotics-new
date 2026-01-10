@@ -26,12 +26,10 @@ interface FormData {
   schoolName: string;
   class: string;
   board: string;
-  fatherName: string;
-  fatherContact: string;
-  fatherEmail: string;
-  motherName: string;
-  motherContact: string;
-  motherEmail: string;
+  primaryParentType: string; // 'parent'
+  primaryParentName: string;
+  primaryParentContact: string;
+  primaryParentEmail: string;
   currentAddress: string;
   permanentAddress: string;
   dateOfRegistration: string;
@@ -46,12 +44,10 @@ const RegisterPage: React.FC = () => {
     schoolName: "",
     class: "",
     board: "",
-    fatherName: "",
-    fatherContact: "",
-    fatherEmail: "",
-    motherName: "",
-    motherContact: "",
-    motherEmail: "",
+    primaryParentType: "", // 'parent'
+    primaryParentName: "",
+    primaryParentContact: "",
+    primaryParentEmail: "",
     currentAddress: "",
     permanentAddress: "",
     dateOfRegistration: "",
@@ -64,7 +60,7 @@ const RegisterPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 4;
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -144,27 +140,18 @@ const RegisterPage: React.FC = () => {
       if (!formData.class.trim()) newErrors.class = "Grade is required.";
       if (!formData.board) newErrors.board = "Board is required.";
     } else if (stepToValidate === 2) {
-      if (!formData.fatherName.trim())
-        newErrors.fatherName = "Father's name is required.";
-      if (!formData.fatherContact.trim())
-        newErrors.fatherContact = "Father's contact is required.";
-      else if (!validatePhone(formData.fatherContact))
-        newErrors.fatherContact = "Enter a valid 10-digit phone number.";
-      if (!formData.fatherEmail.trim())
-        newErrors.fatherEmail = "Father's email is required.";
-      else if (!validateEmail(formData.fatherEmail))
-        newErrors.fatherEmail = "Enter a valid email address.";
-    } else if (stepToValidate === 3) {
-      if (!formData.motherName.trim())
-        newErrors.motherName = "Mother's name is required.";
-      if (!formData.motherContact.trim())
-        newErrors.motherContact = "Mother's contact is required.";
-      else if (!validatePhone(formData.motherContact))
-        newErrors.motherContact = "Enter a valid 10-digit phone number.";
-      if (!formData.motherEmail.trim())
-        newErrors.motherEmail = "Mother's email is required.";
-      else if (!validateEmail(formData.motherEmail))
-        newErrors.motherEmail = "Enter a valid email address.";
+      if (!formData.primaryParentType)
+        newErrors.primaryParentType = "Primary parent type is required.";
+      if (!formData.primaryParentName.trim())
+        newErrors.primaryParentName = "Primary parent name is required.";
+      if (!formData.primaryParentContact.trim())
+        newErrors.primaryParentContact = "Primary parent contact is required.";
+      else if (!validatePhone(formData.primaryParentContact))
+        newErrors.primaryParentContact = "Enter a valid 10-digit phone number.";
+      if (!formData.primaryParentEmail.trim())
+        newErrors.primaryParentEmail = "Primary parent email is required.";
+      else if (!validateEmail(formData.primaryParentEmail))
+        newErrors.primaryParentEmail = "Enter a valid email address.";
     } else if (stepToValidate === 4) {
       if (!formData.currentAddress.trim())
         newErrors.currentAddress = "Current address is required.";
@@ -213,12 +200,10 @@ const RegisterPage: React.FC = () => {
         schoolName: "",
         class: "",
         board: "",
-        fatherName: "",
-        fatherContact: "",
-        fatherEmail: "",
-        motherName: "",
-        motherContact: "",
-        motherEmail: "",
+        primaryParentType: "",
+        primaryParentName: "",
+        primaryParentContact: "",
+        primaryParentEmail: "",
         currentAddress: "",
         permanentAddress: "",
         dateOfRegistration: "",
@@ -389,93 +374,104 @@ const RegisterPage: React.FC = () => {
               )}
               {step === 2 && (
                 <div>
-                  <SectionTitle number="2" title="Father's Information" />
+                  <SectionTitle number="2" title="Primary Parent Information" />
                   <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
+                      <div className="md:col-span-2">
+                        <label className="block text-gray-700 text-sm font-semibold mb-2">
+                          PRIMARY PARENT TYPE{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex space-x-4">
+                          <label className="inline-flex items-center">
+                            <input
+                              type="radio"
+                              name="primaryParentType"
+                              value="father"
+                              checked={formData.primaryParentType === "father"}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  primaryParentType: e.target.value,
+                                })
+                              }
+                              className="w-4 h-4 text-red-800 border-gray-300 focus:ring-red-700"
+                              required
+                            />
+                            <span className="ml-2 text-gray-700">Father</span>
+                          </label>
+                          <label className="inline-flex items-center">
+                            <input
+                              type="radio"
+                              name="primaryParentType"
+                              value="mother"
+                              checked={formData.primaryParentType === "mother"}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  primaryParentType: e.target.value,
+                                })
+                              }
+                              className="w-4 h-4 text-red-800 border-gray-300 focus:ring-red-700"
+                              required
+                            />
+                            <span className="ml-2 text-gray-700">Mother</span>
+                          </label>
+                        </div>
+                        {errors.primaryParentType && (
+                          <p className="text-red-600 text-xs mt-1">
+                            {errors.primaryParentType}
+                          </p>
+                        )}
+                      </div>
                       <FormField
-                        id="fatherName"
-                        label="FATHER'S NAME"
+                        id="primaryParentName"
+                        label={
+                          formData.primaryParentType === "father"
+                            ? "FATHER'S NAME"
+                            : formData.primaryParentType === "mother"
+                              ? "MOTHER'S NAME"
+                              : "PRIMARY PARENT NAME"
+                        }
                         type="text"
-                        value={formData.fatherName}
+                        value={formData.primaryParentName}
                         onChange={handleChange}
                         required
-                        placeholder="Enter father's full name"
+                        placeholder={`Enter ${formData.primaryParentType || "primary parent"}'s full name`}
                         icon="user"
-                        error={errors.fatherName}
+                        error={errors.primaryParentName}
                       />
                       <FormField
-                        id="fatherContact"
+                        id="primaryParentContact"
                         label="CONTACT NUMBER"
                         type="tel"
-                        value={formData.fatherContact}
+                        value={formData.primaryParentContact}
                         onChange={handleChange}
                         required
                         placeholder="Enter mobile number"
                         icon="phone"
-                        error={errors.fatherContact}
+                        error={errors.primaryParentContact}
                       />
                       <FormField
-                        id="fatherEmail"
+                        id="primaryParentEmail"
                         label="EMAIL ID"
                         type="email"
-                        value={formData.fatherEmail}
+                        value={formData.primaryParentEmail}
                         onChange={handleChange}
                         required
                         fullWidth
                         placeholder="Enter email address"
                         icon="mail"
-                        error={errors.fatherEmail}
+                        error={errors.primaryParentEmail}
                       />
                     </div>
                   </div>
                 </div>
               )}
+
               {step === 3 && (
                 <div>
-                  <SectionTitle number="3" title="Mother's Information" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
-                      <FormField
-                        id="motherName"
-                        label="MOTHER'S NAME"
-                        type="text"
-                        value={formData.motherName}
-                        onChange={handleChange}
-                        required
-                        placeholder="Enter mother's full name"
-                        icon="user"
-                        error={errors.motherName}
-                      />
-                      <FormField
-                        id="motherContact"
-                        label="CONTACT NUMBER"
-                        type="tel"
-                        value={formData.motherContact}
-                        onChange={handleChange}
-                        required
-                        placeholder="Enter mobile number"
-                        icon="phone"
-                        error={errors.motherContact}
-                      />
-                      <FormField
-                        id="motherEmail"
-                        label="EMAIL ID"
-                        type="email"
-                        value={formData.motherEmail}
-                        onChange={handleChange}
-                        required
-                        fullWidth
-                        placeholder="Enter email address"
-                        icon="mail"
-                        error={errors.motherEmail}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {step === 4 && (
-                <div>
-                  <SectionTitle number="4" title="Address Information" />
+                  <SectionTitle number="3" title="Address Information" />
                   <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
                     <div className="grid grid-cols-1 gap-5 md:gap-8">
                       <TextareaField
@@ -520,9 +516,9 @@ const RegisterPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              {step === 5 && (
+              {step === 4 && (
                 <div>
-                  <SectionTitle number="5" title="Terms & Conditions" />
+                  <SectionTitle number="4" title="Terms & Conditions" />
                   <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
                     <ul className="list-disc pl-5 text-sm text-gray-700 space-y-3">
                       <li className="pl-1">

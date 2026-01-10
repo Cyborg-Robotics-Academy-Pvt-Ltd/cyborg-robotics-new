@@ -750,14 +750,14 @@ const Page = () => {
                 <colgroup>
                   <col className="w-2 md:w-2" />
                   <col className="w-28 md:w-36" />
-                  <col className="w-36 md:w-44 hidden md:table-cell" />
-                  <col className="w-28 md:w-52" />
+                  <col className="w-64 md:w-80 hidden md:table-cell" />
+                  <col className="w-56 md:w-72" />
                   {activeTab === "hold" && <col className="w-28 md:w-36" />}
                 </colgroup>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 border-b border-gray-200">
+                  <TableRow className="bg-red-800 border-b border-gray-200 ">
                     <TableHead
-                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-white py-3 px-3 md:px-4 cursor-pointer  transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("PrnNumber")}
                     >
                       <div className="flex items-center">
@@ -770,7 +770,7 @@ const Page = () => {
                       </div>
                     </TableHead>
                     <TableHead
-                      className="font-semibold text-gray-700 py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-white py-3 px-3 md:px-4 cursor-pointer  transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("username")}
                     >
                       <div className="flex items-center">
@@ -783,16 +783,16 @@ const Page = () => {
                       </div>
                     </TableHead>
 
-                    <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-xs md:text-sm">
+                    <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-xs md:text-sm">
                       Courses
                     </TableHead>
                     {activeTab === "hold" && (
-                      <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-xs md:text-sm">
+                      <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-xs md:text-sm">
                         Next Course
                       </TableHead>
                     )}
                     <TableHead
-                      className="font-semibold text-gray-700  py-3 px-3 md:px-4 cursor-pointer hover:text-red-600 transition-colors text-xs md:text-sm"
+                      className="font-semibold text-white  py-3 px-3 md:px-4 cursor-pointer  transition-colors text-xs md:text-sm"
                       onClick={() => handleSort("completedTasks")}
                     >
                       <div className="flex items-center">
@@ -804,7 +804,7 @@ const Page = () => {
                         )}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-3 px-3 md:px-4 text-right text-xs md:text-sm sticky right-0 bg-gray-50 z-10">
+                    <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-right text-xs md:text-sm sticky right-0 bg-red-800 z-10 border-l border-gray-200">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -814,8 +814,8 @@ const Page = () => {
                     <TableRow
                       key={student.id}
                       className={`transition-colors duration-200 cursor-pointer ${
-                        idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      } hover:bg-gray-100`}
+                        idx % 2 === 0 ? "bg-white" : "bg-red-50"
+                      } hover:bg-red-50`}
                       onClick={() => {
                         // Check if PRN is not assigned
                         if (!student.PrnNumber) {
@@ -825,7 +825,7 @@ const Page = () => {
                         router.push(`/${student.PrnNumber}`);
                       }}
                     >
-                      <TableCell className="font-mono text-gray-800 py-3 px-3 md:px-4 text-xs md:text-sm">
+                      <TableCell className="font-mono text-gray-900 py-3 px-3 md:px-4 text-xs md:text-sm">
                         {student.PrnNumber ? (
                           student.PrnNumber
                         ) : (
@@ -840,7 +840,7 @@ const Page = () => {
 
                       <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
                         <div className="relative group">
-                          <span className="truncate max-w-[120px] inline-block">
+                          <span className="inline-block text-wrap max-w-md">
                             {student.courses && student.courses.length > 0 ? (
                               student.courses
                                 .map((course) =>
@@ -862,7 +862,7 @@ const Page = () => {
                             )}
                           </span>
                           {student.courses && student.courses.length > 0 && (
-                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
+                            <div className="absolute left-0  bottom-full mb-2 hidden group-hover:block w-auto bg-red-800 text-white text-xs rounded-xl py-2 px-3 z-50 shadow-lg">
                               <div className="font-medium mb-1">Courses:</div>
                               {student.courses
                                 .map((course) =>
@@ -875,7 +875,7 @@ const Page = () => {
                                 )
                                 .filter(Boolean)
                                 .join(", ")}
-                              <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-gray-800"></div>
+                              <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-red-800"></div>
                             </div>
                           )}
                         </div>
@@ -924,7 +924,7 @@ const Page = () => {
                         </TableCell>
                       )}
                       <TableCell className="text-gray-600 py-4 px-3 md:px-4 text-xs md:text-sm">
-                        <div className="space-y-1 relative group">
+                        <div className="space-y-1 relative group ">
                           {student.tasks
                             .filter(
                               (t) => t.status.toLowerCase() === "complete"
@@ -948,19 +948,19 @@ const Page = () => {
                               .map((task, i) => (
                                 <div
                                   key={i}
-                                  className="text-xs text-gray-500 truncate max-w-[120px]"
+                                  className="text-xs text-gray-500 max-w-md"
                                 >
                                   {task.course}: {task.task}
                                 </div>
                               ))
                           ) : (
-                            <div className="text-xs text-red-600 font-semibold truncate max-w-[120px]">
+                            <div className="text-xs text-red-600 font-semibold max-w-md">
                               No latest classes
                             </div>
                           )}
-                          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
+                          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-auto  text-wrap bg-red-800 text-white text-xs rounded-xl py-2 px-3 z-50 shadow-lg">
                             <div className="font-medium mb-1">
-                              Recent Tasks:
+                              Recent Class:
                             </div>
                             {student.tasks
                               .sort(
@@ -974,19 +974,20 @@ const Page = () => {
                                   • {task.course}: {task.task} ({task.status})
                                 </div>
                               ))}
-                            <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-gray-800"></div>
+                            <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-red-800"></div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell
                         className="text-right py-3 px-3 md:px-4 sticky right-0 bg-white z-10"
+                        variant="action"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           ref={(el) => {
                             actionBtnRefs.current[student.id] = el;
                           }}
-                          className="text-gray-500 hover:text-gray-700 focus:outline-none p-1.5 md:p-2 rounded-full transition-colors dropdown-trigger shadow-md"
+                          className="text-white hover:white bg-red-800 focus:outline-none p-1.2 md:p-1 rounded-full transition-colors dropdown-trigger shadow-md"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleDropdown(student.id, e);
@@ -1146,7 +1147,7 @@ const Page = () => {
           <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
             <div className="bg-white  rounded-2xl shadow-2xl w-full max-w-lg mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
               {/* Modal Header */}
-              <div className="sticky top-0 z-50 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-[#991b1b]/10 to-[#7f1d1d]/10">
+              <div className="sticky top-0 z-50 flex justify-between items-center border-b  px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-[#991b1b]/10 to-[#7f1d1d]/10">
                 <h2 className="text-lg md:text-xl font-bold text-[#991b1b] flex items-center tracking-tight">
                   <MdAdd className="mr-2 text-[#991b1b]" size={20} />
                   Add New Class

@@ -280,7 +280,7 @@ const NewAccountsPage = () => {
                     <TableHead className="font-semibold text-gray-700 py-4 px-6">
                       Registration Date
                     </TableHead>
-                    <TableHead className="font-semibold text-gray-700 py-4 px-6 text-right">
+                    <TableHead className="font-semibold text-gray-700 py-4 px-6 text-right border-l border-gray-200">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -324,7 +324,10 @@ const NewAccountsPage = () => {
                           {formatDate(student.createdAt)}
                         </div>
                       </TableCell>
-                      <TableCell className="py-4 px-6 text-right">
+                      <TableCell
+                        className="py-4 px-6 text-right"
+                        variant="action"
+                      >
                         <div className="flex justify-end space-x-2">
                           <Link
                             href={`/create-user?email=${encodeURIComponent(student.email)}`}

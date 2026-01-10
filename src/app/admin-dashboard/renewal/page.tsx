@@ -33,12 +33,10 @@ interface Registration {
   schoolName?: string;
   class?: string;
   board?: string;
-  fatherName?: string;
-  fatherContact?: string;
-  fatherEmail?: string;
-  motherName?: string;
-  motherContact?: string;
-  motherEmail?: string;
+  primaryParentType?: string;
+  primaryParentName?: string;
+  primaryParentContact?: string;
+  primaryParentEmail?: string;
   currentAddress?: string;
   permanentAddress?: string;
   studentPRN?: string;
@@ -115,8 +113,7 @@ const Page = () => {
     const filtered = registrations.filter(
       (reg) =>
         reg.studentName?.toLowerCase().includes(lowercasedSearch) ||
-        reg.fatherName?.toLowerCase().includes(lowercasedSearch) ||
-        reg.motherName?.toLowerCase().includes(lowercasedSearch) ||
+        reg.primaryParentName?.toLowerCase().includes(lowercasedSearch) ||
         reg.schoolName?.toLowerCase().includes(lowercasedSearch)
     );
     setFilteredRegistrations(filtered);
