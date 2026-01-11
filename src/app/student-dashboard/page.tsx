@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, DocumentData } from "firebase/firestore";
+import { doc, onSnapshot, DocumentData, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
 import { ClipboardList, AlertTriangle } from "lucide-react";
@@ -13,8 +13,64 @@ const StudentDashboard = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [studentData, setStudentData] = useState<DocumentData | null>(null);
+  const [trainerData, setTrainerData] = useState<DocumentData | null>(null);
   const [prnMatch, setPrnMatch] = useState<boolean | null>(null);
   const { user, userRole, loading: authLoading } = useAuth();
+
+  // Function to fetch trainer data
+  const fetchTrainerData = async (
+    trainerId: string,
+    expectedTrainerName?: string
+  ) => {
+    if (!trainerId) {
+      setTrainerData(null);
+      return;
+    }
+    try {
+      const trainerDocRef = doc(db, "trainers", trainerId);
+      const trainerDocSnap = await getDoc(trainerDocRef);
+
+      if (trainerDocSnap.exists()) {
+        const trainerInfo = trainerDocSnap.data();
+        // Verify that the fetched trainer ID matches the expected ID
+        if (trainerDocSnap.id === trainerId) {
+          // Additional verification: check if the name matches what's in the student record
+          const actualName =
+            trainerInfo.name || trainerInfo.fullName || trainerInfo.username;
+
+          if (
+            expectedTrainerName &&
+            actualName &&
+            expectedTrainerName !== actualName
+          ) {
+            console.warn(
+              "Trainer name mismatch: expected",
+              expectedTrainerName,
+              "but got",
+              actualName
+            );
+            // We'll still set the trainer data since the ID matches, but log the warning
+          }
+
+          setTrainerData(trainerInfo);
+        } else {
+          console.error(
+            "Trainer ID mismatch: expected",
+            trainerId,
+            "but got",
+            trainerDocSnap.id
+          );
+          setTrainerData(null);
+        }
+      } else {
+        console.log("No trainer document found with ID:", trainerId);
+        setTrainerData(null);
+      }
+    } catch (error) {
+      console.error("Error fetching trainer data:", error);
+      setTrainerData(null);
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -57,6 +113,14 @@ const StudentDashboard = () => {
 
         setPrnMatch(true);
         setStudentData(studentData);
+
+        // Fetch trainer data if trainerId exists
+        if (studentData.trainerId) {
+          fetchTrainerData(studentData.trainerId, studentData.trainerName);
+        } else {
+          setTrainerData(null);
+        }
+
         setLoading(false);
       },
       (error) => {
@@ -113,85 +177,141 @@ const StudentDashboard = () => {
   return (
     <div className="min-h-[calc(100vh-6rem)] bg-white pt-4">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 ">
-        {/* Welcome Section */}
-        <div className="mb-8 bg-gradient-to-r from-[#991b1b] to-[#991b1b] p-6 rounded-xl shadow-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-10 rounded-full -ml-10 -mb-10"></div>
+        {/* Header with Student and Trainer Information */}
+        <div className="mb-6 bg-gradient-to-r from-[#991b1b] to-[#991b1b] p-4 rounded-2xl shadow-md relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden border-2 border-white border-opacity-50">
-                {studentData?.profileimage ? (
-                  <Image
-                    src={studentData.profileimage}
-                    alt={
-                      studentData?.fullName ||
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              {/* Student Info */}
+              <div className="flex items-center gap-3">
+                <div className="md:w-20 md:h-20 w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden border-2 border-white border-opacity-50">
+                  {studentData?.profileimage ? (
+                    <Image
+                      src={studentData.profileimage}
+                      alt={
+                        studentData?.fullName ||
+                        studentData?.name ||
+                        studentData?.username ||
+                        "Student Avatar"
+                      }
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : studentData?.imageUrls &&
+                    Array.isArray(studentData.imageUrls) &&
+                    studentData.imageUrls[0] ? (
+                    <Image
+                      src={studentData.imageUrls[0]}
+                      alt={
+                        studentData?.fullName ||
+                        studentData?.name ||
+                        studentData?.username ||
+                        "Student Avatar"
+                      }
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-black font-bold text-lg">
+                      {(
+                        studentData?.fullName ||
+                        studentData?.name ||
+                        studentData?.username ||
+                        "S"
+                      )
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h1 className="md:text-2xl text-xl font-bold text-white">
+                    Welcome ,
+                    {studentData?.fullName ||
                       studentData?.name ||
                       studentData?.username ||
-                      "Student Avatar"
-                    }
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                ) : studentData?.imageUrls &&
-                  Array.isArray(studentData.imageUrls) &&
-                  studentData.imageUrls[0] ? (
-                  <Image
-                    src={studentData.imageUrls[0]}
-                    alt={
-                      studentData?.fullName ||
-                      studentData?.name ||
-                      studentData?.username ||
-                      "Student Avatar"
-                    }
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-red-800 font-bold text-lg">
-                    {(
-                      studentData?.fullName ||
-                      studentData?.name ||
-                      studentData?.username ||
-                      "S"
-                    )
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .slice(0, 2)}
-                  </span>
-                )}
+                      "Student"}
+                  </h1>
+                  {studentData?.PrnNumber && (
+                    <p className="text-red-100 text-sm">
+                      PRN: {studentData.PrnNumber}
+                    </p>
+                  )}
+                  {studentData?.status && (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        studentData.status === "active"
+                          ? "bg-green-100 text-green-800 border w-32 text-center border-green-200"
+                          : studentData.status === "inactive"
+                            ? "bg-red-100 text-red-800 border border-red-200"
+                            : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                      }`}
+                    >
+                      Status:
+                      {studentData.status.charAt(0).toUpperCase() +
+                        studentData.status.slice(1)}
+                    </span>
+                  )}
+                </div>
               </div>
-              <h1 className="text-3xl font-bold text-white">
-                Welcome ,{" "}
-                {studentData?.fullName ||
-                  studentData?.name ||
-                  studentData?.username ||
-                  "Student"}
-              </h1>
-            </div>
 
-            <div className="flex flex-col gap-1">
-              {studentData?.PrnNumber && (
-                <p className="mt-1 text-red-100 text-sm">
-                  PRN: {studentData.PrnNumber}
-                </p>
-              )}
-              {studentData?.status && (
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    studentData.status === "active"
-                      ? "bg-green-100 text-green-800 border border-green-200"
-                      : studentData.status === "inactive"
-                        ? "bg-red-100 text-red-800 border border-red-200"
-                        : "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                  }`}
-                >
-                  Status:{" "}
-                  {studentData.status.charAt(0).toUpperCase() +
-                    studentData.status.slice(1)}
-                </span>
+              {/* Trainer Info */}
+              {(studentData?.trainerName || trainerData) && (
+                <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
+                    {trainerData?.profileimage ? (
+                      <Image
+                        src={trainerData.profileimage}
+                        alt={
+                          trainerData.name ||
+                          trainerData.username ||
+                          "Trainer Avatar"
+                        }
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : trainerData?.imageUrls &&
+                      Array.isArray(trainerData.imageUrls) &&
+                      trainerData.imageUrls[0] ? (
+                      <Image
+                        src={trainerData.imageUrls[0]}
+                        alt={
+                          trainerData.name ||
+                          trainerData.username ||
+                          "Trainer Avatar"
+                        }
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-black text-sm font-bold">
+                        {(
+                          trainerData?.name ||
+                          trainerData?.username ||
+                          studentData?.trainerName ||
+                          "T"
+                        )
+                          .split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-black font-semibold">Trainer:</p>
+                    <p className="text-black text-sm">
+                      {trainerData?.name ||
+                        trainerData?.username ||
+                        studentData?.trainerName}
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -467,40 +587,6 @@ const StudentDashboard = () => {
                       return (
                         <Link key={idx} href={courseUrl}>
                           <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 border-l-8 border-green-500 cursor-pointer group relative overflow-hidden">
-                            {/* Completed Badge */}
-                            {course.completed && (
-                              <div className="absolute top-3 right-3 z-30 flex items-center gap-2 bg-green-600 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                                <svg
-                                  className="w-4 h-4 text-white"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Completed
-                              </div>
-                            )}
-
-                            {/* Certificate Badge */}
-                            {course.certificate && (
-                              <Image
-                                src="/assets/certificate.png"
-                                alt="Certificate"
-                                width={64}
-                                height={64}
-                                className="absolute top-2 right-2 object-contain z-20"
-                                style={{
-                                  top: course.completed ? "2.5rem" : "0.5rem",
-                                  right: "0.5rem",
-                                }}
-                              />
-                            )}
-
                             {/* Icon */}
                             <div className="absolute top-4 right-4 text-4xl opacity-20 group-hover:opacity-30 transition-opacity">
                               {icon}

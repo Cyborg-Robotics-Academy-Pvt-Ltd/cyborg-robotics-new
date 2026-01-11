@@ -39,6 +39,8 @@ interface StudentData {
   tasks?: any[];
   nextCourse?: string;
   profileimage?: string;
+  trainerId?: string;
+  trainerName?: string;
 }
 
 const StudentDetailsPage = () => {
@@ -101,6 +103,8 @@ const StudentDetailsPage = () => {
           tasks: data.tasks || [],
           nextCourse: data.nextCourse || "",
           profileimage: data.profileimage || "",
+          trainerId: data.trainerId || "",
+          trainerName: data.trainerName || "",
         };
 
         setStudent(studentData);
@@ -195,6 +199,10 @@ const StudentDetailsPage = () => {
                 <p>
                   <span className="font-medium">Role:</span>{" "}
                   {student.role || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium">Assigned Trainer:</span>{" "}
+                  {student.trainerName || "None Assigned"}
                 </p>
               </div>
             </div>
