@@ -927,6 +927,158 @@ const Page = ({
     (Number(classNumber) || 0) - completedTasks.length
   );
 
+  // State for edit modal
+  const [editingTask, setEditingTask] = useState<{
+    index: number;
+    task: Task;
+  } | null>(null);
+  const [editedTask, setEditedTask] = useState<Task>({
+    course: "",
+    task: "",
+    dateTime: "",
+    status: "",
+  });
+
+  // Handler for editing a task
+  const handleEditTask = async (index: number, task: Task) => {
+    setEditingTask({ index, task });
+    setEditedTask({
+      course: task.course,
+      task: task.task,
+      dateTime: task.dateTime,
+      status: task.status,
+    });
+  };
+
+  // Handler for saving edited task
+  const handleSaveEdit = async () => {
+    if (!student || !editingTask) return;
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+
+      // Get current tasks and update the specific task
+      const currentTasks = [...(student.tasks || [])];
+      const taskIndex = currentTasks.findIndex(
+        (t) =>
+          t.course === editingTask.task.course &&
+          t.task === editingTask.task.task &&
+          t.dateTime === editingTask.task.dateTime &&
+          t.status === editingTask.task.status
+      );
+
+      if (taskIndex !== -1) {
+        // Combine edited fields with the original course field
+        currentTasks[taskIndex] = {
+          ...currentTasks[taskIndex],
+          task: editedTask.task,
+          dateTime: editedTask.dateTime,
+          status: editedTask.status,
+        };
+
+        await updateDoc(studentRef, { tasks: currentTasks });
+
+        // Update local state
+        setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
+
+        // Refresh completed tasks for this course
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        const filtered = currentTasks.filter((t) => {
+          if (!t.course) return false;
+          const { courseName: taskCourseName, level: taskLevel } =
+            extractCourseAndLevel(t.course);
+          return isSameCourseAndLevel(
+            taskCourseName,
+            taskLevel,
+            currentCourseName,
+            currentLevel
+          );
+        });
+
+        const completedTasksForCourse = filtered.filter(
+          (t) => t.status === "complete"
+        );
+
+        setCompletedTasks(completedTasksForCourse);
+
+        toast.success("Task updated successfully!");
+        setEditingTask(null);
+        setEditedTask({ course: "", task: "", dateTime: "", status: "" });
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+      toast.error("Failed to update task");
+    }
+  };
+
+  // Handler for canceling edit
+  const handleCancelEdit = () => {
+    setEditingTask(null);
+    setEditedTask({ course: "", task: "", dateTime: "", status: "" });
+  };
+
+  // Handler for deleting a task
+  const handleDeleteTask = async (index: number, task: Task) => {
+    if (
+      !student ||
+      !window.confirm(`Are you sure you want to delete task: ${task.task}?`)
+    ) {
+      return;
+    }
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+
+      // Get current tasks and remove the specific task
+      const currentTasks = [...(student.tasks || [])];
+      const taskIndex = currentTasks.findIndex(
+        (t) =>
+          t.course === task.course &&
+          t.task === task.task &&
+          t.dateTime === task.dateTime &&
+          t.status === task.status
+      );
+
+      if (taskIndex !== -1) {
+        currentTasks.splice(taskIndex, 1);
+
+        await updateDoc(studentRef, { tasks: currentTasks });
+
+        // Update local state
+        setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
+
+        // Refresh completed tasks for this course
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        const filtered = currentTasks.filter((t) => {
+          if (!t.course) return false;
+          const { courseName: taskCourseName, level: taskLevel } =
+            extractCourseAndLevel(t.course);
+          return isSameCourseAndLevel(
+            taskCourseName,
+            taskLevel,
+            currentCourseName,
+            currentLevel
+          );
+        });
+
+        const completedTasksForCourse = filtered.filter(
+          (t) => t.status === "complete"
+        );
+
+        setCompletedTasks(completedTasksForCourse);
+
+        toast.success("Task deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast.error("Failed to delete task");
+    }
+  };
+
   if (loading) {
     return (
       <main
@@ -1408,6 +1560,105 @@ const Page = ({
           </div>
         )}
 
+        {/* Task Edit Modal */}
+        {editingTask && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold"
+                onClick={handleCancelEdit}
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Edit Task
+              </h3>
+              <p className="text-gray-600 mb-5">
+                Modify the task details below
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Task Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter task name"
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={editedTask.task}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, task: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Course
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Course cannot be edited"
+                    className="px-4 py-2.5 text-gray-500 bg-gray-100 rounded-xl border border-gray-300 text-sm w-full"
+                    value={editingTask.task.course}
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date & Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={editedTask.dateTime}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, dateTime: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    className="px-4 py-2.5 text-gray-900 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm w-full"
+                    value={editedTask.status}
+                    onChange={(e) =>
+                      setEditedTask({ ...editedTask, status: e.target.value })
+                    }
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="complete">Complete</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  className="px-4 py-2.5 rounded-xl bg-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-400 transition-colors"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2.5 rounded-xl bg-red-700 text-white font-semibold text-sm hover:bg-red-800 transition-colors"
+                  onClick={handleSaveEdit}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Floating Set/Edit Next Course Button */}
         {isCourseCompleted && userRole !== "student" && (
           <button
@@ -1763,6 +2014,24 @@ const Page = ({
                           >
                             {task.status}
                           </span>
+                          {/* Edit and Delete buttons for admin */}
+                          {(userRole === "admin" ||
+                            userRole === "superAdmin") && (
+                            <div className="flex space-x-2 mt-2">
+                              <button
+                                onClick={() => handleEditTask(index, task)}
+                                className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTask(index, task)}
+                                className="text-red-600 hover:text-red-800 text-xs font-medium"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

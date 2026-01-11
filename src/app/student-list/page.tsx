@@ -76,6 +76,8 @@ const Page = () => {
     lastLogin?: string | null;
     role?: string;
     nextCourse?: string;
+    trainerId?: string;
+    trainerName?: string;
   }
 
   interface StudentData {
@@ -86,6 +88,7 @@ const Page = () => {
 
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [trainerFilter, setTrainerFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<
     "PrnNumber" | "username" | "completedTasks"
@@ -159,6 +162,8 @@ const Page = () => {
           lastLogin: data.lastLogin || null,
           role: data.role || undefined,
           nextCourse: data.nextCourse || undefined,
+          trainerId: data.trainerId || undefined,
+          trainerName: data.trainerName || undefined,
         };
       });
       setStudents(studentList);
@@ -218,11 +223,22 @@ const Page = () => {
     })
     .filter((student) => {
       // Search filter (keep your existing logic)
-      return (
+      const matchesSearch =
         student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.PrnNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.completedTasks.toString().includes(searchTerm.toLowerCase())
-      );
+        student.completedTasks.toString().includes(searchTerm.toLowerCase());
+
+      // Trainer filter
+      let matchesTrainer = true;
+      if (trainerFilter) {
+        if (trainerFilter === "None Assigned") {
+          matchesTrainer = !student.trainerName;
+        } else {
+          matchesTrainer = student.trainerName === trainerFilter;
+        }
+      }
+
+      return matchesSearch && matchesTrainer;
     })
     .sort((a, b) => {
       if (activeTab === "ongoing") {
@@ -520,6 +536,8 @@ const Page = () => {
             tasks: tasks,
             courses: data.courses || [],
             nextCourse: data.nextCourse || undefined,
+            trainerId: data.trainerId || undefined,
+            trainerName: data.trainerName || undefined,
           } as Student;
         });
         setStudents(updatedStudentList);
@@ -626,6 +644,28 @@ const Page = () => {
                     <XCircle className="h-5 w-5 text-gray-400 hover:text-red-500 transition-colors" />
                   </button>
                 )}
+              </div>
+            </div>
+            <div className="flex-1 max-w-xs">
+              <div className="relative rounded-xl shadow-sm">
+                <select
+                  className="block w-full pl-4 pr-10 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 focus:outline-none transition-all duration-300"
+                  value={trainerFilter}
+                  onChange={(e) => setTrainerFilter(e.target.value)}
+                  aria-label="Filter by trainer"
+                >
+                  <option value="">All Trainers</option>
+                  <option value="None Assigned">None Assigned</option>
+                  {Array.from(
+                    new Set(students.map((s) => s.trainerName).filter(Boolean))
+                  )
+                    .sort()
+                    .map((trainerName, index) => (
+                      <option key={index} value={trainerName || ""}>
+                        {trainerName}
+                      </option>
+                    ))}
+                </select>
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -752,6 +792,7 @@ const Page = () => {
                   <col className="w-28 md:w-36" />
                   <col className="w-64 md:w-80 hidden md:table-cell" />
                   <col className="w-56 md:w-72" />
+                  <col className="w-40 md:w-48" />
                   {activeTab === "hold" && <col className="w-28 md:w-36" />}
                 </colgroup>
                 <TableHeader>
@@ -785,6 +826,9 @@ const Page = () => {
 
                     <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-xs md:text-sm">
                       Courses
+                    </TableHead>
+                    <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-xs md:text-sm">
+                      Assigned Trainer
                     </TableHead>
                     {activeTab === "hold" && (
                       <TableHead className="font-semibold text-white py-3 px-3 md:px-4 text-xs md:text-sm">
@@ -878,6 +922,19 @@ const Page = () => {
                               <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-red-800"></div>
                             </div>
                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
+                        <div className="relative group">
+                          <span className="inline-block text-wrap max-w-md">
+                            {student.trainerName ? (
+                              student.trainerName
+                            ) : (
+                              <span className="text-red-600 font-semibold">
+                                None Assigned
+                              </span>
+                            )}
+                          </span>
                         </div>
                       </TableCell>
                       {activeTab === "hold" && (
@@ -1524,6 +1581,8 @@ const Page = () => {
                               tasks: tasks,
                               courses: data.courses || [],
                               nextCourse: data.nextCourse || undefined,
+                              trainerId: data.trainerId || undefined,
+                              trainerName: data.trainerName || undefined,
                             } as Student;
                           });
                         setStudents(updatedStudentList);
