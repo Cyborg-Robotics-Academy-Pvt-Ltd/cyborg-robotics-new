@@ -1041,7 +1041,7 @@ const mockData: Record<string, CourseData> = {
     badge: "Coding with AI Course",
     description: "Learn to code using AI and Pictoblox",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/AI-with-Pictoblox.pdf",
     syllabusFileName: "AI-with-Pictoblox.pdf",
     imagePath: "/assets/classroom-course/picto-ai.png",

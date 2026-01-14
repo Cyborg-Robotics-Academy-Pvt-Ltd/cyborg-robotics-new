@@ -943,15 +943,15 @@ const Page = () => {
                             {student.nextCourse ? (
                               <div className="flex flex-col">
                                 {student.nextCourse.startsWith(
-                                  "Not Interested: "
+                                  "Not Enrolling: "
                                 ) ? (
                                   <div className="flex items-center gap-1">
                                     <span className="inline-block px-2 py-0.5 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
-                                      Not Interested
+                                      Not Enrolling
                                     </span>
                                     <span className="text-xs text-gray-600 ml-1">
                                       {student.nextCourse.substring(
-                                        "Not Interested: ".length
+                                        "Not Enrolling: ".length
                                       )}
                                     </span>
                                   </div>
