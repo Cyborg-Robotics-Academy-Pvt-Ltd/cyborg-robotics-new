@@ -315,7 +315,7 @@ const Page = ({
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
   const [nextCourseOption, setNextCourseOption] = useState<
-    "interested" | "not-interested" | "join-soon" | ""
+    "enrolling" | "not-interested" | "join-soon" | ""
   >("");
   const [nextCourseComment, setNextCourseComment] = useState("");
   const [joinSoonTime, setJoinSoonTime] = useState("");
@@ -455,7 +455,7 @@ const Page = ({
     }
 
     // Validate based on selected option
-    if (nextCourseOption === "interested" && !nextCourseInput.trim()) {
+    if (nextCourseOption === "enrolling" && !nextCourseInput.trim()) {
       toast.error("Please enter a course name");
       return;
     }
@@ -495,11 +495,11 @@ const Page = ({
 
       let updateData;
 
-      if (nextCourseOption === "interested") {
+      if (nextCourseOption === "enrolling") {
         updateData = { nextCourse: nextCourseInput.trim() };
       } else if (nextCourseOption === "not-interested") {
         updateData = {
-          nextCourse: `Not Interested: ${nextCourseComment.trim()}`,
+          nextCourse: `Not Enrolling: ${nextCourseComment.trim()}`,
         };
       } else if (nextCourseOption === "join-soon") {
         // Format the date for display
@@ -546,11 +546,9 @@ const Page = ({
     const nextCourseValue = student?.nextCourse || "";
 
     // Check if the next course indicates not interested status
-    if (nextCourseValue.startsWith("Not Interested: ")) {
+    if (nextCourseValue.startsWith("Not Enrolling: ")) {
       setNextCourseOption("not-interested");
-      setNextCourseComment(
-        nextCourseValue.substring("Not Interested: ".length)
-      );
+      setNextCourseComment(nextCourseValue.substring("Not Enrolling: ".length));
       setNextCourseInput("");
       setJoinSoonTime("");
     } else if (nextCourseValue.startsWith("Join Soon: ")) {
@@ -572,7 +570,7 @@ const Page = ({
       setNextCourseInput("");
       setNextCourseComment("");
     } else {
-      setNextCourseOption("interested");
+      setNextCourseOption("enrolling");
       setNextCourseInput(nextCourseValue);
       setNextCourseComment("");
       setJoinSoonTime("");
@@ -1405,7 +1403,7 @@ const Page = ({
                 ×
               </button>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {isEditingNextCourse ? "Edit Next Course" : "Set Next Course"}
+                {isEditingNextCourse ? "Edit Follow Up" : "Follow Up"}
               </h3>
               <p className="text-gray-600 mb-5">
                 {isEditingNextCourse
@@ -1421,18 +1419,18 @@ const Page = ({
                   <div className="flex items-center">
                     <input
                       type="radio"
-                      id="interested"
+                      id="enrolling"
                       name="nextCourseOption"
                       className="h-4 w-4 text-red-600 focus:ring-red-500"
-                      checked={nextCourseOption === "interested"}
-                      onChange={() => setNextCourseOption("interested")}
+                      checked={nextCourseOption === "enrolling"}
+                      onChange={() => setNextCourseOption("enrolling")}
                     />
                     <label
-                      htmlFor="interested"
+                      htmlFor="enrolling"
                       className="ml-2 block text-sm text-gray-700"
                     >
-                      Interested - Specify what course the student should take
-                      next
+                      Enrolling in New Course - Specify what course the student
+                      should take next
                     </label>
                   </div>
                   <div className="flex items-center">
@@ -1448,7 +1446,7 @@ const Page = ({
                       htmlFor="not-interested"
                       className="ml-2 block text-sm text-gray-700"
                     >
-                      Not Interested - Comment why
+                      Not Enrolling - Comment why
                     </label>
                   </div>
                   <div className="flex items-center">
@@ -1470,7 +1468,7 @@ const Page = ({
                 </div>
               </div>
 
-              {nextCourseOption === "interested" && (
+              {nextCourseOption === "enrolling" && (
                 <div className="mb-4">
                   <label
                     htmlFor="next-course-modal"
@@ -1537,7 +1535,7 @@ const Page = ({
                   className="px-4 py-2.5 rounded-xl bg-red-700 text-white font-semibold text-sm hover:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleSaveNextCourse}
                   disabled={
-                    (nextCourseOption === "interested" &&
+                    (nextCourseOption === "enrolling" &&
                       !nextCourseInput.trim()) ||
                     (nextCourseOption === "not-interested" &&
                       !nextCourseComment.trim()) ||
@@ -1673,7 +1671,7 @@ const Page = ({
             }}
           >
             <GraduationCap size={18} />
-            {student?.nextCourse ? "Edit Next Course" : "Set Next Course"}
+            {student?.nextCourse ? "Edit Follow Up" : "Follow Up"}
           </button>
         )}
 
@@ -1769,14 +1767,14 @@ const Page = ({
                       </p>
                       {student?.nextCourse ? (
                         <div>
-                          {student.nextCourse.startsWith("Not Interested: ") ? (
+                          {student.nextCourse.startsWith("Not Enrolling: ") ? (
                             <div className="mt-1">
                               <span className="inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
-                                Not Interested
+                                Not Enrolling
                               </span>
                               <p className="text-sm text-gray-600 mt-1">
                                 {student.nextCourse.substring(
-                                  "Not Interested: ".length
+                                  "Not Enrolling: ".length
                                 )}
                               </p>
                             </div>
