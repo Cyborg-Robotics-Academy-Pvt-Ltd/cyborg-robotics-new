@@ -64,9 +64,9 @@ const mainMenu: MenuItem[] = [
     title: 'Behind Scenes',
     icon: Camera,
     children: [
-        { title: 'Student Certificate', href: '#', icon: Award },
-        { title: 'Student Action', href: '#', icon: FolderKanban },
-        { title: 'Student in (Competition) Glory', href: '#', icon: Trophy },
+        { title: 'Student Certificate', href: '/gallery/behind-scene?tab=certificates', icon: Award, id: 'certificates' },
+        { title: 'Student Action', href: '/gallery/behind-scene?tab=actions', icon: FolderKanban, id: 'actions' },
+        { title: 'Student in (Competition) Glory', href: '/gallery/behind-scene?tab=competitions', icon: Trophy, id: 'competitions' },
     ],
   },
   {

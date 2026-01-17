@@ -91,7 +91,7 @@ const roleLinksMap: Record<
       icon: <NotepadText className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
-      label: "Media",
+      label: "Student Media",
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },
@@ -104,6 +104,11 @@ const roleLinksMap: Record<
       label: "Access Control",
       href: "/admin-dashboard/access-control",
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
+    },
+    {
+      label: "Photo Upload",
+      href: "/admin-dashboard/photo-upload",
+      icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Logout",
@@ -129,7 +134,7 @@ const roleLinksMap: Record<
       icon: <IconUsers className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
-      label: "Media",
+      label: "Student Media",
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },

@@ -308,7 +308,7 @@ const AdminDashboard = () => {
       delay: 0.6,
     },
     {
-      title: "Gallery Data",
+      title: "Home Gallery Data",
       description: "Upload, view and manage gallery images",
       href: "/admin-dashboard/gallery-data",
       icon: BarChart3,
@@ -406,12 +406,12 @@ const AdminDashboard = () => {
                 className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4`}
               >
                 <div className="flex items-center gap-4">
-                  <User className="w-5 h-5 text-blue-600" />
+                  <User className="w-5 h-5 text-red-700" />
                   <span
                     className={`text-sm font-medium ${theme.textSecondary}`}
                   >
                     Welcome,{" "}
-                    <span className="font-bold text-blue-600">{adminName}</span>
+                    <span className="font-bold gradient-text">{adminName}</span>
                   </span>
                 </div>
                 <button
@@ -421,7 +421,7 @@ const AdminDashboard = () => {
                   title="Refresh admin data"
                 >
                   <RefreshCw
-                    className={`w-4 h-4 text-blue-600 hover:text-blue-700 ${isRefreshing ? "animate-spin" : ""}`}
+                    className={`w-4 h-4 text-red-600 hover:text-red-700 ${isRefreshing ? "animate-spin" : ""}`}
                   />
                 </button>
               </motion.div>

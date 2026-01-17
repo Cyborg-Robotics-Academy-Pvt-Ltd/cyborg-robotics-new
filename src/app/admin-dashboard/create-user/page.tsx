@@ -380,7 +380,7 @@ const CreateMultipleUsersPage = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+                  className="flex items-center text-white gap-2 bg-red-600 hover:bg-red-700"
                 >
                   {isSubmitting ? (
                     <>
