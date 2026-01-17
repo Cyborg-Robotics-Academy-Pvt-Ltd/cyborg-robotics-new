@@ -103,6 +103,7 @@ const MenuList = ({
   parentTitle,
   activeSection,
   scrollToSection,
+  router,
 }: {
   items: MenuItem[];
   setIsOpen: Dispatch<SetStateAction<boolean>>;
@@ -110,6 +111,7 @@ const MenuList = ({
   parentTitle?: string;
   activeSection?: string;
   scrollToSection?: (sectionId: string) => void;
+  router: ReturnType<typeof useRouter>;
 }) => {
   const handleItemClick = (item: MenuItem) => {
     if (!item.children) {
@@ -122,6 +124,19 @@ const MenuList = ({
       // Also check if the item has an id for direct section matching
       else if (scrollToSection && item.id) {
         scrollToSection(item.id);
+      }
+      // Handle navigation to gallery with tab parameter
+      else if (item.href && item.href.includes("/gallery/behind-scene")) {
+        // Extract tab from URL if present
+        const url = new URL(item.href, window.location.origin);
+        const tab = url.searchParams.get("tab");
+        if (tab) {
+          // Navigate to the gallery page with the tab parameter using Next.js router
+          router.push(`/gallery/behind-scene?tab=${tab}`);
+        } else {
+          // Navigate to the gallery page with default tab
+          router.push(`/gallery/behind-scene?tab=certificates`);
+        }
       }
     }
   };
@@ -186,6 +201,7 @@ const MenuList = ({
                     parentTitle={item.title}
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
+                    router={router}
                   />
                 </div>
               </AccordionContent>
@@ -486,6 +502,7 @@ export default function OverlayMenu({
                     setIsOpen={setIsOpen}
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
+                    router={router}
                   />
                   {/* Authentication Section */}
                   {user && (

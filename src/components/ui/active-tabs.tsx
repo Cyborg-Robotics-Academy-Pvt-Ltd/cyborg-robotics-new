@@ -83,7 +83,7 @@ export default function ActiveTabs({
 
     // Active state
     if (tabId === internalActiveTab) {
-      base.push("text-white");
+      base.push("text-red-800");
     } else {
       base.push("text-gray-700", "hover:text-[#b92423]");
     }
