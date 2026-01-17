@@ -80,13 +80,9 @@ const BehindSceneContent = () => {
       const tabParam = url.searchParams.get("tab");
       if (
         tabParam &&
-        [
-          "certificates",
-          "actions",
-          "competitions",
-          "workshops",
-          "achievements",
-        ].includes(tabParam)
+        ["certificates", "actions", "competitions", "workshops"].includes(
+          tabParam
+        )
       ) {
         setActiveTab(tabParam);
       }
@@ -104,7 +100,6 @@ const BehindSceneContent = () => {
     { id: "competitions", label: "Student in (Competition) Glory" },
 
     { id: "workshops", label: "Workshops" },
-    { id: "achievements", label: "Achievements" },
   ];
 
   // Filter photos by category
@@ -119,9 +114,7 @@ const BehindSceneContent = () => {
           photo.category === "Competition Glory") ||
         (category === "activities" && photo.category === "Class Activities") ||
         (category === "events" && photo.category === "Events") ||
-        (category === "workshops" && photo.category === "Workshops") ||
-        (category === "achievements" && photo.category === "Achievements") ||
-        (category === "others" && photo.category === "Others")
+        (category === "workshops" && photo.category === "Workshops")
       ) {
         return true;
       }
@@ -142,7 +135,7 @@ const BehindSceneContent = () => {
 
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {images.map((img, index) => (
             <motion.div
               key={img.id || img.fileName}
@@ -156,8 +149,8 @@ const BehindSceneContent = () => {
                 <Image
                   src={img.imageUrl || img.src}
                   alt={img.fileName || img.alt}
-                  width={600}
-                  height={600}
+                  width={800}
+                  height={800}
                   className="w-full h-full object-cover transition-transform duration-300 "
                   priority={index < 2}
                 />
@@ -236,8 +229,6 @@ const BehindSceneContent = () => {
 
               {activeTab === "workshops" &&
                 renderImages(getPhotosByCategory("workshops"))}
-              {activeTab === "achievements" &&
-                renderImages(getPhotosByCategory("achievements"))}
             </>
           )}
         </motion.div>
