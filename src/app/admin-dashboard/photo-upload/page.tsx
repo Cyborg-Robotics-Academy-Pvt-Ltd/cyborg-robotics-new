@@ -32,7 +32,6 @@ const PhotoUploadPage = () => {
     "Student Action",
     "Competition Glory",
     "Workshops",
-    "Achievements",
   ];
 
   // Fetch all photos and unique categories

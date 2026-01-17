@@ -348,7 +348,7 @@ export default function Header() {
       href: "/about-us",
     },
 
-    { id: "gallery", label: "Photo Hub", href: "/gallery/photos" },
+    { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
     {
       id: "ftc-competition",
       label: "FTC Competition",
