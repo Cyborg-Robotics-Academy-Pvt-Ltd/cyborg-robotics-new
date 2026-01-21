@@ -394,14 +394,14 @@ const AdminDashboard = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className=""
           >
             <div className="text-center mb-4 ">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
+                transition={{ delay: 0.1, duration: 0.2 }}
                 whileHover={{ scale: 1.02 }}
                 className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4`}
               >
@@ -431,7 +431,7 @@ const AdminDashboard = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
+                  transition={{ delay: 0.2, duration: 0.2 }}
                   className={`inline-flex mx-4 items-center  px-4 py-2 rounded-lg ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4 rounded-xl`}
                 >
                   <Sparkles className=" md:w-6 md:h-6 w-10  h-10 p-1 text-green-600" />

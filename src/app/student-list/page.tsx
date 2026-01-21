@@ -40,11 +40,16 @@ import courses from "../../../utils/courses";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
+
+import AssignPrnModal from "@/components/AssignPrnModal";
+import { useAuth } from "@/lib/auth-context";
 // Remove heavy ESM imports from initial bundle and lazy-load them in handler
 // import ExcelJS from "exceljs";
 // import { saveAs } from "file-saver"; // You may need to install file-saver as well
 
 const Page = () => {
+  const { user, userRole, loading: authLoading } = useAuth();
+
   interface Task {
     course: string;
     dateTime: string;
@@ -115,11 +120,29 @@ const Page = () => {
     startDate: format(new Date(), "yyyy-MM-dd"),
   });
   const [courseStudent, setCourseStudent] = useState<Student | null>(null);
+
+  // State for edit student functionality
+  const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(
+    null
+  );
+  const [editCourseFields, setEditCourseFields] = useState({
+    name: "",
+    classNumber: "",
+    level: "1",
+    status: "ongoing",
+    completed: false,
+    startDate: format(new Date(), "yyyy-MM-dd"),
+  });
   // Store refs for each action button by student id
   const actionBtnRefs = useRef<{
     [studentId: string]: HTMLButtonElement | null;
   }>({});
   const [refreshing, setRefreshing] = useState(false);
+
+  // State for assign PRN modal
+  const [showAssignPrnModal, setShowAssignPrnModal] = useState(false);
 
   // Extract fetchStudents so it can be called from the refresh button
   const fetchStudents = React.useCallback(async () => {
@@ -445,6 +468,167 @@ const Page = () => {
     setSelectedStudent(null);
   };
 
+  // Handle edit student - opens course editing modal
+  const handleEditStudent = (student: Student) => {
+    // Check if PRN is not assigned
+    if (!student.PrnNumber) {
+      toast.error("Contact to admin for PRN");
+      return;
+    }
+
+    // Check if student has courses to edit
+    if (!student.courses || student.courses.length === 0) {
+      toast.error("No courses available to edit");
+      return;
+    }
+
+    setEditingStudent(student);
+    setShowEditCourseModal(true);
+    setShowDropdown(null); // Close dropdown
+  };
+
+  // Handle editing a specific course
+  const handleEditCourse = (courseIndex: number) => {
+    if (!editingStudent) return;
+
+    const course = editingStudent.courses[courseIndex];
+    if (typeof course === "string") {
+      toast.error("Cannot edit basic course format");
+      return;
+    }
+
+    setEditingCourseIndex(courseIndex);
+    setEditCourseFields({
+      name: course.name || "",
+      classNumber: course.classNumber || "",
+      level: course.level || "1",
+      status: course.status || "ongoing",
+      completed: course.completed || false,
+      startDate: course.startDate || format(new Date(), "yyyy-MM-dd"),
+    });
+  };
+
+  // Save edited course
+  const handleSaveEditedCourse = async () => {
+    if (!editingStudent || editingCourseIndex === null) return;
+
+    if (
+      !editCourseFields.name.trim() ||
+      !editCourseFields.classNumber.trim() ||
+      !editCourseFields.level.trim()
+    ) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    try {
+      const db = getFirestore(app);
+      const q = query(
+        collection(db, "students"),
+        where("PrnNumber", "==", editingStudent.PrnNumber)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const studentDoc = querySnapshot.docs[0];
+        const studentRef = doc(db, "students", studentDoc.id);
+
+        // Get current courses
+        const studentData = studentDoc.data();
+        const currentCourses = [...(studentData.courses || [])];
+
+        // Update the specific course
+        const updatedCourse = {
+          name: editCourseFields.name.trim(),
+          classNumber: editCourseFields.classNumber.trim(),
+          level: editCourseFields.level.trim(),
+          status: editCourseFields.status,
+          completed: editCourseFields.completed,
+          startDate: editCourseFields.startDate,
+        };
+
+        currentCourses[editingCourseIndex] = updatedCourse;
+
+        // Update in Firestore
+        await updateDoc(studentRef, {
+          courses: currentCourses,
+        });
+
+        toast.success("Course updated successfully!");
+
+        // Reset form and close modal
+        setEditingCourseIndex(null);
+        setEditCourseFields({
+          name: "",
+          classNumber: "",
+          level: "1",
+          status: "ongoing",
+          completed: false,
+          startDate: format(new Date(), "yyyy-MM-dd"),
+        });
+
+        // Refresh student list
+        await fetchStudents();
+      } else {
+        toast.error("Student not found");
+      }
+    } catch (error) {
+      console.error("Error updating course: ", error);
+      toast.error("Error updating course. Please try again.");
+    }
+  };
+
+  // Delete a course
+  const handleDeleteCourse = async (courseIndex: number) => {
+    if (!editingStudent) return;
+
+    if (!confirm("Are you sure you want to delete this course?")) {
+      return;
+    }
+
+    try {
+      const db = getFirestore(app);
+      const q = query(
+        collection(db, "students"),
+        where("PrnNumber", "==", editingStudent.PrnNumber)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const studentDoc = querySnapshot.docs[0];
+        const studentRef = doc(db, "students", studentDoc.id);
+
+        // Get current courses and remove the selected one
+        const studentData = studentDoc.data();
+        const currentCourses = [...(studentData.courses || [])];
+        currentCourses.splice(courseIndex, 1);
+
+        // Update in Firestore
+        await updateDoc(studentRef, {
+          courses: currentCourses,
+        });
+
+        toast.success("Course deleted successfully!");
+
+        // Update the local editingStudent state immediately
+        setEditingStudent((prev) => {
+          if (!prev) return prev;
+          const updatedCourses = [...prev.courses];
+          updatedCourses.splice(courseIndex, 1);
+          return { ...prev, courses: updatedCourses };
+        });
+
+        // Refresh student list
+        await fetchStudents();
+      } else {
+        toast.error("Student not found");
+      }
+    } catch (error) {
+      console.error("Error deleting course: ", error);
+      toast.error("Error deleting course. Please try again.");
+    }
+  };
+
   const handleAddClass = (student: Student) => {
     // Check if PRN is not assigned
     if (!student.PrnNumber) {
@@ -587,13 +771,15 @@ const Page = () => {
               </h1>
             </div>
 
-            <Link
-              href="/create-user"
-              className="inline-flex items-center px-4 py-2 bg-white text-black bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
-            >
-              <UserPlus className="h-4 w-4 mr-2" color="black" />
-              Assign PRN
-            </Link>
+            {userRole === "admin" && (
+              <button
+                onClick={() => setShowAssignPrnModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-white text-black bg-opacity-20 hover:bg-opacity-30 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
+              >
+                <UserPlus className="h-4 w-4 mr-2" color="black" />
+                Assign PRN
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -1084,6 +1270,19 @@ const Page = () => {
                                     >
                                       <UserPlus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                                       Add Student Class
+                                    </button>
+                                  </motion.div>
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                  >
+                                    <button
+                                      onClick={() => handleEditStudent(student)}
+                                      className="flex items-center w-full text-left px-3 md:px-4 py-2 text-xs md:text-sm text-gray-700 hover:bg-[#991b1b] hover:bg-opacity-10 hover:text-white transition-colors rounded-xl"
+                                    >
+                                      <UserPlus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
+                                      Edit Student Profile
                                     </button>
                                   </motion.div>
                                   <motion.div
@@ -1599,6 +1798,341 @@ const Page = () => {
                   <MdAdd className="mr-1.5 md:mr-2" size={16} />
                   Add Course
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign PRN Modal */}
+      {showAssignPrnModal && (
+        <AssignPrnModal
+          isOpen={showAssignPrnModal}
+          onClose={() => setShowAssignPrnModal(false)}
+          onAssign={fetchStudents} // Refresh the student list after assigning PRN
+        />
+      )}
+
+      {/* Edit Course Modal */}
+      {showEditCourseModal && editingStudent && (
+        <div className="fixed z-50 inset-0 bg-black/70 flex items-center justify-center transition-opacity duration-300 overflow-y-auto p-2 md:p-4">
+          <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
+              {/* Modal Header */}
+              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700">
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center">
+                  <UserPlus className="mr-2 text-white" size={20} />
+                  Edit Courses for {editingStudent.username}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowEditCourseModal(false);
+                    setEditingStudent(null);
+                    setEditingCourseIndex(null);
+                    setEditCourseFields({
+                      name: "",
+                      classNumber: "",
+                      level: "1",
+                      status: "ongoing",
+                      completed: false,
+                      startDate: format(new Date(), "yyyy-MM-dd"),
+                    });
+                  }}
+                  className="text-gray-500 hover:text-red-700 p-1.5 md:p-2 rounded-full hover:bg-red-50 transition-colors duration-200"
+                  aria-label="Close modal"
+                >
+                  <MdClose size={20} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="px-4 md:px-6 py-4 md:py-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Course List Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">
+                      Current Courses
+                    </h3>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {editingStudent.courses.map((course, index) => (
+                        <div
+                          key={index}
+                          className={`p-4 rounded-xl border-1 border-gray-300 transition-all duration-200 $[
+                            editingCourseIndex === index 
+                              ? 'border-red-500 bg-red-50' 
+                              : 'border-gray-200 hover:border-red-300 hover:bg-red-50/50'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              {typeof course === "string" ? (
+                                <div>
+                                  <h4 className="font-semibold text-gray-800">
+                                    {course}
+                                  </h4>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    Basic course format - limited editing
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>
+                                  <h4 className="font-semibold text-gray-800">
+                                    {course.name}
+                                  </h4>
+                                  <div className="text-sm text-gray-600 mt-1 space-y-1">
+                                    <p>
+                                      <span className="font-medium">
+                                        Level:
+                                      </span>{" "}
+                                      {course.level || "N/A"}
+                                    </p>
+                                    <p>
+                                      <span className="font-medium">
+                                        Class:
+                                      </span>{" "}
+                                      {course.classNumber || "N/A"}
+                                    </p>
+                                    <p>
+                                      <span className="font-medium">
+                                        Status:
+                                      </span>
+                                      <span
+                                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold $[
+                                        course.status === 'complete' 
+                                          ? 'bg-green-100 text-green-800' 
+                                          : 'bg-blue-100 text-blue-800'
+                                      ]`}
+                                      >
+                                        {course.status || "ongoing"}
+                                      </span>
+                                    </p>
+                                    <p>
+                                      <span className="font-medium">
+                                        Start Date:
+                                      </span>{" "}
+                                      {course.startDate || "N/A"}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-2 ml-3">
+                              {typeof course !== "string" && (
+                                <>
+                                  <button
+                                    onClick={() => handleEditCourse(index)}
+                                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                                    title="Edit Course"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteCourse(index)}
+                                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                                    title="Delete Course"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Edit Form Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">
+                      {editingCourseIndex !== null
+                        ? "Edit Course"
+                        : "Select a course to edit"}
+                    </h3>
+
+                    {editingCourseIndex !== null ? (
+                      <div className="space-y-4">
+                        <div className="form-group">
+                          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Course Name *
+                          </label>
+                          <select
+                            value={editCourseFields.name}
+                            onChange={(e) =>
+                              setEditCourseFields({
+                                ...editCourseFields,
+                                name: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2.5 text-sm bg-white border border-red-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-600 transition-all duration-200"
+                          >
+                            <option value="">Select Course</option>
+                            {courses.map((course) => (
+                              <option key={course} value={course}>
+                                {course}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="form-group">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                              Class Number *
+                            </label>
+                            <input
+                              type="text"
+                              value={editCourseFields.classNumber}
+                              onChange={(e) =>
+                                setEditCourseFields({
+                                  ...editCourseFields,
+                                  classNumber: e.target.value,
+                                })
+                              }
+                              className="w-full px-3 py-2.5 text-sm bg-white border border-red-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                              placeholder="Enter class number"
+                            />
+                          </div>
+
+                          <div className="form-group">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                              Level *
+                            </label>
+                            <input
+                              type="text"
+                              value={editCourseFields.level}
+                              onChange={(e) =>
+                                setEditCourseFields({
+                                  ...editCourseFields,
+                                  level: e.target.value,
+                                })
+                              }
+                              className="w-full px-3 py-2.5 text-sm bg-white border border-red-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                              placeholder="Enter level"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="form-group">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                              Start Date
+                            </label>
+                            <input
+                              type="date"
+                              value={editCourseFields.startDate}
+                              onChange={(e) =>
+                                setEditCourseFields({
+                                  ...editCourseFields,
+                                  startDate: e.target.value,
+                                })
+                              }
+                              className="w-full px-3 py-2.5 text-sm bg-white border border-red-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                            />
+                          </div>
+
+                          <div className="form-group">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                              Status
+                            </label>
+                            <select
+                              value={editCourseFields.status}
+                              onChange={(e) =>
+                                setEditCourseFields({
+                                  ...editCourseFields,
+                                  status: e.target.value,
+                                  completed: e.target.value === "complete",
+                                })
+                              }
+                              className="w-full px-3 py-2.5 text-sm bg-white border border-red-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                            >
+                              <option value="ongoing">Ongoing</option>
+                              <option value="complete">Complete</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-4">
+                          <button
+                            onClick={() => {
+                              setEditingCourseIndex(null);
+                              setEditCourseFields({
+                                name: "",
+                                classNumber: "",
+                                level: "1",
+                                status: "ongoing",
+                                completed: false,
+                                startDate: format(new Date(), "yyyy-MM-dd"),
+                              });
+                            }}
+                            className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleSaveEditedCourse}
+                            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-semibold flex items-center justify-center shadow-lg"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-8 w-8"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                          Select a Course
+                        </h4>
+                        <p className="text-gray-600">
+                          Click the edit icon next to any course to modify its
+                          details
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

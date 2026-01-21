@@ -356,7 +356,7 @@ const UserProfile = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500 font-medium">ROLE</p>
                 <p className="text-sm text-gray-800 font-semibold uppercase">
-                  {userRole || "User"}
+                  {profileData?.superAdmin ? "Super Admin" : userRole || "User"}
                 </p>
               </div>
             </div>
