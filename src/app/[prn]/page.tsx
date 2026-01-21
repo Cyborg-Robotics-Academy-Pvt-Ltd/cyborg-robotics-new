@@ -371,7 +371,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
           </div>
 
           {/* Enrolled Courses Section */}
-          {student.courses.length === 0 ? (
+          {!student.courses || student.courses.length === 0 ? (
             <RoboticsCard className="p-12 text-center border-2 border-dashed border-red-200 bg-gradient-to-br from-white to-red-50">
               <div className="py-8">
                 <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg bg-gradient-to-br from-red-700 to-red-800">
@@ -402,17 +402,17 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                       <BookOpen className="w-5 h-5 mr-2 text-red-700" />
                       Currently enrolled in
                       <span className="font-bold mx-1 text-red-800">
-                        {student.courses.length}
+                        {student.courses?.length || 0}
                       </span>
-                      course{student.courses.length !== 1 ? "s" : ""}
+                      course{(student.courses?.length || 0) !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[...student.courses].reverse().map((course, index) => {
+                {[...(student.courses || [])].reverse().map((course, index) => {
                   // Reverse index for correct mapping
-                  const realIndex = student.courses.length - 1 - index;
+                  const realIndex = (student.courses?.length || 0) - 1 - index;
                   return (
                     <RoboticsCard
                       key={`${course.name}-${index}`}
@@ -455,7 +455,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                             <BookOpen className="w-7 h-7 text-white" />
                           </div>
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-800 font-bold text-sm">
-                            {student.courses.length - index}
+                            {(student.courses?.length || 0) - index}
                           </div>
                         </div>
 

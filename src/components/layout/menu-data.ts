@@ -79,6 +79,14 @@ const mainMenu: MenuItem[] = [
     icon: Phone,
     href: '/contact-us',
   },
+  {
+    title: 'Tech Programs',
+    icon: Bot,
+    children: [
+      { title: 'Lego Robotics', href: '/tech-programs/lego-robotics', icon: Target },
+      { title: '3D Printing', href: '#', icon: Target },
+    ],
+  },
 ];
 
 
