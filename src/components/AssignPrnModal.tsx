@@ -205,13 +205,19 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
       return;
     }
 
+    // Add CRA prefix to PRN number if not already present
+    let prnWithPrefix = prnNumber.trim();
+    if (!prnWithPrefix.startsWith("CRA")) {
+      prnWithPrefix = `CRA${prnWithPrefix}`;
+    }
+
     setIsLoading(true);
     try {
       // Check if PRN already exists
       const studentsRef = collection(db, "students");
       const prnQuery = query(
         studentsRef,
-        where("PrnNumber", "==", prnNumber.trim())
+        where("PrnNumber", "==", prnWithPrefix)
       );
       const prnSnapshot = await getDocs(prnQuery);
 
@@ -236,7 +242,7 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
 
       // Update student with PRN number
       await updateDoc(studentRef, {
-        PrnNumber: prnNumber.trim(),
+        PrnNumber: prnWithPrefix,
       });
 
       toast.success("PRN number assigned successfully!");
@@ -256,7 +262,7 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md bg-white">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-xl font-bold text-gray-900">
@@ -323,8 +329,8 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
             </div>
 
             {studentFound && (
-              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                <p className="text-green-700 font-medium">
+              <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                <p className="text-red-700 font-medium">
                   Student Found: {studentName}
                 </p>
               </div>
@@ -332,14 +338,34 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="prn-number">PRN Number</Label>
-              <Input
-                id="prn-number"
-                type="text"
-                placeholder="Enter PRN number"
-                value={prnNumber}
-                onChange={(e) => setPrnNumber(e.target.value)}
-                disabled={isLoading || !studentFound}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                  CRA
+                </div>
+                <Input
+                  id="prn-number"
+                  type="text"
+                  placeholder="Enter PRN number (e.g. CRAKN1001)"
+                  value={prnNumber}
+                  onChange={(e) => {
+                    // Only allow capital letters and numbers
+                    const inputValue = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, "");
+                    setPrnNumber(inputValue);
+                  }}
+                  disabled={isLoading || !studentFound}
+                  className="pl-12" // Add padding to accommodate the prefix
+                />
+              </div>
+              {prnNumber && (
+                <p className="text-sm text-gray-500">
+                  Final PRN:{" "}
+                  <span className="font-semibold text-green-600">
+                    CRA{prnNumber}
+                  </span>
+                </p>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
@@ -359,7 +385,7 @@ const AssignPrnModal: React.FC<AssignPrnModalProps> = ({
                   !prnNumber.trim() ||
                   !studentEmail.trim()
                 }
-                className="flex-1 bg-[#991b1b] hover:bg-[#7f1d1d]"
+                className="flex-1 bg-red-800 hover:bg-red-900 text-white"
               >
                 {isLoading ? "Assigning..." : "Assign PRN"}
               </Button>

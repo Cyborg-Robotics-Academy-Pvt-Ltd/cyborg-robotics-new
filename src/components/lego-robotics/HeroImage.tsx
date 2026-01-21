@@ -12,52 +12,36 @@ import "swiper/css/effect-cards";
 // import required modules
 import { EffectCards } from "swiper/modules";
 
-// Firebase imports
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query } from "firebase/firestore";
-
-interface GalleryImage {
-  id: string;
-  imageUrl?: string;
-  url?: string;
-  altText?: string;
-  [key: string]: any; // Allow additional properties
+// Static image data structure
+interface StaticImage {
+  url: string;
+  alt: string;
 }
 
 const HeroImage = () => {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  // Fetch images from galleryImage collection
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const q = query(collection(db, "galleryImage"));
-        const querySnapshot = await getDocs(q);
-
-        const imageList: GalleryImage[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          imageList.push({
-            id: doc.id,
-            ...data,
-          });
-        });
-
-        // Shuffle the images and take only 9 for the slider
-        const shuffled = [...imageList].sort(() => 0.5 - Math.random());
-        const selectedImages = shuffled.slice(0, 9);
-
-        setImages(selectedImages);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchImages();
-  }, []);
+  // Static Cloudinary image URLs - replace these with your actual URLs
+  const staticImages: StaticImage[] = [
+    {
+      url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397913/iuq8qsrh6qjl8yyw1rim.jpg",
+      alt: "LEGO Robotics Workshop 1",
+    },
+    {
+      url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/cyguz9zagyyhkiwi2wmx.jpg",
+      alt: "LEGO Robotics Workshop 2",
+    },
+    {
+      url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/ovp3syigyxkvw0q4gxyt.jpg",
+      alt: "LEGO Robotics Workshop 3",
+    },
+    {
+      url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652659/vo7lj3pjmseccvf20sgx.jpg",
+      alt: "LEGO Robotics Workshop 4",
+    },
+    {
+      url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768651632/fh1qaoyeqztmwytqrqr1.jpg",
+      alt: "LEGO Robotics Workshop 5",
+    },
+  ];
 
   // Animation variants
 
@@ -203,38 +187,23 @@ const HeroImage = () => {
                   modules={[EffectCards]}
                   className="w-2/3"
                 >
-                  {loading
-                    ? // Show loading placeholder while fetching images
-                      Array.from({ length: 9 }).map((_, index) => (
-                        <SwiperSlide key={`placeholder-${index}`}>
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-full h-full" />
-                          </div>
-                        </SwiperSlide>
-                      ))
-                    : images.map((image, index) => (
-                        <SwiperSlide
-                          key={image.id || index}
-                          className=" w-32 flex items-center justify-center "
-                        >
-                          <div className="w-auto h-full flex items-center justify-center ">
-                            <Image
-                              src={
-                                image.imageUrl ||
-                                image.url ||
-                                "/placeholder.jpg"
-                              }
-                              alt={
-                                image.altText || `Gallery Image ${index + 1}`
-                              }
-                              width={300}
-                              height={300}
-                              className="rounded-xl object-cover !m-0 !p-0"
-                              unoptimized // Since we're using dynamic images from Firebase
-                            />
-                          </div>
-                        </SwiperSlide>
-                      ))}
+                  {staticImages.map((image, index) => (
+                    <SwiperSlide
+                      key={`static-${index}`}
+                      className="w-32 flex items-center justify-center"
+                    >
+                      <div className="w-auto h-full flex items-center justify-center">
+                        <Image
+                          src={image.url}
+                          alt={image.alt}
+                          width={300}
+                          height={300}
+                          className="rounded-xl object-cover !m-0 !p-0"
+                          unoptimized // Since we're using Cloudinary URLs
+                        />
+                      </div>
+                    </SwiperSlide>
+                  ))}
                 </Swiper>
               </div>
             </motion.div>

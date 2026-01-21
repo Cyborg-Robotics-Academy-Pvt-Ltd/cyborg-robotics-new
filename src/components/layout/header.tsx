@@ -9,6 +9,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import HamburgerButton from "./hamburger-button";
+import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -21,7 +22,6 @@ import {
   LogOut,
   User as UserProfile,
   LayoutDashboard,
-  ChevronDown,
 } from "lucide-react";
 import { enhancedCourseData } from "@/data/enhancedCourseData";
 
@@ -350,6 +350,11 @@ export default function Header() {
 
     { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
     {
+      id: "tech-programs",
+      label: "Tech Programs",
+      href: "/tech-programs",
+    },
+    {
       id: "ftc-competition",
       label: "FTC Competition",
       href: "/competition/ftc-competition",
@@ -484,42 +489,108 @@ export default function Header() {
             <div className="flex items-center justify-center gap-5 max-w-3xl w-full">
               {/* Navigation */}
               <nav className="flex gap-5 items-center">
-                {navItems.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Link
-                      href={item.href}
-                      className={`animated-underline text-sm font-medium hover:font-semibold transition-all duration-300 ${
-                        activeSection === item.id
-                          ? "text-red-800 font-semibold"
-                          : item.id === "courses"
-                            ? isHomePage && !isScrolled
-                              ? "text-white font-bold hover:text-red-300"
-                              : "text-black font-bold hover:text-red-700"
-                            : item.id === "ftc-competition"
-                              ? "text-yellow-500 font-bold hover:text-yellow-600"
-                              : isHomePage && !isScrolled
-                                ? "text-white hover:text-red-300"
-                                : "text-gray-900 hover:text-red-800"
-                      }`}
-                      onClick={(e) =>
-                        isScrollLink(item.href) && handleNavClick(e, item.id)
+                {navItems.map((item) => {
+                  // Check if this item has submenu (currently only tech-programs has submenu)
+                  const hasSubmenu = item.id === "tech-programs";
+
+                  // State for submenu visibility
+                  const [isSubmenuVisible, setIsSubmenuVisible] =
+                    useState(false);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="relative"
+                      onMouseEnter={() =>
+                        hasSubmenu && setIsSubmenuVisible(true)
+                      }
+                      onMouseLeave={() =>
+                        hasSubmenu && setIsSubmenuVisible(false)
                       }
                     >
-                      <span className="flex items-center gap-1">
-                        {item.label}
-                        {item.id === "ftc-competition" && (
-                          <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                            NEW
+                      <motion.div
+                        whileHover={{ y: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Link
+                          href={hasSubmenu ? "#" : item.href}
+                          className={`animated-underline text-sm font-medium hover:font-semibold transition-all duration-300 ${
+                            activeSection === item.id
+                              ? "text-red-800 font-semibold"
+                              : item.id === "courses"
+                                ? isHomePage && !isScrolled
+                                  ? "text-white font-bold hover:text-red-300"
+                                  : "text-black font-bold hover:text-red-700"
+                                : item.id === "tech-programs"
+                                  ? "text-blue-600 font-bold hover:text-blue-700"
+                                  : item.id === "ftc-competition"
+                                    ? "text-yellow-500 font-bold hover:text-yellow-600"
+                                    : isHomePage && !isScrolled
+                                      ? "text-white hover:text-red-300"
+                                      : "text-gray-900 hover:text-red-800"
+                          }`}
+                          onClick={(e) => {
+                            if (hasSubmenu) {
+                              e.preventDefault();
+                            } else if (isScrollLink(item.href)) {
+                              handleNavClick(e, item.id);
+                            }
+                          }}
+                        >
+                          <span className="flex items-center gap-1">
+                            {item.label}
+                            {hasSubmenu && (
+                              <ChevronDown
+                                className={`h-4 w-4 transition-transform duration-300 ${isSubmenuVisible ? "rotate-180" : ""}`}
+                              />
+                            )}
+                            {item.id === "ftc-competition" && (
+                              <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                                NEW
+                              </span>
+                            )}
                           </span>
-                        )}
-                      </span>
-                    </Link>
-                  </motion.div>
-                ))}
+                        </Link>
+                      </motion.div>
+
+                      {/* Submenu for Tech Programs - appears on hover */}
+                      {hasSubmenu && (
+                        <AnimatePresence>
+                          {isSubmenuVisible && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
+                              className="absolute left-0 mt-3 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                            >
+                              <ul className="py-2">
+                                <li>
+                                  <Link
+                                    href="/tech-programs/lego-robotics"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    Lego Robotics
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link
+                                    href="#"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                                    onClick={(e) => e.preventDefault()}
+                                  >
+                                    3D Printing
+                                  </Link>
+                                </li>
+                              </ul>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      )}
+                    </div>
+                  );
+                })}
               </nav>
 
               {/* Search Bar with Suggestions */}
