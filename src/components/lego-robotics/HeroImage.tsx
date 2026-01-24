@@ -254,7 +254,7 @@ const HeroImage = () => {
           {/* TODO: Replace YOUR_ACTUAL_FORM_ID with your Google Form ID */}
           <div className="aspect-w-16 aspect-h-9">
             <iframe
-              src="https://docs.google.com/forms/d/e/1FAIpQLSdQtiaYv9dtnaziDC_Izd2hwOVa1VsAR7-RzN6f6kYfWLb50w/viewform?usp=publish-editor"
+              src="https://docs.google.com/forms/d/e/1FAIpQLSfJfYegfWy-YCE75jDcy3b37Q23a3ppS8uOZXf4YsBNPFItKQ/viewform"
               width="100%"
               height="600px"
               frameBorder="0"
