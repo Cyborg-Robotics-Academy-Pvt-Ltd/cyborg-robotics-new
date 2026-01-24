@@ -47,7 +47,7 @@ import { handleDownloadSyllabus as downloadSyllabus } from "@/lib/utils";
 // Import curriculum data
 import {
   javaCurriculum,
-  MachineLearningCurriculum,
+  // MachineLearningCurriculum,
   AnimationAndCodingCurriculum,
   ThreeDPrintingCurriculum,
   AndroidCurriculum,
@@ -250,7 +250,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Master object-oriented programming with Java for enterprise applications and Android development",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/JAVA.pdf",
     syllabusFileName: "JAVA.pdf",
     imagePath: "/assets/online-course/java.webp",
@@ -419,7 +419,7 @@ const mockData: Record<string, CourseData> = {
     badge: "Educational Robotics Course",
     description: "Learn robotics and coding with LEGO Education SPIKE Prime",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/Spike Prime.pdf",
     syllabusFileName: "SPIKE PRIME.pdf",
     imagePath: "/assets/classroom-course/Spike-Prime.png",
@@ -630,7 +630,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Create stunning animations and visual effects through programming",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ANIMATION AND CODING.pdf",
     syllabusFileName: "ANIMATION CODING.pdf",
     imagePath: "/assets/online-course/animation-coding.webp",
@@ -712,7 +712,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Explore basic mechanical principles through hands-on building and experimentation",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY SIMPLE MACHINES.pdf",
     syllabusFileName: "EARLY SIMPLE MACHINES.pdf",
     imagePath: "/assets/classroom-course/earlysimple.webp",
@@ -753,7 +753,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Connect devices and create smart systems that communicate over the internet",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/INTERNET OF THINGS.pdf",
     syllabusFileName: "IOT.pdf",
     imagePath: "/assets/classroom-course/iot.webp",
@@ -785,47 +785,7 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  "spike-pneumatics": {
-    id: "spikePneumatics",
-    title: "SPIKE PNEUMATICS",
-    subtitle:
-      "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    badge: "Pneumatic Systems Course",
-    description:
-      "Learn pneumatic systems and air-powered mechanisms with LEGO Education SPIKE",
-    mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/Spike Essential and Pneumatics.pdf",
-    syllabusFileName: "Spike Essential.pdf",
-    imagePath: "/assets/classroom-course/pneumatics.webp",
-    imageAlt: "SPIKE Pneumatics Course",
-    price: 9499,
-    originalPrice: 13999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Pneumatic Systems",
-        description: "Learn air-powered mechanisms and controls",
-        iconName: "Zap",
-      },
-      {
-        title: "Air Pressure",
-        description: "Understand pressure, flow and air dynamics",
-        iconName: "Cog",
-      },
-      {
-        title: "Mechanical Design",
-        description: "Design systems using pneumatic components",
-        iconName: "Settings",
-      },
-      {
-        title: "Automation",
-        description: "Create automated pneumatic systems",
-        iconName: "Bot",
-      },
-    ],
-  },
+
   "simple-powered-machines": {
     id: "simplePoweredMachines",
     title: "SIMPLE POWERED MACHINES",
@@ -875,7 +835,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Explore electronic components, circuits and build exciting projects with our comprehensive early electronics course",
     mode: "Offline",
-    duration: "32 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/EARLY_ELECTRONICS.pdf",
     syllabusFileName: "EARLY_ELECTRONICS.pdf",
     imagePath: "/assets/classroom-course/Early_Electronics.png",
@@ -954,7 +914,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Combine 3D printing and Arduino to create innovative electronic projects",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/3D-PRINTING-ARDUINO.pdf",
     syllabusFileName: "3D PRINTING ARDUINO.pdf",
     imagePath: "/assets/classroom-course/3d-printing-arduino.png",
@@ -998,7 +958,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "An experiential robotics program where students learn coding, sensors, motion control, and AI concepts by building real-world robots using Quarky and PictoBlox.",
     mode: "Offline",
-    duration: "28 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ROBOTICS_WITH_QUARKY.pdf",
     syllabusFileName: "ROBOTICS_WITH_QUARKY.pdf",
     imagePath: "/assets/classroom-course/Quarky.png",
@@ -1085,15 +1045,11 @@ export default async function SlugPage({
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
-  // Log for debugging - this is normal behavior, not an error
-  console.log("Slug received:", slug);
-
   // Get data by slug
   const data = mockData[slug];
 
   // If no data found, show 404
   if (!data) {
-    console.log("No data found for slug:", slug);
     notFound();
   }
 
@@ -1122,8 +1078,8 @@ export default async function SlugPage({
         return javaCurriculum;
       case "android-studio":
         return AndroidCurriculum;
-      case "machine-learning":
-        return MachineLearningCurriculum;
+      // case "machine-learning":
+      //   return MachineLearningCurriculum;
       case "artificial-intelligence":
         return ArtificialIntelligenceCurriculum;
       case "robotics-ev3":

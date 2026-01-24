@@ -191,7 +191,7 @@ const RegisterPage: React.FC = () => {
         collection(db, "registrations"),
         formDataWithDate
       );
-      console.log("Document written with ID: ", docRef.id);
+
       openModal(); // Open the modal
       setFormData({
         studentName: "",

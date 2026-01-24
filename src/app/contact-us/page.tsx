@@ -127,16 +127,10 @@ const Page = () => {
           body: JSON.stringify(formData),
         });
 
-        // Log the response for debugging
-        console.log("Email API Response:", response);
-
         if (response.ok) {
           setIsSubmitted(true);
           // Reset form data
           setFormData({ name: "", email: "", subject: "", message: "" });
-          console.log(
-            `Email sent successfully to ${formData.email} from ${formData.name} with subject: ${formData.subject} and message: ${formData.message}`
-          );
         } else {
           // Log error response
           const errorData = await response.json();

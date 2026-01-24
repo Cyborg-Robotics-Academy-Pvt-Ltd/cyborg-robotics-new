@@ -17,7 +17,7 @@ const TestimonialSection = () => {
         viewport={{ once: true, amount: 0.3 }}
         variants={fadeInUp}
       >
-        <div className="max-w-[1200px] mx-auto px-4">
+        <div className="max-w-[1200px] mx-auto px-4 py-10">
           <Testimonials />
         </div>
       </motion.section>

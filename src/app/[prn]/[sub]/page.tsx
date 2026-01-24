@@ -136,7 +136,6 @@ function fromSlug(slug: string) {
     .replace(/\bmachines\b/gi, "Machines")
     .replace(/\bsimple\b/gi, "Simple")
     .replace(/\bpowered\b/gi, "Powered")
-    .replace(/\bpneumatics\b/gi, "Pneumatics")
     .replace(/\bprime\b/gi, "Prime")
     .replace(/\bessential\b/gi, "Essential")
     .replace(/\bstudio\b/gi, "Studio")
@@ -320,31 +319,9 @@ const Page = ({
   const [nextCourseComment, setNextCourseComment] = useState("");
   const [joinSoonTime, setJoinSoonTime] = useState("");
 
-  // Debug student state changes
-  useEffect(() => {
-    if (student) {
-      console.log("Student state updated:", {
-        id: student.id,
-        profileimage: student.profileimage,
-        username: student.username,
-        hasProfileImage: !!student.profileimage,
-        profileImageLength: student.profileimage?.length || 0,
-      });
-    }
-  }, [student]);
-
   useEffect(() => {
     params.then(setResolvedParams);
   }, [params]);
-
-  // Debug Firebase connection
-  useEffect(() => {
-    console.log("Firebase db object:", db);
-    console.log("Firebase configuration check:", {
-      hasDb: !!db,
-      dbType: typeof db,
-    });
-  }, []);
 
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
 
@@ -481,17 +458,8 @@ const Page = ({
       }
     }
 
-    console.log("Saving next course data:", {
-      studentId: student.id,
-      nextCourseOption,
-      nextCourse: nextCourseInput.trim(),
-      nextCourseComment: nextCourseComment.trim(),
-      studentData: student,
-    });
-
     try {
       const studentRef = doc(db, "students", student.id);
-      console.log("Student reference:", studentRef);
 
       let updateData;
 
@@ -516,10 +484,7 @@ const Page = ({
         updateData = { nextCourse: "" };
       }
 
-      console.log("Update data:", updateData);
-
       await updateDoc(studentRef, updateData);
-      console.log("Database update successful");
 
       // Update local state
       setStudent((prev) =>
@@ -583,14 +548,10 @@ const Page = ({
   const handleDeleteNextCourse = async () => {
     if (!student) return;
 
-    console.log("Deleting next course for student:", student.id);
-
     try {
       const studentRef = doc(db, "students", student.id);
-      console.log("Student reference for delete:", studentRef);
 
       await updateDoc(studentRef, { nextCourse: "" });
-      console.log("Database delete successful");
 
       // Update local state
       setStudent((prev) => (prev ? { ...prev, nextCourse: "" } : null));
@@ -613,10 +574,7 @@ const Page = ({
 
   useEffect(() => {
     if (!resolvedParams) return;
-    console.log(
-      "Params changed, fetching student for PRN:",
-      resolvedParams.prn
-    );
+
     const fetchStudent = async () => {
       setLoading(true);
       setError(null);
@@ -634,7 +592,6 @@ const Page = ({
         }
         const studentDoc = querySnapshot.docs[0];
         const data = studentDoc.data();
-        console.log("Raw student data from database:", data);
 
         const studentData: Student = {
           id: studentDoc.id,
@@ -657,10 +614,7 @@ const Page = ({
           status: data.status || "",
           uid: data.uid || "",
         };
-        console.log("Processed student data:", studentData);
-        console.log("Profile image URL:", studentData.profileimage);
         setStudent(studentData);
-        console.log("Student state after setting:", studentData);
 
         // Filter tasks for this course - strict matching with level support
         const { courseName: currentCourseName, level: currentLevel } =
@@ -683,12 +637,6 @@ const Page = ({
         );
 
         // Log task filtering results for debugging
-        console.log("Task filtering:", {
-          totalTasks: studentData.tasks?.length || 0,
-          filteredTasks: filtered.length,
-          completedTasks: completedTasksForCourse.length,
-          courseName,
-        });
 
         // Only show tasks that match the specific course and level - no fallback
         setCompletedTasks(completedTasksForCourse);
@@ -731,17 +679,6 @@ const Page = ({
           // Try to find the assigned classes for this specific course and level
           let assigned = null;
 
-          // Try to find by course name and level combination
-          console.log(
-            "courseClassNumbers keys:",
-            Object.keys(data.courseClassNumbers)
-          );
-          console.log(
-            "currentCourseName:",
-            currentCourseName,
-            "currentLevel:",
-            currentLevel
-          );
           const courseKey = Object.keys(data.courseClassNumbers).find((key) => {
             const { courseName: keyCourseName, level: keyLevel } =
               extractCourseAndLevel(key);
@@ -752,7 +689,6 @@ const Page = ({
               currentLevel
             );
           });
-          console.log("Matched courseKey:", courseKey);
 
           if (courseKey) {
             assigned = data.courseClassNumbers[courseKey];
@@ -761,12 +697,10 @@ const Page = ({
           setAssignedClasses(assigned || "N/A");
         } else {
           // Print the raw slug and extracted values
-          console.log("Raw courseName from slug:", courseName);
+
           const { courseName: currentCourseName, level: currentLevel } =
             extractCourseAndLevel(courseName);
-          console.log("Extracted from slug:", currentCourseName, currentLevel);
-          // Try to get from courses array as fallback
-          console.log("All student courses:", studentData.courses);
+
           const courseFromArray = studentData.courses?.find((c) => {
             if (!c.name) return false;
             // Loose match for debugging
@@ -776,19 +710,10 @@ const Page = ({
             const levelMatch =
               String(c.level || "").trim() ===
               String(currentLevel || "").trim();
-            console.log(
-              "Loose nameMatch:",
-              c.name,
-              currentCourseName,
-              nameMatch,
-              "levelMatch:",
-              c.level,
-              currentLevel,
-              levelMatch
-            );
+
             return nameMatch && levelMatch;
           });
-          console.log("Matched courseFromArray:", courseFromArray);
+
           if (courseFromArray?.classNumber) {
             setAssignedClasses(courseFromArray.classNumber);
           } else {
@@ -799,11 +724,6 @@ const Page = ({
         if (studentData.courses) {
           const { courseName: currentCourseName, level: currentLevel } =
             extractCourseAndLevel(courseName);
-          console.log(
-            "Extracted for classNumber:",
-            currentCourseName,
-            currentLevel
-          );
 
           // Try strict match first
           let currentCourse = studentData.courses.find((c) => {
@@ -814,17 +734,7 @@ const Page = ({
             const levelMatch =
               String(c.level || "").trim() ===
               String(currentLevel || "").trim();
-            console.log(
-              "Comparing course:",
-              c.name,
-              c.level,
-              "with",
-              currentCourseName,
-              currentLevel,
-              "=>",
-              nameMatch,
-              levelMatch
-            );
+
             return nameMatch && levelMatch;
           });
 
@@ -835,18 +745,10 @@ const Page = ({
               const nameMatch =
                 c.name.toLowerCase().trim() ===
                 currentCourseName.toLowerCase().trim();
-              console.log(
-                "Fallback name-only match:",
-                c.name,
-                currentCourseName,
-                "=>",
-                nameMatch
-              );
+
               return nameMatch;
             });
           }
-
-          console.log("Matched course for classNumber:", currentCourse);
 
           if (currentCourse) {
             setCourseLevel(currentCourse.level);
@@ -1203,12 +1105,7 @@ const Page = ({
                               parent.textContent = initials || "";
                             }
                           }}
-                          onLoad={(e) => {
-                            console.log(
-                              "Profile image loaded successfully:",
-                              student.profileimage
-                            );
-                          }}
+                          onLoad={(e) => {}}
                         />
                       ) : student.fullName || student.username ? (
                         <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">

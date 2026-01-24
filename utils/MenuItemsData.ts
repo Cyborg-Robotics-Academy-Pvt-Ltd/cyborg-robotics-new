@@ -39,8 +39,8 @@ export const menuItems = [
         label: "Simple & Powered Machines",
       },
       {
-        href: "/courses/spike-pneumatics",
-        label: "Spike Essential + Pneumatics",
+        href: "#",
+        label: "Spike Essential ]s",
       },
       { href: "/courses/spike-prime", label: "Spike Prime" },
       { href: "/courses/iot", label: "IOT" },

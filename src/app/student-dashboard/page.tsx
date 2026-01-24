@@ -125,7 +125,7 @@ const StudentDashboard = () => {
           });
         }
       } else {
-        console.log("No trainer document found with ID:", trainerId);
+        console.error("No trainer document found with ID:", trainerId);
         setTrainerData((prev) => {
           const newState = { ...prev };
           delete newState[trainerId];
@@ -150,24 +150,18 @@ const StudentDashboard = () => {
       return;
     }
 
-    console.log("Setting up student dashboard for user:", user.uid);
-    console.log("User email:", user.email);
-
     // Set up real-time listener for student data using UID
     const studentDocRef = doc(db, "students", user.uid);
     const unsubscribeDoc = onSnapshot(
       studentDocRef,
       (doc) => {
         if (!doc.exists()) {
-          console.log("No student document found for UID:", user.uid);
           setPrnMatch(false);
           setLoading(false);
           return;
         }
 
         const studentData = doc.data();
-        console.log("Found student data:", studentData);
-        console.log("Student PRN:", studentData.PrnNumber);
 
         // Check if courseTrainers exist and fetch individual trainer data if needed
         if (
@@ -175,15 +169,11 @@ const StudentDashboard = () => {
           Array.isArray(studentData.courseTrainers)
         ) {
           // For now, we'll just log this data, but we could enhance to fetch detailed trainer info
-          console.log("Course Trainers:", studentData.courseTrainers);
         }
 
         // Ensure that the courseTrainers data is properly structured for display
         if (!studentData.courseTrainers) {
           // If there's no courseTrainers but there are courses with trainer info, we might need to migrate
-          console.log(
-            "No courseTrainers found, checking individual course trainer data"
-          );
         }
 
         // Check if courseTrainers exist and fetch individual trainer data if needed
@@ -192,19 +182,11 @@ const StudentDashboard = () => {
           Array.isArray(studentData.courseTrainers)
         ) {
           // For now, we'll just log this data, but we could enhance to fetch detailed trainer info
-          console.log("Course Trainers:", studentData.courseTrainers);
         }
 
         // Check if PRN matches (optional validation)
         const prnToCheck = user.email?.split("@")[0] || user.uid;
         if (studentData.PrnNumber && studentData.PrnNumber !== prnToCheck) {
-          console.log(
-            "PRN mismatch - Expected:",
-            prnToCheck,
-            "Found:",
-            studentData.PrnNumber
-          );
-          console.log("But allowing access anyway for now...");
         }
 
         setPrnMatch(true);
@@ -237,10 +219,6 @@ const StudentDashboard = () => {
           studentData.courseTrainers &&
           Array.isArray(studentData.courseTrainers)
         ) {
-          console.log(
-            `Found ${studentData.courseTrainers.length} course trainers to potentially fetch`
-          );
-
           // Fetch detailed trainer data for each course trainer
           const fetchAllTrainers = async () => {
             for (const courseTrainer of studentData.courseTrainers) {
