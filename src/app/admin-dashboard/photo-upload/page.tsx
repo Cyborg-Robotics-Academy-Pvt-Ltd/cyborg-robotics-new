@@ -25,6 +25,8 @@ const PhotoUploadPage = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const photosPerPage = 6; // Reduced to 6 photos per page for better performance
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const predefinedCategories = [
@@ -60,6 +62,7 @@ const PhotoUploadPage = () => {
 
       setPhotos(photosData);
       setCategories(Array.from(uniqueCategories));
+      setCurrentPage(1); // Reset to first page when photos are fetched
     } catch (error) {
       console.error("Error fetching photos:", error);
     } finally {
@@ -159,10 +162,25 @@ const PhotoUploadPage = () => {
     }
   };
 
-  const filteredPhotos =
-    selectedCategoryFilter === "all"
+  const filteredPhotos = React.useMemo(() => {
+    return selectedCategoryFilter === "all"
       ? photos
       : photos.filter((photo) => photo.category === selectedCategoryFilter);
+  }, [photos, selectedCategoryFilter]);
+
+  // Calculate pagination
+  const indexOfLastPhoto = currentPage * photosPerPage;
+  const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
+  const currentPhotos = filteredPhotos.slice(
+    indexOfFirstPhoto,
+    indexOfLastPhoto
+  );
+  const totalPages = Math.ceil(filteredPhotos.length / photosPerPage);
+
+  // Memoize the current photos to prevent unnecessary re-renders
+  const memoizedCurrentPhotos = React.useMemo(() => {
+    return currentPhotos;
+  }, [currentPhotos, currentPage, selectedCategoryFilter]);
 
   if (authLoading) {
     return (
@@ -349,7 +367,10 @@ const PhotoUploadPage = () => {
               </label>
               <select
                 value={selectedCategoryFilter}
-                onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                onChange={(e) => {
+                  setSelectedCategoryFilter(e.target.value);
+                  setCurrentPage(1); // Reset to first page when category changes
+                }}
                 className="w-full rounded-lg border-gray-300 border p-2 focus:border-red-500 focus:ring-red-500"
               >
                 <option value="all">All Categories</option>
@@ -366,36 +387,68 @@ const PhotoUploadPage = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto p-2">
-                {filteredPhotos.length > 0 ? (
-                  filteredPhotos.map((photo) => (
-                    <div key={photo.id} className="relative group">
-                      <img
-                        src={photo.imageUrl}
-                        alt={photo.fileName}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
-                      <div className="absolute inset-0 bg-black/20  opacity-10 group-hover:opacity-80 transition-opacity rounded-lg flex flex-col items-center justify-center p-2">
-                        <p className="text-white text-xs text-center break-words mb-1">
-                          {photo.category}
-                        </p>
-                        <button
-                          onClick={() => handleDelete(photo.id)}
-                          disabled={deletingId === photo.id}
-                          className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
-                        >
-                          {deletingId === photo.id ? "Deleting..." : "Delete"}
-                        </button>
+              <div className="flex flex-col">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-2">
+                  {memoizedCurrentPhotos.length > 0 ? (
+                    memoizedCurrentPhotos.map((photo) => (
+                      <div key={photo.id} className="relative group">
+                        <img
+                          src={photo.imageUrl}
+                          alt={photo.fileName}
+                          className="w-full h-32 object-cover rounded-xl"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/20  opacity-10 group-hover:opacity-80 transition-opacity rounded-lg flex flex-col items-center justify-center p-2">
+                          <p className="text-white text-xs text-center break-words mb-1">
+                            {photo.category}
+                          </p>
+                          <button
+                            onClick={() => handleDelete(photo.id)}
+                            disabled={deletingId === photo.id}
+                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                          >
+                            {deletingId === photo.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="col-span-full text-center py-8 text-gray-500">
-                    No photos found
-                    {selectedCategoryFilter !== "all"
-                      ? ` in "${selectedCategoryFilter}" category`
-                      : ""}
-                  </p>
+                    ))
+                  ) : (
+                    <p className="col-span-full text-center py-8 text-gray-500">
+                      No photos found
+                      {selectedCategoryFilter !== "all"
+                        ? ` in "${selectedCategoryFilter}" category`
+                        : ""}
+                    </p>
+                  )}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-4 space-x-2">
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded-md ${currentPage === 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}
+                    >
+                      Previous
+                    </button>
+
+                    <span className="text-gray-700">
+                      Page {currentPage} of {totalPages}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded-md ${currentPage === totalPages ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-red-600 text-white hover:bg-red-700"}`}
+                    >
+                      Next
+                    </button>
+                  </div>
                 )}
               </div>
             )}

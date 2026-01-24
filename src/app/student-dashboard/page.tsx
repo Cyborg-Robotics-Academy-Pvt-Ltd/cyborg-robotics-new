@@ -2,18 +2,68 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, DocumentData, getDoc } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  DocumentData,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
 import { ClipboardList, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
+// Define interfaces to match the data structure
+interface Trainer {
+  id: string;
+  name: string;
+  profileimage?: string;
+  email?: string;
+}
+
+interface CourseTrainer {
+  courseId: string;
+  courseName: string;
+  trainerId: string;
+  trainerName: string;
+}
+
+interface Course {
+  name: string;
+  level: string;
+  classNumber: string;
+  status: string;
+  trainerId?: string;
+  trainerName?: string;
+  trainerImage?: string;
+  completed?: boolean;
+  certificate?: boolean;
+}
+
+interface Student {
+  id: string;
+  PrnNumber: string;
+  fullName: string;
+  name?: string;
+  username?: string;
+  email: string;
+  profileimage?: string;
+  imageUrls?: string[];
+  courses: Course[];
+  courseTrainers: CourseTrainer[];
+  status?: string;
+}
+
 const StudentDashboard = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [studentData, setStudentData] = useState<DocumentData | null>(null);
-  const [trainerData, setTrainerData] = useState<DocumentData | null>(null);
+  const [studentData, setStudentData] = useState<Student | null>(null);
+  const [trainerData, setTrainerData] = useState<Record<string, Trainer>>({});
   const [prnMatch, setPrnMatch] = useState<boolean | null>(null);
   const { user, userRole, loading: authLoading } = useAuth();
 
@@ -23,7 +73,11 @@ const StudentDashboard = () => {
     expectedTrainerName?: string
   ) => {
     if (!trainerId) {
-      setTrainerData(null);
+      setTrainerData((prev) => {
+        const newState = { ...prev };
+        delete newState[trainerId];
+        return newState;
+      });
       return;
     }
     try {
@@ -43,16 +97,20 @@ const StudentDashboard = () => {
             actualName &&
             expectedTrainerName !== actualName
           ) {
-            console.warn(
-              "Trainer name mismatch: expected",
-              expectedTrainerName,
-              "but got",
-              actualName
-            );
             // We'll still set the trainer data since the ID matches, but log the warning
           }
 
-          setTrainerData(trainerInfo);
+          const trainer: Trainer = {
+            id: trainerDocSnap.id,
+            name: actualName || "Unknown Trainer",
+            profileimage:
+              trainerInfo.profileimage || trainerInfo.imageUrls?.[0],
+            email: trainerInfo.email,
+          };
+          setTrainerData((prev) => ({
+            ...prev,
+            [trainerId]: trainer,
+          }));
         } else {
           console.error(
             "Trainer ID mismatch: expected",
@@ -60,15 +118,27 @@ const StudentDashboard = () => {
             "but got",
             trainerDocSnap.id
           );
-          setTrainerData(null);
+          setTrainerData((prev) => {
+            const newState = { ...prev };
+            delete newState[trainerId];
+            return newState;
+          });
         }
       } else {
         console.log("No trainer document found with ID:", trainerId);
-        setTrainerData(null);
+        setTrainerData((prev) => {
+          const newState = { ...prev };
+          delete newState[trainerId];
+          return newState;
+        });
       }
     } catch (error) {
       console.error("Error fetching trainer data:", error);
-      setTrainerData(null);
+      setTrainerData((prev) => {
+        const newState = { ...prev };
+        delete newState[trainerId];
+        return newState;
+      });
     }
   };
 
@@ -99,6 +169,32 @@ const StudentDashboard = () => {
         console.log("Found student data:", studentData);
         console.log("Student PRN:", studentData.PrnNumber);
 
+        // Check if courseTrainers exist and fetch individual trainer data if needed
+        if (
+          studentData.courseTrainers &&
+          Array.isArray(studentData.courseTrainers)
+        ) {
+          // For now, we'll just log this data, but we could enhance to fetch detailed trainer info
+          console.log("Course Trainers:", studentData.courseTrainers);
+        }
+
+        // Ensure that the courseTrainers data is properly structured for display
+        if (!studentData.courseTrainers) {
+          // If there's no courseTrainers but there are courses with trainer info, we might need to migrate
+          console.log(
+            "No courseTrainers found, checking individual course trainer data"
+          );
+        }
+
+        // Check if courseTrainers exist and fetch individual trainer data if needed
+        if (
+          studentData.courseTrainers &&
+          Array.isArray(studentData.courseTrainers)
+        ) {
+          // For now, we'll just log this data, but we could enhance to fetch detailed trainer info
+          console.log("Course Trainers:", studentData.courseTrainers);
+        }
+
         // Check if PRN matches (optional validation)
         const prnToCheck = user.email?.split("@")[0] || user.uid;
         if (studentData.PrnNumber && studentData.PrnNumber !== prnToCheck) {
@@ -112,13 +208,52 @@ const StudentDashboard = () => {
         }
 
         setPrnMatch(true);
-        setStudentData(studentData);
+
+        // Transform the student data to match our interface
+        const transformedStudent: Student = {
+          id: doc.id,
+          PrnNumber: studentData.PrnNumber || "",
+          fullName:
+            studentData.fullName ||
+            studentData.name ||
+            studentData.username ||
+            "Unknown Student",
+          email: studentData.email || "",
+          courses: studentData.courses || [],
+          courseTrainers: studentData.courseTrainers || [],
+        };
+
+        setStudentData(transformedStudent);
 
         // Fetch trainer data if trainerId exists
         if (studentData.trainerId) {
           fetchTrainerData(studentData.trainerId, studentData.trainerName);
         } else {
-          setTrainerData(null);
+          setTrainerData({});
+        }
+
+        // If there are courseTrainers, fetch detailed trainer data for each
+        if (
+          studentData.courseTrainers &&
+          Array.isArray(studentData.courseTrainers)
+        ) {
+          console.log(
+            `Found ${studentData.courseTrainers.length} course trainers to potentially fetch`
+          );
+
+          // Fetch detailed trainer data for each course trainer
+          const fetchAllTrainers = async () => {
+            for (const courseTrainer of studentData.courseTrainers) {
+              if (courseTrainer.trainerId) {
+                await fetchTrainerData(
+                  courseTrainer.trainerId,
+                  courseTrainer.trainerName
+                );
+              }
+            }
+          };
+
+          fetchAllTrainers();
         }
 
         setLoading(false);
@@ -196,6 +331,7 @@ const StudentDashboard = () => {
                       width={80}
                       height={80}
                       className="w-full h-full object-cover"
+                      unoptimized={true}
                     />
                   ) : studentData?.imageUrls &&
                     Array.isArray(studentData.imageUrls) &&
@@ -211,6 +347,7 @@ const StudentDashboard = () => {
                       width={80}
                       height={80}
                       className="w-full h-full object-cover"
+                      unoptimized={true}
                     />
                   ) : (
                     <span className="text-black font-bold text-lg">
@@ -258,61 +395,42 @@ const StudentDashboard = () => {
                 </div>
               </div>
 
-              {/* Trainer Info */}
-              {(studentData?.trainerName || trainerData) && (
-                <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
-                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
-                    {trainerData?.profileimage ? (
-                      <Image
-                        src={trainerData.profileimage}
-                        alt={
-                          trainerData.name ||
-                          trainerData.username ||
-                          "Trainer Avatar"
-                        }
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : trainerData?.imageUrls &&
-                      Array.isArray(trainerData.imageUrls) &&
-                      trainerData.imageUrls[0] ? (
-                      <Image
-                        src={trainerData.imageUrls[0]}
-                        alt={
-                          trainerData.name ||
-                          trainerData.username ||
-                          "Trainer Avatar"
-                        }
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-black text-sm font-bold">
-                        {(
-                          trainerData?.name ||
-                          trainerData?.username ||
-                          studentData?.trainerName ||
-                          "T"
-                        )
-                          .split(" ")
-                          .map((n: string) => n[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </span>
-                    )}
+              {/* General Trainer Info (fallback) - Use the first trainer from trainerData if available */}
+              {!studentData?.courseTrainers &&
+                Object.keys(trainerData).length > 0 && (
+                  <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
+                    <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
+                      {(() => {
+                        const firstTrainer = Object.values(trainerData)[0];
+                        return firstTrainer?.profileimage ? (
+                          <Image
+                            src={firstTrainer.profileimage}
+                            alt={firstTrainer.name || "Trainer Avatar"}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                            unoptimized={true}
+                          />
+                        ) : (
+                          <span className="text-black text-xl font-bold">
+                            {firstTrainer?.name
+                              ?.split(" ")
+                              .map((n: string) => n[0])
+                              .join("")
+                              .slice(0, 2) || "T"}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    <div>
+                      <p className="text-black font-semibold">Trainer:</p>
+                      <p className="text-black text-sm">
+                        {Object.values(trainerData)[0]?.name ||
+                          "Unknown Trainer"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-black font-semibold">Trainer:</p>
-                    <p className="text-black text-sm">
-                      {trainerData?.name ||
-                        trainerData?.username ||
-                        studentData?.trainerName}
-                    </p>
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>
@@ -337,6 +455,9 @@ const StudentDashboard = () => {
                         classNumber: string;
                         completed?: boolean;
                         certificate?: boolean;
+                        trainerId?: string;
+                        trainerName?: string;
+                        trainerImage?: string;
                       },
                       idx: number
                     ) => {
@@ -404,13 +525,34 @@ const StudentDashboard = () => {
                       const courseSlug = toSlug(course.name, course.level);
                       const courseUrl = `/${studentData.PrnNumber}/${courseSlug}`;
 
-                      // Debug logging
-                      console.log("Course data:", {
-                        name: course.name,
-                        level: course.level,
-                        levelType: typeof course.level,
-                        formattedLevel: formatLevel(course.level),
-                      });
+                      // Find trainer for this specific course
+                      let courseTrainerInfo = null;
+                      if (
+                        studentData.courseTrainers &&
+                        Array.isArray(studentData.courseTrainers)
+                      ) {
+                        courseTrainerInfo = studentData.courseTrainers.find(
+                          (ct) =>
+                            ct.courseName === course.name ||
+                            ct.courseId === course.name
+                        );
+                      }
+                      // Fallback to general trainer info if no specific trainer for this course
+                      if (!courseTrainerInfo && course.trainerName) {
+                        courseTrainerInfo = {
+                          trainerName: course.trainerName,
+                          trainerId: course.trainerId || "",
+                          courseName: course.name,
+                          courseId: course.name,
+                        };
+                      }
+
+                      // Get detailed trainer info if available
+                      let detailedTrainer = null;
+                      if (courseTrainerInfo && courseTrainerInfo.trainerId) {
+                        detailedTrainer =
+                          trainerData[courseTrainerInfo.trainerId];
+                      }
 
                       return (
                         <Link key={idx} href={courseUrl}>
@@ -447,6 +589,118 @@ const StudentDashboard = () => {
                             <p className="text-gray-600 mb-1">
                               Class: {course.classNumber}
                             </p>
+
+                            {/* Course Trainer Info */}
+                            {(courseTrainerInfo ||
+                              detailedTrainer ||
+                              course.trainerImage) && (
+                              <div className="flex items-center gap-2 mt-2 p-2 bg-red-50 rounded-lg">
+                                <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden relative">
+                                  {course.trainerImage ? (
+                                    <Image
+                                      src={course.trainerImage}
+                                      alt={course.trainerName || "Trainer"}
+                                      width={24}
+                                      height={24}
+                                      className="w-full h-full object-cover"
+                                      unoptimized={true}
+                                      onError={(e) => {
+                                        // On error, hide the image element
+                                        e.currentTarget.style.display = "none";
+                                        // Show the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "block";
+                                        }
+                                      }}
+                                      onLoad={(e) => {
+                                        // On load, hide the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "none";
+                                        }
+                                      }}
+                                    />
+                                  ) : detailedTrainer?.profileimage ? (
+                                    <Image
+                                      src={detailedTrainer.profileimage}
+                                      alt={
+                                        detailedTrainer.name ||
+                                        courseTrainerInfo?.trainerName ||
+                                        "Trainer"
+                                      }
+                                      width={24}
+                                      height={24}
+                                      className="w-full h-full object-cover"
+                                      unoptimized={true}
+                                      onError={(e) => {
+                                        // On error, hide the image element
+                                        e.currentTarget.style.display = "none";
+                                        // Show the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "block";
+                                        }
+                                      }}
+                                      onLoad={(e) => {
+                                        // On load, hide the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "none";
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <span className="text-white text-xs font-bold initials-display absolute inset-0 flex items-center justify-center">
+                                      {(
+                                        course.trainerName ||
+                                        detailedTrainer?.name ||
+                                        courseTrainerInfo?.trainerName ||
+                                        ""
+                                      )
+                                        .split(" ")
+                                        .map((n: string) => n[0])
+                                        .join("")
+                                        .slice(0, 2)}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-700 font-medium">
+                                    Trainer:
+                                  </p>
+                                  <p className="text-xs text-gray-900">
+                                    {course.trainerName ||
+                                      detailedTrainer?.name ||
+                                      courseTrainerInfo?.trainerName}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
 
                             {/* Status Indicators */}
                             <div className="flex items-center gap-2 mt-3">
@@ -509,6 +763,9 @@ const StudentDashboard = () => {
                         classNumber: string;
                         completed?: boolean;
                         certificate?: boolean;
+                        trainerId?: string;
+                        trainerName?: string;
+                        trainerImage?: string;
                       },
                       idx: number
                     ) => {
@@ -576,13 +833,34 @@ const StudentDashboard = () => {
                       const courseSlug = toSlug(course.name, course.level);
                       const courseUrl = `/${studentData.PrnNumber}/${courseSlug}`;
 
-                      // Debug logging
-                      console.log("Course data:", {
-                        name: course.name,
-                        level: course.level,
-                        levelType: typeof course.level,
-                        formattedLevel: formatLevel(course.level),
-                      });
+                      // Find trainer for this specific course
+                      let courseTrainerInfo = null;
+                      if (
+                        studentData.courseTrainers &&
+                        Array.isArray(studentData.courseTrainers)
+                      ) {
+                        courseTrainerInfo = studentData.courseTrainers.find(
+                          (ct) =>
+                            ct.courseName === course.name ||
+                            ct.courseId === course.name
+                        );
+                      }
+                      // Fallback to general trainer info if no specific trainer for this course
+                      if (!courseTrainerInfo && course.trainerName) {
+                        courseTrainerInfo = {
+                          trainerName: course.trainerName,
+                          trainerId: course.trainerId || "",
+                          courseName: course.name,
+                          courseId: course.name,
+                        };
+                      }
+
+                      // Get detailed trainer info if available
+                      let detailedTrainer = null;
+                      if (courseTrainerInfo && courseTrainerInfo.trainerId) {
+                        detailedTrainer =
+                          trainerData[courseTrainerInfo.trainerId];
+                      }
 
                       return (
                         <Link key={idx} href={courseUrl}>
@@ -605,6 +883,118 @@ const StudentDashboard = () => {
                             <p className="text-gray-600 mb-1">
                               Class: {course.classNumber}
                             </p>
+
+                            {/* Course Trainer Info */}
+                            {(courseTrainerInfo ||
+                              detailedTrainer ||
+                              course.trainerImage) && (
+                              <div className="flex items-center gap-2 mt-2 p-2 bg-blue-50 rounded-lg">
+                                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden relative">
+                                  {course.trainerImage ? (
+                                    <Image
+                                      src={course.trainerImage}
+                                      alt={course.trainerName || "Trainer"}
+                                      width={24}
+                                      height={24}
+                                      className="w-full h-full object-cover"
+                                      unoptimized={true}
+                                      onError={(e) => {
+                                        // On error, hide the image element
+                                        e.currentTarget.style.display = "none";
+                                        // Show the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "block";
+                                        }
+                                      }}
+                                      onLoad={(e) => {
+                                        // On load, hide the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "none";
+                                        }
+                                      }}
+                                    />
+                                  ) : detailedTrainer?.profileimage ? (
+                                    <Image
+                                      src={detailedTrainer.profileimage}
+                                      alt={
+                                        detailedTrainer.name ||
+                                        courseTrainerInfo?.trainerName ||
+                                        "Trainer"
+                                      }
+                                      width={24}
+                                      height={24}
+                                      className="w-full h-full object-cover"
+                                      unoptimized={true}
+                                      onError={(e) => {
+                                        // On error, hide the image element
+                                        e.currentTarget.style.display = "none";
+                                        // Show the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "block";
+                                        }
+                                      }}
+                                      onLoad={(e) => {
+                                        // On load, hide the initials span
+                                        const initialsSpan = e.currentTarget
+                                          .nextSibling as HTMLElement;
+                                        if (
+                                          initialsSpan &&
+                                          initialsSpan.classList.contains(
+                                            "initials-display"
+                                          )
+                                        ) {
+                                          initialsSpan.style.display = "none";
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <span className="text-white text-xs font-bold initials-display absolute inset-0 flex items-center justify-center">
+                                      {(
+                                        course.trainerName ||
+                                        detailedTrainer?.name ||
+                                        courseTrainerInfo?.trainerName ||
+                                        ""
+                                      )
+                                        .split(" ")
+                                        .map((n: string) => n[0])
+                                        .join("")
+                                        .slice(0, 2)}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-700 font-medium">
+                                    Trainer:
+                                  </p>
+                                  <p className="text-xs text-gray-900">
+                                    {course.trainerName ||
+                                      detailedTrainer?.name ||
+                                      courseTrainerInfo?.trainerName}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
 
                             {/* Status Indicators */}
                             <div className="flex items-center gap-2 mt-3">

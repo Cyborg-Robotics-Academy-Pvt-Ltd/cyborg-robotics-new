@@ -16,16 +16,46 @@ const LegoExperience = () => {
       },
     },
   };
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
     visible: {
-      y: 0,
       opacity: 1,
+      y: 0,
       transition: {
         duration: 0.5,
       },
     },
   };
+
+  const benefits = [
+    {
+      icon: "⏰",
+      title: "Only 1 Hour",
+      description: "No long-term commitment needed",
+    },
+    {
+      icon: "🎓",
+      title: "Age-Appropriate",
+      description: "Curriculum tailored for each stage",
+    },
+    {
+      icon: "👨‍🏫",
+      title: "Mentor-Guided",
+      description: "Learning with real mentors",
+    },
+    {
+      icon: "🌟",
+      title: "Builds Confidence",
+      description: "Boosts curiosity & self-assurance",
+    },
+    {
+      icon: "✨",
+      title: "Results from Day One",
+      description: "Visible progress immediately",
+    },
+  ];
+
   return (
     <div>
       {/* Enhanced Parents Choice Section */}
@@ -37,65 +67,58 @@ const LegoExperience = () => {
         variants={fadeInUp}
       >
         <div className="max-w-[1200px] mx-auto px-4">
-          <motion.div className="text-center " variants={fadeInUp}>
+          <motion.div className="text-center mb-6" variants={fadeInUp}>
             <motion.h2
-              className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#062341] mb-4 md:mb-6 font-sans"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#062341] mb-2 md:mb-2 font-sans"
               variants={fadeInUp}
             >
-              Why Parents Choose{" "}
-              <span className="gradient-text font-bold">
-                Our LEGO Experience
-              </span>
+              Why Parents Love{" "}
+              <span className="gradient-text font-bold">this Workshop</span>
             </motion.h2>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <motion.ul className="space-y-4" variants={staggerContainer}>
-                    {[
-                      "Live, mentor-led session",
-                      "Confidence & curiosity building",
-                      "1.5-hour structured workshop",
-                      "Meet like-minded learners",
-                    ].map((item, index) => (
-                      <motion.li
-                        key={index}
-                        className="flex items-start text-base md:text-lg"
-                        variants={itemVariants}
-                      >
-                        <div className="w-8 h-8 bg-[#A81B1E] rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                          <span className="text-white text-sm">✓</span>
-                        </div>
-                        <span className="text-gray-700">{item}</span>
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                </div>
-
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {benefits.map((benefit, index) => (
                 <motion.div
-                  className="bg-gradient-to-br from-[#FFF8E6] to-[#FFF0CC] rounded-2xl p-6 border border-[#FFECB3]"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
+                  key={index}
+                  className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+                  variants={cardVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="flex items-start">
-                    <div className="text-2xl mr-3">💭</div>
-                    <div>
-                      <h4 className="font-bold text-lg text-gray-800 mb-2">
-                        Parent Feedback
-                      </h4>
-                      <p className="text-gray-700 italic">
-                        "My child came home excited and kept explaining what
-                        they built — that itself says everything."
-                      </p>
-                    </div>
-                  </div>
+                  <div className="text-4xl mb-4">{benefit.icon}</div>
+                  <h3 className="text-xl font-bold text-[#062341] mb-2">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-gray-700">{benefit.description}</p>
                 </motion.div>
-              </div>
+              ))}
             </div>
+
+            {/* Testimonial Card */}
+            <motion.div
+              className="mt-10 max-w-3xl mx-auto bg-gradient-to-br from-[#FFF8E6] to-[#FFF0CC] rounded-2xl p-8 border border-[#FFECB3]"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <div className="flex items-start">
+                <div className="text-3xl mr-4">💭</div>
+                <div>
+                  <h4 className="font-bold text-xl text-gray-800 mb-3">
+                    Parent Feedback
+                  </h4>
+                  <p className="text-gray-700 italic text-lg">
+                    "My child came home excited and kept explaining what they
+                    built — that itself says everything."
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </motion.section>

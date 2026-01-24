@@ -41,7 +41,7 @@ const ProgramHighlights = () => {
       ],
 
       usedInWorkshop: true,
-      nextStep: "Basic building concepts",
+      nextStep: "Perfect for first-time learners",
       color: "from-[#A81B1E] to-[#C73E1D]",
     },
     {
@@ -58,7 +58,7 @@ const ProgramHighlights = () => {
       ],
 
       usedInWorkshop: true,
-      nextStep: "Motor & sensor basics",
+      nextStep: "Ideal for curious minds who love to ask “Why?”",
       color: "from-[#0855AB] to-[#2B6ECC]",
     },
     {
@@ -75,7 +75,7 @@ const ProgramHighlights = () => {
       ],
 
       usedInWorkshop: true,
-      nextStep: "Advanced programming & robotics",
+      nextStep: "Great foundation for robotics competitions & advanced STEM",
       color: "from-[#6D6D6D] to-[#6D6D6D]",
     },
   ];
@@ -184,7 +184,6 @@ const ProgramHighlights = () => {
                     {group.nextStep && (
                       <div className="p-1 bg-gradient-to-r from-[#FFF8E6] to-[#FFF0CC] rounded-md border border-[#FFECB3]">
                         <p className="text-xs text-gray-700">
-                          <span className="font-semibold">Next:</span>{" "}
                           {group.nextStep}
                         </p>
                       </div>

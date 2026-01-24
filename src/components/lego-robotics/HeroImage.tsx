@@ -1,5 +1,5 @@
+"use client";
 import Image from "next/image";
-import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 // Import Swiper React components
@@ -10,7 +10,7 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 
 // import required modules
-import { EffectCards } from "swiper/modules";
+import { EffectCards, Autoplay } from "swiper/modules";
 
 // Static image data structure
 interface StaticImage {
@@ -52,6 +52,7 @@ const HeroImage = () => {
       height: 380px;
       margin: 0 auto;
       max-width: 300px;
+     
     }
     
     @media (min-width: 768px) {
@@ -106,14 +107,14 @@ const HeroImage = () => {
         animate="visible"
         variants={containerVariants}
       >
-        <div className="max-w-[1200px] mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12 mt-4">
+        <div className="max-w-[1200px] mx-auto px-4 ">
+          <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-52 mt-4">
             <motion.div
               className="lg:w-1/2 text-center lg:text-left w-full"
               variants={itemVariants}
             >
               <motion.h1
-                className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight font-sans"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 md:mb-2 leading-tight font-sans"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -122,22 +123,40 @@ const HeroImage = () => {
                 <span className="gradient-text font-bold">Create.</span>
               </motion.h1>
               <motion.h2
-                className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-[#062341] font-sans"
+                className="text-xl md:text-2xl font-semibold mb-2 md:mb-2 text-[#062341] font-sans"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Your Child's First Step into Robotics Starts hear with Us!
+                Your Child’s First Step into Robotics Starts Here…
               </motion.h2>
+              <motion.p
+                className="text-base md:text-lg text-gray-700 mb-2 font-sans"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                A fun, hands-on LEGO® Robotics Workshop for young minds (Ages
+                4–16)
+              </motion.p>
+              <motion.p
+                className="text-base md:text-lg text-gray-700 mb-2 md:mb-2 font-sans"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                Your child will build, explore and bring ideas to life—while
+                learning the foundations of logic, creativity and STEM thinking.
+              </motion.p>
 
               {/* Primary CTA button directly under subtitle */}
               <motion.div
-                className="mb-4 md:mb-6"
+                className="mb-2 md:mb-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <button className="bg-gradient-to-r from-[#A81B1E] to-[#C73E1D] hover:from-[#C73E1D] hover:to-[#A81B1E] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-xl transition-all duration-300 transform hover:scale-105  min-w-[220px] text-lg md:text-xl">
+                <button className="bg-gradient-to-r from-[#A81B1E] to-[#C73E1D] hover:from-[#C73E1D] hover:to-[#A81B1E] text-white font-bold py-2 px-8 md:py-2 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105  min-w-[220px] text-lg md:text-xl">
                   Book LEGO Experience – ₹499
                 </button>
               </motion.div>
@@ -161,21 +180,22 @@ const HeroImage = () => {
                   transition={{ duration: 0.4, delay: 0.6 }}
                 >
                   <li className="flex items-center">
-                    <span className="mr-2">⏰</span> 1.5-hours Structured
-                    Workshop just @₹499
+                    <span className="mr-2">⏰</span> 1-hours Structured Workshop
+                    just @₹499
                   </li>
                   <li className="flex items-center">
                     <span className="mr-2">🏆</span> get STEM certified workshop
                     participation
                   </li>
                   <li className="flex items-center">
-                    <span className="mr-2">🎁</span> Take-away Souvenir
+                    <span className="mr-2">🎁</span> Take-away Souvenir as
+                    momento.
                   </li>
                 </motion.ul>
               </motion.div>
             </motion.div>
             <motion.div
-              className="lg:w-1/2 w-full flex justify-center"
+              className="md:w-[40%] w-full flex justify-center"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -184,13 +204,18 @@ const HeroImage = () => {
                 <Swiper
                   effect={"cards"}
                   grabCursor={true}
-                  modules={[EffectCards]}
+                  modules={[EffectCards, Autoplay]}
+                  autoplay={{
+                    delay: 3000, // Change slide every 3 seconds
+                    disableOnInteraction: false, // Continue autoplay after user interactions
+                  }}
+                  loop={true}
                   className="w-2/3"
                 >
                   {staticImages.map((image, index) => (
                     <SwiperSlide
                       key={`static-${index}`}
-                      className="w-32 flex items-center justify-center"
+                      className="w-32 flex items-center justify-center "
                     >
                       <div className="w-auto h-full flex items-center justify-center">
                         <Image
@@ -198,7 +223,7 @@ const HeroImage = () => {
                           alt={image.alt}
                           width={300}
                           height={300}
-                          className="rounded-xl object-cover !m-0 !p-0"
+                          className="rounded-xl object-cover "
                           unoptimized // Since we're using Cloudinary URLs
                         />
                       </div>
