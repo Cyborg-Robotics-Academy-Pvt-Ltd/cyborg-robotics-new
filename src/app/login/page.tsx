@@ -124,18 +124,12 @@ const LoginPage = () => {
     }
 
     try {
-      console.log(`Attempting login with role: ${selectedRole}`);
-      console.log(
-        `Attempting to sign in with email: ${email} and role: ${selectedRole}`
-      );
-
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
       const user = userCredential.user;
-      console.log(`User authenticated with ID: ${user.uid}`);
 
       // Find user by email across all collections
       const userInfo = await findUserByEmail(email);
@@ -201,13 +195,12 @@ const LoginPage = () => {
           { merge: true }
         );
       } catch (updateError) {
-        console.log("Could not update last login time:", updateError);
+        console.error("Could not update last login time:", updateError);
         // Continue with login even if update fails
       }
 
       // Store role in localStorage
       localStorage.setItem("userRole", selectedRole);
-      console.log(`Login successful, redirecting to ${selectedRole}-dashboard`);
 
       // Show success message
       toast.success(

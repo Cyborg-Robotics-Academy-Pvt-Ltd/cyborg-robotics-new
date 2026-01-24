@@ -135,19 +135,14 @@ const AdminDashboard = () => {
 
     const checkAdminAuth = async () => {
       try {
-        console.log("Fetching admin data for user:", user.uid);
-
         // First try to get admin data using the new utility
         const adminData = await getAdminUserData(user.uid);
 
         if (!adminData) {
-          console.log("Admin document does not exist for user:", user.uid);
           // Redirect to a page where admin can be created or show an error
           router.push("/create-user");
           return;
         }
-
-        console.log("Admin data retrieved:", adminData);
 
         // Set admin data for potential future use
         setAdminData(adminData);
@@ -164,7 +159,6 @@ const AdminDashboard = () => {
           name = emailName.charAt(0).toUpperCase() + emailName.slice(1);
         }
 
-        console.log("Setting admin name to:", name);
         setAdminName(name);
         setIsLoading(false);
       } catch (error) {

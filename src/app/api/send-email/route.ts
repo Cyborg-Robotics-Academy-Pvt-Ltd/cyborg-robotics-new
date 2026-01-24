@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     // Log incoming request for debugging
-    console.log("Email API Request Body:", body);
+  
     
     // Validate required fields
     if (!body.name || !body.email || !body.subject || !body.message) {
@@ -68,12 +68,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Log email configuration for debugging (without exposing passwords)
-    console.log("Email configuration:", {
-      user: process.env.EMAIL_USER,
-      hasPassword: !!process.env.EMAIL_PASS,
-      passwordLength: process.env.EMAIL_PASS?.length
-    });
+
 
     // Create transporter with your Gmail credentials
     const transporter = nodemailer.createTransport({
@@ -90,7 +85,7 @@ export async function POST(request: Request) {
     // Verify transporter configuration
     try {
       await transporter.verify();
-      console.log("Email transporter verified successfully");
+    
     } catch (verifyError) {
       console.error("Email transporter verification failed:", verifyError);
       return NextResponse.json(
@@ -108,17 +103,11 @@ export async function POST(request: Request) {
       html: emailBody,
     };
 
-    // Log message details (without exposing sensitive info)
-    console.log("Sending email with details:", {
-      from: message.from,
-      to: message.to,
-      replyTo: message.replyTo,
-      subject: message.subject
-    });
+  
 
     // Send the email
     const info = await transporter.sendMail(message);
-    console.log("Email sent successfully:", info.messageId);
+   
     
     return NextResponse.json(
       { message: "Email sent successfully" },

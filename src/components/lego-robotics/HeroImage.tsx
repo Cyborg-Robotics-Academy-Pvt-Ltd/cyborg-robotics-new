@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -12,6 +13,9 @@ import "swiper/css/effect-cards";
 // import required modules
 import { EffectCards, Autoplay } from "swiper/modules";
 
+// Import Modal component
+import Modal from "@/components/ui/Modal";
+
 // Static image data structure
 interface StaticImage {
   url: string;
@@ -19,6 +23,8 @@ interface StaticImage {
 }
 
 const HeroImage = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Static Cloudinary image URLs - replace these with your actual URLs
   const staticImages: StaticImage[] = [
     {
@@ -102,7 +108,7 @@ const HeroImage = () => {
       <style>{swiperStyle}</style>{" "}
       {/* Hero Section with improved CTA placement */}
       <motion.section
-        className="py-8 md:py-12 lg:py-16"
+        className="py-8 md:py-12 lg:py-16 mt-6 md:mt-1"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
@@ -156,7 +162,10 @@ const HeroImage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <button className="bg-gradient-to-r from-[#A81B1E] to-[#C73E1D] hover:from-[#C73E1D] hover:to-[#A81B1E] text-white font-bold py-2 px-8 md:py-2 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105  min-w-[220px] text-lg md:text-xl">
+                <button
+                  className="bg-gradient-to-r from-[#A81B1E] to-[#C73E1D] hover:from-[#C73E1D] hover:to-[#A81B1E] text-white font-bold py-2 px-8 md:py-2 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105  min-w-[220px] text-lg md:text-xl"
+                  onClick={() => setIsModalOpen(true)}
+                >
                   Book LEGO Experience – ₹499
                 </button>
               </motion.div>
@@ -235,6 +244,29 @@ const HeroImage = () => {
           </div>
         </div>
       </motion.section>
+      {/* Booking Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Register for LEGO Robotics Workshop"
+      >
+        <div className="p-4">
+          {/* TODO: Replace YOUR_ACTUAL_FORM_ID with your Google Form ID */}
+          <div className="aspect-w-16 aspect-h-9">
+            <iframe
+              src="https://docs.google.com/forms/d/e/1FAIpQLSdQtiaYv9dtnaziDC_Izd2hwOVa1VsAR7-RzN6f6kYfWLb50w/viewform?usp=publish-editor"
+              width="100%"
+              height="600px"
+              frameBorder="0"
+              marginHeight={0}
+              marginWidth={0}
+              title="Registration Form"
+            >
+              Loading Registration Form...
+            </iframe>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

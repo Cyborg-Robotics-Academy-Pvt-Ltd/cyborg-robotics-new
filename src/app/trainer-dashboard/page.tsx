@@ -128,19 +128,16 @@ const TrainerDashboard = () => {
 
     const checkTrainerAuth = async () => {
       try {
-        console.log("Fetching trainer data for user:", user.uid);
         const trainerDocRef = doc(db, "trainers", user.uid);
         const trainerDoc = await getDoc(trainerDocRef);
 
         if (!trainerDoc.exists()) {
-          console.log("Trainer document does not exist for user:", user.uid);
           router.push("/login");
           return;
         }
 
         // Get trainer data from the document
         const trainerData = trainerDoc.data();
-        console.log("Trainer data retrieved:", trainerData);
 
         // Set trainer data for potential future use
         setTrainerData(trainerData);
@@ -159,7 +156,6 @@ const TrainerDashboard = () => {
           name = emailName.charAt(0).toUpperCase() + emailName.slice(1);
         }
 
-        console.log("Setting trainer name to:", name);
         setTrainerName(name);
         setIsLoading(false);
       } catch (error) {

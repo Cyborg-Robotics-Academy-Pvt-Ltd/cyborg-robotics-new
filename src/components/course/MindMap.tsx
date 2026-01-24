@@ -312,7 +312,11 @@ const initialNodes: Node[] = [
     id: "QUARKY1",
     type: "horizontal",
     position: { x: 950, y: 630 },
-    data: { label: "Quarky Robotics & AI - 2 Levels", color: "#22d3ee" },
+    data: {
+      label: "Quarky Robotics & AI - 2 Levels",
+      color: "#22d3ee",
+      link: "/all-courses/robotics-with-quarky",
+    },
   },
 
   // AGE 6–9 ADDITIONAL COURSES (Second column)
@@ -333,7 +337,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Essential - 2 Levels",
       color: "#22d3ee",
-      link: "/all-courses/spike-pneumatics",
+      link: "#",
     },
   },
 
@@ -347,7 +351,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Early Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/all-courses/electronics",
+      link: "/all-courses/early-electronics",
     },
   },
   {
@@ -357,7 +361,7 @@ const initialNodes: Node[] = [
     data: {
       label: "Mini Electronics - 2 Levels",
       color: "#fb923c",
-      link: "/all-courses/electronics",
+      link: "#",
     },
   },
 
@@ -397,7 +401,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE + Python - Levels",
       color: "#c084fc",
-      link: "/all-courses/spike-prime",
+      link: "#",
     },
   },
 
@@ -508,7 +512,11 @@ const initialNodes: Node[] = [
     id: "QUARKY_AI",
     type: "horizontal",
     position: { x: 1000, y: 500 },
-    data: { label: "QUARKY", color: "#fb7185", link: "/all-courses/ai" },
+    data: {
+      label: "QUARKY",
+      color: "#fb7185",
+      link: "/all-courses/coding-ai-pictoblox",
+    },
   },
   {
     id: "DEEP_LEARNING",
@@ -568,7 +576,11 @@ const initialNodes: Node[] = [
     id: "DRONES",
     type: "horizontal",
     position: { x: 950, y: 660 },
-    data: { label: "DRONES - 2 LEVELS", color: "#34d399" },
+    data: {
+      label: "DRONES - 1 LEVEL",
+      color: "#34d399",
+      link: "/all-courses/drone",
+    },
   },
 
   {
@@ -595,7 +607,7 @@ const initialNodes: Node[] = [
     data: {
       label: "ROBOTICS & AI",
       color: "#06b6d4",
-      link: "/all-courses/robotics-ai",
+      link: "/all-courses/coding-ai-pictoblox",
     },
   },
   {
@@ -612,7 +624,7 @@ const initialNodes: Node[] = [
     id: "W_DRONES",
     type: "horizontal",
     position: { x: 950, y: 790 },
-    data: { label: "DRONES", color: "#06b6d4" },
+    data: { label: "DRONES", color: "#06b6d4", link: "/all-courses/drone" },
   },
   {
     id: "W_POWERBI",
@@ -1377,31 +1389,11 @@ const FlowWithProvider = () => {
         // Define age 11-16 subcategories
         const age11to16Subcategories = ["MECH", "CODING", "EMBEDDED"];
 
-        // Log for debugging
-        console.log("Toggling node:", nodeId);
-        console.log("Is currently collapsed:", isCurrentlyCollapsed);
-        console.log("Is main category:", mainCategories.includes(nodeId));
-        console.log("Is age group:", ageGroups.includes(nodeId));
-        console.log(
-          "Is skill subcategory:",
-          skillSubcategories.includes(nodeId)
-        );
-        console.log(
-          "Is workshop subcategory:",
-          workshopSubcategories.includes(nodeId)
-        );
-        console.log(
-          "Is age 11-16 subcategory:",
-          age11to16Subcategories.includes(nodeId)
-        );
-
         // If we're expanding a main category (i.e., it was collapsed and now we're making it expanded),
         // collapse other main categories
         if (isCurrentlyCollapsed && mainCategories.includes(nodeId)) {
-          console.log("Expanding main category, collapsing others");
           mainCategories.forEach((categoryId) => {
             if (categoryId !== nodeId) {
-              console.log("Collapsing category:", categoryId);
               newCollapsedState[categoryId] = true;
             }
           });
@@ -1409,10 +1401,8 @@ const FlowWithProvider = () => {
 
         // If we're expanding an age group category, collapse other age groups
         if (isCurrentlyCollapsed && ageGroups.includes(nodeId)) {
-          console.log("Expanding age group, collapsing other age groups");
           ageGroups.forEach((ageGroupId) => {
             if (ageGroupId !== nodeId) {
-              console.log("Collapsing age group:", ageGroupId);
               newCollapsedState[ageGroupId] = true;
             }
           });
@@ -1420,12 +1410,8 @@ const FlowWithProvider = () => {
 
         // If we're expanding a skill subcategory, collapse other skill subcategories
         if (isCurrentlyCollapsed && skillSubcategories.includes(nodeId)) {
-          console.log(
-            "Expanding skill subcategory, collapsing other skill subcategories"
-          );
           skillSubcategories.forEach((skillId) => {
             if (skillId !== nodeId) {
-              console.log("Collapsing skill subcategory:", skillId);
               newCollapsedState[skillId] = true;
             }
           });
@@ -1433,12 +1419,8 @@ const FlowWithProvider = () => {
 
         // If we're expanding a workshop subcategory, collapse other workshop subcategories
         if (isCurrentlyCollapsed && workshopSubcategories.includes(nodeId)) {
-          console.log(
-            "Expanding workshop subcategory, collapsing other workshop subcategories"
-          );
           workshopSubcategories.forEach((workshopId) => {
             if (workshopId !== nodeId) {
-              console.log("Collapsing workshop subcategory:", workshopId);
               newCollapsedState[workshopId] = true;
             }
           });
@@ -1446,19 +1428,12 @@ const FlowWithProvider = () => {
 
         // If we're expanding an age 11-16 subcategory, collapse other age 11-16 subcategories
         if (isCurrentlyCollapsed && age11to16Subcategories.includes(nodeId)) {
-          console.log(
-            "Expanding age 11-16 subcategory, collapsing other age 11-16 subcategories"
-          );
           age11to16Subcategories.forEach((subId) => {
             if (subId !== nodeId) {
-              console.log("Collapsing age 11-16 subcategory:", subId);
               newCollapsedState[subId] = true;
             }
           });
         }
-
-        // Log the new state
-        console.log("New collapsed state:", newCollapsedState);
 
         // Update URL with new state
         updateUrlState(newCollapsedState);

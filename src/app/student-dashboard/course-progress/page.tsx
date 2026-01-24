@@ -128,7 +128,6 @@ function fromSlug(slug: string) {
     .replace(/\bmachines\b/gi, "Machines")
     .replace(/\bsimple\b/gi, "Simple")
     .replace(/\bpowered\b/gi, "Powered")
-    .replace(/\bpneumatics\b/gi, "Pneumatics")
     .replace(/\bprime\b/gi, "Prime")
     .replace(/\bessential\b/gi, "Essential")
     .replace(/\bstudio\b/gi, "Studio")
@@ -287,15 +286,6 @@ const Page = ({
     params.then(setResolvedParams);
   }, [params]);
 
-  // Debug Firebase connection
-  useEffect(() => {
-    console.log("Firebase db object:", db);
-    console.log("Firebase configuration check:", {
-      hasDb: !!db,
-      dbType: typeof db,
-    });
-  }, []);
-
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
 
   const handleCompletedChange = async (checked: boolean | "indeterminate") => {
@@ -404,21 +394,12 @@ const Page = ({
       return;
     }
 
-    console.log("Saving next course:", {
-      studentId: student.id,
-      nextCourse: nextCourseInput.trim(),
-      studentData: student,
-    });
-
     try {
       const studentRef = doc(db, "students", student.id);
-      console.log("Student reference:", studentRef);
 
       const updateData = { nextCourse: nextCourseInput.trim() };
-      console.log("Update data:", updateData);
 
       await updateDoc(studentRef, updateData);
-      console.log("Database update successful");
 
       // Update local state
       setStudent((prev) =>
@@ -448,14 +429,10 @@ const Page = ({
   const handleDeleteNextCourse = async () => {
     if (!student) return;
 
-    console.log("Deleting next course for student:", student.id);
-
     try {
       const studentRef = doc(db, "students", student.id);
-      console.log("Student reference for delete:", studentRef);
 
       await updateDoc(studentRef, { nextCourse: "" });
-      console.log("Database delete successful");
 
       // Update local state
       setStudent((prev) => (prev ? { ...prev, nextCourse: "" } : null));
@@ -490,7 +467,6 @@ const Page = ({
         }
         const studentDoc = querySnapshot.docs[0];
         const data = studentDoc.data();
-        console.log("Raw student data from database:", data);
 
         const studentData: Student = {
           id: studentDoc.id,
@@ -508,7 +484,7 @@ const Page = ({
           nextCourse: data.nextCourse || "",
           imageUrls: Array.isArray(data.imageUrls) ? data.imageUrls : [],
         };
-        console.log("Processed student data:", studentData);
+
         setStudent(studentData);
 
         // Filter tasks for this course - improved matching with level support

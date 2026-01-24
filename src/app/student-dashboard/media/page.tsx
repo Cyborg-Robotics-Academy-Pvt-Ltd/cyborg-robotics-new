@@ -176,7 +176,7 @@ const Page = () => {
   // Large image view mode
   if (viewMode === "large" && selectedImage !== null) {
     const currentImage = filteredImages[selectedImage];
-    console.log("Current Image URL:", currentImage.url);
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col">
         <div className="flex justify-between items-center p-4 bg-black bg-opacity-70">

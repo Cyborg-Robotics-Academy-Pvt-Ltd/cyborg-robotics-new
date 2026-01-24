@@ -71,48 +71,48 @@ export const javaCurriculum = [
     },
   ];
 
-  export const MachineLearningCurriculum = [
-    {
-      id: "1",
-      title: "Level 1: Introduction to Machine Learning",
-      subtitle: [
-        "Introduction to ML Concepts: Overview of Machine Learning (ML), including supervised, unsupervisedand reinforcement learning. Explanation of key terms like features, labelsand algorithms.",
-        "Python Fundamentals for ML: Basics of Python: data types, loopsand conditionals. Introduction to key libraries: NumPy, Pandas, Matplotlib. Implementing simple algorithms with Scikit-Learn.",
-        "Data Preprocessing: Exploratory Data Analysis (EDA) and data visualization. Techniques for handling missing data and encoding categorical data. Feature scaling and normalization.",
-        "Supervised Learning - Regression: Linear and Polynomial Regression models. Using Scikit-Learn for implementation and performance evaluation (MSE, R-squared).",
-        "Project - Predictive Analysis: Building a housing price prediction model using linear regression.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Level 2: Intermediate Machine Learning",
-      subtitle: [
-        "Classification Algorithms: Logistic Regression, K-Nearest Neighbors (KNN). Evaluation using confusion matrix, accuracy, precisionand recall.",
-        "Decision Trees and Ensemble Methods: Understanding Decision Trees and Random Forests. Introduction to ensemble methods like Bagging and Boosting. Project: Classification using decision trees (Iris or Titanic dataset).",
-        "Unsupervised Learning - Clustering: K-Means and Hierarchical Clustering. Visualizing clusters using real-world datasets.",
-        "Natural Language Processing (NLP) Basics: Text preprocessing, tokenizationand stemming. Sentiment analysis and frequency analysis on text datasets. Project: Sentiment analysis on Twitter data.",
-        "Introduction to Neural Networks: Neural network architecture, layersand activation functions. Using TensorFlow/Keras to build neural networks. Project: Image classification using MNIST dataset.",
-      ],
-    },
-    {
-      id: "3",
-      title: "Level 3: Advanced Machine Learning (Part 1)",
-      subtitle: [
-        "Deep Learning - CNNs and Image Processing: Introduction to Convolutional Neural Networks (CNNs). Image recognition using TensorFlow/Keras on CIFAR-10 dataset.",
-        "Deep Learning - RNNs and Time Series Analysis: Recurrent Neural Networks (RNNs) for sequence prediction. Time-series analysis and forecasting with RNNs. Project: Predictive analysis using a time-series dataset.",
-        "Reinforcement Learning Basics: Introduction to reinforcement learning and Q-learning algorithms. Project: Developing an RL model for a game or simulation.",
-        "Model Deployment and Ethics in ML: Serving ML models through Flask or FastAPI. Discussion on ethical issues in ML: fairness, biasand transparency. Final Project: Deploying an ML model as an API with ethical considerations.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Level 4: Advanced Machine Learning (Part 2)",
-      subtitle: [
-        "Introduction to TensorFlow and PyTorch: Overview of both libraries and their usage. Comparison of model performance using TensorFlow and PyTorch.",
-        "Model Deployment and Project Work: Serving models with Flask or FastAPI. Ethical considerations: addressing bias and ensuring transparency. Final Project: Deploying a model with ethical concerns integrated",
-      ],
-    },
-  ];
+  // export const MachineLearningCurriculum = [
+  //   {
+  //     id: "1",
+  //     title: "Level 1: Introduction to Machine Learning",
+  //     subtitle: [
+  //       "Introduction to ML Concepts: Overview of Machine Learning (ML), including supervised, unsupervisedand reinforcement learning. Explanation of key terms like features, labelsand algorithms.",
+  //       "Python Fundamentals for ML: Basics of Python: data types, loopsand conditionals. Introduction to key libraries: NumPy, Pandas, Matplotlib. Implementing simple algorithms with Scikit-Learn.",
+  //       "Data Preprocessing: Exploratory Data Analysis (EDA) and data visualization. Techniques for handling missing data and encoding categorical data. Feature scaling and normalization.",
+  //       "Supervised Learning - Regression: Linear and Polynomial Regression models. Using Scikit-Learn for implementation and performance evaluation (MSE, R-squared).",
+  //       "Project - Predictive Analysis: Building a housing price prediction model using linear regression.",
+  //     ],
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Level 2: Intermediate Machine Learning",
+  //     subtitle: [
+  //       "Classification Algorithms: Logistic Regression, K-Nearest Neighbors (KNN). Evaluation using confusion matrix, accuracy, precisionand recall.",
+  //       "Decision Trees and Ensemble Methods: Understanding Decision Trees and Random Forests. Introduction to ensemble methods like Bagging and Boosting. Project: Classification using decision trees (Iris or Titanic dataset).",
+  //       "Unsupervised Learning - Clustering: K-Means and Hierarchical Clustering. Visualizing clusters using real-world datasets.",
+  //       "Natural Language Processing (NLP) Basics: Text preprocessing, tokenizationand stemming. Sentiment analysis and frequency analysis on text datasets. Project: Sentiment analysis on Twitter data.",
+  //       "Introduction to Neural Networks: Neural network architecture, layersand activation functions. Using TensorFlow/Keras to build neural networks. Project: Image classification using MNIST dataset.",
+  //     ],
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Level 3: Advanced Machine Learning (Part 1)",
+  //     subtitle: [
+  //       "Deep Learning - CNNs and Image Processing: Introduction to Convolutional Neural Networks (CNNs). Image recognition using TensorFlow/Keras on CIFAR-10 dataset.",
+  //       "Deep Learning - RNNs and Time Series Analysis: Recurrent Neural Networks (RNNs) for sequence prediction. Time-series analysis and forecasting with RNNs. Project: Predictive analysis using a time-series dataset.",
+  //       "Reinforcement Learning Basics: Introduction to reinforcement learning and Q-learning algorithms. Project: Developing an RL model for a game or simulation.",
+  //       "Model Deployment and Ethics in ML: Serving ML models through Flask or FastAPI. Discussion on ethical issues in ML: fairness, biasand transparency. Final Project: Deploying an ML model as an API with ethical considerations.",
+  //     ],
+  //   },
+  //   {
+  //     id: "4",
+  //     title: "Level 4: Advanced Machine Learning (Part 2)",
+  //     subtitle: [
+  //       "Introduction to TensorFlow and PyTorch: Overview of both libraries and their usage. Comparison of model performance using TensorFlow and PyTorch.",
+  //       "Model Deployment and Project Work: Serving models with Flask or FastAPI. Ethical considerations: addressing bias and ensuring transparency. Final Project: Deploying a model with ethical concerns integrated",
+  //     ],
+  //   },
+  // ];
 
 export const RoboticsWithQuarkyCurriculum = [
   {
@@ -158,64 +158,45 @@ export const RoboticsWithQuarkyCurriculum = [
 
 
   export const AnimationAndCodingCurriculum = [
-    {
-      id: "1",
-      title: "Course Introduction",
-      subtitle: [
-        "Introduction to block-based coding.",
-        "Learning how coding can make characters follow instructions.",
-        "Understanding different concepts in a fun way.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Getting Started with Coding",
-      subtitle: [
-        "Engaging with characters like Anna and Elsa (from Frozen) to navigate simple puzzles.",
-        "Learning to identify and create sequences of instructions (algorithms).",
-      ],
-    },
-    {
-      id: "3",
-      title: "Sequence",
-      subtitle: [
-        "Understanding the importance of the order of commands.",
-        "Activities involve arranging blocks to complete a character’s journey.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Loops",
-      subtitle: [
-        "Introduction to the concept of repeating actions.",
-        "Simple activities that reinforce the idea of loops through fun challenges.",
-      ],
-    },
-    {
-      id: "5",
-      title: "Events",
-      subtitle: [
-        "Learning how actions can be triggered by events (e.g., pressing a button).",
-        "Activities involve creating interactive stories or games.",
-      ],
-    },
-    {
-      id: "6",
-      title: "Debugging",
-      subtitle: [
-        "Introduction to finding and fixing errors in sequences.",
-        "Simple puzzles where students identify and correct mistakes.",
-      ],
-    },
-    {
-      id: "7",
-      title: "Project Creation",
-      subtitle: [
-        "Using learned concepts to create a simple interactive project.",
-        "Encourages creativity and application of skills in a fun way.",
-      ],
-    },
-  ];
+
+  {
+    id: "1",
+    title: "Level 1: Foundation Concepts",
+    subtitle: [
+      "Sequencing",
+      "Conditionals",
+      "Types of Loops",
+      "Dance Party",
+      "Key Press Events",
+      "Logical Shapes",
+      "Sensing & Control",
+      "Debugging",
+      "Text to Speech",
+      "Animated Stories",
+      "Creating Strings",
+      "Basic Games",
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2: Advanced Concepts",
+    subtitle: [
+      "Paint Tools & Orientation",
+      "Operators",
+      "Types of Conditionals",
+      "Variables",
+      "Loop Extensions",
+      "Boolean Expression",
+      "Turtle Arts",
+      "User Data Input",
+      "Functions",
+      "Music Tool",
+      "List",
+      "Advance Games",
+    ],
+  },
+
+];
 
  export const ThreeDPrintingCurriculum = {
   level1: {
@@ -720,42 +701,33 @@ export const RoboticsWithQuarkyCurriculum = [
   export const EarlySimplemachineCurriculum = [
     {
       id: "1",
-      title: "Level 1: Introduction to Robotics",
+      title: "Level 1: Early Simple Machines",
       subtitle: [
-        "Introduction to the Robotic Kit and Components: Beams, Axles, Gears, Bushes, etc.",
-        "Gear Meshing: Understanding how gears interact and function.",
-        "Surface Area: Concepts and calculations related to robotic structures.",
-        "Distance, Forceand Pressure: Exploring fundamental physics principles.",
+        "Introduction to robotics and imported LEGO kit: Students are introduced to robotics using imported LEGO kits and learn to identify parts and build basic models.",
+        "Gear meshing: Students learn how gears mesh together to transfer motion from one part to another.",
+        "Distance measurement: Students understand distance by measuring how far a model moves during an activity.",
+        "Force and pressure: Students explore how pushing and pulling forces affect the movement of objects.",
+        "Motion concepts: Students learn basic motion concepts such as movement, direction, and speed.",
+        "Surface area: Students understand how surface area affects movement on different surfaces.",
+        "Pulley concept: Students are introduced to pulleys and learn how they help lift or move objects easily.",
+        "Real-life application of models: Students relate their models to real-life machines and everyday uses.",
+        "Motor skills and focus: Students develop fine motor skills, hand-eye coordination, and focus through hands-on building.",
       ],
     },
     {
       id: "2",
-      title: "Level 2: Mechanics and Motion",
+      title: "Level 2: Early Simple Machines",
       subtitle: [
-        "Motion Concepts: Understanding movement and its applications.",
-        "Pulley Concepts: Mechanics of pulleys in robotics.",
-        "Direction Concepts: Clockwise and anti-clockwise motion.",
-        "Energy Transfer and Flow: How energy moves through robotic systems.",
+        "Flapping motion of bird wings: Students learn how flapping motion is created using mechanical linkages.",
+        "Pulley mechanism: Students understand how pulley systems change the direction and effort of force.",
+        "Hopping mechanisms: Students explore hopping mechanisms to understand repeated motion and energy release.",
+        "Weight balancing: Students learn how balancing weight improves stability in structures.",
+        "Circular and linear motion: Students learn how circular motion can be converted into linear motion.",
+        "Vertical gear meshing: Students understand how vertically placed gears transfer motion between different levels.",
+        "Motor skills and focus: Students develop fine motor skills, hand-eye coordination, and focus through hands-on building.",
       ],
     },
-    {
-      id: "3",
-      title: "Level 3: Practical Applications",
-      subtitle: [
-        "Practical Experiments and Observations: Hands-on learning with real-world applications.",
-        "Robotic Models in Real Life Applications: Understanding their impact and usage.",
-        "Introduction and Identification of Mechanical Components.",
-        "Self-Assembly of the Robotic Model Under Supervision of Certified Trainer.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Level 4: Advanced Robotics and STEM Concepts",
-      subtitle: [
-        "Description of STEM Concepts.",
-        "Practical Experiments, Observationsand Challenges.",
-      ],
-    },
+  
   ];
 
   export const IotCurriculum = [
