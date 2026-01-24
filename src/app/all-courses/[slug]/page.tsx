@@ -335,7 +335,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Explore the cutting-edge world of AI and build intelligent systems",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x5 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ARTIFICIAL INTELLIGENCE.pdf",
     syllabusFileName: "ARTIFICIAL INTELLIGENCE.pdf",
     imagePath: "/assets/online-course/aigif.webp",
@@ -507,7 +507,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Introduce young minds to programming with fun, interactive coding activities",
     mode: "Online & Offline",
-    duration: "7 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/BAMBINO CODING.pdf",
     syllabusFileName: "BAMBINO CODING.pdf",
     imagePath: "/assets/online-course/bambino.webp",
