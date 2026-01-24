@@ -17,6 +17,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  getDoc,
 } from "firebase/firestore";
 import { app } from "../../lib/firebase";
 import {
@@ -64,6 +65,8 @@ const Page = () => {
     classNumber?: string;
     level?: string;
     startDate?: string;
+    trainerId?: string;
+    trainerName?: string;
   }
 
   interface Student {
@@ -85,10 +88,24 @@ const Page = () => {
     trainerName?: string;
   }
 
+  interface Trainer {
+    id: string;
+    name?: string;
+    email?: string;
+    username?: string;
+  }
+
   interface StudentData {
     PrnNumber: string;
     username: string;
     tasks?: Task[];
+  }
+
+  interface Trainer {
+    id: string;
+    name?: string;
+    email?: string;
+    username?: string;
   }
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -140,6 +157,16 @@ const Page = () => {
     [studentId: string]: HTMLButtonElement | null;
   }>({});
   const [refreshing, setRefreshing] = useState(false);
+
+  // State for assign trainer functionality
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [assignTrainerModalOpen, setAssignTrainerModalOpen] = useState(false);
+  const [selectedStudentForTrainer, setSelectedStudentForTrainer] =
+    useState<Student | null>(null);
+  const [selectedCourseForTrainer, setSelectedCourseForTrainer] =
+    useState<Course | null>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<string>("");
+  const [loadingTrainers, setLoadingTrainers] = useState(false);
 
   // State for assign PRN modal
   const [showAssignPrnModal, setShowAssignPrnModal] = useState(false);
@@ -198,9 +225,41 @@ const Page = () => {
     }
   }, []); // Memoized fetchStudents
 
+  // Fetch trainers
+  const fetchTrainers = React.useCallback(async () => {
+    setLoadingTrainers(true);
+    try {
+      const db = getFirestore(app);
+      const trainersCollection = collection(db, "trainers");
+      const trainerSnapshot = await getDocs(trainersCollection);
+
+      const trainerList = trainerSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name:
+            data.name ||
+            data.fullName ||
+            data.displayName ||
+            data.username ||
+            "",
+          email: data.email || "",
+          username: data.username || "",
+        };
+      });
+
+      setTrainers(trainerList);
+    } catch (error) {
+      console.error("Error fetching trainers:", error);
+    } finally {
+      setLoadingTrainers(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStudents();
-  }, [fetchStudents]); // Add fetchStudents as dependency
+    fetchTrainers();
+  }, [fetchStudents, fetchTrainers]); // Add fetchTrainers as dependency
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -255,9 +314,23 @@ const Page = () => {
       let matchesTrainer = true;
       if (trainerFilter) {
         if (trainerFilter === "None Assigned") {
-          matchesTrainer = !student.trainerName;
+          // Check if any non-completed course has no assigned trainer
+          matchesTrainer = student.courses.some(
+            (course) =>
+              typeof course !== "string" &&
+              (!course.trainerName || course.trainerName.trim() === "") &&
+              course.completed !== true &&
+              (!course.status || course.status.toLowerCase() !== "complete")
+          );
         } else {
-          matchesTrainer = student.trainerName === trainerFilter;
+          // Check if any non-completed course has the selected trainer
+          matchesTrainer = student.courses.some(
+            (course) =>
+              typeof course !== "string" &&
+              course.trainerName === trainerFilter &&
+              course.completed !== true &&
+              (!course.status || course.status.toLowerCase() !== "complete")
+          );
         }
       }
 
@@ -303,6 +376,63 @@ const Page = () => {
     } else {
       setSortColumn(column);
       setSortDirection("asc");
+    }
+  };
+
+  // Function to handle trainer assignment to a specific course
+  const handleAssignTrainerToCourse = async () => {
+    if (
+      !selectedStudentForTrainer ||
+      !selectedCourseForTrainer ||
+      !selectedTrainer
+    ) {
+      toast.error("Please select a student, course, and trainer");
+      return;
+    }
+
+    try {
+      const db = getFirestore(app);
+      const studentDocRef = doc(db, "students", selectedStudentForTrainer.id);
+
+      // Find the specific course in the student's courses array
+      const updatedCourses = selectedStudentForTrainer.courses.map((course) => {
+        if (
+          (course.name || "") === (selectedCourseForTrainer.name || "") &&
+          (course.level || "") === (selectedCourseForTrainer.level || "")
+        ) {
+          // Find the selected trainer to get their name
+          const trainer = trainers.find((t) => t.id === selectedTrainer);
+          return {
+            ...course,
+            trainerId: selectedTrainer,
+            trainerName:
+              trainer?.name || trainer?.username || trainer?.email || "",
+          };
+        }
+        return course;
+      });
+
+      await updateDoc(studentDocRef, {
+        courses: updatedCourses,
+      });
+
+      // Update local state
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.id === selectedStudentForTrainer.id
+            ? { ...student, courses: updatedCourses }
+            : student
+        )
+      );
+
+      toast.success("Trainer assigned to course successfully!");
+      setAssignTrainerModalOpen(false);
+      setSelectedStudentForTrainer(null);
+      setSelectedCourseForTrainer(null);
+      setSelectedTrainer("");
+    } catch (error) {
+      console.error("Error assigning trainer to course:", error);
+      toast.error("Failed to assign trainer to course");
     }
   };
 
@@ -843,7 +973,21 @@ const Page = () => {
                   <option value="">All Trainers</option>
                   <option value="None Assigned">None Assigned</option>
                   {Array.from(
-                    new Set(students.map((s) => s.trainerName).filter(Boolean))
+                    new Set(
+                      students.flatMap((s) =>
+                        s.courses
+                          .filter(
+                            (course) =>
+                              typeof course !== "string" &&
+                              course.trainerName &&
+                              course.completed !== true &&
+                              (!course.status ||
+                                course.status.toLowerCase() !== "complete")
+                          )
+                          .map((course) => course.trainerName)
+                          .filter(Boolean)
+                      )
+                    )
                   )
                     .sort()
                     .map((trainerName, index) => (
@@ -1113,14 +1257,99 @@ const Page = () => {
                       <TableCell className="text-gray-600 py-3 px-3 md:px-4 text-xs md:text-sm">
                         <div className="relative group">
                           <span className="inline-block text-wrap max-w-md">
-                            {student.trainerName ? (
-                              student.trainerName
+                            {student.courses && student.courses.length > 0 ? (
+                              <div className="space-y-1">
+                                {student.courses
+                                  .filter((course) => course)
+                                  .slice(0, 2)
+                                  .map(
+                                    (course, index) =>
+                                      !course.completed &&
+                                      !(
+                                        course.status &&
+                                        course.status.toLowerCase() ===
+                                          "complete"
+                                      ) && (
+                                        <div
+                                          key={index}
+                                          className="flex justify-between"
+                                        >
+                                          <span>
+                                            {course.name}{" "}
+                                            {course.level
+                                              ? `(Lvl ${course.level})`
+                                              : ""}
+                                            :
+                                          </span>
+                                          <span className="ml-2">
+                                            {course.trainerName ? (
+                                              <span className="text-blue-600 font-medium">
+                                                {course.trainerName}
+                                              </span>
+                                            ) : (
+                                              <span className="text-red-600 font-semibold">
+                                                No Trainer
+                                              </span>
+                                            )}
+                                          </span>
+                                        </div>
+                                      )
+                                  )}
+                                {student.courses.length > 2 && (
+                                  <div className="text-gray-500 text-xs">
+                                    +{student.courses.length - 2} more...
+                                  </div>
+                                )}
+                              </div>
                             ) : (
                               <span className="text-red-600 font-semibold">
                                 None Assigned
                               </span>
                             )}
                           </span>
+                          {student.courses && student.courses.length > 0 && (
+                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-auto bg-red-800 text-white text-xs rounded-xl py-2 px-3 z-50 shadow-lg max-w-xs">
+                              <div className="font-medium mb-1">
+                                Course-Trainer Assignments:
+                              </div>
+                              {student.courses
+                                .filter(
+                                  (course) =>
+                                    course &&
+                                    !course.completed &&
+                                    !(
+                                      course.status &&
+                                      course.status.toLowerCase() === "complete"
+                                    )
+                                )
+                                .map((course, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex justify-between"
+                                  >
+                                    <span>
+                                      {course.name}{" "}
+                                      {course.level
+                                        ? `(Lvl ${course.level})`
+                                        : ""}
+                                      :
+                                    </span>
+                                    <span className="ml-2">
+                                      {course.trainerName ? (
+                                        <span className="text-blue-300">
+                                          {course.trainerName}
+                                        </span>
+                                      ) : (
+                                        <span className="text-red-200">
+                                          No Trainer
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
+                                ))}
+                              <div className="absolute bottom-0 left-4 transform translate-y-full border-4 border-transparent border-t-red-800"></div>
+                            </div>
+                          )}
                         </div>
                       </TableCell>
                       {activeTab === "hold" && (
@@ -1307,6 +1536,12 @@ const Page = () => {
                                       Add New Course
                                     </button>
                                   </motion.div>
+
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.15 }}
+                                  ></motion.div>
                                   <motion.div
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -1372,30 +1607,29 @@ const Page = () => {
             </div>
           )}
         </div>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "#991b1b",
+              color: "white",
+              zIndex: 9999,
+            },
+            success: {
+              style: {
+                background: "#16a34a",
+                color: "white",
+              },
+            },
+            error: {
+              style: {
+                background: "#dc2626",
+                color: "white",
+              },
+            },
+          }}
+        />
       </main>
-
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: "#991b1b",
-            color: "white",
-            zIndex: 9999,
-          },
-          success: {
-            style: {
-              background: "#16a34a",
-              color: "white",
-            },
-          },
-          error: {
-            style: {
-              background: "#dc2626",
-              color: "white",
-            },
-          },
-        }}
-      />
 
       {/* Add Modal for Adding Classes */}
       {isModalOpen && (
@@ -2131,6 +2365,112 @@ const Page = () => {
                         </p>
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Trainer to Course Modal */}
+      {assignTrainerModalOpen && selectedStudentForTrainer && (
+        <div className="fixed z-50 inset-0 bg-black bg-opacity-60 flex items-center justify-center transition-opacity duration-300 overflow-y-auto p-2 md:p-4">
+          <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
+              {/* Modal Header */}
+
+              {/* Modal Content */}
+              <div className="px-6 py-6 h-96 overflow-y-auto">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Student
+                    </label>
+                    <input
+                      type="text"
+                      value={`${selectedStudentForTrainer.username} (${selectedStudentForTrainer.PrnNumber})`}
+                      readOnly
+                      className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Course
+                    </label>
+                    <select
+                      value={
+                        selectedCourseForTrainer
+                          ? `${selectedCourseForTrainer.name || ""}_${selectedCourseForTrainer.level || ""}`
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const [name, level] = e.target.value.split("_");
+                        const course = selectedStudentForTrainer.courses.find(
+                          (c) =>
+                            (c.name || "") === name && (c.level || "") === level
+                        );
+                        setSelectedCourseForTrainer(course || null);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="" disabled>
+                        Select a course
+                      </option>
+                      {selectedStudentForTrainer.courses.map(
+                        (course, index) => (
+                          <option
+                            key={index}
+                            value={`${course.name || ""}_${course.level || ""}`}
+                          >
+                            {course.name}{" "}
+                            {course.level ? `(Level ${course.level})` : ""}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Trainer
+                    </label>
+                    <select
+                      value={selectedTrainer}
+                      onChange={(e) => setSelectedTrainer(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="" disabled>
+                        Select a trainer
+                      </option>
+                      {trainers.map((trainer) => (
+                        <option key={trainer.id} value={trainer.id}>
+                          {trainer.name || trainer.username || trainer.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setAssignTrainerModalOpen(false);
+                        setSelectedStudentForTrainer(null);
+                        setSelectedCourseForTrainer(null);
+                        setSelectedTrainer("");
+                      }}
+                      className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAssignTrainerToCourse}
+                      disabled={!selectedCourseForTrainer || !selectedTrainer}
+                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Assign Trainer
+                    </button>
                   </div>
                 </div>
               </div>

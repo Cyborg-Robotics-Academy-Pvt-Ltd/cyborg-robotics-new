@@ -544,7 +544,7 @@ export default function Header() {
                                 className={`h-4 w-4 transition-transform duration-300 ${isSubmenuVisible ? "rotate-180" : ""}`}
                               />
                             )}
-                            {item.id === "ftc-competition" && (
+                            {item.id === "tech-programs" && (
                               <span className="bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                                 NEW
                               </span>

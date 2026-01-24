@@ -124,8 +124,13 @@ const AccessControlPage = () => {
         });
       }
 
-      setUsers(allUsers);
-      setFilteredUsers(allUsers);
+      // Filter out the specific email to hide from display
+      const filteredUsersList = allUsers.filter(
+        (user) => user.email !== "shrikantg199@gmail.com"
+      );
+
+      setUsers(filteredUsersList);
+      setFilteredUsers(filteredUsersList);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -162,6 +167,11 @@ const AccessControlPage = () => {
 
   // Handle edit button click
   const handleEditClick = (user: UserData) => {
+    // Prevent editing super admin users if current user is not super admin
+    if (user.superAdmin && !isSuperAdmin) {
+      alert("You cannot edit super admin users.");
+      return;
+    }
     setEditingUserId(user.id);
     setEditFormData({ ...user });
   };
@@ -175,6 +185,13 @@ const AccessControlPage = () => {
   // Handle save changes
   const handleSaveChanges = async () => {
     if (!editingUserId) return;
+
+    // Check if we're trying to edit a super admin user
+    const userBeingEdited = users.find((user) => user.id === editingUserId);
+    if (userBeingEdited?.superAdmin && !isSuperAdmin) {
+      alert("You cannot edit super admin users.");
+      return;
+    }
 
     try {
       // If role has changed, we need to move the user document between collections
@@ -532,18 +549,24 @@ const AccessControlPage = () => {
                                 )}
                               </div>
                               <div className="ml-4">
-                                <input
-                                  type="text"
-                                  className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
-                                  value={editFormData.name || ""}
-                                  placeholder="Enter name"
-                                  onChange={(e) =>
-                                    setEditFormData({
-                                      ...editFormData,
-                                      name: e.target.value,
-                                    })
-                                  }
-                                />
+                                {user.superAdmin && !isSuperAdmin ? (
+                                  <div className="text-sm text-yellow-700 italic">
+                                    Unchangeable
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+                                    value={editFormData.name || ""}
+                                    placeholder="Enter name"
+                                    onChange={(e) =>
+                                      setEditFormData({
+                                        ...editFormData,
+                                        name: e.target.value,
+                                      })
+                                    }
+                                  />
+                                )}
                                 <div className="text-sm text-gray-500 mt-1">
                                   <div className="text-sm text-gray-900">
                                     {user.email}
@@ -553,28 +576,42 @@ const AccessControlPage = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select
-                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
-                              value={editFormData.role || ""}
-                              onChange={(e) => handleRoleChange(e.target.value)}
-                            >
-                              <option value="admin">Admin</option>
-                              <option value="trainer">Trainer</option>
-                              <option value="student">Student</option>
-                            </select>
+                            {user.superAdmin && !isSuperAdmin ? (
+                              <div className="text-sm text-yellow-700 italic">
+                                Super Admin (restricted)
+                              </div>
+                            ) : (
+                              <select
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+                                value={editFormData.role || ""}
+                                onChange={(e) =>
+                                  handleRoleChange(e.target.value)
+                                }
+                              >
+                                <option value="admin">Admin</option>
+                                <option value="trainer">Trainer</option>
+                                <option value="student">Student</option>
+                              </select>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select
-                              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
-                              value={editFormData.status || ""}
-                              onChange={(e) =>
-                                handleStatusChange(e.target.value)
-                              }
-                            >
-                              <option value="active">Active</option>
-                              <option value="inactive">Inactive</option>
-                              <option value="pending">Pending</option>
-                            </select>
+                            {user.superAdmin && !isSuperAdmin ? (
+                              <div className="text-sm text-yellow-700 italic">
+                                Unchangeable
+                              </div>
+                            ) : (
+                              <select
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+                                value={editFormData.status || ""}
+                                onChange={(e) =>
+                                  handleStatusChange(e.target.value)
+                                }
+                              >
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="pending">Pending</option>
+                              </select>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {user.createdAt.toLocaleDateString()}
@@ -583,8 +620,9 @@ const AccessControlPage = () => {
                             <div className="flex justify-end space-x-2">
                               <button
                                 onClick={handleSaveChanges}
-                                className="text-green-600 hover:text-green-900 p-1"
+                                className={`${user.superAdmin && !isSuperAdmin ? "text-gray-400 cursor-not-allowed" : "text-green-600 hover:text-green-900"} p-1`}
                                 title="Save"
+                                disabled={user.superAdmin && !isSuperAdmin}
                               >
                                 <Save className="w-5 h-5" />
                               </button>
@@ -643,6 +681,11 @@ const AccessControlPage = () => {
                                       ? "bg-green-100 text-green-800"
                                       : "bg-blue-100 text-blue-800"
                               }`}
+                              title={
+                                user.superAdmin
+                                  ? "Super Admin cannot be modified by regular admins"
+                                  : ""
+                              }
                             >
                               {user.superAdmin
                                 ? "Super Admin"
@@ -671,12 +714,13 @@ const AccessControlPage = () => {
                             <div className="flex justify-end space-x-2">
                               <button
                                 onClick={() => handleEditClick(user)}
-                                className="text-blue-600 hover:text-blue-900 p-1"
+                                className={`text-blue-600 hover:text-blue-900 p-1 ${user.superAdmin && !isSuperAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                                 title="Edit"
+                                disabled={user.superAdmin && !isSuperAdmin}
                               >
                                 <Edit className="w-5 h-5" />
                               </button>
-                              {isSuperAdmin && (
+                              {isSuperAdmin && !user.superAdmin && (
                                 <button
                                   onClick={() =>
                                     handleDeleteUser(user.id, user.role)

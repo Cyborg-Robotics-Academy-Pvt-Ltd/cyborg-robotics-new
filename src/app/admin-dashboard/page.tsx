@@ -232,21 +232,6 @@ const AdminDashboard = () => {
 
   const dashboardCards = [
     {
-      title: "Access Control",
-      description: "Manage user roles, permissions and access levels",
-      href: "/admin-dashboard/access-control",
-      icon: Shield,
-      color: "indigo",
-      gradient: "from-indigo-500 to-purple-500",
-      bgColor: "bg-indigo-50",
-      iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200",
-      textColor: "text-indigo-600",
-      hoverColor: "group-hover:text-indigo-600",
-      borderColor: "border-indigo-200",
-      action: "Manage access",
-      delay: 0.1,
-    },
-    {
       title: "Student Record",
       description: "View and manage the list of students and trainers",
       href: "/student-list",
@@ -261,52 +246,7 @@ const AdminDashboard = () => {
       action: "View list",
       delay: 0.2,
     },
-    {
-      title: "Media Section",
-      description: "View system analytics, reports and key metrics",
-      href: "/media",
-      icon: BarChart3,
-      color: "blue",
-      gradient: "from-blue-500 to-indigo-500",
-      bgColor: "bg-blue-50",
-      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
-      textColor: "text-blue-600",
-      hoverColor: "group-hover:text-blue-600",
-      borderColor: "border-blue-200",
-      action: "View analytics",
-      delay: 0.3,
-    },
 
-    {
-      title: "New Registration",
-      description: "Register new students to the system",
-      href: "/admin-dashboard/new-registration",
-      icon: UserRoundPlus,
-      color: "amber",
-      gradient: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50",
-      iconBg: "bg-gradient-to-br from-amber-100 to-amber-200",
-      textColor: "text-amber-600",
-      hoverColor: "group-hover:text-amber-600",
-      borderColor: "border-amber-200",
-      action: "Register students",
-      delay: 0.5,
-    },
-    {
-      title: "Renewal",
-      description: "Renew existing student registrations and subscriptions",
-      href: "/admin-dashboard/renewal",
-      icon: RotateCw,
-      color: "teal",
-      gradient: "from-teal-500 to-green-500",
-      bgColor: "bg-teal-50",
-      iconBg: "bg-gradient-to-br from-teal-100 to-teal-200",
-      textColor: "text-teal-600",
-      hoverColor: "group-hover:text-teal-600",
-      borderColor: "border-teal-200",
-      action: "Manage renewals",
-      delay: 0.6,
-    },
     {
       title: "Home Gallery Data",
       description: "Upload, view and manage gallery images",
@@ -322,21 +262,7 @@ const AdminDashboard = () => {
       action: "Manage gallery",
       delay: 0.4,
     },
-    {
-      title: "Student Class Management",
-      description: "Manage student classes and assignments",
-      href: "/admin-dashboard/student-class-management",
-      icon: BookOpen,
-      color: "orange",
-      gradient: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-50",
-      iconBg: "bg-gradient-to-br from-orange-100 to-orange-200",
-      textColor: "text-orange-600",
-      hoverColor: "group-hover:text-orange-600",
-      borderColor: "border-orange-200",
-      action: "Manage classes",
-      delay: 0.7,
-    },
+
     {
       title: "Create Multiple Accounts",
       description: "Create multiple user accounts without email verification",
@@ -382,13 +308,8 @@ const AdminDashboard = () => {
       <main
         role="main"
         aria-label="Admin Dashboard"
-        className={`min-h-[calc(100vh-6rem)] ${theme.background}`}
+        className={`min-h-[calc(100vh-6rem)] `}
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-30 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-        </div>
-
         <div className="relative w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 ">
           {/* Header Section */}
           <motion.div

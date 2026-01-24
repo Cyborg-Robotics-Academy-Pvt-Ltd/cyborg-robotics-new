@@ -26,6 +26,8 @@ import {
   BookOpen,
   Users,
   Shield,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -43,6 +45,7 @@ const CreateMultipleUsersPage = () => {
     { fullName: "", email: "", password: "", role: "student" },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPasswords, setShowPasswords] = useState<boolean[]>([false]);
 
   // Role options for dropdown
   const roleOptions = [
@@ -90,6 +93,7 @@ const CreateMultipleUsersPage = () => {
       ...userForms,
       { fullName: "", email: "", password: "", role: "student" },
     ]);
+    setShowPasswords([...showPasswords, false]);
   };
 
   const removeUserForm = (index: number) => {
@@ -97,6 +101,10 @@ const CreateMultipleUsersPage = () => {
       const newForms = [...userForms];
       newForms.splice(index, 1);
       setUserForms(newForms);
+
+      const newShowPasswords = [...showPasswords];
+      newShowPasswords.splice(index, 1);
+      setShowPasswords(newShowPasswords);
     }
   };
 
@@ -206,6 +214,7 @@ const CreateMultipleUsersPage = () => {
         setUserForms([
           { fullName: "", email: "", password: "", role: "student" },
         ]);
+        setShowPasswords([false]);
 
         // Suggest page refresh to maintain session
         setTimeout(() => {
@@ -350,14 +359,29 @@ const CreateMultipleUsersPage = () => {
                         <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
                           id={`password-${index}`}
-                          type="password"
+                          type={showPasswords[index] ? "text" : "password"}
                           value={form.password}
                           onChange={(e) =>
                             handleFormChange(index, "password", e.target.value)
                           }
                           placeholder="Enter password"
-                          className="pl-10"
+                          className="pl-10 pr-10"
                         />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newShowPasswords = [...showPasswords];
+                            newShowPasswords[index] = !newShowPasswords[index];
+                            setShowPasswords(newShowPasswords);
+                          }}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords[index] ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
