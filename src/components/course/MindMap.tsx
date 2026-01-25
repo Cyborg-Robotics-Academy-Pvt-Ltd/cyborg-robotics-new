@@ -306,7 +306,11 @@ const initialNodes: Node[] = [
     id: "CODE1",
     type: "horizontal",
     position: { x: 950, y: 570 },
-    data: { label: "Code.org - 2 Levels", color: "#22d3ee" },
+    data: {
+      label: "Code.org - 2 Levels",
+      color: "#22d3ee",
+      link: "/all-courses/bambino-coding",
+    },
   },
   {
     id: "QUARKY1",

@@ -10,22 +10,6 @@ const Page = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Header />
       <>
-        <Head>
-          <title>Video Gallery | Cyborg Robotics Academy</title>
-          <meta
-            name="description"
-            content="Watch videos from Cyborg Robotics Academy events, classes and activities."
-          />
-          <meta
-            property="og:title"
-            content="Video Gallery | Cyborg Robotics Academy"
-          />
-          <meta
-            property="og:description"
-            content="Watch videos from Cyborg Robotics Academy events, classes and activities."
-          />
-          <meta property="og:type" content="website" />
-        </Head>
         <main
           role="main"
           aria-label="Video Gallery"

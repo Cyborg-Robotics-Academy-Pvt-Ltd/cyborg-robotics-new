@@ -256,22 +256,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   if (!student) {
     return (
       <>
-        <Head>
-          <title>Student Not Found | Cyborg Robotics Academy</title>
-          <meta
-            name="description"
-            content="No student found with the provided PRN."
-          />
-          <meta
-            property="og:title"
-            content="Student Not Found | Cyborg Robotics Academy"
-          />
-          <meta
-            property="og:description"
-            content="No student found with the provided PRN."
-          />
-          <meta property="og:type" content="website" />
-        </Head>
         <main
           role="main"
           aria-label="Student Not Found"
@@ -309,22 +293,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
 
   return (
     <>
-      <Head>
-        <title>{student.username} | Student Dashboard</title>
-        <meta
-          name="description"
-          content={`Dashboard for ${student.username} at Cyborg Robotics Academy.`}
-        />
-        <meta
-          property="og:title"
-          content={`${student.username} | Student Dashboard`}
-        />
-        <meta
-          property="og:description"
-          content={`Dashboard for ${student.username} at Cyborg Robotics Academy.`}
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Student Dashboard"

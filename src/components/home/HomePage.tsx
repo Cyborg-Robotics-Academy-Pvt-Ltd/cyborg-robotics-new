@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 import { motion } from "framer-motion";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
@@ -85,6 +86,42 @@ const HomePage: React.FC = () => {
 
   return (
     <>
+      <Head>
+        {/* Performance optimizations */}
+        <title>
+          Robotics & Coding Classes For Kids | STEM & Coding Academy
+        </title>
+        <meta
+          name="description"
+          content="Discover engaging robotics and coding courses for kids. Build STEM skills, innovate and learn through hands-on projects in a fun environment."
+        />
+        <meta
+          name="keywords"
+          content="robotics academy for kids, kids robotics classes, robotics classes in Pune / your city, STEM classes for kids, coding classes for kids, robotics training for children, kids technology academy, robotics and coding for kids, STEM education for kids, child robotics workshops"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://assets.aceternity.com" />
+
+        {/* App icons and meta */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/assets/logo.png" />
+        <meta name="theme-color" content="#dc2626" />
+
+        {/* Performance meta tags */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
+        />
+        <meta httpEquiv="x-ua-compatible" content="ie=edge" />
+      </Head>
+
       {/* Template Image Modal */}
       {/* <TemplateCarousel showModal={showModal} closeModal={closeModal} /> */}
 

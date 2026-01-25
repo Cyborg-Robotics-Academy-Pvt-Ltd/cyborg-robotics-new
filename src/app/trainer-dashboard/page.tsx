@@ -279,23 +279,6 @@ const TrainerDashboard = () => {
 
   return (
     <>
-      <Head>
-        <title>Trainer Dashboard | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Trainer dashboard for managing students, tasks and analytics at Cyborg Robotics Academy."
-        />
-        <meta
-          property="og:title"
-          content="Trainer Dashboard | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Trainer dashboard for managing students, tasks and analytics at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
-
       <main role="main" aria-label="Trainer Dashboard" className={``}>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-30 pointer-events-none">

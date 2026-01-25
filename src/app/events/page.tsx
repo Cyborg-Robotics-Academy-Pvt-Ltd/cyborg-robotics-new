@@ -41,19 +41,6 @@ const EventsPage = () => {
 
   return (
     <>
-      <Head>
-        <title>Events | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="See the latest events and activities at Cyborg Robotics Academy."
-        />
-        <meta property="og:title" content="Events | Cyborg Robotics Academy" />
-        <meta
-          property="og:description"
-          content="See the latest events and activities at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Events Page"

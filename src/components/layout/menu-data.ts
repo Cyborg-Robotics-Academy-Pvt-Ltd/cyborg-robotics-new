@@ -7,9 +7,21 @@ export interface MenuItem {
   href?: string;
   children?: MenuItem[];
   id?: string; // Added for tracking active sections
+  mobileOnly?: boolean; // Flag to indicate if menu item should only show on mobile
 }
 
 const mainMenu: MenuItem[] = [
+   {
+    title: 'Tech Programs',
+    icon: Bot,
+    mobileOnly: true,
+    children: [
+      { title: 'Lego Robotics', href: '/tech-programs/lego-robotics', icon: Target },
+      // { title: '3D Printing', href: '/all-courses#3d-printing', icon: Target },
+      // { title: 'Arduino', href: '/all-courses#arduino', icon: Target },
+      // { title: 'Animation Coding', href: '/all-courses#animation-coding', icon: Target },
+    ],
+  },
   {
    title: 'Courses',
     icon: BookOpen,
@@ -79,14 +91,7 @@ const mainMenu: MenuItem[] = [
     icon: Phone,
     href: '/contact-us',
   },
-  {
-    title: 'Tech Programs',
-    icon: Bot,
-    children: [
-      { title: 'Lego Robotics', href: '/tech-programs/lego-robotics', icon: Target },
-      { title: '3D Printing', href: '#', icon: Target },
-    ],
-  },
+ 
 ];
 
 

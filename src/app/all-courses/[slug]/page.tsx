@@ -284,48 +284,48 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  "machine-learning": {
-    id: "machineLearning",
-    title: "MACHINE LEARNING",
-    subtitle:
-      "Master the fundamentals of machine learning and build intelligent applications",
-    badge: "AI & Data Science Course",
-    description:
-      "Master the fundamentals of machine learning and build intelligent applications",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/MACHINE LEARNING.pdf",
-    syllabusFileName: "MACHINE LEARNING.pdf",
-    imagePath: "/assets/online-course/machine-learning.webp",
-    imageAlt: "Machine Learning Course",
-    price: 18999,
-    originalPrice: 25999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "ML Fundamentals",
-        description: "Learn core machine learning concepts and algorithms",
-        iconName: "BrainCircuit",
-      },
-      {
-        title: "Data Processing",
-        description:
-          "Master data preprocessing and feature engineering techniques",
-        iconName: "Database",
-      },
-      {
-        title: "Model Training",
-        description: "Train and evaluate machine learning models effectively",
-        iconName: "LineChart",
-      },
-      {
-        title: "Real-world Applications",
-        description: "Build practical ML applications for various domains",
-        iconName: "Rocket",
-      },
-    ],
-  },
+  // "machine-learning": {
+  //   id: "machineLearning",
+  //   title: "MACHINE LEARNING",
+  //   subtitle:
+  //     "Master the fundamentals of machine learning and build intelligent applications",
+  //   badge: "AI & Data Science Course",
+  //   description:
+  //     "Master the fundamentals of machine learning and build intelligent applications",
+  //   mode: "Online & Offline",
+  //   duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+  //   syllabusPath: "/assets/pdf/MACHINE LEARNING.pdf",
+  //   syllabusFileName: "MACHINE LEARNING.pdf",
+  //   imagePath: "/assets/online-course/machine-learning.webp",
+  //   imageAlt: "Machine Learning Course",
+  //   price: 18999,
+  //   originalPrice: 25999,
+  //   currency: "INR",
+  //   locale: "en-IN",
+  //   keyFeatures: [
+  //     {
+  //       title: "ML Fundamentals",
+  //       description: "Learn core machine learning concepts and algorithms",
+  //       iconName: "BrainCircuit",
+  //     },
+  //     {
+  //       title: "Data Processing",
+  //       description:
+  //         "Master data preprocessing and feature engineering techniques",
+  //       iconName: "Database",
+  //     },
+  //     {
+  //       title: "Model Training",
+  //       description: "Train and evaluate machine learning models effectively",
+  //       iconName: "LineChart",
+  //     },
+  //     {
+  //       title: "Real-world Applications",
+  //       description: "Build practical ML applications for various domains",
+  //       iconName: "Rocket",
+  //     },
+  //   ],
+  // },
   "artificial-intelligence": {
     id: "artificialIntelligence",
     title: "ARTIFICIAL INTELLIGENCE",
@@ -419,7 +419,7 @@ const mockData: Record<string, CourseData> = {
     badge: "Educational Robotics Course",
     description: "Learn robotics and coding with LEGO Education SPIKE Prime",
     mode: "Offline",
-    duration: "14 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/Spike Prime.pdf",
     syllabusFileName: "SPIKE PRIME.pdf",
     imagePath: "/assets/classroom-course/Spike-Prime.png",
@@ -794,7 +794,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Explore powered mechanical systems and motor-driven mechanisms",
     mode: "Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/SIMPLE AND POWER MACHINE.pdf",
     syllabusFileName: "SIMPLE AND POWER MACHINE.pdf",
     imagePath: "/assets/classroom-course/simple-powered-machines.webp",

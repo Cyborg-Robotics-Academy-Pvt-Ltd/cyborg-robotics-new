@@ -250,22 +250,6 @@ const RegisterPage: React.FC = () => {
 
   return (
     <>
-      <Head>
-        <title>New Student Registration | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Register as a new student at Cyborg Robotics Academy with our easy online form."
-        />
-        <meta
-          property="og:title"
-          content="New Student Registration | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Register as a new student at Cyborg Robotics Academy with our easy online form."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="New Student Registration"

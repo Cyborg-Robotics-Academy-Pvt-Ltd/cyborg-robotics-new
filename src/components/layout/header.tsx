@@ -304,6 +304,17 @@ export default function Header() {
     };
   }, [showSearchPopup]);
 
+  // Focus search input when popup opens
+  useEffect(() => {
+    if (showSearchPopup && searchInputRef.current) {
+      // Use setTimeout to ensure DOM is updated before focusing
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [showSearchPopup]);
+
   // Generate search suggestions based on course data
   useEffect(() => {
     const generateSuggestions = () => {
@@ -574,15 +585,33 @@ export default function Header() {
                                     Lego Robotics
                                   </Link>
                                 </li>
-                                <li>
+                                {/* <li>
                                   <Link
-                                    href="#"
+                                    href="/all-courses#3d-printing"
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
-                                    onClick={(e) => e.preventDefault()}
+                                    onClick={() => setIsMenuOpen(false)}
                                   >
                                     3D Printing
                                   </Link>
                                 </li>
+                                <li>
+                                  <Link
+                                    href="/all-courses#arduino"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    Arduino
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link
+                                    href="/all-courses#animation-coding"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    Animation Coding
+                                  </Link>
+                                </li> */}
                               </ul>
                             </motion.div>
                           )}

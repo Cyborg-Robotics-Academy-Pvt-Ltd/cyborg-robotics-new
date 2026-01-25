@@ -457,22 +457,6 @@ const CreateUser = () => {
 
   return (
     <>
-      <Head>
-        <title>Assign PRN & Enroll Courses | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Assign PRN number and enroll courses for newly signed up students at Cyborg Robotics Academy."
-        />
-        <meta
-          property="og:title"
-          content="Assign PRN & Enroll Courses | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Assign PRN number and enroll courses for newly signed up students at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Assign PRN & Enroll Courses Page"

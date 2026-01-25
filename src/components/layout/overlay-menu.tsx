@@ -8,6 +8,29 @@ import {
   useEffect,
   useRef,
 } from "react";
+
+// Custom hook to detect screen size
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint is typically 768px
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Add resize listener
+    window.addEventListener("resize", checkScreenSize);
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
+  return isMobile;
+}
+
 import {
   AnimatePresence,
   motion,
@@ -104,6 +127,7 @@ const MenuList = ({
   activeSection,
   scrollToSection,
   router,
+  isMobile = true, // Make this optional with default value
 }: {
   items: MenuItem[];
   setIsOpen: Dispatch<SetStateAction<boolean>>;
@@ -112,6 +136,7 @@ const MenuList = ({
   activeSection?: string;
   scrollToSection?: (sectionId: string) => void;
   router: ReturnType<typeof useRouter>;
+  isMobile?: boolean; // Make this optional
 }) => {
   const handleItemClick = (item: MenuItem) => {
     if (!item.children) {
@@ -142,8 +167,10 @@ const MenuList = ({
   };
 
   // Separate items with children (accordion) and without (links)
-  const accordionItems = items.filter((item) => item.children);
-  const linkItems = items.filter((item) => !item.children);
+  // Filter out mobile-only items if we're on desktop
+  const filteredItems = items.filter((item) => !(item.mobileOnly && !isMobile));
+  const accordionItems = filteredItems.filter((item) => item.children);
+  const linkItems = filteredItems.filter((item) => !item.children);
 
   const isRootLevel = depth === 0;
   const containerSpacingClass = isRootLevel ? "space-y-2" : "space-y-1";
@@ -202,6 +229,7 @@ const MenuList = ({
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
                     router={router}
+                    isMobile={isMobile}
                   />
                 </div>
               </AccordionContent>
@@ -292,6 +320,7 @@ export default function OverlayMenu({
 }: OverlayMenuProps) {
   const { user, userRole } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile(); // Add this hook
 
   // Search functionality states
   const [searchQuery, setSearchQuery] = useState("");
@@ -489,7 +518,7 @@ export default function OverlayMenu({
             <main className="flex-1 overflow-y-auto no-scrollbar flex mt-6 justify-center">
               <div className="grid grid-cols-1 w-screen gap-16 md:grid-cols-2 items-start">
                 {/* Left: existing menu - ENHANCED UI */}
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-2xl shadow-lg border border-gray-200 w-full max-w-2xl">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-2xl shadow-lg border border-gray-200 w-full">
                   <div className="mb-4">
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
                       Navigation
@@ -503,6 +532,7 @@ export default function OverlayMenu({
                     activeSection={activeSection}
                     scrollToSection={scrollToSection}
                     router={router}
+                    isMobile={isMobile}
                   />
                   {/* Authentication Section */}
                   {user && (

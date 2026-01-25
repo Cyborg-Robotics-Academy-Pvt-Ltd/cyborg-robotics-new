@@ -54,22 +54,6 @@ const Page = () => {
 
   return (
     <>
-      <Head>
-        <title>Upcoming Tasks | Student Dashboard</title>
-        <meta
-          name="description"
-          content="View your upcoming tasks and schedule at Cyborg Robotics Academy."
-        />
-        <meta
-          property="og:title"
-          content="Upcoming Tasks | Student Dashboard"
-        />
-        <meta
-          property="og:description"
-          content="View your upcoming tasks and schedule at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Upcoming Tasks"
