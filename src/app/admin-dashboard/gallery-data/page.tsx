@@ -316,14 +316,6 @@ export default function GalleryDataPage() {
 
   return (
     <>
-      <Head>
-        <title>Gallery Data Management | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Manage gallery images for Cyborg Robotics Academy."
-        />
-      </Head>
-
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div

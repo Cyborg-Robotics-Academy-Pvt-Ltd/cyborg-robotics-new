@@ -253,19 +253,6 @@ const Page = () => {
   // Grid view mode (default)
   return (
     <>
-      <Head>
-        <title>Media Gallery | Student Dashboard</title>
-        <meta
-          name="description"
-          content="Browse and view your course media gallery at Cyborg Robotics Academy."
-        />
-        <meta property="og:title" content="Media Gallery | Student Dashboard" />
-        <meta
-          property="og:description"
-          content="Browse and view your course media gallery at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Media Gallery"

@@ -766,24 +766,6 @@ const Page = ({
   }
   return (
     <>
-      <Head>
-        <title>
-          {student.username} | {courseName} Progress
-        </title>
-        <meta
-          name="description"
-          content={`Progress and details for ${courseName} - ${student.username} at Cyborg Robotics Academy.`}
-        />
-        <meta
-          property="og:title"
-          content={`${student.username} | ${courseName} Progress`}
-        />
-        <meta
-          property="og:description"
-          content={`Progress and details for ${courseName} - ${student.username} at Cyborg Robotics Academy.`}
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Course Detail"

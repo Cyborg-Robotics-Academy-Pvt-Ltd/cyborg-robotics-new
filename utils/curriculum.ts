@@ -866,47 +866,34 @@ export const RoboticsWithQuarkyCurriculum = [
   export const SimplePoweredMachines = [
     {
       id: "1",
-      title: "Level 1: Robotic Kit Components",
+      title: "Simple & Powered Machines – Level 1",
       subtitle: [
-        "Beams & Angular Beams: Structural elements that provide support and framework for robotic models.",
-        "Axles: Rods that support gears and transmit motion.",
-        "Gears: Mechanical components that engage with driver and driven components to alter speed and torque.",
-        "Motors & Battery Pack: Motors provide the power for mechanical movements, while the battery pack supplies the energy needed to operate them.",
-        "Bushes: Support structures that enable smooth rotation of axles.",
-        "Pulleys: Mechanical devices that change the direction of force, making it easier to lift loads or transfer motion.",
-        "Cams: Mechanical components that convert rotary motion into linear motion, enabling controlled movement in robotic mechanisms.",
+        "Gear meshing and speed changing using different gear ratios: Students learn how different gear ratios change speed and force in a moving model.",
+        "Introduction to battery pack, motor, and energy transformation: Students understand how chemical energy from batteries is converted into electrical energy to run motors.",
+        "Area and boundary: Students explore area and boundary by observing how space and limits affect model movement.",
+        "Circular motion, linear motion, and cam mechanism: Students learn the difference between circular and linear motion and how a cam converts one motion into another.",
+        "Real-life application: Students connect machine models to real-life tools and everyday applications.",
+        "Vertical gear meshing: Students understand how vertical gears transfer motion between different levels.",
+        "Pawl and ratchet mechanism: Students learn how a pawl and ratchet allows motion in one direction only.",
+        "Idler gear: Students understand how an idler gear changes the direction of motion without affecting speed.",
+        "Gravity and friction: Students explore how gravity and friction influence the movement of machines.",
       ],
     },
     {
       id: "2",
-      title: "Level 2: Mechanical Principles",
+      title: "Simple & Powered Machines – Level 2",
       subtitle: [
-        "Horizontal & Vertical Gear Meshing: Transfer of motion across different planes.",
-        "Driver and Driven Gears: Understanding input vs. output gear functions.",
-        "Speed Control Using Gear Ratios: Effect of gear size on speed and torque.",
-        "Circumference and Its Relation to Speed & Time: Impact of wheel size on travel speed.",
-        "Linear and Circular Motion: Comparing different movement types and applications.",
+        "Gear meshing and speed changing using different gear ratios: Students apply gear ratios to control speed and power in more complex mechanisms.",
+        "Lifting mechanism using pulleys: Students design pulley systems to lift loads with reduced effort.",
+        "Gear shifting and lever method: Students learn how gears and levers work together to change force and motion.",
+        "Balancing and measurement: Students develop balancing skills and use measurement to improve accuracy and stability.",
+        "Motion and movement: Students analyze different types of motion and movement in powered models.",
+        "Pawl and ratchet mechanism: Students apply the pawl and ratchet mechanism in functional machine designs.",
+        "Worm gear and speed control: Students learn how worm gears reduce speed and increase torque.",
+        "Clock mechanism: Students understand how gears and timing systems work together in a clock mechanism.",
       ],
     },
-    {
-      id: "3",
-      title: "Level 3: Forces and Motion",
-      subtitle: [
-        "Friction: Understanding the concept of friction.",
-        "Centripetal and Centrifugal Forces: Concepts related to circular motion.",
-        "Area and Pressure: Distribution of force over a surface area.",
-        "Energy Transfer Using Gear Chains: Efficient energy transfer through linked gears.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Level 4: Robotic Models and Applications",
-      subtitle: [
-        "Building Robotic Models Representing Real-Life Machines.",
-        "Practical Applications of Robotics in Engineering and Automation.",
-        "Final Project: Implementing Concepts into a Functional Robot.",
-      ],
-    },
+   
   ];
 
  

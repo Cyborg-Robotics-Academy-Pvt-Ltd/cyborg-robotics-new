@@ -282,23 +282,6 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Head>
-        <title>Admin Dashboard | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Admin dashboard for managing users, courses, tasks and analytics at Cyborg Robotics Academy."
-        />
-        <meta
-          property="og:title"
-          content="Admin Dashboard | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Admin dashboard for managing users, courses, tasks and analytics at Cyborg Robotics Academy."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
-
       <main
         role="main"
         aria-label="Admin Dashboard"

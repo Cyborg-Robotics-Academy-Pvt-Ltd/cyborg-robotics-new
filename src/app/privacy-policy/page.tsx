@@ -6,22 +6,6 @@ import Head from "next/head";
 const PrivacyPolicy = () => {
   return (
     <>
-      <Head>
-        <title>Privacy Policy | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Read the privacy policy for Cyborg Robotics Academy and learn how your data is handled."
-        />
-        <meta
-          property="og:title"
-          content="Privacy Policy | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Read the privacy policy for Cyborg Robotics Academy and learn how your data is handled."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Privacy Policy"

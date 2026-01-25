@@ -6,22 +6,6 @@ import Head from "next/head";
 const TermsPage = () => {
   return (
     <>
-      <Head>
-        <title>Terms and Conditions | Cyborg Robotics Academy</title>
-        <meta
-          name="description"
-          content="Read the terms and conditions for using Cyborg Robotics Academy's website and services."
-        />
-        <meta
-          property="og:title"
-          content="Terms and Conditions | Cyborg Robotics Academy"
-        />
-        <meta
-          property="og:description"
-          content="Read the terms and conditions for using Cyborg Robotics Academy's website and services."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <main
         role="main"
         aria-label="Terms and Conditions"
