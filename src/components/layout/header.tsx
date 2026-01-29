@@ -352,6 +352,11 @@ export default function Header() {
 
   // Navigation items for main navbar
   const navItems = [
+    {
+      id: "tech-programs",
+      label: "Tech Programs",
+      href: "/tech-programs",
+    },
     { id: "courses", label: "Courses", href: "/all-courses" },
     {
       id: "about-us",
@@ -360,16 +365,6 @@ export default function Header() {
     },
 
     { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
-    {
-      id: "tech-programs",
-      label: "Tech Programs",
-      href: "/tech-programs",
-    },
-    {
-      id: "ftc-competition",
-      label: "FTC Competition",
-      href: "/competition/ftc-competition",
-    },
   ];
 
   // Fetch user profile data
