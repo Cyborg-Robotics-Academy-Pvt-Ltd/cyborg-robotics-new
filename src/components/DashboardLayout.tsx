@@ -106,7 +106,7 @@ const roleLinksMap: Record<
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
-      label: "Photo Upload",
+      label: "Gallery Management",
       href: "/admin-dashboard/photo-upload",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },

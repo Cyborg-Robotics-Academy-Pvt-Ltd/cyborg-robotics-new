@@ -17,6 +17,8 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // Convert children to array for easier manipulation
@@ -54,6 +56,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   const nextSlide = () => {
     if (isAnimating) return;
     setIsAnimating(true);
+    setDragOffset(0);
 
     setCurrentIndex((prevIndex) => {
       const maxIndex = totalItems - itemsPerView;
@@ -66,6 +69,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
   const prevSlide = () => {
     if (isAnimating) return;
     setIsAnimating(true);
+    setDragOffset(0);
 
     setCurrentIndex((prevIndex) => {
       const maxIndex = totalItems - itemsPerView;
@@ -77,24 +81,39 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
 
   // Touch handlers for swipe gestures
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isAnimating) return;
     setTouchStart(e.targetTouches[0].clientX);
+    setDragOffset(0);
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (!touchStart || isAnimating) return;
+
+    const currentX = e.targetTouches[0].clientX;
+    const diff = touchStart - currentX;
+    setDragOffset(diff);
+
+    // Prevent default scrolling during drag
+    e.preventDefault();
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || isAnimating) return;
 
+    setIsDragging(false);
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 30; // Reduced minimum swipe distance for better responsiveness
-    const isRightSwipe = distance < -30;
+    // Fixed: Right swipe should go to next card (move left = negative direction)
+    const isRightSwipe = distance > 40; // Swiping finger right -> show next card
+    const isLeftSwipe = distance < -40; // Swiping finger left -> show previous card
 
-    if (isLeftSwipe) {
-      nextSlide();
-    } else if (isRightSwipe) {
-      prevSlide();
+    if (isRightSwipe && !isAtEnd) {
+      nextSlide(); // Right swipe shows next card
+    } else if (isLeftSwipe && !isAtStart) {
+      prevSlide(); // Left swipe shows previous card
+    } else {
+      // Snap back to current position if swipe wasn't significant
+      setDragOffset(0);
     }
 
     // Reset touch positions
@@ -102,13 +121,62 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
     setTouchEnd(0);
   };
 
+  // Mouse drag handlers for desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isAnimating) return;
+    setTouchStart(e.clientX);
+    setDragOffset(0);
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!touchStart || isAnimating) return;
+
+    const diff = touchStart - e.clientX;
+    setDragOffset(diff);
+    e.preventDefault();
+  };
+
+  const handleMouseUp = () => {
+    if (!touchStart || isAnimating) return;
+
+    setIsDragging(false);
+    // Fixed: Positive drag (right) should go to next card
+    const isRightSwipe = dragOffset > 40; // Dragging mouse right -> show next card
+    const isLeftSwipe = dragOffset < -40; // Dragging mouse left -> show previous card
+
+    if (isRightSwipe && !isAtEnd) {
+      nextSlide(); // Right drag shows next card
+    } else if (isLeftSwipe && !isAtStart) {
+      prevSlide(); // Left drag shows previous card
+    } else {
+      // Snap back to current position if drag wasn't significant
+      setDragOffset(0);
+    }
+
+    // Reset
+    setTouchStart(0);
+    setDragOffset(0);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging && !isAnimating) {
+      // If leaving while dragging, snap back
+      setIsDragging(false);
+      setDragOffset(0);
+      setTouchStart(0);
+    }
+  };
+
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
-      e.preventDefault(); // Prevent default scrolling behavior
+      e.preventDefault();
+      e.stopPropagation();
       prevSlide();
     } else if (e.key === "ArrowRight") {
-      e.preventDefault(); // Prevent default scrolling behavior
+      e.preventDefault();
+      e.stopPropagation();
       nextSlide();
     }
   };
@@ -140,7 +208,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
               <button
                 onClick={prevSlide}
                 disabled={isAtStart}
-                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 active:scale-95"
                 aria-label="Previous courses"
               >
                 <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-red-600 transition-colors duration-300" />
@@ -148,7 +216,7 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
               <button
                 onClick={nextSlide}
                 disabled={isAtEnd}
-                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                className="bg-white rounded-full p-3 shadow-lg hover:bg-red-50 hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-all duration-300 group flex items-center justify-center min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 active:scale-95"
                 aria-label="Next courses"
               >
                 <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-red-600 transition-colors duration-300" />
@@ -172,18 +240,31 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{ cursor: "grab" }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          style={{ userSelect: "none" }}
         >
           <div
-            className="flex transition-transform duration-500 ease-out gap-1 sm:gap-2 md:gap-3"
+            className={`flex transition-transform gap-1 sm:gap-2 md:gap-3 ${
+              isDragging
+                ? "duration-150 ease-out"
+                : isAnimating
+                  ? "duration-300 ease-in-out"
+                  : "duration-200 ease-out"
+            }`}
             style={{
-              transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+              transform: `translateX(calc(-${currentIndex * (100 / itemsPerView)}% - ${dragOffset / (itemsPerView * 8)}px))`,
+              willChange: isDragging ? "transform" : "auto",
             }}
           >
             {items.map((item, index) => (
               <div
                 key={index}
-                className="flex-shrink-0"
+                className={`flex-shrink-0 transition-all ${
+                  isDragging ? "duration-150" : "duration-200"
+                } ${isDragging ? "scale-[0.99] opacity-95" : "scale-100 opacity-100"}`}
                 style={{
                   width:
                     itemsPerView === 1
@@ -225,31 +306,6 @@ const CourseCategoryCarousel: React.FC<CourseCategoryCarouselProps> = ({
           </div>
         )}
       </div>
-
-      {/* Enhanced dots indicator */}
-      {showNavigation && totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 sm:mt-6 space-x-1.5 sm:space-x-2">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (!isAnimating) {
-                  setIsAnimating(true);
-                  setCurrentIndex(index * itemsPerView);
-                  setTimeout(() => setIsAnimating(false), 300);
-                }
-              }}
-              className={`transition-all duration-300 rounded-full ${
-                currentPage === index
-                  ? "bg-red-600 w-6 sm:w-8 h-2 sm:h-2.5 shadow-md"
-                  : "bg-gray-300 w-2 sm:w-2.5 h-2 sm:h-2.5 hover:bg-gray-400 hover:w-3 sm:hover:w-4"
-              }`}
-              aria-label={`Go to page ${index + 1}`}
-              aria-current={currentPage === index ? "true" : "false"}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Progress bar (alternative to dots for many items) */}
       {showNavigation && totalPages > 8 && (

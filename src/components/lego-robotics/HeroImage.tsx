@@ -55,10 +55,10 @@ const HeroImage = () => {
   const swiperStyle = `
     .mySwiper {
       width: 100%;
-      height: 380px;
+      height: 480px;
       margin: 0 auto;
       max-width: 300px;
-     
+      background: transparent;
     }
     
     @media (min-width: 768px) {
@@ -80,9 +80,15 @@ const HeroImage = () => {
       align-items: center;
       justify-content: center;
       border-radius: 18px;
-     
+      background: transparent;
+      overflow: hidden;
     }
     
+    .swiper-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   `;
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -134,7 +140,7 @@ const HeroImage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Your Child’s First Step into Robotics Starts Here…
+                Your Child's First Step into Robotics Starts Here…
               </motion.h2>
               <motion.p
                 className="text-base md:text-lg text-gray-700 mb-2 font-sans"
@@ -224,15 +230,15 @@ const HeroImage = () => {
                   {staticImages.map((image, index) => (
                     <SwiperSlide
                       key={`static-${index}`}
-                      className="w-32 flex items-center justify-center "
+                      className="w-32 flex items-center justify-center bg-transparent"
                     >
-                      <div className="w-auto h-full flex items-center justify-center">
+                      <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-xl">
                         <Image
                           src={image.url}
                           alt={image.alt}
                           width={300}
                           height={300}
-                          className="rounded-xl object-cover "
+                          className="rounded-xl object-cover w-full h-full"
                           unoptimized // Since we're using Cloudinary URLs
                         />
                       </div>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
+import Image from "next/image";
 import {
   GraduationCap,
   BookText,
@@ -15,6 +16,7 @@ import {
   RefreshCw,
   User,
   CheckSquare,
+  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
@@ -117,6 +119,10 @@ const TrainerDashboard = () => {
   } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, userRole, loading: authLoading } = useAuth();
+  // State for user profile image
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  // State for user profile data
+  const [userProfileData, setUserProfileData] = useState<any>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -141,6 +147,38 @@ const TrainerDashboard = () => {
 
         // Set trainer data for potential future use
         setTrainerData(trainerData);
+
+        // Fetch user profile data from Firestore to get profile image
+        try {
+          const userDocRef = doc(db, "trainers", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserProfileData(userData);
+
+            // Set profile image from Firestore data
+            if (userData.profileimage) {
+              setProfileImage(userData.profileimage);
+            } else if (userData.imageUrls && userData.imageUrls[0]) {
+              setProfileImage(userData.imageUrls[0]);
+            } else if (userData.imageUrl) {
+              setProfileImage(userData.imageUrl);
+            } else if (user.photoURL) {
+              setProfileImage(user.photoURL);
+            } else {
+              setProfileImage(null);
+            }
+          }
+        } catch (profileError) {
+          console.error("Error fetching user profile data:", profileError);
+          // Fallback to auth photoURL
+          if (user.photoURL) {
+            setProfileImage(user.photoURL);
+          } else {
+            setProfileImage(null);
+          }
+        }
 
         // Determine trainer name with fallback hierarchy
         let name = "Trainer";
@@ -184,6 +222,20 @@ const TrainerDashboard = () => {
       if (trainerDoc.exists()) {
         const trainerData = trainerDoc.data();
         setTrainerData(trainerData);
+        setUserProfileData(trainerData);
+
+        // Update profile image
+        if (trainerData.profileimage) {
+          setProfileImage(trainerData.profileimage);
+        } else if (trainerData.imageUrls && trainerData.imageUrls[0]) {
+          setProfileImage(trainerData.imageUrls[0]);
+        } else if (trainerData.imageUrl) {
+          setProfileImage(trainerData.imageUrl);
+        } else if (user?.photoURL) {
+          setProfileImage(user.photoURL);
+        } else {
+          setProfileImage(null);
+        }
 
         // Update name if it has changed
         if (trainerData?.name && trainerData.name.trim() !== trainerName) {
@@ -302,7 +354,25 @@ const TrainerDashboard = () => {
                 className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4`}
               >
                 <div className="flex items-center gap-4">
-                  <User className="w-5 h-5 text-blue-600" />
+                  <Link href="/user-profile">
+                    <div className="cursor-pointer group">
+                      {profileImage ? (
+                        <div className="relative w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden group-hover:shadow-md transition-shadow duration-200">
+                          <Image
+                            src={profileImage}
+                            alt="Profile"
+                            fill
+                            className="object-cover rounded-full"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-white group-hover:shadow-md transition-shadow duration-200">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                   <span
                     className={`text-sm font-medium ${theme.textSecondary}`}
                   >
@@ -323,44 +393,6 @@ const TrainerDashboard = () => {
                   />
                 </button>
               </motion.div>
-
-              {/* Trainer Info Section */}
-              {trainerData && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                  className={`inline-flex mx-4 items-center gap-8 px-4 py-2 rounded-lg ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4 rounded-xl`}
-                >
-                  <Sparkles className="w-4 h-4 text-green-600" />
-                  <span className={`text-xs ${theme.textMuted}`}>
-                    Role:{" "}
-                    <span className="font-semibold text-green-600">
-                      Trainer
-                    </span>
-                    {trainerData.email && (
-                      <>
-                        {" "}
-                        • Email:{" "}
-                        <span className="font-semibold">
-                          {trainerData.email}
-                        </span>
-                      </>
-                    )}
-                    {trainerData.createdAt && (
-                      <>
-                        {" "}
-                        • Member since:{" "}
-                        <span className="font-semibold">
-                          {new Date(
-                            trainerData.createdAt.toDate()
-                          ).toLocaleDateString()}
-                        </span>
-                      </>
-                    )}
-                  </span>
-                </motion.div>
-              )}
             </div>
           </motion.div>
 

@@ -2,9 +2,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { getAdminUserData } from "@/lib/admin-utils";
 import Link from "next/link";
+import Image from "next/image";
 import {
   UserCog,
   GraduationCap,
@@ -19,6 +20,7 @@ import {
   Shield,
   BookOpen,
   Gamepad2,
+  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
@@ -124,6 +126,19 @@ const AdminDashboard = () => {
 
   // State for current date and time
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  // State for user profile image
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  // State for user profile data
+  const [userProfileData, setUserProfileData] = useState<any>(null);
+
+  // State for overview card data
+  const [overviewData, setOverviewData] = useState({
+    totalUsers: 0,
+    totalCourses: 0,
+    totalInstructors: 0,
+    activeStudents: 0,
+  });
+  const [loadingOverview, setLoadingOverview] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
@@ -146,6 +161,38 @@ const AdminDashboard = () => {
 
         // Set admin data for potential future use
         setAdminData(adminData);
+
+        // Fetch user profile data from Firestore to get profile image
+        try {
+          const userDocRef = doc(db, "admins", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserProfileData(userData);
+
+            // Set profile image from Firestore data
+            if (userData.profileimage) {
+              setProfileImage(userData.profileimage);
+            } else if (userData.imageUrls && userData.imageUrls[0]) {
+              setProfileImage(userData.imageUrls[0]);
+            } else if (userData.imageUrl) {
+              setProfileImage(userData.imageUrl);
+            } else if (user.photoURL) {
+              setProfileImage(user.photoURL);
+            } else {
+              setProfileImage(null);
+            }
+          }
+        } catch (profileError) {
+          console.error("Error fetching user profile data:", profileError);
+          // Fallback to auth photoURL
+          if (user.photoURL) {
+            setProfileImage(user.photoURL);
+          } else {
+            setProfileImage(null);
+          }
+        }
 
         // Determine admin name with fallback hierarchy
         let name = "Admin";
@@ -197,6 +244,20 @@ const AdminDashboard = () => {
       if (adminDoc.exists()) {
         const adminData = adminDoc.data();
         setAdminData(adminData);
+        setUserProfileData(adminData);
+
+        // Update profile image
+        if (adminData.profileimage) {
+          setProfileImage(adminData.profileimage);
+        } else if (adminData.imageUrls && adminData.imageUrls[0]) {
+          setProfileImage(adminData.imageUrls[0]);
+        } else if (adminData.imageUrl) {
+          setProfileImage(adminData.imageUrl);
+        } else if (user?.photoURL) {
+          setProfileImage(user.photoURL);
+        } else {
+          setProfileImage(null);
+        }
 
         // Update name if it has changed
         if (adminData?.username && adminData.username.trim() !== adminName) {
@@ -224,6 +285,107 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, [isLoading, refreshAdminData]);
 
+  // Function to fetch overview data
+  const fetchOverviewData = useCallback(async () => {
+    try {
+      setLoadingOverview(true);
+
+      // Fetch actual data from Firebase using your collections
+      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const trainersSnapshot = await getDocs(collection(db, "trainers"));
+
+      // Get courses from the static courses.ts file
+      const coursesModule = await import("../../../utils/courses");
+      const coursesList = coursesModule.default;
+      const totalCoursesCount = coursesList.length;
+
+      // Calculate active students
+      const activeStudentsCount = studentsSnapshot.docs.filter((doc) => {
+        const status = doc.data().status;
+        return status === "active" || status === "Active";
+      }).length;
+
+      const overviewDataResult = {
+        totalUsers: studentsSnapshot.size, // Students are considered users
+        totalCourses: totalCoursesCount,
+        totalInstructors: trainersSnapshot.size, // Trainers are the instructors
+        activeStudents: activeStudentsCount, // Count of students with active status
+      };
+
+      setOverviewData(overviewDataResult);
+    } catch (error) {
+      console.error("Error fetching overview data:", error);
+      // Set default values in case of error
+      setOverviewData({
+        totalUsers: 0,
+        totalCourses: 0,
+        totalInstructors: 0,
+        activeStudents: 0,
+      });
+    } finally {
+      setLoadingOverview(false);
+    }
+  }, []);
+
+  // Load overview data on component mount
+  useEffect(() => {
+    if (!authLoading && !isLoading) {
+      fetchOverviewData();
+    }
+  }, [authLoading, isLoading, fetchOverviewData]);
+
+  // Overview cards data
+  const overviewCards = [
+    {
+      title: "Total Students",
+      value: overviewData.totalUsers, // Students are stored in the students collection
+      change: "+12%",
+      icon: GraduationCap,
+      color: "blue",
+      gradient: "from-blue-500 to-cyan-500",
+      bgColor: "bg-blue-50",
+      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
+      textColor: "text-blue-600",
+      delay: 0.1,
+    },
+    {
+      title: "Total Courses",
+      value: overviewData.totalCourses,
+      change: "+5%",
+      icon: BookOpen,
+      color: "green",
+      gradient: "from-green-500 to-emerald-500",
+      bgColor: "bg-green-50",
+      iconBg: "bg-gradient-to-br from-green-100 to-green-200",
+      textColor: "text-green-600",
+      delay: 0.2,
+    },
+    {
+      title: "Total Instructors",
+      value: overviewData.totalInstructors,
+      change: "",
+      icon: UserCog,
+      color: "purple",
+      gradient: "from-purple-500 to-violet-500",
+      bgColor: "bg-purple-50",
+      iconBg: "bg-gradient-to-br from-purple-100 to-purple-200",
+      textColor: "text-purple-600",
+      delay: 0.3,
+    },
+    {
+      title: "Active Students",
+      value: overviewData.activeStudents,
+      change: "+10%",
+      icon: User,
+      color: "indigo",
+      gradient: "from-indigo-500 to-purple-500",
+      bgColor: "bg-indigo-50",
+      iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200",
+      textColor: "text-indigo-600",
+      delay: 0.4,
+    },
+  ];
+
   const dashboardCards = [
     {
       title: "Student Record",
@@ -239,22 +401,6 @@ const AdminDashboard = () => {
       borderColor: "border-emerald-200",
       action: "View list",
       delay: 0.2,
-    },
-
-    {
-      title: "Home Gallery Data",
-      description: "Upload, view and manage gallery images",
-      href: "/admin-dashboard/gallery-data",
-      icon: BarChart3,
-      color: "pink",
-      gradient: "from-pink-500 to-rose-500",
-      bgColor: "bg-pink-50",
-      iconBg: "bg-gradient-to-br from-pink-100 to-pink-200",
-      textColor: "text-pink-600",
-      hoverColor: "group-hover:text-pink-600",
-      borderColor: "border-pink-200",
-      action: "Manage gallery",
-      delay: 0.4,
     },
 
     {
@@ -304,7 +450,25 @@ const AdminDashboard = () => {
                 className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4`}
               >
                 <div className="flex items-center gap-4">
-                  <User className="w-5 h-5 text-red-700" />
+                  <Link href="/user-profile">
+                    <div className="cursor-pointer group">
+                      {profileImage ? (
+                        <div className="relative w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden group-hover:shadow-md transition-shadow duration-200">
+                          <Image
+                            src={profileImage}
+                            alt="Profile"
+                            fill
+                            className="object-cover rounded-full"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center border-2 border-white group-hover:shadow-md transition-shadow duration-200">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                   <span
                     className={`text-sm font-medium ${theme.textSecondary}`}
                   >
@@ -325,42 +489,64 @@ const AdminDashboard = () => {
               </motion.div>
 
               {/* Admin Info Section */}
-              {adminData && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.2 }}
-                  className={`inline-flex mx-4 items-center  px-4 py-2 rounded-lg ${theme.cardBg} backdrop-blur-sm ${theme.cardBorder} ${theme.shadow} mb-4 rounded-xl`}
-                >
-                  <Sparkles className=" md:w-6 md:h-6 w-10  h-10 p-1 text-green-600" />
-                  <span className={`text-xs ${theme.textMuted}`}>
-                    Role:
-                    <span className="font-semibold text-green-600">
-                      Administrator
-                    </span>
-                    {adminData.email && (
-                      <>
-                        {" "}
-                        • Email:{" "}
-                        <span className="font-semibold">{adminData.email}</span>
-                      </>
-                    )}
-                    {adminData.createdAt && (
-                      <>
-                        {" "}
-                        • Member since:{" "}
-                        <span className="font-semibold">
-                          {new Date(
-                            adminData.createdAt.toDate()
-                          ).toLocaleDateString()}
-                        </span>
-                      </>
-                    )}
-                  </span>
-                </motion.div>
-              )}
             </div>
           </motion.div>
+
+          {/* Overview Cards Section */}
+          <div className="mb-8">
+            <AnimatePresence>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+                {overviewCards.map((card) => (
+                  <motion.div
+                    key={card.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                      delay: card.delay,
+                    }}
+                    whileHover={{
+                      scale: 1.02,
+                      y: -4,
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative ${theme.cardBg} backdrop-blur-sm rounded-2xl ${theme.cardBorder} ${theme.shadow} transition-all duration-200 h-full overflow-hidden`}
+                  >
+                    {/* Gradient Background */}
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-200`}
+                    />
+
+                    {/* Content */}
+                    <div className="relative p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div
+                          className={`p-3 rounded-xl ${card.iconBg} shadow-sm transition-all duration-200`}
+                        >
+                          <card.icon className={`h-6 w-6 ${card.textColor}`} />
+                        </div>
+                        <div className="text-right">
+                          <p
+                            className={`text-2xl font-bold ${theme.textPrimary} ${card.textColor}`}
+                          >
+                            {card.value}
+                          </p>
+                        </div>
+                      </div>
+
+                      <h3
+                        className={`text-sm font-semibold ${theme.textSecondary} capitalize`}
+                      >
+                        {card.title}
+                      </h3>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </AnimatePresence>
+          </div>
 
           {/* Dashboard Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

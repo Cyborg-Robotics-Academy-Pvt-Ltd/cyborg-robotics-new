@@ -86,6 +86,7 @@ const Page = () => {
     nextCourse?: string;
     trainerId?: string;
     trainerName?: string;
+    status?: string;
   }
 
   interface Trainer {
@@ -214,6 +215,7 @@ const Page = () => {
           nextCourse: data.nextCourse || undefined,
           trainerId: data.trainerId || undefined,
           trainerName: data.trainerName || undefined,
+          status: data.status || "active", // Default to active if no status is set
         };
       });
       setStudents(studentList);
@@ -279,6 +281,10 @@ const Page = () => {
   }, []);
 
   const filteredStudents = students
+    .filter((student) => {
+      // Filter out students with pending status - only show active and inactive students
+      return student.status !== "pending";
+    })
     .filter((student) => {
       if (activeTab === "ongoing") {
         // Ongoing: if any course is not completed
