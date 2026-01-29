@@ -70,6 +70,7 @@ import {
   ThreeDPrintingArduinoCurriculum,
   RoboticsWithQuarkyCurriculum,
   CodingAIWithPictoBloxCurriculum,
+  SpikePrimePythonCurriculum,
 } from "../../../../utils/curriculum";
 import Header from "@/components/layout/header";
 // Define the type for key features
@@ -994,6 +995,47 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "spike-prime-python": {
+    id: "spikePrimePython",
+    title: "SPIKE PRIME WITH PYTHON",
+    subtitle:
+      "Learn robotics and coding with LEGO Education SPIKE Prime using Python",
+    badge: "Educational Robotics Course",
+    description:
+      "Learn robotics and coding with LEGO Education SPIKE Prime using Python",
+    mode: "Offline",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/Spike Prime Python.pdf",
+    syllabusFileName: "SPIKE PRIME PYTHON.pdf",
+    imagePath: "/assets/classroom-course/Spike-Prime-Python.png",
+    imageAlt: "SPIKE Prime Python Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Python Programming",
+        description: "Learn Python programming for robotics applications",
+        iconName: "Code",
+      },
+      {
+        title: "Robotics Integration",
+        description: "Combine Python with SPIKE Prime robotics platform",
+        iconName: "Bot",
+      },
+      {
+        title: "Sensor Programming",
+        description: "Program sensors and motors using Python",
+        iconName: "Zap",
+      },
+      {
+        title: "Project-based Learning",
+        description: "Build real-world robotics projects with Python",
+        iconName: "Rocket",
+      },
+    ],
+  },
   "coding-ai-pictoblox": {
     id: "codingAiPictoblox",
     title: "Coding with AI and Pictoblox",
@@ -1125,8 +1167,11 @@ export default async function SlugPage({
             ),
           },
         ];
+
       case "bambino-coding":
         return BambinoCodingCurriculum;
+      case "spike-prime-python":
+        return SpikePrimePythonCurriculum;
       case "electronics":
         return ElectronicsCurriculumData;
       case "early-electronics":
@@ -1139,7 +1184,6 @@ export default async function SlugPage({
         return EarlySimplemachineCurriculum;
       case "iot":
         return IotCurriculum;
-
       case "simple-powered-machines":
         return SimplePoweredMachines;
       case "app-lab":

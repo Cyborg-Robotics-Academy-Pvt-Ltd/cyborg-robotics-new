@@ -408,6 +408,49 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "9-13",
     category: "Robotics"
   },
+ 
+  "spike-prime-python": {
+    id: "spikePrimePython",
+    title: "SPIKE PRIME + Python",
+    subtitle: "Combine LEGO SPIKE Prime robotics with Python programming for advanced automation",
+    badge: "Advanced Robotics Course",
+    description: "Combine LEGO SPIKE Prime robotics with Python programming for advanced automation",
+    mode: "Offline",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/Spike Prime Python.pdf",
+    syllabusFileName: "SPIKE PRIME + Python.pdf",
+    imagePath: "/assets/classroom-course/Spike-Prime-Python.png",
+    imageAlt: "SPIKE Prime + Python Course",
+    price: 12999,
+    originalPrice: 17999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Python Programming",
+        description: "Learn Python programming concepts for robotics automation",
+        iconName: "Code",
+      },
+      {
+        title: "Robotics Projects",
+        description: "Build advanced robotics projects using Python",
+        iconName: "Bot",
+      },
+      {
+        title: "Sensor Integration",
+        description: "Integrate sensors for advanced robotics applications",
+        iconName: "Radar",
+      },
+      {
+        title: "Automation Solutions",
+        description: "Develop automation solutions using Python and SPIKE Prime",
+        iconName: "Rocket",
+      },
+    ],
+    courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
+    ageRange: "9-13",
+    category: "Robotics"
+  },
   "3d-printing": {
     id: "3dPrinting",
     title: "3D Printing",
@@ -923,5 +966,6 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     category: "Programming"
   },
 
+ 
 
 };

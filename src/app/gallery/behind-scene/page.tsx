@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
@@ -30,6 +31,8 @@ const BehindSceneContent = () => {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9; // Show 9 images per page (3x3 grid)
 
   // Fetch all photos from Firebase
   useEffect(() => {
@@ -133,10 +136,16 @@ const BehindSceneContent = () => {
       );
     }
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = images.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(images.length / itemsPerPage);
+
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-          {images.map((img, index) => (
+          {currentItems.map((img, index) => (
             <motion.div
               key={img.id || img.fileName}
               className="overflow-hidden rounded-2xl shadow-lg  transform transition-transform duration-300 hover:-translate-y-1 "
@@ -149,8 +158,8 @@ const BehindSceneContent = () => {
                 <Image
                   src={img.imageUrl || img.src}
                   alt={img.fileName || img.alt}
-                  width={800}
-                  height={800}
+                  width={600}
+                  height={600}
                   className="w-full h-full object-cover transition-transform duration-300 "
                   priority={index < 2}
                 />
@@ -158,6 +167,66 @@ const BehindSceneContent = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-8 space-x-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-full ${
+                currentPage === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-red-800 hover:bg-red-100"
+              }`}
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="flex space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-10 h-10 rounded-full ${
+                      currentPage === pageNum
+                        ? "bg-red-800 text-white"
+                        : "text-gray-700 hover:bg-red-100"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-full ${
+                currentPage === totalPages
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-red-800 hover:bg-red-100"
+              }`}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
       </>
     );
   };
@@ -187,6 +256,7 @@ const BehindSceneContent = () => {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
+                setCurrentPage(1); // Reset to first page when changing tabs
                 // Update URL with the new tab
                 const url = new URL(window.location.href);
                 url.searchParams.set("tab", tab.id);

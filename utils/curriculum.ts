@@ -939,6 +939,47 @@ export const RoboticsWithQuarkyCurriculum = [
       ],
     },
   ];
+  export const SpikePrimePythonCurriculum = [
+    {
+      id: "1",
+      title: "Level 1: Introduction to Python Programming",
+      subtitle: [
+        "Robotics Fundamentals: Understanding LEGO SPIKE Prime components, Motors, sensors, hub & port connections, Building stable and functional robotic models",
+        "Python Programming Basics: Writing simple Python programs, Understanding program flow (top to bottom execution), Using print() for output and debugging",
+        "Logic & Decision Making: Conditional statements (if / elif / else), Making robots react to real-world inputs, Applying logic to solve simple problems",
+        "Loops & Repetition: Using loops to repeat actions, Continuous sensor checking, Understanding automation concepts",
+        "Motor Control & Movement: Controlling motor speed and direction, Rotational movement and timing, Coordinating multiple motors",
+        "Sensor Integration: Color Sensor – detecting and responding to colors, Force Sensor – touch-based actions, Distance Sensor – proximity-based control",
+        "Data Handling & Sequencing: Using lists and dictionaries (basic introduction), Sequencing steps in the correct order, Mapping inputs to actions",
+        "Problem Solving & Computational Thinking: Breaking problems into smaller steps, Testing, debugging, and improving logic, Thinking like an engineer",
+        "Creativity & Real-World Applications: Creating music, games, and smart machines, Connecting coding with real-life scenarios, Encouraging innovation and imagination",
+      ],
+    },
+    {
+      id: "2",
+      title: "Level 2: Advanced Python Programming with SPIKE Prime",
+      subtitle: [
+        "Advanced Driving Base: Precise robot movement & navigation, Speed control, turns, and path accuracy, Using multiple motors together (coordination), Introduction to advanced driving logic",
+        "Guitar: Event-based interaction using sensors, Mapping inputs to different sounds, Creative programming with sequences, Understanding real-time response systems",
+        "Explorer: Distance-based navigation, Obstacle detection & avoidance, Decision-making using sensor values, Applying logic to unknown environments",
+        "Brain Game: Game logic and rule-based programming, Counters, scoring systems & conditions, Improving memory and logical thinking, Designing interactive challenges",
+        "Yoyo Ring: Repetitive motion & loop mastery, Timing, rhythm, and motor synchronization, Understanding circular and oscillating motion, Precision control using Python logic",
+        "Break Dance: Coordinated multi-motor movements, Pattern-based motion sequences, Combining loops with creative motion, Exploring rhythm through robotics",
+        "Smart Bike: Real-world inspired automation concepts, Speed & motion control based on input, Sensor-based decision making, Applying engineering logic to daily-life models",
+      ],
+    },
+    {
+      id: "3",
+      title: "Level 3: Advanced Line Following & Navigation",
+      subtitle: [
+        " Zig-Zag Line Follower: Understanding line detection using sensors, Basic correction logic (left–right decisions), Introducing real-time feedback, Foundation of autonomous navigation",
+        "Steering Line Follower: Smooth and controlled steering movement, Proportional motor speed adjustment, Improving accuracy and stability, Transition from simple to intelligent movement",
+        "Dual Line Follower: Using multiple sensors together, Comparing sensor values simultaneously, Advanced decision making, Building redundancy and reliability in robots",
+        "PID Line Follower: Introduction to PID control logic, Error calculation and correction, Fine-tuning robot performance, Industry-level robotics concepts simplified for kids",
+        "Gyro Straight Movement: Using Gyro Sensor for angle control, Maintaining straight-line accuracy, Correcting drift and orientation errors, Real-world applications in self-driving systems",
+      ],
+    },
+  ];
 
   export   const WebDesignCurriculum = [
     {

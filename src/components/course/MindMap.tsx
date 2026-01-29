@@ -1,6 +1,7 @@
 "use client";
 import React, { useCallback, useState, memo, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ReactFlow,
   Background,
@@ -253,7 +254,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 450 },
     data: {
-      label: "KUBO - 2 Levels",
+      label: "KUBO ",
       color: "#4ade80",
       link: "#",
     },
@@ -273,7 +274,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 570 },
     data: {
-      label: "Bambino Coding - 2 Levels",
+      label: "Bambino Coding ",
       color: "#4ade80",
       link: "/all-courses/bambino-coding",
     },
@@ -307,7 +308,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 570 },
     data: {
-      label: "Code.org - 2 Levels",
+      label: "Code.org ",
       color: "#22d3ee",
       link: "/all-courses/bambino-coding",
     },
@@ -317,7 +318,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 630 },
     data: {
-      label: "Quarky Robotics & AI - 2 Levels",
+      label: "Quarky Robotics & AI ",
       color: "#22d3ee",
       link: "/all-courses/robotics-with-quarky",
     },
@@ -329,7 +330,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 690 },
     data: {
-      label: "PEECEE - 2 Levels",
+      label: "PEECEE ",
       color: "#22d3ee",
       link: "/all-courses/peecee",
     },
@@ -339,7 +340,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 750 },
     data: {
-      label: "SPIKE Essential - 2 Levels",
+      label: "SPIKE Essential ",
       color: "#22d3ee",
       link: "#",
     },
@@ -353,7 +354,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 650 },
     data: {
-      label: "Early Electronics - 2 Levels",
+      label: "Early Electronics ",
       color: "#fb923c",
       link: "/all-courses/early-electronics",
     },
@@ -363,7 +364,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 730 },
     data: {
-      label: "Mini Electronics - 2 Levels",
+      label: "Mini Electronics ",
       color: "#fb923c",
       link: "#",
     },
@@ -383,7 +384,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 630 },
     data: {
-      label: "SPIKE Prime - 4 Levels",
+      label: "SPIKE Prime ",
       color: "#c084fc",
       link: "/all-courses/spike-prime",
     },
@@ -393,7 +394,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 690 },
     data: {
-      label: "EV3 - 4 Levels",
+      label: "EV3 ",
       color: "#c084fc",
       link: "/all-courses/robotics-ev3",
     },
@@ -403,9 +404,9 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 750 },
     data: {
-      label: "SPIKE + Python - Levels",
+      label: "SPIKE + Python ",
       color: "#c084fc",
-      link: "#",
+      link: "/all-courses/spike-prime-python",
     },
   },
 
@@ -423,7 +424,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 690 },
     data: {
-      label: "Application Designing - 4 Levels",
+      label: "Application Designing ",
       color: "#06b6d4",
       link: "/all-courses/app-designing",
     },
@@ -433,7 +434,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 750 },
     data: {
-      label: "Web Designing - 4 Levels",
+      label: "Web Designing ",
       color: "#06b6d4",
       link: "/all-courses/web-designing",
     },
@@ -454,7 +455,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 870 },
     data: {
-      label: "Java - 3 Levels",
+      label: "Java",
       color: "#06b6d4",
       link: "/all-courses/java",
     },
@@ -464,7 +465,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 930 },
     data: {
-      label: "DSA - 2 Levels",
+      label: "DSA",
       color: "#06b6d4",
       link: "/all-courses/java",
     },
@@ -484,7 +485,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 810 },
     data: {
-      label: "Basic Electronics + Arduino - 3 Levels",
+      label: "Basic Electronics + Arduino",
       color: "#14b8a6",
       link: "/all-courses/arduino",
     },
@@ -581,7 +582,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 660 },
     data: {
-      label: "DRONES - 1 LEVEL",
+      label: "DRONE",
       color: "#34d399",
       link: "/all-courses/drone",
     },
@@ -594,6 +595,7 @@ const initialNodes: Node[] = [
     data: {
       label: "3D PRINTING - 3 LEVELS",
       color: "#60a5fa",
+      link: "/all-courses/3d-printing",
     },
   },
 
@@ -628,7 +630,7 @@ const initialNodes: Node[] = [
     id: "W_DRONES",
     type: "horizontal",
     position: { x: 950, y: 790 },
-    data: { label: "DRONES", color: "#06b6d4", link: "/all-courses/drone" },
+    data: { label: "DRONE", color: "#06b6d4", link: "/all-courses/drone" },
   },
   {
     id: "W_POWERBI",
@@ -1737,7 +1739,7 @@ const FlowWithProvider = () => {
           </div>
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-red-700"></div>
         </div>
-      )}{" "}
+      )}
     </>
   );
 };
@@ -1752,43 +1754,83 @@ const MindMap = () => {
         width: "100vw",
         height: "100vh",
         background: "white",
-        marginRight: "100px",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          }
-          50% {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-          }
-          100% {
-            transform: scale(1);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          }
-        }
+      {/* Background Logo */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pointerEvents: "none",
+          opacity: 0.5,
+        }}
+      >
+        <Image
+          src="/assets/Cyborg-logo.png"
+          alt="Cyborg Robotics Logo"
+          width={700}
+          height={700}
+          style={{
+            userSelect: "none",
+            pointerEvents: "none",
+          }}
+          priority={false}
+        />
+      </div>
 
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -10px);
+      {/* Main Content with higher z-index */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <style jsx>{`
+          @keyframes pulse {
+            0% {
+              transform: scale(1);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+              transform: scale(1.1);
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+            100% {
+              transform: scale(1);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
           }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
 
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-      `}</style>
-      <ReactFlowProvider>
-        <FlowWithProvider />
-      </ReactFlowProvider>
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translate(-50%, -10px);
+            }
+            to {
+              opacity: 1;
+              transform: translate(-50%, 0);
+            }
+          }
+
+          .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+          }
+        `}</style>
+        <ReactFlowProvider>
+          <FlowWithProvider />
+        </ReactFlowProvider>
+      </div>
     </div>
   );
 };

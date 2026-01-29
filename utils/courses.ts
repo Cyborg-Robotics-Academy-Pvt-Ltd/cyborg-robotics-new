@@ -9,6 +9,7 @@ const courses = [
     "Simple & Powered Machines",
     "Spike Essential",
     "Spike Prime",
+    "Spike Prime + Python",
     "IOT",
     "Early electronics",
     "Mini Electronics",
