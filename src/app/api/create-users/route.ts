@@ -10,12 +10,14 @@ import {
   collection, 
   query, 
   where, 
-  getDocs
+  getDocs,
+  getDoc
 } from 'firebase/firestore';
+import { autoGenerateAndAssignPrn } from "@/lib/prn-utils";
 
 // Function to create a single user with proper error handling
-async function createSingleUser(userData: { fullName: string; email: string; password: string; role: string }) {
-  const { fullName, email, password, role } = userData;
+async function createSingleUser(userData: { fullName: string; email: string; password: string; role: string; center?: string }) {
+  const { fullName, email, password, role, center } = userData;
 
   // Create the user in Firebase Auth
   const userCredential = await createUserWithEmailAndPassword(
@@ -41,11 +43,22 @@ async function createSingleUser(userData: { fullName: string; email: string; pas
     status: "active", // Set status to active for admin-created accounts
     role: role, // Use selected role
     emailVerified: true, // Mark as verified since created by admin
+    center: center || null, // Add center information for students
   };
 
   // Save to appropriate collection based on role
   const collectionName = `${role}s`; // students, trainers, admins
   await setDoc(doc(db, collectionName, user.uid), firestoreUserData);
+  
+  // Generate PRN for students
+  if (role === "student" && center) {
+    try {
+      await autoGenerateAndAssignPrn(user.uid, center);
+    } catch (prnError) {
+      console.error(`Error generating PRN for user ${user.uid}:`, prnError);
+      // Don't fail the whole operation if PRN generation fails
+    }
+  }
   
   return { uid: user.uid, email, role };
 }
@@ -72,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Validate each user's data before starting creation
     for (const userData of users) {
-      const { fullName, email, password, role } = userData;
+      const { fullName, email, password, role, center } = userData;
 
       // Validate user data
       if (!fullName || !email || !password || !role) {
@@ -83,6 +96,11 @@ export async function POST(request: NextRequest) {
       const validRoles = ['student', 'trainer', 'admin'];
       if (!validRoles.includes(role)) {
         return Response.json({ error: `Invalid role: ${role}. Must be one of: ${validRoles.join(', ')}` }, { status: 400 });
+      }
+
+      // Validate center for students
+      if (role === "student" && !center) {
+        return Response.json({ error: 'Center is required for student accounts' }, { status: 400 });
       }
     }
 

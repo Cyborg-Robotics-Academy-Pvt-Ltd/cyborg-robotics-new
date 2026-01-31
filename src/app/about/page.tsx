@@ -1,6 +1,7 @@
 "use client";
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense } from "react";
 import { motion } from "framer-motion";
+
 import {
   HeroSection,
   InteractiveStorySection,
@@ -38,12 +39,10 @@ export default function AboutPage() {
     threshold: 0.1,
   });
 
-  useEffect(() => {
-    // Add about-page class for smooth scrolling
+  // Add about-page class for smooth scrolling
+  React.useEffect(() => {
     document.documentElement.classList.add("about-page");
-
     return () => {
-      // Clean up when leaving the page
       document.documentElement.classList.remove("about-page");
     };
   }, []);

@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X, Filter } from "lucide-react";
@@ -57,6 +58,8 @@ const AllCoursesPageContent = () => {
   const [search, setSearch] = useState("");
   const [ageFilter, setAgeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [modeFilter, setModeFilter] = useState("");
+  const [durationFilter, setDurationFilter] = useState("");
 
   // Get search params from URL
   const searchParams = useSearchParams();
@@ -80,9 +83,23 @@ const AllCoursesPageContent = () => {
           course.title.toLowerCase().includes(search.toLowerCase()) ||
           course.description.toLowerCase().includes(search.toLowerCase())) &&
         (ageFilter === "" || course.ageRange === ageFilter) &&
-        (categoryFilter === "" || course.category === categoryFilter)
+        (categoryFilter === "" || course.category === categoryFilter) &&
+        (modeFilter === "" ||
+          (modeFilter === "online" &&
+            course.mode.toLowerCase().includes("online")) ||
+          (modeFilter === "offline" &&
+            course.mode.toLowerCase().includes("offline")) ||
+          (modeFilter === "online & offline" &&
+            course.mode.toLowerCase().includes("online & offline"))) &&
+        (durationFilter === "" ||
+          (durationFilter === "16 classes" &&
+            course.duration.toLowerCase().includes("16")) ||
+          (durationFilter === "12 classes" &&
+            course.duration.toLowerCase().includes("12")) ||
+          (durationFilter === "14 classes" &&
+            course.duration.toLowerCase().includes("14")))
     );
-  }, [search, ageFilter, categoryFilter]);
+  }, [search, ageFilter, categoryFilter, modeFilter, durationFilter]);
 
   // Group courses by category
   const coursesByCategory = useMemo(() => {
@@ -99,26 +116,28 @@ const AllCoursesPageContent = () => {
   }, [filteredCourses]);
 
   // Check if any filters are active
-  const hasActiveFilters = search || ageFilter || categoryFilter;
+  const hasActiveFilters =
+    search || ageFilter || categoryFilter || modeFilter || durationFilter;
 
   // Clear all filters function
   const clearAllFilters = () => {
     setSearch("");
     setAgeFilter("");
     setCategoryFilter("");
+    setModeFilter("");
+    setDurationFilter("");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="px-4 sm:px-6 lg:px-8">
-        {/* Header section */}
-        <div className="text-center mb-6 mt-8">
-          <h1 className="text-4xl md:text-5xl gradient-text font-bold  mb-4">
-            Our Courses
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="px-4 sm:px-6 lg:px-8 pt-8">
+        {/* Hero section */}
+        <div className="text-center mb-12 mt-10">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-800 via-red-600 to-red-800 mb-4">
+            All Courses
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover courses that ignite creativity and build tech skills for
-            the future.
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+            Hands-on Robotics & STEM programs for every age group
           </p>
         </div>
 
@@ -131,7 +150,7 @@ const AllCoursesPageContent = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Search Input */}
             <div className="relative">
               <label
@@ -172,7 +191,7 @@ const AllCoursesPageContent = () => {
               </label>
               <Select
                 value={ageFilter || "all"}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   setAgeFilter(value === "all" ? "" : value)
                 }
               >
@@ -203,7 +222,7 @@ const AllCoursesPageContent = () => {
               </label>
               <Select
                 value={categoryFilter || "all"}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   setCategoryFilter(value === "all" ? "" : value)
                 }
               >
@@ -220,6 +239,66 @@ const AllCoursesPageContent = () => {
                       {category}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Mode Filter */}
+            <div>
+              <label
+                htmlFor="mode-filter"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Mode
+              </label>
+              <Select
+                value={modeFilter || "all"}
+                onValueChange={(value: string) =>
+                  setModeFilter(value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger
+                  id="mode-filter"
+                  className="rounded-lg border-2 h-[42px]"
+                >
+                  <SelectValue placeholder="All Modes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Modes</SelectItem>
+                  <SelectItem value="online">Online</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                  <SelectItem value="online & offline">
+                    Online & Offline
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Duration Filter */}
+            <div>
+              <label
+                htmlFor="duration-filter"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Duration
+              </label>
+              <Select
+                value={durationFilter || "all"}
+                onValueChange={(value: string) =>
+                  setDurationFilter(value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger
+                  id="duration-filter"
+                  className="rounded-lg border-2 h-[42px]"
+                >
+                  <SelectValue placeholder="All Durations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Durations</SelectItem>
+                  <SelectItem value="16 classes">16 Classes</SelectItem>
+                  <SelectItem value="12 classes">12 Classes</SelectItem>
+                  <SelectItem value="14 classes">14 Classes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -278,6 +357,36 @@ const AllCoursesPageContent = () => {
                     </button>
                   </Badge>
                 )}
+                {modeFilter && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs py-1.5 px-3 rounded-full flex items-center gap-2 bg-green-50 text-green-700 border border-green-200"
+                  >
+                    Mode: {modeFilter}
+                    <button
+                      onClick={() => setModeFilter("")}
+                      className="hover:text-green-900"
+                      aria-label="Remove mode filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {durationFilter && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs py-1.5 px-3 rounded-full flex items-center gap-2 bg-yellow-50 text-yellow-700 border border-yellow-200"
+                  >
+                    Duration: {durationFilter}
+                    <button
+                      onClick={() => setDurationFilter("")}
+                      className="hover:text-yellow-900"
+                      aria-label="Remove duration filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
                 <Button
                   onClick={clearAllFilters}
                   variant="ghost"
@@ -311,41 +420,79 @@ const AllCoursesPageContent = () => {
             )}
         </div>
 
-        {/* Category carousels */}
+        {/* Course Grid */}
         {Object.keys(coursesByCategory).length > 0 ? (
-          Object.entries(coursesByCategory).map(([category, courses]) => (
-            <div key={category} id={category} className="mb-8 ">
-              <CourseCategoryCarousel
-                title={
-                  <div className="flex items-center gap-3 ">
+          <div className="space-y-12">
+            {Object.entries(coursesByCategory).map(([category, courses]) => (
+              <div key={category} id={category} className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                     <span>{category} Courses</span>
                     <Badge
                       variant="secondary"
-                      className="text-xs px-2 py-1 bg-red-800 text-white rounded-full"
+                      className="ml-3 text-xs px-2 py-1 bg-red-800 text-white rounded-full"
                     >
                       {courses.length}
                     </Badge>
-                  </div>
-                }
-              >
-                {courses.map((course) => (
-                  <div
-                    key={course.slug}
-                    className="flex-shrink-0 mb-2 px-1 mt-5"
-                  >
-                    <CourseCarouselCard
-                      slug={course.slug}
-                      title={course.title}
-                      description={course.description}
-                      ageRange={course.ageRange}
-                      category={course.category}
-                      imagePath={course.imagePath}
-                    />
-                  </div>
-                ))}
-              </CourseCategoryCarousel>
-            </div>
-          ))
+                  </h2>
+                </div>
+
+                {/* Grid layout for courses */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {courses.map((course) => (
+                    <div
+                      key={course.slug}
+                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={course.imagePath}
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "/assets/placeholder-image.png";
+                          }}
+                        />
+                      </div>
+                      <div className="p-5">
+                        <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2">
+                          {course.title}
+                        </h3>
+
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {course.description}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200 font-medium"
+                          >
+                            Age: {course.ageRange}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 font-medium"
+                          >
+                            {course.category}
+                          </Badge>
+                        </div>
+
+                        <Link
+                          href={`/all-courses/${course.slug}`}
+                          className="w-full bg-gradient-to-r from-red-800 to-red-700 text-white px-4 py-2.5 rounded-lg hover:from-red-800 hover:to-red-900 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 block"
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           // Enhanced empty state
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
@@ -367,6 +514,217 @@ const AllCoursesPageContent = () => {
             </Button>
           </div>
         )}
+
+        {/* Inline CTA after courses */}
+        <div className="mt-16 mb-12 bg-gradient-to-r from-red-800 to-red-700 rounded-3xl p-8 text-center text-white">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            Ready to Start Your Journey?
+          </h2>
+          <p className="text-red-100 mb-6 max-w-2xl mx-auto">
+            Join thousands of students who have transformed their future with
+            our hands-on robotics and STEM programs.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/contact-us"
+              className="bg-white text-red-800 px-6 py-3 rounded-full font-semibold hover:bg-red-50 transition-colors shadow-lg"
+            >
+              Book Free Demo
+            </Link>
+            <Link
+              href="/all-courses"
+              className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
+            >
+              Browse All Courses
+            </Link>
+          </div>
+        </div>
+
+        {/* Trust Signals Section */}
+        <div className="mt-16 mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-900">
+              Why Choose Our Programs?
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="text-center p-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-red-800">10K+</span>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Students Trained
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Across all our programs and courses
+                </p>
+              </div>
+
+              <div className="text-center p-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-800">4+</span>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Years Experience
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Proven track record of success
+                </p>
+              </div>
+
+              <div className="text-center p-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-green-800">98%</span>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Success Rate</h3>
+                <p className="text-gray-600 text-sm">
+                  Of our students pursue tech careers
+                </p>
+              </div>
+
+              <div className="text-center p-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-purple-800">
+                    10+
+                  </span>
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Competitions</h3>
+                <p className="text-gray-600 text-sm">
+                  Our students participate in
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonials Section */}
+          <div className="mt-12 bg-gradient-to-r from-gray-50 to-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-900">
+              What Parents Say
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/SarikaGemawat.jpeg"
+                    alt="Sarika Gemawat"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-red-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">Sarika Gemawat</h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "Divit had basic Lego knowledge before joining Cyborg, but his
+                  robotics and AI skills have grown tremendously. His dream of
+                  becoming a Robotics Engineer is now taking shape, thanks to
+                  Team Cyborg."
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/IndraniGhoshChoudhary.png"
+                    alt="Indrani Ghosh Choudhary"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">
+                      Indrani Ghosh Choudhary
+                    </h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "Aaryan enjoys his robotics sessions and is improving in
+                  assembling and programming. Mrs. Shikha is an excellent and
+                  patient teacher."
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/JishaAlex.jpeg"
+                    alt="Jisha Alex"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-green-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">Jisha Alex</h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "My kids love Cyborg's robotics classes! The instructors make
+                  learning fun and connect concepts to real life for better
+                  understanding."
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/SahilSankla.jpeg"
+                    alt="Sahil Sankla"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">Sahil Sankla</h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "Our son has been with Cyborg for over two years and has
+                  developed not just a passion for technology but also a love
+                  for learning. The team's creativity and innovation truly
+                  nurture each child's growth."
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/RuchikaOswal.jpeg"
+                    alt="Ruchika Oswal"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-yellow-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">Ruchika Oswal</h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "Cyborg has brought a positive change in my son Aadit. He's
+                  grown to love robotics, learned teamwork and handled
+                  challenges with confidence. Thank you, Team Cyborg, for your
+                  encouragement and support."
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <img
+                    src="/assets/testimonials/parents/AkanshaGaur.png"
+                    alt="Akansha Gaur"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200"
+                  />
+                  <div className="ml-4">
+                    <h4 className="font-bold text-gray-900">Akansha Gaur</h4>
+                    <div className="flex text-yellow-400">{"★".repeat(5)}</div>
+                  </div>
+                </div>
+                <p className="text-gray-600 italic">
+                  "Cyborg Robotics Academy has been perfect for my son's
+                  curiosity about how things work. The hands-on projects, clear
+                  teaching and encouraging mentors have boosted his confidence
+                  and creativity. Highly recommended!"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -379,7 +737,6 @@ export default function AllCoursesPage() {
       <Suspense fallback={<div>Loading...</div>}>
         <AllCoursesPageContent />
       </Suspense>
-      <Footer />
     </div>
   );
 }

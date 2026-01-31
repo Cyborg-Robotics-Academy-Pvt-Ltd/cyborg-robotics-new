@@ -35,6 +35,7 @@ import {
   BookOpen,
   Users,
   Shield,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -49,6 +50,7 @@ const SignUpPage = () => {
     password: "",
     confirmPassword: "",
     role: "student", // Default role
+    center: "", // Center selection for students
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +72,7 @@ const SignUpPage = () => {
   // Role selection state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("student");
+  const [selectedCenter, setSelectedCenter] = useState("");
 
   // Role options for dropdown
   const roleOptions = [
@@ -310,6 +313,11 @@ const SignUpPage = () => {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    // Center validation for students
+    if (formData.role === "student" && !formData.center.trim()) {
+      newErrors.center = "Please select a center";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -350,6 +358,23 @@ const SignUpPage = () => {
 
       return newErrors;
     });
+  };
+
+  // Handle center selection
+  const handleCenterSelect = (centerValue: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      center: centerValue,
+    }));
+    setSelectedCenter(centerValue);
+    // Clear center error
+    if (errors.center) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.center;
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -397,6 +422,7 @@ const SignUpPage = () => {
         lastLogin: new Date(),
         status: "pending", // Set status to pending for admin approval
         role: formData.role, // Use selected role
+        center: formData.center || null, // Add center information for students
       };
 
       // Save to appropriate collection based on role
@@ -1236,6 +1262,66 @@ const SignUpPage = () => {
                         className="text-xs text-gray-600 pl-1"
                       >
                         {getSelectedRole()?.description}
+                      </motion.div>
+                    )}
+
+                    {/* Center Selection - Only for students */}
+                    {selectedRole === "student" && (
+                      <motion.div
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.75, duration: 0.5 }}
+                        className="space-y-1 mt-4"
+                      >
+                        <Label className="text-gray-600 text-sm font-medium">
+                          Select Center <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            {
+                              value: "KALYANI NAGAR",
+                              label: "Kalyani Nagar",
+                              code: "KN",
+                              icon: MapPin,
+                            },
+                            {
+                              value: "VIMAN NAGAR",
+                              label: "Viman Nagar",
+                              code: "VN",
+                              icon: MapPin,
+                            },
+                          ].map((center) => (
+                            <motion.div
+                              key={center.value}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleCenterSelect(center.value)}
+                              className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer ${
+                                selectedCenter === center.value
+                                  ? "border-red-600 bg-red-50 text-red-700"
+                                  : "border-gray-200 hover:border-red-300 hover:bg-red-50"
+                              }`}
+                            >
+                              <center.icon className="h-6 w-6" />
+                              <span className="text-sm font-medium">
+                                {center.label}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {center.code}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                        {errors.center && (
+                          <motion.div
+                            className="text-red-600 text-sm bg-red-100 py-2 rounded-xl border border-red-300 px-3"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {errors.center}
+                          </motion.div>
+                        )}
                       </motion.div>
                     )}
                   </motion.div>

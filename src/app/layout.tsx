@@ -5,6 +5,7 @@ import { ReactNode, Suspense } from "react";
 import ConditionalHeader from "@/components/layout/conditional-header";
 
 import { Poppins } from "next/font/google";
+import { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebsiteLoadingProvider } from "@/components/WebsiteLoading";

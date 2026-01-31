@@ -112,6 +112,7 @@ const Page = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [trainerFilter, setTrainerFilter] = useState("");
+  const [centerFilter, setCenterFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<
     "PrnNumber" | "username" | "completedTasks"
@@ -340,7 +341,17 @@ const Page = () => {
         }
       }
 
-      return matchesSearch && matchesTrainer;
+      // Center filter
+      let matchesCenter = true;
+      if (centerFilter) {
+        if (centerFilter === "Kalyani Nagar") {
+          matchesCenter = student.PrnNumber.startsWith("CRAKN");
+        } else if (centerFilter === "Viman Nagar") {
+          matchesCenter = student.PrnNumber.startsWith("CRAVN");
+        }
+      }
+
+      return matchesSearch && matchesTrainer && matchesCenter;
     })
     .sort((a, b) => {
       if (activeTab === "ongoing") {
@@ -966,6 +977,20 @@ const Page = () => {
                     <XCircle className="h-5 w-5 text-gray-400 hover:text-red-500 transition-colors" />
                   </button>
                 )}
+              </div>
+            </div>
+            <div className="flex-1 max-w-xs">
+              <div className="relative rounded-xl shadow-sm">
+                <select
+                  className="block w-full pl-4 pr-10 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 focus:outline-none transition-all duration-300"
+                  value={centerFilter}
+                  onChange={(e) => setCenterFilter(e.target.value)}
+                  aria-label="Filter by center"
+                >
+                  <option value="">All Centers</option>
+                  <option value="Kalyani Nagar">Kalyani Nagar</option>
+                  <option value="Viman Nagar">Viman Nagar</option>
+                </select>
               </div>
             </div>
             <div className="flex-1 max-w-xs">
