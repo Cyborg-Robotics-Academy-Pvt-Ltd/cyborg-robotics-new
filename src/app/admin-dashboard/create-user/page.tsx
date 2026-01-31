@@ -36,13 +36,14 @@ interface UserFormData {
   email: string;
   password: string;
   role: string;
+  center?: string;
 }
 
 const CreateMultipleUsersPage = () => {
   const router = useRouter();
   const { user: currentUser, userRole, loading: authLoading } = useAuth();
   const [userForms, setUserForms] = useState<UserFormData[]>([
-    { fullName: "", email: "", password: "", role: "student" },
+    { fullName: "", email: "", password: "", role: "student", center: "" },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswords, setShowPasswords] = useState<boolean[]>([false]);
@@ -91,7 +92,7 @@ const CreateMultipleUsersPage = () => {
   const addNewUserForm = () => {
     setUserForms([
       ...userForms,
-      { fullName: "", email: "", password: "", role: "student" },
+      { fullName: "", email: "", password: "", role: "student", center: "" },
     ]);
     setShowPasswords([...showPasswords, false]);
   };
@@ -142,6 +143,11 @@ const CreateMultipleUsersPage = () => {
       errors.password = "Password is required";
     } else if (formData.password.length < 6) {
       errors.password = "Password must be at least 6 characters long";
+    }
+
+    // Center validation for students
+    if (formData.role === "student" && !formData.center) {
+      errors.center = "Center is required for student accounts";
     }
 
     return errors;
@@ -309,6 +315,29 @@ const CreateMultipleUsersPage = () => {
                         ))}
                       </select>
                     </div>
+
+                    {/* Center Selection - Only for students */}
+                    {form.role === "student" && (
+                      <div>
+                        <Label htmlFor={`center-${index}`}>
+                          Center <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                          id={`center-${index}`}
+                          value={form.center || ""}
+                          onChange={(e) =>
+                            handleFormChange(index, "center", e.target.value)
+                          }
+                          className="w-full p-2 border border-gray-300 rounded-md mt-1"
+                        >
+                          <option value="">Select Center</option>
+                          <option value="KALYANI NAGAR">
+                            Kalyani Nagar (KN)
+                          </option>
+                          <option value="VIMAN NAGAR">Viman Nagar (VN)</option>
+                        </select>
+                      </div>
+                    )}
 
                     {/* Full Name */}
                     <div>

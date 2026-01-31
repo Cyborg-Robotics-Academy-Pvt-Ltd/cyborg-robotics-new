@@ -323,7 +323,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   description:
     "An experiential robotics program where students learn coding, sensors, motion control, and AI concepts by building real-world robots using Quarky and PictoBlox.",
   mode: "Offline",
-  duration: "28 Classes (2 Levels) | 1 Hour per Class",
+  duration: "14 Classes (2 Levels) | 1 Hour per Class",
   syllabusPath: "/assets/pdf/ROBOTICS_WITH_QUARKY.pdf",
   syllabusFileName: "ROBOTICS_WITH_QUARKY.pdf",
   imagePath: "/assets/classroom-course/Quarky.png",
