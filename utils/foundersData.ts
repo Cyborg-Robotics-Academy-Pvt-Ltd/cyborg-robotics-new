@@ -44,7 +44,7 @@ export const foundersData: FounderData[] = [
   name: "Lokesh Malik",
   title: "Director of Operations",
   image: "/assets/Founders/lokesh.png",
-  description: "Director of Operations with diverse industry experience. MBA in International Business. Formerly with Air India and VFS Global. Led specialized projects and managed government contracts. Brings strategic vision and operational excellence to STEM education. Passionate about innovation and impact.",
+  description: "Director of Operations with diverse industry experience. MBA in International Business. Formerly with Air India and VFS Global. Led specialized projects and managed government contracts. Brings strategic vision and operational excellence to STEM education.",
   
   
   linkedinUrl: "https://www.linkedin.com/in/lokesh-malik-670700250/", // replace with his real profile

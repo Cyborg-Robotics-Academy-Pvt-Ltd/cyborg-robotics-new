@@ -323,7 +323,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   description:
     "An experiential robotics program where students learn coding, sensors, motion control, and AI concepts by building real-world robots using Quarky and PictoBlox.",
   mode: "Offline",
-  duration: "14 Classes (2 Levels) | 1 Hour per Class",
+  duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
   syllabusPath: "/assets/pdf/ROBOTICS_WITH_QUARKY.pdf",
   syllabusFileName: "ROBOTICS_WITH_QUARKY.pdf",
   imagePath: "/assets/classroom-course/Quarky.png",
@@ -363,7 +363,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   courseOverview:
     "Robotics with Quarky is a comprehensive hands-on learning program that introduces students to robotics, automation, and artificial intelligence using the Quarky robot and PictoBlox platform. The course blends coding, electronics, sensors, and mechanical logic to help learners move from screen-based programming to real-world robotic applications. Structured across two progressive levels, students begin with foundational robotics concepts such as sensors, motion, and control logic, and advance to AI-based systems like object tracking, self-driving robots, and automated pick-and-place mechanisms. Each session emphasizes concept clarity, applied learning, and problem-solving, culminating in capstone projects that demonstrate complete robotics workflows.",
 
-  ageRange: "8–12 Years",
+  ageRange: "8–12",
   category: "Robotics",
 },
   "spike-prime": {
@@ -500,7 +500,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     badge: "Kids Programming Course",
     description: "Introduce young minds to programming with fun, interactive coding activities",
     mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x1 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/BAMBINO CODING.pdf",
     syllabusFileName: "BAMBINO CODING.pdf",
     imagePath: "/assets/online-course/bambino.webp",

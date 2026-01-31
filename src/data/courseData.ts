@@ -474,7 +474,7 @@ export const courseData: Record<string, CourseData> = {
     badge: "Kids Programming Course",
     description: "Introduce young minds to programming with fun, interactive coding activities",
     mode: "Online & Offline",
-    duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x1 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/BAMBINO CODING.pdf",
     syllabusFileName: "BAMBINO CODING.pdf",
     imagePath: "/assets/online-course/bambino.webp",

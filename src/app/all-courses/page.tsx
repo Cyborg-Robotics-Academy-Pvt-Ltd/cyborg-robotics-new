@@ -25,10 +25,22 @@ import Header from "@/components/layout/header";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+// Helper function to extract levels from duration string
+const extractLevels = (duration: string): string => {
+  const match = duration.toLowerCase().match(/x(\d+)\s*levels?/);
+  if (match) {
+    const levelCount = match[1];
+    return `${levelCount} Level${levelCount === "1" ? "" : "s"}`;
+  }
+  // Fallback for courses without explicit levels
+  return "Multiple Levels";
+};
+
 // Convert the enhanced course data to an array for easier manipulation
 const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
   slug,
   ...course,
+  levels: extractLevels(course.duration),
 }));
 
 // Get unique age ranges and sort them
@@ -59,7 +71,7 @@ const AllCoursesPageContent = () => {
   const [ageFilter, setAgeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [modeFilter, setModeFilter] = useState("");
-  const [durationFilter, setDurationFilter] = useState("");
+  const [levelsFilter, setLevelsFilter] = useState("");
 
   // Get search params from URL
   const searchParams = useSearchParams();
@@ -91,15 +103,19 @@ const AllCoursesPageContent = () => {
             course.mode.toLowerCase().includes("offline")) ||
           (modeFilter === "online & offline" &&
             course.mode.toLowerCase().includes("online & offline"))) &&
-        (durationFilter === "" ||
-          (durationFilter === "16 classes" &&
-            course.duration.toLowerCase().includes("16")) ||
-          (durationFilter === "12 classes" &&
-            course.duration.toLowerCase().includes("12")) ||
-          (durationFilter === "14 classes" &&
-            course.duration.toLowerCase().includes("14")))
+        (levelsFilter === "" ||
+          (levelsFilter === "1 level" &&
+            course.duration.toLowerCase().includes("x1 level")) ||
+          (levelsFilter === "2 levels" &&
+            course.duration.toLowerCase().includes("x2 levels")) ||
+          (levelsFilter === "3 levels" &&
+            course.duration.toLowerCase().includes("x3 levels")) ||
+          (levelsFilter === "4 levels" &&
+            course.duration.toLowerCase().includes("x4 levels")) ||
+          (levelsFilter === "6 levels" &&
+            course.duration.toLowerCase().includes("x6 levels")))
     );
-  }, [search, ageFilter, categoryFilter, modeFilter, durationFilter]);
+  }, [search, ageFilter, categoryFilter, modeFilter, levelsFilter]);
 
   // Group courses by category
   const coursesByCategory = useMemo(() => {
@@ -117,7 +133,7 @@ const AllCoursesPageContent = () => {
 
   // Check if any filters are active
   const hasActiveFilters =
-    search || ageFilter || categoryFilter || modeFilter || durationFilter;
+    search || ageFilter || categoryFilter || modeFilter || levelsFilter;
 
   // Clear all filters function
   const clearAllFilters = () => {
@@ -125,7 +141,7 @@ const AllCoursesPageContent = () => {
     setAgeFilter("");
     setCategoryFilter("");
     setModeFilter("");
-    setDurationFilter("");
+    setLevelsFilter("");
   };
 
   return (
@@ -274,31 +290,33 @@ const AllCoursesPageContent = () => {
               </Select>
             </div>
 
-            {/* Duration Filter */}
+            {/* Levels Filter */}
             <div>
               <label
-                htmlFor="duration-filter"
+                htmlFor="levels-filter"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Duration
+                Levels
               </label>
               <Select
-                value={durationFilter || "all"}
+                value={levelsFilter || "all"}
                 onValueChange={(value: string) =>
-                  setDurationFilter(value === "all" ? "" : value)
+                  setLevelsFilter(value === "all" ? "" : value)
                 }
               >
                 <SelectTrigger
-                  id="duration-filter"
+                  id="levels-filter"
                   className="rounded-lg border-2 h-[42px]"
                 >
-                  <SelectValue placeholder="All Durations" />
+                  <SelectValue placeholder="All Levels" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Durations</SelectItem>
-                  <SelectItem value="16 classes">16 Classes</SelectItem>
-                  <SelectItem value="12 classes">12 Classes</SelectItem>
-                  <SelectItem value="14 classes">14 Classes</SelectItem>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="1 level">1 Level</SelectItem>
+                  <SelectItem value="2 levels">2 Levels</SelectItem>
+                  <SelectItem value="3 levels">3 Levels</SelectItem>
+                  <SelectItem value="4 levels">4 Levels</SelectItem>
+                  <SelectItem value="6 levels">6 Levels</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -372,16 +390,16 @@ const AllCoursesPageContent = () => {
                     </button>
                   </Badge>
                 )}
-                {durationFilter && (
+                {levelsFilter && (
                   <Badge
                     variant="secondary"
                     className="text-xs py-1.5 px-3 rounded-full flex items-center gap-2 bg-yellow-50 text-yellow-700 border border-yellow-200"
                   >
-                    Duration: {durationFilter}
+                    Levels: {levelsFilter}
                     <button
-                      onClick={() => setDurationFilter("")}
+                      onClick={() => setLevelsFilter("")}
                       className="hover:text-yellow-900"
-                      aria-label="Remove duration filter"
+                      aria-label="Remove levels filter"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -410,14 +428,6 @@ const AllCoursesPageContent = () => {
             <span className="font-bold text-gray-900">{courseList.length}</span>{" "}
             courses
           </p>
-
-          {filteredCourses.length > 0 &&
-            filteredCourses.length < courseList.length && (
-              <p className="text-sm text-gray-500 italic">
-                {courseList.length - filteredCourses.length} courses hidden by
-                filters
-              </p>
-            )}
         </div>
 
         {/* Course Grid */}
@@ -477,6 +487,12 @@ const AllCoursesPageContent = () => {
                             className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 font-medium"
                           >
                             {course.category}
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200 font-medium"
+                          >
+                            {course.levels}
                           </Badge>
                         </div>
 
