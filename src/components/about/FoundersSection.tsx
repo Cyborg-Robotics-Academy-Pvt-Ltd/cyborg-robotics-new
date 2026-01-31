@@ -73,10 +73,10 @@ export default function FoundersSection() {
               transition={{ duration: 0.7, delay: 0.15 * (index + 1) }}
             >
               <div
-                className="relative bg-white shadow-sm rounded-3xl p-5 sm:p-6 transition-all duration-500 hover:shadow-xl border border-gray-100"
+                className="relative bg-white shadow-sm rounded-3xl p-5 sm:p-6 transition-all duration-500 hover:shadow-xl border border-gray-100 h-full flex flex-col"
                 style={{ boxShadow: "0 10px 30px rgba(37,46,67,0.15)" }}
               >
-                <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-7">
+                <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-7 h-full flex-grow">
                   {/* Image */}
                   <div className="flex-shrink-0 w-full sm:w-2/5">
                     <div className="relative w-3/4 mx-auto sm:w-full pb-[75%] sm:pb-[125%] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
@@ -98,7 +98,7 @@ export default function FoundersSection() {
                   </div>
 
                   {/* Text Content */}
-                  <div className="flex-1 text-center sm:text-left w-full sm:w-3/5 space-y-4">
+                  <div className="flex-1 text-center sm:text-left w-full sm:w-3/5 space-y-4 flex flex-col justify-between flex-grow">
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -132,7 +132,7 @@ export default function FoundersSection() {
                         </motion.div>
 
                         <div className="inline-block px-3 py-1 bg-[#252e43] rounded-full border border-[#252e43]/20">
-                          <p className="text-[#f5f6fa] font-semibold text-sm text-center">
+                          <p className="text-[#f5f6fa] font-semibold text-xs text-center">
                             {founder.title}
                           </p>
                         </div>

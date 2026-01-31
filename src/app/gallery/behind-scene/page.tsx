@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import Header from "@/components/layout/header";
+import GallerySkeleton from "@/components/gallery/GallerySkeleton";
 
 const BehindSceneContent = () => {
   const searchParams = useSearchParams();
@@ -30,6 +31,7 @@ const BehindSceneContent = () => {
 
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9; // Show 9 images per page (3x3 grid)
@@ -75,6 +77,18 @@ const BehindSceneContent = () => {
     url.searchParams.set("tab", activeTab);
     window.history.replaceState({}, "", url.toString());
   }, [activeTab]);
+
+  // Show category loading when switching tabs
+  useEffect(() => {
+    if (!loading) {
+      // Only show category loading after initial load
+      setCategoryLoading(true);
+      const timer = setTimeout(() => {
+        setCategoryLoading(false);
+      }, 300); // Brief loading indication
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, loading]);
 
   // Listen for URL changes (e.g., browser back/forward buttons)
   useEffect(() => {
@@ -126,6 +140,27 @@ const BehindSceneContent = () => {
   };
 
   const renderImages = (images: any[]) => {
+    // Show skeleton loaders when switching categories
+    if (categoryLoading) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          {Array.from({ length: itemsPerPage }).map((_, index) => (
+            <motion.div
+              key={index}
+              className="overflow-hidden rounded-2xl shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <div className="aspect-square overflow-hidden">
+                <div className="w-full h-full bg-gray-200 animate-pulse rounded-none" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      );
+    }
+
     if (images.length === 0) {
       return (
         <div className="text-center py-12">
@@ -231,6 +266,15 @@ const BehindSceneContent = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <GallerySkeleton />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8">
       <Header />
@@ -255,12 +299,15 @@ const BehindSceneContent = () => {
             <button
               key={tab.id}
               onClick={() => {
-                setActiveTab(tab.id);
-                setCurrentPage(1); // Reset to first page when changing tabs
-                // Update URL with the new tab
-                const url = new URL(window.location.href);
-                url.searchParams.set("tab", tab.id);
-                window.history.replaceState({}, "", url.toString());
+                if (activeTab !== tab.id) {
+                  setCategoryLoading(true); // Show loading immediately
+                  setActiveTab(tab.id);
+                  setCurrentPage(1); // Reset to first page when changing tabs
+                  // Update URL with the new tab
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("tab", tab.id);
+                  window.history.replaceState({}, "", url.toString());
+                }
               }}
               className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
                 activeTab === tab.id
@@ -280,11 +327,7 @@ const BehindSceneContent = () => {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl  p-4 md:p-6"
         >
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="text-center py-12">
               <p className="text-red-600 text-lg">{error}</p>
             </div>
@@ -311,13 +354,7 @@ const BehindScenePage = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto mt-10">
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
-            </div>
-          </div>
-        </div>
+        <GallerySkeleton showHeader={false} showTabs={false} itemsPerPage={6} />
       }
     >
       <BehindSceneContent />

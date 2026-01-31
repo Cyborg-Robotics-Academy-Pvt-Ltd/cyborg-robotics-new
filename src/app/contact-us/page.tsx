@@ -17,6 +17,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "@/components/ui/dropdown";
 import { DropdownOption } from "@/components/ui/dropdown";
+import Header from "@/components/layout/header";
 
 interface FormData {
   name: string;
@@ -171,6 +172,7 @@ const Page = () => {
 
   return (
     <>
+      <Header />
       <main
         role="main"
         aria-label="Contact Us Page"
@@ -564,20 +566,21 @@ const Page = () => {
         }
       `}</style>
 
-      <div className="fixed bottom-0 -right-2 p-4">
+      <div className="fixed bottom-1 right-[1px] p-2 z-50">
         <Link
-          href="https://www.linkedin.com/in/shrikant11/"
+          href="https://www.linkedin.com/in/shrikant-gaikwad-dev/"
           target="_blank"
           rel="noopener noreferrer"
+          className="block"
         >
           <Image
             src="/mylogo.png"
-            alt="Company Logo"
-            width={20}
-            height={20}
+            alt="LinkedIn Profile"
+            width={32}
+            height={32}
             loading="lazy"
             quality={75}
-            className="opacity-40"
+            className="opacity-20  transition-opacity rounded-md"
           />
         </Link>
       </div>
