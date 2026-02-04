@@ -1061,38 +1061,6 @@ const SignUpPage = () => {
                   />
                 </div>
               </motion.div>
-
-              {/* Registration buttons section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-center space-y-2"
-              >
-                <h2 className="text-gray-800 text-lg font-semibold">
-                  Registration
-                </h2>
-                <div className="flex justify-center gap-2">
-                  <Link href="/registration/new">
-                    <motion.button
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-4 py-2 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
-                    >
-                      New Registration
-                    </motion.button>
-                  </Link>
-                  <Link href="/registration/renewal">
-                    <motion.button
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-4 py-2 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
-                    >
-                      Renewal
-                    </motion.button>
-                  </Link>
-                </div>
-              </motion.div>
             </CardHeader>
 
             <CardContent className="px-4 pb-4">

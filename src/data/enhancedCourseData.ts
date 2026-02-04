@@ -663,48 +663,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     category: "Robotics"
   },
   
-  "3d-printing-arduino": {
-    id: "3dPrintingArduino",
-    title: "3D Printing + Arduino Course",
-    subtitle: "Combine 3D printing and Arduino to create innovative electronic projects",
-    badge: "Electronics & Digital Manufacturing Course",
-    description: "Combine 3D printing and Arduino to create innovative electronic projects",
-    mode: "Offline",
-    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
-    syllabusFileName: "3D PRINTING ARDUINO.pdf",
-    imagePath: "/assets/classroom-course/3d-printing-arduino.png",
-    imageAlt: "3D Printing + Arduino Course",
-    price: 12999,
-    originalPrice: 17999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "3D Design & Printing",
-        description: "Learn to design and print custom 3D objects using CAD software",
-        iconName: "Printer",
-      },
-      {
-        title: "Arduino Programming",
-        description: "Master Arduino microcontroller programming and electronics",
-        iconName: "Cpu",
-      },
-      {
-        title: "Integrated Projects",
-        description: "Build complete projects combining 3D printed parts with electronics",
-        iconName: "Zap",
-      },
-      {
-        title: "Innovation & Creativity",
-        description: "Develop creative solutions using both technologies together",
-        iconName: "Lightbulb",
-      },
-    ],
-    courseOverview: "Our 3D Printing + Arduino course combines two powerful technologies to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics. Students will build complete projects that combine 3D printed parts with sensors, motors, LEDs and other electronic components. By the end of the course, students will have the skills to create their own custom electronic devices with professionally designed enclosures and mechanical parts.",
-    ageRange: "12+",
-    category: "Electronics"
-  },
+  // "3d-printing-arduino": {
+  //   id: "3dPrintingArduino",
+  //   title: "3D Printing + Arduino Course",
+  //   subtitle: "Combine 3D printing and Arduino to create innovative electronic projects",
+  //   badge: "Electronics & Digital Manufacturing Course",
+  //   description: "Combine 3D printing and Arduino to create innovative electronic projects",
+  //   mode: "Offline",
+  //   duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
+  //   syllabusPath: "/assets/pdf/3D PRINTING ARDUINO.pdf",
+  //   syllabusFileName: "3D PRINTING ARDUINO.pdf",
+  //   imagePath: "/assets/classroom-course/3d-printing-arduino.png",
+  //   imageAlt: "3D Printing + Arduino Course",
+  //   price: 12999,
+  //   originalPrice: 17999,
+  //   currency: "INR",
+  //   locale: "en-IN",
+  //   keyFeatures: [
+  //     {
+  //       title: "3D Design & Printing",
+  //       description: "Learn to design and print custom 3D objects using CAD software",
+  //       iconName: "Printer",
+  //     },
+  //     {
+  //       title: "Arduino Programming",
+  //       description: "Master Arduino microcontroller programming and electronics",
+  //       iconName: "Cpu",
+  //     },
+  //     {
+  //       title: "Integrated Projects",
+  //       description: "Build complete projects combining 3D printed parts with electronics",
+  //       iconName: "Zap",
+  //     },
+  //     {
+  //       title: "Innovation & Creativity",
+  //       description: "Develop creative solutions using both technologies together",
+  //       iconName: "Lightbulb",
+  //     },
+  //   ],
+  //   courseOverview: "Our 3D Printing + Arduino course combines two powerful technologies to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics. Students will build complete projects that combine 3D printed parts with sensors, motors, LEDs and other electronic components. By the end of the course, students will have the skills to create their own custom electronic devices with professionally designed enclosures and mechanical parts.",
+  //   ageRange: "12+",
+  //   category: "Electronics"
+  // },
  "peecee": {
   id: "peecee",
   title: "Peecee",

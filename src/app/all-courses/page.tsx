@@ -13,14 +13,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X, Filter } from "lucide-react";
-import CourseCategoryCarousel from "@/components/course/CourseCategoryCarousel";
-import CourseCarouselCard from "@/components/course/CourseCarouselCard";
 import {
   enhancedCourseData,
   COURSE_CATEGORIES,
 } from "@/data/enhancedCourseData";
 import { useScrollToSection } from "@/hooks/useScrollToSection";
-import Footer from "@/components/home/Footer";
 import Header from "@/components/layout/header";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -150,7 +147,7 @@ const AllCoursesPageContent = () => {
         {/* Hero section */}
         <div className="text-center mb-12 mt-10">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-800 via-red-600 to-red-800 mb-4">
-            All Courses
+            Learning Hub
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-medium">
             Hands-on Robotics & STEM programs for every age group
@@ -452,8 +449,24 @@ const AllCoursesPageContent = () => {
                   {courses.map((course) => (
                     <div
                       key={course.slug}
-                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group relative"
                     >
+                      {/* Brand Logo in Top Right Corner */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-full p-[1px] shadow-md border border-red-100">
+                          <img
+                            src="/assets/logo1.png"
+                            alt="Cyborg Robotics"
+                            className="w-8 h-8 object-contain"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.style.display = "none";
+                            }}
+                          />
+                        </div>
+                      </div>
+
                       <div className="relative h-48 overflow-hidden">
                         <img
                           src={course.imagePath}
