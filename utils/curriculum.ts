@@ -1188,204 +1188,204 @@ export const DroneCurriculumData = [
   }
 ];
 
-export const ThreeDPrintingArduinoCurriculum = {
-  meta: {
-    title: "3D PRINTING + ARDUINO COURSE",
-    teacher: "Certified Trainer",
-    duration: "16 Classes (1 Hour per Class)",
-    mode: "Offline",
-    description: "Combine 3D printing and Arduino to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics."
-  },
+// export const ThreeDPrintingArduinoCurriculum = {
+//   meta: {
+//     title: "3D PRINTING + ARDUINO COURSE",
+//     teacher: "Certified Trainer",
+//     duration: "16 Classes (1 Hour per Class)",
+//     mode: "Offline",
+//     description: "Combine 3D printing and Arduino to create innovative electronic projects. Students learn to design and print custom 3D objects using CAD software, then integrate them with Arduino microcontrollers and electronic components. This course covers everything from basic 3D modeling and printing techniques to Arduino programming and electronics."
+//   },
 
-  levels: [
-    {
-      id: "1",
-      title: "Level 1: Introduction to 3D Design & Arduino Basics (Ages 12–14)",
-      modules: [
-        {
-          title: "What is 3D Printing?",
-          topics: [
-            "Basic explanation of 3D printing",
-            "Live demo: Observe a cube being printed",
-            "Understanding layers and object formation"
-          ]
-        },
-        {
-          title: "Introduction to Arduino & LED Blink",
-          topics: [
-            "What Arduino is and how it works",
-            "Upload code to blink an LED",
-            "Simulate traffic lights using LEDs"
-          ]
-        },
-        {
-          title: "Introduction to 3D Design (Tinkercad)",
-          topics: [
-            "Navigating Tinkercad",
-            "Move, rotate, scale tools",
-            "Grid and object placement"
-          ]
-        },
-        {
-          title: "Creating Basic Shapes",
-          topics: [
-            "Cubes, cylinders, spheres",
-            "Hands-on: Design a basic object"
-          ]
-        },
-        {
-          title: "Button-Controlled Buzzer",
-          topics: [
-            "Understanding digital input and output",
-            "Trigger buzzer using push button"
-          ]
-        },
-        {
-          title: "Combining Shapes",
-          topics: [
-            "Grouping and merging",
-            "Hands-on: Personalized name keychain"
-          ]
-        },
-        {
-          title: "Temperature Sensor (DHT11) Monitoring",
-          topics: [
-            "Connect DHT11 sensor",
-            "Read temperature data",
-            "View values on Serial Monitor"
-          ]
-        }
-      ],
-      megaProjects: [
-        "Custom LED Enclosure (3D printed case + Arduino LED circuit)",
-        "Personalized Keychain with Embedded Electronics",
-        "Basic Sensor Housing with Visual Indicator"
-      ]
-    },
+//   levels: [
+//     {
+//       id: "1",
+//       title: "Level 1: Introduction to 3D Design & Arduino Basics (Ages 12–14)",
+//       modules: [
+//         {
+//           title: "What is 3D Printing?",
+//           topics: [
+//             "Basic explanation of 3D printing",
+//             "Live demo: Observe a cube being printed",
+//             "Understanding layers and object formation"
+//           ]
+//         },
+//         {
+//           title: "Introduction to Arduino & LED Blink",
+//           topics: [
+//             "What Arduino is and how it works",
+//             "Upload code to blink an LED",
+//             "Simulate traffic lights using LEDs"
+//           ]
+//         },
+//         {
+//           title: "Introduction to 3D Design (Tinkercad)",
+//           topics: [
+//             "Navigating Tinkercad",
+//             "Move, rotate, scale tools",
+//             "Grid and object placement"
+//           ]
+//         },
+//         {
+//           title: "Creating Basic Shapes",
+//           topics: [
+//             "Cubes, cylinders, spheres",
+//             "Hands-on: Design a basic object"
+//           ]
+//         },
+//         {
+//           title: "Button-Controlled Buzzer",
+//           topics: [
+//             "Understanding digital input and output",
+//             "Trigger buzzer using push button"
+//           ]
+//         },
+//         {
+//           title: "Combining Shapes",
+//           topics: [
+//             "Grouping and merging",
+//             "Hands-on: Personalized name keychain"
+//           ]
+//         },
+//         {
+//           title: "Temperature Sensor (DHT11) Monitoring",
+//           topics: [
+//             "Connect DHT11 sensor",
+//             "Read temperature data",
+//             "View values on Serial Monitor"
+//           ]
+//         }
+//       ],
+//       megaProjects: [
+//         "Custom LED Enclosure (3D printed case + Arduino LED circuit)",
+//         "Personalized Keychain with Embedded Electronics",
+//         "Basic Sensor Housing with Visual Indicator"
+//       ]
+//     },
 
-    {
-      id: "2",
-      title: "Level 2: Intermediate Design & Electronics (Ages 14–16)",
-      modules: [
-        {
-          title: "Parametric Design & Constraints",
-          topics: [
-            "Dimensions and rules",
-            "Snap-fit box design"
-          ]
-        },
-        {
-          title: "Ultrasonic Sensor for Distance Sensing",
-          topics: [
-            "Measure distance using ultrasonic sensor",
-            "Display distance values"
-          ]
-        },
-        {
-          title: "Engineering Design Concepts",
-          topics: [
-            "Multi-part fitting",
-            "Pen holder"
-          ]
-        },
-        {
-          title: "Servo Motor Control via Potentiometer",
-          topics: [
-            "Rotate servo using potentiometer",
-            "Foundation for robotic walking"
-          ]
-        },
-        {
-          title: "Tolerance Testing",
-          topics: [
-            "Fit testing",
-            "Refinement prints"
-          ]
-        },
-        {
-          title: "IR Sensor with Buzzer / LED Feedback",
-          topics: [
-            "Detect obstacles or black lines",
-            "Trigger output on detection"
-          ]
-        },
-        {
-          title: "OLED Display Integration",
-          topics: [
-            "Display sensor values",
-            "Show temperature or distance"
-          ]
-        }
-      ],
-      megaProjects: [
-        "Obstacle Avoidance Car Enclosure (3D printed chassis + Arduino sensors)",
-        "Smart Distance Measurer (Custom case + ultrasonic sensor display)",
-        "Interactive Servo Control Panel (3D printed interface + potentiometer control)"
-      ]
-    },
+//     {
+//       id: "2",
+//       title: "Level 2: Intermediate Design & Electronics (Ages 14–16)",
+//       modules: [
+//         {
+//           title: "Parametric Design & Constraints",
+//           topics: [
+//             "Dimensions and rules",
+//             "Snap-fit box design"
+//           ]
+//         },
+//         {
+//           title: "Ultrasonic Sensor for Distance Sensing",
+//           topics: [
+//             "Measure distance using ultrasonic sensor",
+//             "Display distance values"
+//           ]
+//         },
+//         {
+//           title: "Engineering Design Concepts",
+//           topics: [
+//             "Multi-part fitting",
+//             "Pen holder"
+//           ]
+//         },
+//         {
+//           title: "Servo Motor Control via Potentiometer",
+//           topics: [
+//             "Rotate servo using potentiometer",
+//             "Foundation for robotic walking"
+//           ]
+//         },
+//         {
+//           title: "Tolerance Testing",
+//           topics: [
+//             "Fit testing",
+//             "Refinement prints"
+//           ]
+//         },
+//         {
+//           title: "IR Sensor with Buzzer / LED Feedback",
+//           topics: [
+//             "Detect obstacles or black lines",
+//             "Trigger output on detection"
+//           ]
+//         },
+//         {
+//           title: "OLED Display Integration",
+//           topics: [
+//             "Display sensor values",
+//             "Show temperature or distance"
+//           ]
+//         }
+//       ],
+//       megaProjects: [
+//         "Obstacle Avoidance Car Enclosure (3D printed chassis + Arduino sensors)",
+//         "Smart Distance Measurer (Custom case + ultrasonic sensor display)",
+//         "Interactive Servo Control Panel (3D printed interface + potentiometer control)"
+//       ]
+//     },
 
-    {
-      id: "3",
-      title: "Level 3: Advanced Integration & Automation (Ages 16–18)",
-      modules: [
-        {
-          title: "Snap-Fit & Hinged Models",
-          topics: [
-            "Open/close mechanisms",
-            "Hinged case"
-          ]
-        },
-        {
-          title: "Bluetooth Control (HC-05)",
-          topics: [
-            "Mobile connectivity",
-            "Remote control of robot or appliance"
-          ]
-        },
-        {
-          title: "Electronic Enclosure Design",
-          topics: [
-            "Arduino/Raspberry Pi cases",
-            "Ventilation and wiring"
-          ]
-        },
-        {
-          title: "Multi-Part Assembly",
-          topics: [
-            "Functional assemblies",
-            "Hinged box"
-          ]
-        },
-        {
-          title: "Gas / Smoke Detection (MQ Sensors)",
-          topics: [
-            "Detect gas or smoke leaks",
-            "Safety alert system"
-          ]
-        },
-        {
-          title: "Relay Control for Appliances",
-          topics: [
-            "Switch AC/DC devices",
-            "Operate fans, bulbs, pumps"
-          ]
-        },
-        {
-          title: "Advanced Troubleshooting",
-          topics: [
-            "Error identification",
-            "Quality optimization"
-          ]
-        }
-      ],
-      megaProjects: [
-        "Home Automation Hub (3D printed control panel + Arduino relay system)",
-        "Bluetooth-Controlled Robot (Custom 3D printed chassis + HC-05 module)",
-        "Smart Environmental Monitor (Enclosed sensor array with alerts)"
-      ]
-    }
-  ]
-};
+//     {
+//       id: "3",
+//       title: "Level 3: Advanced Integration & Automation (Ages 16–18)",
+//       modules: [
+//         {
+//           title: "Snap-Fit & Hinged Models",
+//           topics: [
+//             "Open/close mechanisms",
+//             "Hinged case"
+//           ]
+//         },
+//         {
+//           title: "Bluetooth Control (HC-05)",
+//           topics: [
+//             "Mobile connectivity",
+//             "Remote control of robot or appliance"
+//           ]
+//         },
+//         {
+//           title: "Electronic Enclosure Design",
+//           topics: [
+//             "Arduino/Raspberry Pi cases",
+//             "Ventilation and wiring"
+//           ]
+//         },
+//         {
+//           title: "Multi-Part Assembly",
+//           topics: [
+//             "Functional assemblies",
+//             "Hinged box"
+//           ]
+//         },
+//         {
+//           title: "Gas / Smoke Detection (MQ Sensors)",
+//           topics: [
+//             "Detect gas or smoke leaks",
+//             "Safety alert system"
+//           ]
+//         },
+//         {
+//           title: "Relay Control for Appliances",
+//           topics: [
+//             "Switch AC/DC devices",
+//             "Operate fans, bulbs, pumps"
+//           ]
+//         },
+//         {
+//           title: "Advanced Troubleshooting",
+//           topics: [
+//             "Error identification",
+//             "Quality optimization"
+//           ]
+//         }
+//       ],
+//       megaProjects: [
+//         "Home Automation Hub (3D printed control panel + Arduino relay system)",
+//         "Bluetooth-Controlled Robot (Custom 3D printed chassis + HC-05 module)",
+//         "Smart Environmental Monitor (Enclosed sensor array with alerts)"
+//       ]
+//     }
+//   ]
+// };
 export const CodingAIWithPictoBloxCurriculum = {
   meta: {
     title: "CODING & AI WITH PICTOBLOX",

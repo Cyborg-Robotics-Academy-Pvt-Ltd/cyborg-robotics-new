@@ -67,7 +67,7 @@ import {
   PeeCeeCurriculumData,
   EarlyElectronicsCurriculumData,
   DroneCurriculumData,
-  ThreeDPrintingArduinoCurriculum,
+  // ThreeDPrintingArduinoCurriculum,
   RoboticsWithQuarkyCurriculum,
   CodingAIWithPictoBloxCurriculum,
   SpikePrimePythonCurriculum,
@@ -1204,20 +1204,20 @@ export default async function SlugPage({
         }));
       case "robotics-with-quarky":
         return RoboticsWithQuarkyCurriculum;
-      case "3d-printing-arduino":
-        // Transform ThreeDPrintingArduinoCurriculum to match CurriculumLevel[] structure
-        return ThreeDPrintingArduinoCurriculum.levels.map((level: any) => ({
-          id: level.id,
-          title: level.title,
-          subtitle: [
-            ...level.modules.map(
-              (module: any) => `${module.title}: ${module.topics.join(", ")}`
-            ),
-            ...level.megaProjects.map(
-              (project: string) => `Mega Project: ${project}`
-            ),
-          ],
-        }));
+      // case "3d-printing-arduino":
+      // Transform ThreeDPrintingArduinoCurriculum to match CurriculumLevel[] structure
+      // return ThreeDPrintingArduinoCurriculum.levels.map((level: any) => ({
+      //   id: level.id,
+      //   title: level.title,
+      //   subtitle: [
+      //     ...level.modules.map(
+      //       (module: any) => `${module.title}: ${module.topics.join(", ")}`
+      //     ),
+      //     ...level.megaProjects.map(
+      //       (project: string) => `Mega Project: ${project}`
+      //     ),
+      //   ],
+      // }));
       default:
         // Return default curriculum data if no specific curriculum is found
         return [

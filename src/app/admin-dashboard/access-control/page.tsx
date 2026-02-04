@@ -874,17 +874,17 @@ const AccessControlPage = () => {
                               >
                                 <Edit className="w-5 h-5" />
                               </button>
-                              {isSuperAdmin && !user.superAdmin && (
-                                <button
-                                  onClick={() =>
-                                    handleDeleteUser(user.id, user.role)
-                                  }
-                                  className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-100 transition-colors duration-200"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              )}
+                              {/* {isSuperAdmin && !user.superAdmin && ( */}
+                              <button
+                                onClick={() =>
+                                  handleDeleteUser(user.id, user.role)
+                                }
+                                className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-100 transition-colors duration-200"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                              {/* )} */}
                             </div>
                           </td>
                         </>
