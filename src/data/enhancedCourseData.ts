@@ -538,7 +538,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   
   "animation-coding": {
     id: "animationCoding",
-    title: "Animation Coding",
+    title: "Animation & Coding",
     subtitle: "Create stunning animations and visual effects through programming",
     badge: "Creative Programming Course",
     description: "Create stunning animations and visual effects through programming",

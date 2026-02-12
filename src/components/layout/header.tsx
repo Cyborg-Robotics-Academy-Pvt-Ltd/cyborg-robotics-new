@@ -776,7 +776,7 @@ export default function Header() {
                     size="sm"
                     className={`font-normal rounded-[7px] shadow-lg transition-all duration-300 ${
                       isHomePage && !isScrolled
-                        ? "bg-[#b92423] hover:bg-[#ab2623] text-white"
+                        ? "bg-[#F59E0B] hover:bg-[#ab2623] text-white"
                         : "bg-[#ab2623] hover:bg-[#ab2623] text-white"
                     }`}
                   >

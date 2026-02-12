@@ -980,9 +980,9 @@ const Page = () => {
               </div>
             </div>
             <div className="flex-1 max-w-xs">
-              <div className="relative rounded-xl shadow-sm">
+              <div className="relative rounded-xl shadow-sm ">
                 <select
-                  className="block w-full pl-4 pr-10 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 focus:outline-none transition-all duration-300"
+                  className="block w-full  pl-4 pr-10 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 focus:outline-none transition-all duration-300"
                   value={centerFilter}
                   onChange={(e) => setCenterFilter(e.target.value)}
                   aria-label="Filter by center"

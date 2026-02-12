@@ -15,37 +15,42 @@ const AwardSection = () => {
   const awards: Award[] = [
     {
       id: 1,
-      title: "Indian Robotics Olympiad (IRO) 2024",
+      title: "1st, 2nd & 3rd Place – Indian Robotics Olympiad (IRO) 2024",
       image: "/assets/awards/IRO.png",
     },
     {
       id: 2,
-      title: "3rd & Judges' Awards – Jr. Line Following, Ahmedabad",
+      title:
+        "3rd Place & Judges’ Award – Jr. Line Following (RoboTex), Ahmedabad",
       image: "/assets/awards/Jr.Line-following.png",
     },
     {
       id: 3,
-      title: "2nd Runner Up – Jr. Robo Race, Ahmedabad",
+      title:
+        "2nd Runner-Up – Jr. Robo Race, World STEM & Robotics Olympiad, Ahmedabad",
       image: "/assets/awards/jr.Robo-race.png",
     },
     {
       id: 4,
-      title: "Judge’s Award – World STEM & Robotics Olympiad",
+      title: "Judges’ Award – World STEM & Robotics Olympiad",
       image: "/assets/awards/Judges-awards.png",
     },
     {
       id: 5,
-      title: "2nd (Beginner) & 3rd (National) – Lego Line Follower 2025",
+      title:
+        "2nd Place (Beginner) & 3rd Place (National) – RoboTex 2025, LEGO Line Follower",
       image: "/assets/awards/Lego_Follower.png",
     },
     {
       id: 6,
-      title: "1st (Beginner) & 2nd (Intermediate) – Line Follower",
+      title:
+        "1st Place (Beginner) & 2nd Place (Intermediate) – RoboTex, Line Follower",
       image: "/assets/awards/Line-Follower.png",
     },
     {
       id: 7,
-      title: "1st & 3rd Prize – World STEM & Robotics Olympiad",
+      title:
+        "1st & 3rd Prize – World STEM & Robotics Olympiad, LEGO Line Follower",
       image: "/assets/awards/lego-line-follower.png",
     },
   ];

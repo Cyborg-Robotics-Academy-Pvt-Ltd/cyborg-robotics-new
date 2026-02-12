@@ -1,15 +1,79 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import Header from "@/components/layout/header";
 import GallerySkeleton from "@/components/gallery/GallerySkeleton";
+
+// Lightbox Component
+const Lightbox = React.memo(
+  ({
+    image,
+    onClose,
+    onNext,
+    onPrev,
+  }: {
+    image: any;
+    onClose: () => void;
+    onNext: () => void;
+    onPrev: () => void;
+  }) => {
+    if (!image) return null;
+
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <div
+          className="relative w-full max-w-6xl max-h-full flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+            onClick={onClose}
+            aria-label="Close lightbox"
+          >
+            <X className="w-6 h-6 bg-red-800 rounded-full p-1" />
+          </button>
+
+          <button
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+            onClick={onPrev}
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-6 h-6 bg-red-800 rounded-full p-1" />
+          </button>
+
+          <div className="max-h-[90vh] max-w-[90vw] flex items-center justify-center p-8 rounded-2xl">
+            <Image
+              src={image.imageUrl || image.src}
+              alt={image.fileName || image.alt || "Gallery image"}
+              width={800}
+              height={600}
+              className="max-h-[80vh] max-w-[80vw] object-contain"
+              priority={false}
+              unoptimized // Allow browser to handle optimization
+            />
+          </div>
+
+          <button
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+            onClick={onNext}
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-6 h-6 bg-red-800 rounded-full p-1" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+);
 
 const BehindSceneContent = () => {
   const searchParams = useSearchParams();
@@ -34,6 +98,8 @@ const BehindSceneContent = () => {
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const itemsPerPage = 9; // Show 9 images per page (3x3 grid)
 
   // Fetch all photos from Firebase
@@ -90,6 +156,113 @@ const BehindSceneContent = () => {
     }
   }, [activeTab, loading]);
 
+  // Handle keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        goToNextImage();
+      } else if (e.key === "ArrowLeft") {
+        goToPreviousImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightboxOpen, selectedImage, activeTab]);
+
+  // Listen for URL changes (e.g., browser back/forward buttons)
+
+  const tabs = [
+    { id: "certificates", label: "Student Certificate" },
+    { id: "actions", label: "Student Action" },
+    { id: "competitions", label: "Student in (Competition) Glory" },
+
+    { id: "workshops", label: "Workshops" },
+  ];
+
+  // Helper function to get all images in the current category (for navigation in lightbox)
+  const getAllImagesInCategory = (category: string) => {
+    return photos.filter((photo) => {
+      if (
+        (category === "certificates" &&
+          photo.category === "Student Certificate") ||
+        (category === "actions" && photo.category === "Student Action") ||
+        (category === "competitions" &&
+          photo.category === "Competition Glory") ||
+        (category === "activities" && photo.category === "Class Activities") ||
+        (category === "events" && photo.category === "Events") ||
+        (category === "workshops" && photo.category === "Workshops")
+      ) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  // Function to close the lightbox
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setSelectedImage(null);
+  };
+
+  // Function to navigate to the next image in the lightbox
+  const goToNextImage = () => {
+    if (!selectedImage) return;
+
+    const currentCategoryImages = getAllImagesInCategory(activeTab);
+    const currentIndex = currentCategoryImages.findIndex(
+      (img) => img.id === selectedImage.id
+    );
+
+    if (currentIndex !== -1) {
+      const nextIndex = (currentIndex + 1) % currentCategoryImages.length;
+      setSelectedImage(currentCategoryImages[nextIndex]);
+    }
+  };
+
+  // Function to navigate to the previous image in the lightbox
+  const goToPreviousImage = () => {
+    if (!selectedImage) return;
+
+    const currentCategoryImages = getAllImagesInCategory(activeTab);
+    const currentIndex = currentCategoryImages.findIndex(
+      (img) => img.id === selectedImage.id
+    );
+
+    if (currentIndex !== -1) {
+      const prevIndex =
+        (currentIndex - 1 + currentCategoryImages.length) %
+        currentCategoryImages.length;
+      setSelectedImage(currentCategoryImages[prevIndex]);
+    }
+  };
+
+  // Handle keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        goToNextImage();
+      } else if (e.key === "ArrowLeft") {
+        goToPreviousImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightboxOpen, closeLightbox, goToNextImage, goToPreviousImage]);
+
   // Listen for URL changes (e.g., browser back/forward buttons)
   useEffect(() => {
     const handlePopState = () => {
@@ -111,35 +284,23 @@ const BehindSceneContent = () => {
     };
   }, []);
 
-  const tabs = [
-    { id: "certificates", label: "Student Certificate" },
-    { id: "actions", label: "Student Action" },
-    { id: "competitions", label: "Student in (Competition) Glory" },
-
-    { id: "workshops", label: "Workshops" },
-  ];
-
   // Filter photos by category
   const getPhotosByCategory = (category: string) => {
-    return photos.filter((photo) => {
-      // Match the category with the tab labels
-      if (
-        (category === "certificates" &&
-          photo.category === "Student Certificate") ||
-        (category === "actions" && photo.category === "Student Action") ||
-        (category === "competitions" &&
-          photo.category === "Competition Glory") ||
-        (category === "activities" && photo.category === "Class Activities") ||
-        (category === "events" && photo.category === "Events") ||
-        (category === "workshops" && photo.category === "Workshops")
-      ) {
-        return true;
-      }
-      return false;
-    });
+    return getAllImagesInCategory(category);
+  };
+
+  // Pagination logic moved to component level
+  const getCurrentItems = (images: any[]) => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = images.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(images.length / itemsPerPage);
+    return { currentItems, totalPages };
   };
 
   const renderImages = (images: any[]) => {
+    const { currentItems, totalPages } = getCurrentItems(images);
+
     // Show skeleton loaders when switching categories
     if (categoryLoading) {
       return (
@@ -171,23 +332,21 @@ const BehindSceneContent = () => {
       );
     }
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = images.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(images.length / itemsPerPage);
-
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {currentItems.map((img, index) => (
             <motion.div
               key={img.id || img.fileName}
-              className="overflow-hidden rounded-2xl shadow-lg  transform transition-transform duration-300 hover:-translate-y-1 "
+              className="overflow-hidden rounded-2xl shadow-lg  transform transition-transform duration-300 hover:-translate-y-1 cursor-pointer"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
+              onClick={() => {
+                setSelectedImage(img);
+                setLightboxOpen(true);
+              }}
             >
               <div className="aspect-square overflow-hidden">
                 <Image
@@ -195,8 +354,9 @@ const BehindSceneContent = () => {
                   alt={img.fileName || img.alt}
                   width={600}
                   height={600}
-                  className="w-full h-full object-cover transition-transform duration-300 "
+                  className="w-full h-full object-cover transition-transform duration-300 cursor-pointer"
                   priority={index < 2}
+                  loading={index < 6 ? "eager" : "lazy"}
                 />
               </div>
             </motion.div>
@@ -346,6 +506,16 @@ const BehindSceneContent = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxOpen && selectedImage && (
+        <Lightbox
+          image={selectedImage}
+          onClose={closeLightbox}
+          onNext={goToNextImage}
+          onPrev={goToPreviousImage}
+        />
+      )}
     </div>
   );
 };

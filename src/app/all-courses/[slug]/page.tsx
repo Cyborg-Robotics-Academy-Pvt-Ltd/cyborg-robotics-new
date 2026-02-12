@@ -624,7 +624,7 @@ const mockData: Record<string, CourseData> = {
   },
   "animation-coding": {
     id: "animationCoding",
-    title: "ANIMATION CODING",
+    title: "ANIMATION & CODING",
     subtitle:
       "Create stunning animations and visual effects through programming",
     badge: "Creative Programming Course",
@@ -795,7 +795,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Explore powered mechanical systems and motor-driven mechanisms",
     mode: "Offline",
-    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/SIMPLE AND POWER MACHINE.pdf",
     syllabusFileName: "SIMPLE AND POWER MACHINE.pdf",
     imagePath: "/assets/classroom-course/simple-powered-machines.webp",

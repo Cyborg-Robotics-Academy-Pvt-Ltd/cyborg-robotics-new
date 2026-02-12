@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, Users, Award, Calendar, Sparkles } from "lucide-react";
 // Added imports for hamburger menu
 import HamburgerButton from "@/components/layout/hamburger-button";
 import OverlayMenu from "@/components/layout/overlay-menu";
@@ -14,7 +12,6 @@ import { Vision } from "@/components/ftc-competition/Vision";
 import { ProgramStructure } from "@/components/ftc-competition/Program-structure";
 import { WhyChooseUs } from "@/components/ftc-competition/why-choose-us";
 import { OfficialPartnerBadge } from "@/components/ftc-competition/OfficialPartnerBadge";
-import Footer from "@/components/home/Footer";
 import FtcFooter from "@/components/ftc-competition/Ftc-footer";
 
 export default function FTCPcompetitionPage() {
