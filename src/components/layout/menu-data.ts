@@ -62,11 +62,38 @@ const mainMenu: MenuItem[] = [
     icon: Trophy,
     children: [
       { 
+        title: 'Overview', 
+        href: '/competition', 
+        icon: Trophy,
+        
+
+      },
+      { 
+        title: 'Indian Robotics Olympiad (IRO) 2024', 
+        href: '/competition/iro', 
+        icon: Trophy,
+        
+
+      },
+      { 
+        title: 'World STEM & Robotics Olympiad', 
+        href: '/competition/wsro', 
+        icon: Trophy,
+        
+
+      },
+      { 
+        title: 'RoboTex India', 
+        href: '/competition/robtex', 
+        icon: Trophy,
+        
+
+      },
+      { 
         title: 'FTC Competition', 
         href: '/competition/ftc-competition', 
         icon: Trophy,
-        // Adding a highlight for the latest competition
-        id: 'latest-competition'
+        
       },
        
       // Add other competitions here as needed

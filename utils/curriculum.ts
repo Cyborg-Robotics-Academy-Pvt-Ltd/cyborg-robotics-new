@@ -903,7 +903,7 @@ export const RoboticsWithQuarkyCurriculum = [
       id: "1",
       title: "Level 1: Introduction to Robotics & Engineering",
       subtitle: [
-        "Building mechanical models with motors, gearsand sensors.",
+        "Building mechanical models with motors, gears and sensors.",
         "Understanding structural design (beams, axles, gears).",
         "Problem-solving through challenges (e.g., obstacle courses, racing robots).",
       ],

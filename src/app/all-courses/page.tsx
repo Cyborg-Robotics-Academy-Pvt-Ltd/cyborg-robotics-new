@@ -145,8 +145,8 @@ const AllCoursesPageContent = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="px-4 sm:px-6 lg:px-8 pt-8">
         {/* Hero section */}
-        <div className="text-center mb-12 mt-10">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-800 via-red-600 to-red-800 mb-4">
+        <div className="text-center mb-2 mt-10">
+          <h1 className="text-4xl  md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-800 mb-4 ">
             Learning Hub
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-medium">
