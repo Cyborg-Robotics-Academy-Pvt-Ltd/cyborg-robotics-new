@@ -689,56 +689,56 @@ export const RoboticsWithQuarkyCurriculum = [
   
   ];
 
-  export const IotCurriculum = [
-    {
-      id: "1",
-      title: "Introduction to IoT & Basic Projects (Level 1)",
-      subtitle: [
-        "Introduction to IoT (importance of IoT, applications of IoT)",
-        "Introduction to ESP8266 (NodeMCU, ESP8266 Pin out)",
-        "NodeMCU Setup & Configuration (GPIO, use of digital and analog pins, NodeMCU setup)",
-        "LED Blinking Project (Circuit and code to blink LED)",
-        "Object Detector using NodeMCU (interfacing of IR sensor, application of object detector)",
-        "DHT11 Sensor with ESP8266 (Displaying Temperature and humidity data on serial monitor)",
-        "Wi-Fi LED Control (Controlling LED using webpage)",
-        "Web Server using DHT11 Sensor (Displaying sensor data on webpage)",
-        "Epoch/Unix Time Conversion (Understanding Time Conversion)",
-        "ESP8266 in AP Mode & Station Mode (Understanding NodeMCU mode of operations)",
-      ],
-    },
-    {
-      id: "2",
-      title: "IoT Analytics & Intermediate Projects (Level 2)",
-      subtitle: [
-        "Introduction to IoT Analytics Platform (ThingSpeak) (understanding ThingSpeak, ThingSpeak Account Setup)",
-        "Monitoring Temperature Data using ThingSpeak (Analysing Temp Data using IoT Cloud Platform)",
-        "Smart Plant Watering System (Automatic Plant Watering based on Soil Moisture)",
-        "Level Detector Project (Calculating Distance using Ultrasonic Sensor)",
-        "RGB LED Webserver (Controlling RGB LED using Webpage)",
-        "Introduction to Blynk (Understanding Blynk Dashboard, Blynk Account Setup)",
-        "Controlling LED & Servo Motor Using Blynk (Remote Control of LED & Servo Motor)",
-        "Burglar Alarm System (Detecting Unauthorized Entry using PIR Sensor & Blynk)",
-        "Smoke Detector System (Hazardous Gas Leak Detection)",
-        "LCD Display with Blynk & ESP8266 (Using LCD Widgets to Display Data)",
-      ],
-    },
-    {
-      id: "3",
-      title: "Advanced IoT Projects (Level 3)",
-      subtitle: [
-        "Patient Monitoring System (ICU Patient Monitoring with IoT)",
-        "Stepper Motor Control (Controlling Stepper Motor using ESP8266)",
-        "Smart Car Project (Wi-Fi Controlled Robo Car)",
-        "Smart TDS Meter (Measuring TDS of Water using ESP8266)",
-        "Automatic Street Lights (Automatic Street Lights Based on Sunlight)",
-        "Home Automation System (Controlling Home Appliances using ESP8266 & Mobile App)",
-        "Smart Pet Feeder (Automated Pet Feeder System)",
-        "Smart Weather Station (Remote Weather Monitoring & Prediction System)",
-        "Smart Parking System (Enhancing Parking Efficiency)",
-        "GPS Tracking System (GPS Coordinates Transmitter & Receiver)",
-      ],
-    },
-  ];
+  // export const IotCurriculum = [
+  //   {
+  //     id: "1",
+  //     title: "Introduction to IoT & Basic Projects (Level 1)",
+  //     subtitle: [
+  //       "Introduction to IoT (importance of IoT, applications of IoT)",
+  //       "Introduction to ESP8266 (NodeMCU, ESP8266 Pin out)",
+  //       "NodeMCU Setup & Configuration (GPIO, use of digital and analog pins, NodeMCU setup)",
+  //       "LED Blinking Project (Circuit and code to blink LED)",
+  //       "Object Detector using NodeMCU (interfacing of IR sensor, application of object detector)",
+  //       "DHT11 Sensor with ESP8266 (Displaying Temperature and humidity data on serial monitor)",
+  //       "Wi-Fi LED Control (Controlling LED using webpage)",
+  //       "Web Server using DHT11 Sensor (Displaying sensor data on webpage)",
+  //       "Epoch/Unix Time Conversion (Understanding Time Conversion)",
+  //       "ESP8266 in AP Mode & Station Mode (Understanding NodeMCU mode of operations)",
+  //     ],
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "IoT Analytics & Intermediate Projects (Level 2)",
+  //     subtitle: [
+  //       "Introduction to IoT Analytics Platform (ThingSpeak) (understanding ThingSpeak, ThingSpeak Account Setup)",
+  //       "Monitoring Temperature Data using ThingSpeak (Analysing Temp Data using IoT Cloud Platform)",
+  //       "Smart Plant Watering System (Automatic Plant Watering based on Soil Moisture)",
+  //       "Level Detector Project (Calculating Distance using Ultrasonic Sensor)",
+  //       "RGB LED Webserver (Controlling RGB LED using Webpage)",
+  //       "Introduction to Blynk (Understanding Blynk Dashboard, Blynk Account Setup)",
+  //       "Controlling LED & Servo Motor Using Blynk (Remote Control of LED & Servo Motor)",
+  //       "Burglar Alarm System (Detecting Unauthorized Entry using PIR Sensor & Blynk)",
+  //       "Smoke Detector System (Hazardous Gas Leak Detection)",
+  //       "LCD Display with Blynk & ESP8266 (Using LCD Widgets to Display Data)",
+  //     ],
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Advanced IoT Projects (Level 3)",
+  //     subtitle: [
+  //       "Patient Monitoring System (ICU Patient Monitoring with IoT)",
+  //       "Stepper Motor Control (Controlling Stepper Motor using ESP8266)",
+  //       "Smart Car Project (Wi-Fi Controlled Robo Car)",
+  //       "Smart TDS Meter (Measuring TDS of Water using ESP8266)",
+  //       "Automatic Street Lights (Automatic Street Lights Based on Sunlight)",
+  //       "Home Automation System (Controlling Home Appliances using ESP8266 & Mobile App)",
+  //       "Smart Pet Feeder (Automated Pet Feeder System)",
+  //       "Smart Weather Station (Remote Weather Monitoring & Prediction System)",
+  //       "Smart Parking System (Enhancing Parking Efficiency)",
+  //       "GPS Tracking System (GPS Coordinates Transmitter & Receiver)",
+  //     ],
+  //   },
+  // ];
 
   export const pythonCourseData = [
     {

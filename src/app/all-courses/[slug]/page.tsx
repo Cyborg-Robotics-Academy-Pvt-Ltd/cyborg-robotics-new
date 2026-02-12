@@ -57,7 +57,7 @@ import {
   ArtificialIntelligenceCurriculum,
   BambinoCodingCurriculum,
   EarlySimplemachineCurriculum,
-  IotCurriculum,
+  // IotCurriculum,
   pythonCourseData,
   RoboticsCurriculum,
   SimplePoweredMachines,
@@ -745,47 +745,47 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
-  iot: {
-    id: "iot",
-    title: "INTERNET OF THINGS (IoT)",
-    subtitle:
-      "Connect devices and create smart systems that communicate over the internet",
-    badge: "Connected Technology Course",
-    description:
-      "Connect devices and create smart systems that communicate over the internet",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/INTERNET OF THINGS.pdf",
-    syllabusFileName: "IOT.pdf",
-    imagePath: "/assets/classroom-course/iot.webp",
-    imageAlt: "IoT Course",
-    price: 16999,
-    originalPrice: 23999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "Device Connectivity",
-        description: "Learn to connect devices to the internet",
-        iconName: "Wifi",
-      },
-      {
-        title: "Sensor Integration",
-        description: "Work with various sensors and data collection",
-        iconName: "Zap",
-      },
-      {
-        title: "Smart Systems",
-        description: "Create intelligent automated systems",
-        iconName: "Bot",
-      },
-      {
-        title: "Data Processing",
-        description: "Process and analyze IoT data streams",
-        iconName: "Database",
-      },
-    ],
-  },
+  // iot: {
+  //   id: "iot",
+  //   title: "INTERNET OF THINGS (IoT)",
+  //   subtitle:
+  //     "Connect devices and create smart systems that communicate over the internet",
+  //   badge: "Connected Technology Course",
+  //   description:
+  //     "Connect devices and create smart systems that communicate over the internet",
+  //   mode: "Online & Offline",
+  //   duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
+  //   syllabusPath: "/assets/pdf/INTERNET OF THINGS.pdf",
+  //   syllabusFileName: "IOT.pdf",
+  //   imagePath: "/assets/classroom-course/iot.webp",
+  //   imageAlt: "IoT Course",
+  //   price: 16999,
+  //   originalPrice: 23999,
+  //   currency: "INR",
+  //   locale: "en-IN",
+  //   keyFeatures: [
+  //     {
+  //       title: "Device Connectivity",
+  //       description: "Learn to connect devices to the internet",
+  //       iconName: "Wifi",
+  //     },
+  //     {
+  //       title: "Sensor Integration",
+  //       description: "Work with various sensors and data collection",
+  //       iconName: "Zap",
+  //     },
+  //     {
+  //       title: "Smart Systems",
+  //       description: "Create intelligent automated systems",
+  //       iconName: "Bot",
+  //     },
+  //     {
+  //       title: "Data Processing",
+  //       description: "Process and analyze IoT data streams",
+  //       iconName: "Database",
+  //     },
+  //   ],
+  // },
 
   "simple-powered-machines": {
     id: "simplePoweredMachines",
@@ -1182,8 +1182,8 @@ export default async function SlugPage({
         return AppDevelopmentData;
       case "early-simple-machines":
         return EarlySimplemachineCurriculum;
-      case "iot":
-        return IotCurriculum;
+      // case "iot":
+      //   return IotCurriculum;
       case "simple-powered-machines":
         return SimplePoweredMachines;
       case "app-lab":
