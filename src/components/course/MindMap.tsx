@@ -342,7 +342,7 @@ const initialNodes: Node[] = [
     data: {
       label: "SPIKE Essential ",
       color: "#22d3ee",
-      link: "#",
+      link: "/all-courses/spike-essential",
     },
   },
 

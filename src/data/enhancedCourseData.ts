@@ -366,6 +366,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   ageRange: "8–12",
   category: "Robotics",
 },
+"spike-essential": {
+  id: "spikeEssential",
+  title: "SPIKE ESSENTIAL",
+  subtitle: "Learn robotics and coding with LEGO Education SPIKE Essential",
+  badge: "Educational Robotics Course",
+  description: "Learn robotics and coding with LEGO Education SPIKE Essential",
+  mode: "Offline",
+  duration: "16 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+  syllabusPath: "/assets/pdf/Spike Essential.pdf",
+  syllabusFileName: "SPIKE ESSENTIAL.pdf",
+  imagePath: "/assets/classroom-course/spike-essential.png",
+  imageAlt: "SPIKE Essential Course",
+  price: 7999,
+  originalPrice: 12999,
+  currency: "INR",
+  locale: "en-IN",
+  keyFeatures: [
+    {
+      title: "Block-based Programming",
+      description: "Learn programming concepts using intuitive drag-and-drop blocks",
+      iconName: "Blocks",
+    },
+    {
+      title: "STEAM Learning",
+      description: "Integrate Science, Technology, Engineering, Arts and Mathematics",
+      iconName: "GraduationCap",
+    },
+    {
+      title: "Creative Problem Solving",
+      description: "Develop critical thinking through hands-on robotics projects",
+      iconName: "Lightbulb",
+    },
+    {
+      title: "Real-world Applications",
+      description: "Apply robotics concepts to solve everyday problems",
+      iconName: "Rocket",
+    },
+  ],
+  courseOverview: "LEGO Education SPIKE Essential is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Essential course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
+  ageRange: "9-13",
+  category: "Robotics"
+}, 
   "spike-prime": {
     id: "spikePrime",
     title: "Spike Prime",

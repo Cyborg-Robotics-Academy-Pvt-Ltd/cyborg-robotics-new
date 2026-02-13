@@ -896,8 +896,23 @@ export const RoboticsWithQuarkyCurriculum = [
    
   ];
 
- 
-
+export const SpikeEssentialCurriculum = [
+  {
+    id: "1",
+    title: "Level 1: Introduction to Robotics & Engineering",
+    subtitle: [
+      "Hands-on robotics and coding program designed for primary students",
+      "Combines building, coding, engineering, and real-world problem solving",
+      "Uses Smart Hub, motors, sensors, and Scratch-based block programming",
+      "Beginner-friendly – no prior coding experience required",
+      "Introduction to robotics components and Smart Hub",
+      "Building moving models and simple machines",
+      "Sensor-based automation projects",
+      "Real-world challenge-based learning",
+      "Independent innovation project (Capstone Project)",
+    ],
+  },
+]
   export  const SpikePrimeCurriculum = [
     {
       id: "1",
