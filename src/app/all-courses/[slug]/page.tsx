@@ -71,6 +71,7 @@ import {
   RoboticsWithQuarkyCurriculum,
   CodingAIWithPictoBloxCurriculum,
   SpikePrimePythonCurriculum,
+  SpikeEssentialCurriculum,
 } from "../../../../utils/curriculum";
 import Header from "@/components/layout/header";
 // Define the type for key features
@@ -995,6 +996,49 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "spike-essential": {
+    id: "spikeEssential",
+    title: "SPIKE ESSENTIAL",
+    subtitle: "Learn robotics and coding with LEGO Education SPIKE Essential",
+    badge: "Educational Robotics Course",
+    description:
+      "Learn robotics and coding with LEGO Education SPIKE Essential",
+    mode: "Offline",
+    duration: "16 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/Spike Essential.pdf",
+    syllabusFileName: "SPIKE ESSENTIAL.pdf",
+    imagePath: "/assets/classroom-course/spike-essential.png",
+    imageAlt: "SPIKE Essential Course",
+    price: 7999,
+    originalPrice: 12999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Block-based Programming",
+        description:
+          "Learn programming concepts using intuitive drag-and-drop blocks",
+        iconName: "Blocks",
+      },
+      {
+        title: "STEAM Learning",
+        description:
+          "Integrate Science, Technology, Engineering, Arts and Mathematics",
+        iconName: "GraduationCap",
+      },
+      {
+        title: "Creative Problem Solving",
+        description:
+          "Develop critical thinking through hands-on robotics projects",
+        iconName: "Lightbulb",
+      },
+      {
+        title: "Real-world Applications",
+        description: "Apply robotics concepts to solve everyday problems",
+        iconName: "Rocket",
+      },
+    ],
+  },
   "spike-prime-python": {
     id: "spikePrimePython",
     title: "SPIKE PRIME WITH PYTHON",
@@ -1170,6 +1214,8 @@ export default async function SlugPage({
 
       case "bambino-coding":
         return BambinoCodingCurriculum;
+      case "spike-essential":
+        return SpikeEssentialCurriculum;
       case "spike-prime-python":
         return SpikePrimePythonCurriculum;
       case "electronics":

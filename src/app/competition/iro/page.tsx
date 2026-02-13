@@ -422,7 +422,7 @@ const IROPage = () => {
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-red-100">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <Image
-                          src="https://placehold.co/400x200/ffffff/000000?text=IRO+2024+Champions"
+                          src=""
                           alt="IRO 2024 National Champions"
                           width={400}
                           height={400}
@@ -455,20 +455,13 @@ const IROPage = () => {
                   title: "2025",
                   content: (
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="">
                         <Image
-                          src="https://placehold.co/400x200/ffffff/000000?text=IRO+2025+Runners+Up"
+                          src="/assets/competition/iro/iro1.avif"
                           alt="IRO 2025 National Runners-up"
                           width={400}
                           height={400}
-                          className="rounded-lg w-full h-52 object-cover border border-gray-200"
-                        />
-                        <Image
-                          src="https://placehold.co/400x200/ffffff/000000?text=IRO+2025+Judges+Award"
-                          alt="IRO 2025 Judges Award"
-                          width={400}
-                          height={400}
-                          className="rounded-lg w-full h-52 object-cover border border-gray-200"
+                          className="rounded-lg w-full h-96 object-cover border border-gray-200"
                         />
                       </div>
                       <h3 className="text-xl font-bold text-blue-600 mb-3">
