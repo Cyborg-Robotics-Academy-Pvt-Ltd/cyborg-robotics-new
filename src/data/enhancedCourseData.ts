@@ -101,7 +101,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Arduino is an open-source electronics platform based on easy-to-use hardware and software. It's intended for anyone making interactive projects. Arduino boards are able to read inputs - light on a sensor, a finger on a button, or a Twitter message - and turn it into an output - activating a motor, turning on an LED, publishing something online. You can tell your board what to do by sending a set of instructions to the microcontroller on the board. Our comprehensive Arduino course covers everything from basic electronics concepts to advanced IoT projects.",
-    ageRange: "9+",
+    ageRange: "11-16",
     category: "Electronics"
   },
   "web-designing": {
@@ -185,7 +185,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Java is a high-level, class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible. It is a general-purpose programming language intended to let programmers write once, run anywhere, meaning that compiled Java code can run on all platforms that support Java without the need to recompile. Our comprehensive Java course covers everything from basic syntax to advanced enterprise development concepts.",
-    ageRange: "12+",
+    ageRange: "11-16",
     category: "Programming"
   },
   
@@ -231,48 +231,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   //   ageRange: "14+",
   //   category: "Programming"
   // },
-  "artificial-intelligence": {
-    id: "artificialIntelligence",
-    title: "Artificial Intelligence",
-    subtitle: "Explore the cutting-edge world of AI and build intelligent systems",
-    badge: "Advanced AI Course",
-    description: "Explore the cutting-edge world of AI and build intelligent systems",
-    mode: "Online & Offline",
-    duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/ARTIFICIAL INTELLIGENCE.pdf",
-    syllabusFileName: "ARTIFICIAL INTELLIGENCE.pdf",
-    imagePath: "/assets/online-course/aigif.webp",
-    imageAlt: "Artificial Intelligence Course",
-    price: 19999,
-    originalPrice: 28999,
-    currency: "INR",
-    locale: "en-IN",
-    keyFeatures: [
-      {
-        title: "AI Fundamentals",
-        description: "Understand core AI concepts and problem-solving approaches",
-        iconName: "BrainCircuit",
-      },
-      {
-        title: "Neural Networks",
-        description: "Build and train deep neural networks for complex tasks",
-        iconName: "Network",
-      },
-      {
-        title: "Computer Vision",
-        description: "Implement AI systems that can see and understand images",
-        iconName: "Eye",
-      },
-      {
-        title: "Natural Language Processing",
-        description: "Create AI systems that understand and generate human language",
-        iconName: "MessageSquare",
-      },
-    ],
-    courseOverview: "Artificial Intelligence is the simulation of human intelligence in machines that are programmed to think and learn like humans. Our comprehensive AI course covers machine learning, deep learning, computer vision, natural language processing and robotics. Students will learn to build intelligent systems that can perform tasks that typically require human intelligence.",
-    ageRange: "14+",
-    category: "Programming"
-  },
+  // "artificial-intelligence": {
+  //   id: "artificialIntelligence",
+  //   title: "Artificial Intelligence",
+  //   subtitle: "Explore the cutting-edge world of AI and build intelligent systems",
+  //   badge: "Advanced AI Course",
+  //   description: "Explore the cutting-edge world of AI and build intelligent systems",
+  //   mode: "Online & Offline",
+  //   duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
+  //   syllabusPath: "/assets/pdf/ARTIFICIAL INTELLIGENCE.pdf",
+  //   syllabusFileName: "ARTIFICIAL INTELLIGENCE.pdf",
+  //   imagePath: "/assets/online-course/aigif.webp",
+  //   imageAlt: "Artificial Intelligence Course",
+  //   price: 19999,
+  //   originalPrice: 28999,
+  //   currency: "INR",
+  //   locale: "en-IN",
+  //   keyFeatures: [
+  //     {
+  //       title: "AI Fundamentals",
+  //       description: "Understand core AI concepts and problem-solving approaches",
+  //       iconName: "BrainCircuit",
+  //     },
+  //     {
+  //       title: "Neural Networks",
+  //       description: "Build and train deep neural networks for complex tasks",
+  //       iconName: "Network",
+  //     },
+  //     {
+  //       title: "Computer Vision",
+  //       description: "Implement AI systems that can see and understand images",
+  //       iconName: "Eye",
+  //     },
+  //     {
+  //       title: "Natural Language Processing",
+  //       description: "Create AI systems that understand and generate human language",
+  //       iconName: "MessageSquare",
+  //     },
+  //   ],
+  //   courseOverview: "Artificial Intelligence is the simulation of human intelligence in machines that are programmed to think and learn like humans. Our comprehensive AI course covers machine learning, deep learning, computer vision, natural language processing and robotics. Students will learn to build intelligent systems that can perform tasks that typically require human intelligence.",
+  //   ageRange: "11-16",
+  //   category: "Programming"
+  // },
   "robotics-ev3": {
     id: "roboticsEv3",
     title: "Robotics EV3",
@@ -363,7 +363,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   courseOverview:
     "Robotics with Quarky is a comprehensive hands-on learning program that introduces students to robotics, automation, and artificial intelligence using the Quarky robot and PictoBlox platform. The course blends coding, electronics, sensors, and mechanical logic to help learners move from screen-based programming to real-world robotic applications. Structured across two progressive levels, students begin with foundational robotics concepts such as sensors, motion, and control logic, and advance to AI-based systems like object tracking, self-driving robots, and automated pick-and-place mechanisms. Each session emphasizes concept clarity, applied learning, and problem-solving, culminating in capstone projects that demonstrate complete robotics workflows.",
 
-  ageRange: "8–12",
+  ageRange: "6-9",
   category: "Robotics",
 },
 "spike-essential": {
@@ -405,7 +405,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     },
   ],
   courseOverview: "LEGO Education SPIKE Essential is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Essential course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
-  ageRange: "9-13",
+  ageRange: "6-9",
   category: "Robotics"
 }, 
   "spike-prime": {
@@ -447,7 +447,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
-    ageRange: "9-13",
+    ageRange: "11-16",
     category: "Robotics"
   },
  
@@ -490,7 +490,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
-    ageRange: "9-13",
+    ageRange: "11-16",
     category: "Robotics"
   },
   "3d-printing": {
@@ -532,7 +532,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "3D printing is a manufacturing process that creates three-dimensional objects by depositing materials layer by layer. Our comprehensive 3D printing course covers 3D design, slicing software, printing technology and post-processing techniques. Students will learn to design and print their own 3D objects using modern 3D printing technology.",
-    ageRange: "14+",
+    ageRange: "8-12",
     category: "3D Printing"
   },
   "bambino-coding": {
@@ -574,7 +574,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Bambino Coding is designed specifically for young learners to introduce them to the exciting world of programming. Using age-appropriate tools and visual programming languages, children learn to create games, animations and interactive stories while developing essential computational thinking skills. Our course makes coding fun and accessible, building a strong foundation for future learning.",
-    ageRange: "5-8",
+    ageRange: "4-6",
     category: "Programming"
   },
   
@@ -962,7 +962,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
 //     },
 //   ],
 //   courseOverview: "Internet of Things (IoT) is the network of physical devices connected to the internet. Our IoT course teaches students to build smart systems that can collect data, communicate with other devices and automate processes. Students learn about sensors, microcontrollers, wireless communication and cloud platforms to create connected solutions for real-world problems.",
-//   ageRange: "11+",
+//   ageRange: "11-16",
 //   category: "Electronics"
 // },
   "coding-ai-pictoblox": {
@@ -1004,7 +1004,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       },
     ],
     courseOverview: "Our Coding with AI course teaches students how to integrate AI into their code using Pictoblox. Students learn about AI concepts, programming fundamentals and how to use Pictoblox to create automated systems. This course provides a fun and engaging way to learn about coding, problem-solving and automation.",
-    ageRange: "11+",
+    ageRange: "11-16",
     category: "Programming"
   },
 

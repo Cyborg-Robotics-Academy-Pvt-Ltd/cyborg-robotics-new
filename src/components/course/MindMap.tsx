@@ -182,7 +182,7 @@ const HorizontalNode = memo(
     }
 
     return nodeContent;
-  }
+  },
 );
 HorizontalNode.displayName = "HorizontalNode";
 
@@ -288,7 +288,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 450 },
     data: {
-      label: "KUBO - 1 Level",
+      label: "KUBO ",
       color: "#22d3ee",
       link: "#",
     },
@@ -1233,7 +1233,7 @@ const FlowWithProvider = () => {
   };
 
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>(
-    getInitialCollapsedNodes
+    getInitialCollapsedNodes,
   );
   const [isMobile, setIsMobile] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
@@ -1270,16 +1270,16 @@ const FlowWithProvider = () => {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
       setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
+    [],
   );
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) =>
       setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
+    [],
   );
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
+    [],
   );
 
   // Function to get node color for MiniMap
@@ -1345,10 +1345,10 @@ const FlowWithProvider = () => {
           y,
           zoom,
         },
-        { duration: 500 }
+        { duration: 500 },
       );
     },
-    [setViewport]
+    [setViewport],
   );
 
   // Fit view to show all nodes with line alignment
@@ -1518,7 +1518,7 @@ const FlowWithProvider = () => {
 
             // Get positions of visible nodes
             const visibleNodes = getNodes().filter((node) =>
-              visibleNodeIds.has(node.id)
+              visibleNodeIds.has(node.id),
             );
 
             if (visibleNodes.length > 0) {
@@ -1531,7 +1531,7 @@ const FlowWithProvider = () => {
         return newCollapsedState;
       });
     },
-    [getNodes, setViewport, alignAndFitNodes, updateUrlState]
+    [getNodes, setViewport, alignAndFitNodes, updateUrlState],
   );
 
   // Collapse all nodes with line alignment
@@ -1664,7 +1664,7 @@ const FlowWithProvider = () => {
         isCollapsed={collapsedNodes[id] || false}
         onToggle={() => toggleNode(id)}
       />
-    )
+    ),
   );
   HorizontalNodeWithCollapse.displayName = "HorizontalNodeWithCollapse";
 
