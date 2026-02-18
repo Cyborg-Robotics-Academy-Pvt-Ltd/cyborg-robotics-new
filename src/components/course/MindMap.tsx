@@ -243,7 +243,7 @@ const initialNodes: Node[] = [
     id: "AGE1116",
     type: "horizontal",
     position: { x: 650, y: 800 },
-    data: { label: "AGE 11-16", color: "#ed6565", collapsible: true },
+    data: { label: "AGE 10-16", color: "#ed6565", collapsible: true },
   },
 
   //
@@ -485,7 +485,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1300, y: 810 },
     data: {
-      label: "Basic Electronics + Arduino",
+      label: "Arduino",
       color: "#14b8a6",
       link: "/all-courses/arduino",
     },
