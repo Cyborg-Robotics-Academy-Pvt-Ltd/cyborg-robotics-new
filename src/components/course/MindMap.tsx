@@ -39,7 +39,7 @@ const ViewportControls = ({
           onClick={onFitView}
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-xl shadow"
         >
-          Fit View
+          Fit View1
         </button>
         <button
           onClick={onCollapseAll}
