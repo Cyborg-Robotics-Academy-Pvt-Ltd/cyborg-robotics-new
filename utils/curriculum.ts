@@ -200,7 +200,7 @@ export const RoboticsWithQuarkyCurriculum = [
 
  export const ThreeDPrintingCurriculum = {
   level1: {
-    title: "Level 1: Introduction to 3D Printing & Basic Design (Ages 8–12)",
+    title: "Level 1: Introduction to 3D Printing & Basic Design ",
     modules: [
       { id: "1", title: "What is 3D Printing?", subtitle: ["Basic explanation of 3D printing", "Live demo: Observe a cube being printed", "Understanding layers and object formation"] },
       { id: "2", title: "How a 3D Printer Works", subtitle: ["Printer parts: Filament, hotend, bed", "Bed leveling basics", "Filament loading and preheating"] },
@@ -222,7 +222,7 @@ export const RoboticsWithQuarkyCurriculum = [
   },
 
   level2: {
-    title: "Level 2: Fusion 360 + Blender + Advanced Printing (Ages 12–16)",
+    title: "Level 2: Fusion 360 + Blender + Advanced Printing ",
     modules: [
       { id: "1", title: "Advanced 3D Printing Techniques", subtitle: ["Multi-part models", "Demo of moving parts"] },
       { id: "2", title: "Introduction to Fusion 360", subtitle: ["Interface and sketch basics", "Hands-on: Phone stand"] },
@@ -244,7 +244,7 @@ export const RoboticsWithQuarkyCurriculum = [
   },
 
   level3: {
-    title: "Level 3: Advanced Projects & Real-World Applications (Ages 16–18)",
+    title: "Level 3: Advanced Projects & Real-World Applications ",
     modules: [
       { id: "1", title: "Mechanical Design Concepts", subtitle: ["Gear systems", "Working gear mechanism"] },
       { id: "2", title: "Designing for Strength", subtitle: ["Wall thickness and infill", "Strong key holder"] },
@@ -420,7 +420,7 @@ export const RoboticsWithQuarkyCurriculum = [
   levels: [
     {
       id: "1",
-      title: "Level 1: Foundations of Electronics & Motion (Ages 12–14)",
+      title: "Level 1: Foundations of Electronics & Motion ",
       modules: [
         {
           title: "Introduction to Arduino & LED Blink",
@@ -484,7 +484,7 @@ export const RoboticsWithQuarkyCurriculum = [
 
     {
       id: "2",
-      title: "Level 2: Intermediate Robotics & Smart Logic (Ages 14–16)",
+      title: "Level 2: Intermediate Robotics & Smart Logic ",
       modules: [
         {
           title: "LDR + LED Indicators",
@@ -528,7 +528,7 @@ export const RoboticsWithQuarkyCurriculum = [
 
     {
       id: "3",
-      title: "Level 3: Advanced Automation & Wearables (Ages 16–18)",
+      title: "Level 3: Advanced Automation & Wearables ",
       modules: [
         {
           title: "PIR Motion Detection",
