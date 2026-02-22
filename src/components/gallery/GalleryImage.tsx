@@ -39,7 +39,7 @@ export default function Gallery() {
       try {
         const q = query(
           collection(db, "galleryImage"),
-          orderBy("uploadedAt", "desc")
+          orderBy("uploadedAt", "desc"),
         );
         const querySnapshot = await getDocs(q);
         const images: any[] = [];
@@ -67,13 +67,13 @@ export default function Gallery() {
 
   const totalPages = Math.min(
     100,
-    Math.ceil(galleryImages.length / ITEMS_PER_PAGE)
+    Math.ceil(galleryImages.length / ITEMS_PER_PAGE),
   );
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const selectedImages = galleryImages.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + ITEMS_PER_PAGE,
   );
 
   const navigatePage = (newPage: number) => {
@@ -118,7 +118,7 @@ export default function Gallery() {
         // Refresh the gallery to show the new images
         const q = query(
           collection(db, "galleryImage"),
-          orderBy("uploadedAt", "desc")
+          orderBy("uploadedAt", "desc"),
         );
         const querySnapshot = await getDocs(q);
         const images: any[] = [];
@@ -134,7 +134,7 @@ export default function Gallery() {
 
         if (failedUploads.length > 0) {
           alert(
-            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`
+            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`,
           );
         } else {
           alert(`Uploaded ${successfulUploads.length} images successfully!`);
@@ -172,13 +172,13 @@ export default function Gallery() {
         >
           1
         </PaginationLink>
-      </PaginationItem>
+      </PaginationItem>,
     );
 
     // Calculate range to display
     let startPage = Math.max(
       2,
-      currentPage - Math.floor(MAX_VISIBLE_PAGES / 2)
+      currentPage - Math.floor(MAX_VISIBLE_PAGES / 2),
     );
     const endPage = Math.min(totalPages - 1, startPage + MAX_VISIBLE_PAGES - 2);
 
@@ -192,7 +192,7 @@ export default function Gallery() {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -210,7 +210,7 @@ export default function Gallery() {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -219,7 +219,7 @@ export default function Gallery() {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -237,7 +237,7 @@ export default function Gallery() {
           >
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 

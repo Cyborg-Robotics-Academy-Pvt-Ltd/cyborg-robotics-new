@@ -62,6 +62,48 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "11-16",
     category: "Programming"
   },
+  "kubo": {
+  id: "kubo",
+  title: "KUBO Robotics",
+  subtitle: "Learn coding fundamentals through hands-on robot navigation using TagTiles",
+  badge: "Robotics Course",
+  description: "Develop logical thinking and programming skills using KUBO's hands-on, screen-free coding system.",
+  mode: "Offline",
+  duration: "12 DAYS (x2 LEVELS) (1 HOUR PER SESSION)",
+  syllabusPath: "/assets/pdf/KUBO.pdf",
+  syllabusFileName: "KUBO.pdf",
+  imagePath: "/assets/classroom-course/kubo.png",
+  imageAlt: "KUBO Robotics Course",
+  price: 7499,
+  originalPrice: 9999,
+  currency: "INR",
+  locale: "en-IN",
+  keyFeatures: [
+    {
+      title: "Screen-Free Coding",
+      description: "Learn programming concepts using physical TagTiles without screens",
+      iconName: "Code",
+    },
+    {
+      title: "Functions & Subroutines",
+      description: "Understand reusable code blocks and modular programming logic",
+      iconName: "GitBranch",
+    },
+    {
+      title: "Loops & Recursion",
+      description: "Optimize routes using loops and advanced repetition logic",
+      iconName: "Repeat",
+    },
+    {
+      title: "IRO Challenges",
+      description: "Apply coding concepts in real-world mission-based challenges",
+      iconName: "Target",
+    },
+  ],
+  courseOverview: "KUBO Robotics is a hands-on educational robotics program designed to introduce students to foundational programming concepts through physical interaction. Students learn sequencing, functions, subroutines, loops, and problem-solving using TagTiles and activity maps. The course progresses from basic route planning to advanced logical structuring and IRO challenge missions.",
+  ageRange: "4-6",
+  category: "Robotics"
+},
   "arduino": {
     id: "arduino",
     title: "Arduino",
@@ -69,7 +111,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     badge: "Electronics Course",
     description: "Build interactive electronics projects with Arduino programming and hardware integration",
     mode: "Offline",
-    duration: "16 CLASSES (1 HOUR PER CLASS)",
+    duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ARDUINO.pdf",
     syllabusFileName: "ARDUINO.pdf",
     imagePath: "/assets/classroom-course/arduino.webp",

@@ -39,7 +39,7 @@ const ViewportControls = ({
           onClick={onFitView}
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-xl shadow"
         >
-          Fit View1
+          Fit View
         </button>
         <button
           onClick={onCollapseAll}
@@ -256,13 +256,22 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO ",
       color: "#4ade80",
-      link: "#",
+      link: "/all-courses/kubo",
+    },
+  },
+  {
+    id: "KUBO1_LEVELS",
+    type: "horizontal",
+    position: { x: 1250, y: 450 },
+    data: {
+      label: "2 levels",
+      color: "#4ade80",
     },
   },
   {
     id: "ESM",
     type: "horizontal",
-    position: { x: 970, y: 510 },
+    position: { x: 930, y: 510 },
     data: {
       label: "Early Simple Machine",
       color: "#4ade80",
@@ -272,11 +281,20 @@ const initialNodes: Node[] = [
   {
     id: "BAMBINO",
     type: "horizontal",
-    position: { x: 950, y: 570 },
+    position: { x: 1250, y: 510 },
     data: {
       label: "Bambino Coding ",
       color: "#4ade80",
       link: "/all-courses/bambino-coding",
+    },
+  },
+  {
+    id: "BAMBINO_LEVELS",
+    type: "horizontal",
+    position: { x: 1450, y: 510 },
+    data: {
+      label: "2 levels",
+      color: "#4ade80",
     },
   },
 
@@ -290,7 +308,7 @@ const initialNodes: Node[] = [
     data: {
       label: "KUBO ",
       color: "#22d3ee",
-      link: "#",
+      link: "/all-courses/kubo",
     },
   },
   {
@@ -306,7 +324,7 @@ const initialNodes: Node[] = [
   {
     id: "CODE1",
     type: "horizontal",
-    position: { x: 950, y: 570 },
+    position: { x: 1250, y: 510 },
     data: {
       label: "Code.org ",
       color: "#22d3ee",
@@ -314,9 +332,18 @@ const initialNodes: Node[] = [
     },
   },
   {
+    id: "CODE1_LEVELS",
+    type: "horizontal",
+    position: { x: 1450, y: 510 },
+    data: {
+      label: "2 levels",
+      color: "#22d3ee",
+    },
+  },
+  {
     id: "QUARKY1",
     type: "horizontal",
-    position: { x: 950, y: 630 },
+    position: { x: 950, y: 570 },
     data: {
       label: "Quarky Robotics & AI ",
       color: "#22d3ee",
@@ -328,7 +355,7 @@ const initialNodes: Node[] = [
   {
     id: "PEECEE",
     type: "horizontal",
-    position: { x: 950, y: 690 },
+    position: { x: 950, y: 630 },
     data: {
       label: "PEECEE ",
       color: "#22d3ee",
@@ -338,7 +365,7 @@ const initialNodes: Node[] = [
   {
     id: "SPIKE1",
     type: "horizontal",
-    position: { x: 950, y: 750 },
+    position: { x: 950, y: 690 },
     data: {
       label: "SPIKE Essential ",
       color: "#22d3ee",
@@ -739,6 +766,13 @@ const initialEdges: Edge[] = [
     style: { stroke: "#4ade80", strokeWidth: 2 },
   },
   {
+    id: "e10a",
+    source: "KUBO1",
+    target: "KUBO1_LEVELS",
+    type: "default",
+    style: { stroke: "#4ade80", strokeWidth: 2 },
+  },
+  {
     id: "e11",
     source: "AGE46",
     target: "ESM",
@@ -747,8 +781,15 @@ const initialEdges: Edge[] = [
   },
   {
     id: "e12",
-    source: "AGE46",
+    source: "ESM",
     target: "BAMBINO",
+    type: "default",
+    style: { stroke: "#4ade80", strokeWidth: 2 },
+  },
+  {
+    id: "e12a",
+    source: "BAMBINO",
+    target: "BAMBINO_LEVELS",
     type: "default",
     style: { stroke: "#4ade80", strokeWidth: 2 },
   },
@@ -770,8 +811,15 @@ const initialEdges: Edge[] = [
   },
   {
     id: "e15",
-    source: "AGE69",
+    source: "SPM",
     target: "CODE1",
+    type: "default",
+    style: { stroke: "#22d3ee", strokeWidth: 2 },
+  },
+  {
+    id: "e15a",
+    source: "CODE1",
+    target: "CODE1_LEVELS",
     type: "default",
     style: { stroke: "#22d3ee", strokeWidth: 2 },
   },
@@ -1453,6 +1501,9 @@ const FlowWithProvider = () => {
               ROOT: ["ROBOTICS", "SKILL", "WORKSHOPS"],
               ROBOTICS: ["AGE46", "AGE69", "AGE911", "AGE1116"],
               AGE46: ["KUBO1", "ESM", "BAMBINO"],
+              KUBO1: ["KUBO1_LEVELS"],
+              BAMBINO: ["BAMBINO_LEVELS"],
+              CODE1: ["CODE1_LEVELS"],
               AGE69: ["KUBO2", "SPM", "CODE1", "QUARKY1", "PEECEE", "SPIKE1"],
               AGE911: ["EARLY", "MINI"],
               AGE1116: ["MECH", "CODING", "EMBEDDED"],
@@ -1566,6 +1617,9 @@ const FlowWithProvider = () => {
       ROOT: ["ROBOTICS", "SKILL", "WORKSHOPS"],
       ROBOTICS: ["AGE46", "AGE69", "AGE911", "AGE1116"],
       AGE46: ["KUBO1", "ESM", "BAMBINO"],
+      KUBO1: ["KUBO1_LEVELS"],
+      BAMBINO: ["BAMBINO_LEVELS"],
+      CODE1: ["CODE1_LEVELS"],
       AGE69: ["KUBO2", "SPM", "CODE1", "QUARKY1", "PEECEE", "SPIKE1"],
       AGE911: ["EARLY", "MINI"],
       AGE1116: ["MECH", "CODING", "EMBEDDED"],

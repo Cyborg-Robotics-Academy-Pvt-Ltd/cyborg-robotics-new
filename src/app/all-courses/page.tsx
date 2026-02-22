@@ -50,16 +50,16 @@ const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
     // If first numbers are equal, compare the second number (if exists)
     if (firstNumA === firstNumB) {
       const secondNumA = parseInt(
-        a.match(/\d+-(\d+)/)?.[1] || a.match(/\d+/g)?.[1] || "0"
+        a.match(/\d+-(\d+)/)?.[1] || a.match(/\d+/g)?.[1] || "0",
       );
       const secondNumB = parseInt(
-        b.match(/\d+-(\d+)/)?.[1] || b.match(/\d+/g)?.[1] || "0"
+        b.match(/\d+-(\d+)/)?.[1] || b.match(/\d+/g)?.[1] || "0",
       );
       return secondNumA - secondNumB;
     }
 
     return firstNumA - firstNumB;
-  }
+  },
 );
 
 const AllCoursesPageContent = () => {
@@ -110,7 +110,7 @@ const AllCoursesPageContent = () => {
           (levelsFilter === "4 levels" &&
             course.duration.toLowerCase().includes("x4 levels")) ||
           (levelsFilter === "6 levels" &&
-            course.duration.toLowerCase().includes("x6 levels")))
+            course.duration.toLowerCase().includes("x6 levels"))),
     );
   }, [search, ageFilter, categoryFilter, modeFilter, levelsFilter]);
 
@@ -146,7 +146,7 @@ const AllCoursesPageContent = () => {
       <div className="px-4 sm:px-6 lg:px-8 pt-8">
         {/* Hero section */}
         <div className="text-center mb-2 mt-10">
-          <h1 className="text-4xl  md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-800 mb-4 ">
+          <h1 className="text-4xl  md:text-5xl lg:text-6xl font-extrabold gradient-text mb-4 ">
             Learning Hub
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-medium">

@@ -72,7 +72,7 @@ const Lightbox = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 const BehindSceneContent = () => {
@@ -90,7 +90,7 @@ const BehindSceneContent = () => {
         "achievements",
       ].includes(tabFromUrl)
       ? tabFromUrl
-      : "certificates"
+      : "certificates",
   );
 
   const [photos, setPhotos] = useState<any[]>([]);
@@ -110,7 +110,7 @@ const BehindSceneContent = () => {
 
         const photosQuery = query(
           collection(db, "photo"),
-          orderBy("uploadedAt", "desc")
+          orderBy("uploadedAt", "desc"),
         );
         const photosSnapshot = await getDocs(photosQuery);
 
@@ -217,7 +217,7 @@ const BehindSceneContent = () => {
 
     const currentCategoryImages = getAllImagesInCategory(activeTab);
     const currentIndex = currentCategoryImages.findIndex(
-      (img) => img.id === selectedImage.id
+      (img) => img.id === selectedImage.id,
     );
 
     if (currentIndex !== -1) {
@@ -232,7 +232,7 @@ const BehindSceneContent = () => {
 
     const currentCategoryImages = getAllImagesInCategory(activeTab);
     const currentIndex = currentCategoryImages.findIndex(
-      (img) => img.id === selectedImage.id
+      (img) => img.id === selectedImage.id,
     );
 
     if (currentIndex !== -1) {
@@ -271,7 +271,7 @@ const BehindSceneContent = () => {
       if (
         tabParam &&
         ["certificates", "actions", "competitions", "workshops"].includes(
-          tabParam
+          tabParam,
         )
       ) {
         setActiveTab(tabParam);
