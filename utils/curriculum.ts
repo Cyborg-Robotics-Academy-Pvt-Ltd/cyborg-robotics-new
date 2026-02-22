@@ -1,75 +1,72 @@
 export const javaCurriculum = [
-    {
-      id: "1",
-      title: "Level 1: Java Basics (16 Classes)",
-      subtitle: [
-        "Java Home: Introduction to Java, setting up JDK, configuring environment variables.",
-        "Java Introduction: History, features, JVM & JRE.",
-        "Getting Started with Java: Writing first program, compiling & running.",
-        "Java Syntax: Program structure, keywords, identifiers, semicolons & braces.",
-        "Java Output: System.out.println(), formatting output.",
-        "Java Comments: Single-line, multi-line, documentation comments.",
-        "Java Variables: Declaring & initializing variables, variable scope.",
-        "Java Data Types: Primitive, non-primitive types, type inference.",
-        "Java Type Casting: Implicit & explicit casting, type conversion.",
-        "Java Operators: Arithmetic, relational, logical operators.",
-        "Java Strings: Declaration, initialization, string methods.",
-        "Java Math: Math class methods, basic operations.",
-        "Java Booleans: Boolean data type, logical expressions.",
-        "Java Control Flow Statements: If...Else, switch, nested statements.",
-        "Java Loops: While, for, do-while loops.",
-        "Java Break & Continue: Break and continue statements in loops.",
-        "Java Arrays: Declaration, initialization, multidimensional arrays.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Level 2: Java Intermediate Concepts (16 Classes)",
-      subtitle: [
-        "Java Methods: Defining & calling methods, return types, parameters.",
-        "Java Method Parameters: Passing parameters, varargs.",
-        "Java Method Overloading: Overloading by parameters and data types.",
-        "Java Scope: Method, class & block scope.",
-        "Java Recursion: Recursive methods, recursion vs iteration.",
-        "Java Classes: Defining classes & objects, access modifiers.",
-        "Java OOP: Encapsulation, inheritance, polymorphism, abstraction.",
-        "Java Class Attributes: Instance & static variables, final variables.",
-        "Java Class Methods: Instance & static methods, method overriding.",
-        "Java Constructors: Default & parameterized constructors, overloading.",
-        "Java Modifiers: Access modifiers, non-access modifiers.",
-        "Java Encapsulation: Getters & setters, benefits of encapsulation.",
-        "Java Packages & APIs: Creating & importing packages.",
-        "Java Inheritance: Types, super keyword.",
-        "Java Polymorphism: Compile-time vs runtime polymorphism, method overloading vs overriding.",
-        "Java Inner Classes: Member & static nested classes, anonymous classes.",
-        "Java Abstraction: Abstract classes & methods, interfaces.",
-        "Java Interfaces: Defining interfaces, implementing multiple interfaces.",
-      ],
-    },
-    {
-      id: "3",
-      title: "Level 3: Java Advanced Features (16 Classes)",
-      subtitle: [
-        "Java Enums: Defining enums, using in switch statements.",
-        "Java User Input: Scanner class, handling input exceptions.",
-        "Java Date and Time: Date & Calendar classes, LocalDate & LocalDateTime.",
-        "Java ArrayList: Creating ArrayLists, common methods.",
-        "Java LinkedList: Creating LinkedLists, ArrayList vs LinkedList.",
-        "Java List Sorting: Sorting with Comparable & Comparator.",
-        "Java HashMap: Creating HashMaps, common methods.",
-        "Java HashSet: Creating HashSets, HashSet vs List.",
-        "Java Iterator: Using iterators, fail-fast vs fail-safe iterators.",
-        "Java Wrapper Classes: Autoboxing & unboxing.",
-        "Java Exceptions: Try-catch blocks, custom exceptions.",
-        "Java Regular Expressions: Pattern & Matcher classes.",
-        "Java Threads: Creating threads, synchronization.",
-        "Java Lambda Expressions: Lambda syntax, using lambdas with collections.",
-        "Java Advanced Sorting: Sorting with streams.",
-        "Java File Handling: File class, file paths, reading & writing with NIO.",
-        "Java File Operations: Creating, reading, deleting files.",
-      ],
-    },
-  ];
+  {
+    id: "1",
+    title: "Level 1: Java Fundamentals",
+    subtitle: [
+      "Day 1: Introduction to Java, JDK installation, IDE setup.",
+      "Day 2: History of Java, JVM, JRE, and JDK architecture.",
+      "Day 3: Writing, compiling, and running the first Java program.",
+      "Day 4: Java syntax, keywords, identifiers, program structure.",
+      "Day 5: Output methods and formatting.",
+      "Day 6: Comments and coding standards.",
+      "Day 7: Variables and primitive data types.",
+      "Day 8: Type casting and operators.",
+      "Day 9: Strings and String methods.",
+      "Day 10: Math class and Boolean logic.",
+      "Day 11: Conditional statements (if, else, switch).",
+      "Day 12: Loops (for, while, do-while).",
+      "Day 13: Break and continue statements.",
+      "Day 14: Arrays (single dimension).",
+      "Day 15: Multidimensional arrays.",
+      "Day 16: Mini Project – Basic Calculator using Java."
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2: Java OOP Concepts ",
+    subtitle: [
+      "Day 1: Methods and parameters.",
+      "Day 2: Method overloading and scope.",
+      "Day 3: Introduction to Classes and Objects.",
+      "Day 4: Constructors (default & parameterized).",
+      "Day 5: Encapsulation and getters/setters.",
+      "Day 6: Inheritance and super keyword.",
+      "Day 7: Method overriding and polymorphism.",
+      "Day 8: Abstraction and abstract classes.",
+      "Day 9: Interfaces and multiple inheritance.",
+      "Day 10: Access modifiers and non-access modifiers.",
+      "Day 11: Static and final keywords.",
+      "Day 12: Packages and importing APIs.",
+      "Day 13: Inner and anonymous classes.",
+      "Day 14: Recursion concepts.",
+      "Day 15: Practice OOP problem solving.",
+      "Day 16: Mini Project – Student Management System."
+    ],
+  },
+  {
+    id: "3",
+    title: "Level 3: Java Advanced Concepts ",
+    subtitle: [
+      "Day 1: User input using Scanner class.",
+      "Day 2: Exception handling (try, catch, finally).",
+      "Day 3: Custom exceptions.",
+      "Day 4: Wrapper classes and autoboxing.",
+      "Day 5: Collections Framework overview.",
+      "Day 6: ArrayList and LinkedList.",
+      "Day 7: HashSet and TreeSet.",
+      "Day 8: HashMap and TreeMap.",
+      "Day 9: Iterators and enhanced for loop.",
+      "Day 10: Comparable and Comparator.",
+      "Day 11: Lambda expressions.",
+      "Day 12: Streams API basics.",
+      "Day 13: Date and Time API.",
+      "Day 14: File handling with File and NIO.",
+      "Day 15: Multithreading basics.",
+      "Day 16: Final Project – File-based Task Manager with Collections."
+    ],
+  },
+];
+
 
   // export const MachineLearningCurriculum = [
   //   {
@@ -117,41 +114,42 @@ export const javaCurriculum = [
 export const RoboticsWithQuarkyCurriculum = [
   {
     id: "1",
-    title: "Level 1: Quarky Robotics",
+    title: "Level 1 ",
     subtitle: [
-      "Session 1: Getting Started with PictoBlox",
-      "Session 2: Play Time with Sensors",
-      "Session 3: Meet Your AI Robot",
-      "Session 4: Basics of Robotics",
-      "Session 5: Getting Started with Sensors",
-      "Session 6: Detecting Obstacles",
-      "Session 7: Understanding Actuators",
-      "Session 8: Line Following Concepts",
-      "Session 9: Line Following Robot",
-      "Session 10: Edge Detection Robot",
-      "Session 11: Steering and Motion Control",
-      "Session 12: Four Wheel Drive Mechanics",
-      "Session 13: Capstone – Interactive Control System",
-      "Session 14: Capstone – Line Following Challenge"
+      "Day 1: Students connect Quarky with PictoBlox and execute their first robot interaction.",
+      "Day 2: Learners use sensors and event-based programming to build an interactive input-output system.",
+      "Day 3: Students assemble Quarky and control robot emotions and actions using keyboard inputs.",
+      "Day 4: Learners program directional movement and geometric motion patterns in robotics.",
+      "Day 5: Students use ultrasonic sensors to measure and interpret real-time distance data.",
+      "Day 6: Learners apply conditional logic to build an obstacle-avoiding robot.",
+      "Day 7: Students understand actuators and perform servo calibration and motion control.",
+      "Day 8: Learners explore IR sensors and implement line detection logic.",
+      "Day 9: Students build and test an autonomous line-following robot.",
+      "Day 10: Learners create an edge-detection robot using multi-sensor safety logic.",
+      "Day 11: Students program steering mechanisms using coordinated motor control.",
+      "Day 12: Learners assemble and operate a four-wheel-drive robotic system.",
+      "Day 13: Students integrate sensors, LED matrix, and audio to build an interactive control system.",
+      "Day 14: Learners complete a line-following challenge demonstrating automation mastery."
     ],
   },
   {
     id: "2",
-    title: "Level 2: Quarky Robotics",
+    title: "Level 2 ",
     subtitle: [
-      "Session 1: Object Tracking Robot",
-      "Session 2: Pick & Place Robot – Assembly (Part 1)",
-      "Session 3: Pick & Place Robot – Control (Part 2)",
-      "Session 4: Building a Robo-Pet",
-      "Session 5: Self-Driving Car – Part 1",
-      "Session 6: Self-Driving Car – Part 2",
-      "Session 7: Advanced Object Tracking Robot",
-      "Session 8: Gripper Mechanism ",
-      "Session 9: Vertical Pick & Place – Part 1",
-      "Session 10: Vertical Pick & Place – Part 2 ",
-      "Session 11: Vertical Pick & Place – Part 3",
-      "Session 13: Capstone – AI Robotics Application ",
-      "Session 14: Capstone – Advanced Automation Challenge "
+      "Day 1: Students build an AI-based object tracking robot using computer vision.",
+      "Day 2: Learners assemble a robotic arm for pick-and-place automation.",
+      "Day 3: Students program servo motors to control arm and gripper movement.",
+      "Day 4: Learners create an interactive AI-powered robo-pet using hand detection.",
+      "Day 5: Students implement traffic sign detection for a self-driving robot prototype.",
+      "Day 6: Learners integrate AI vision with motion control to build an autonomous vehicle system.",
+      "Day 7: Students enhance robot tracking accuracy using advanced AI integration.",
+      "Day 8: Learners design and control a precision robotic gripper mechanism.",
+      "Day 9: Students assemble a vertical pick-and-place robotic structure.",
+      "Day 10: Learners synchronize vertical and horizontal motion using coded automation.",
+      "Day 11: Students automate a complete vertical pick-and-place robotic cycle.",
+      "Day 12: Learners build a real-time Weather Monitoring system using environmental sensors.",
+      "Day 13: Students design an AI-powered robotics solution to solve a real-world automation problem.",
+      "Day 14: Learners demonstrate a fully integrated advanced automation capstone project."
     ],
   },
 ];
@@ -200,68 +198,68 @@ export const RoboticsWithQuarkyCurriculum = [
 
  export const ThreeDPrintingCurriculum = {
   level1: {
-    title: "Level 1: Introduction to 3D Printing & Basic Design ",
+    title: "Level 1: Introduction to 3D Printing & Basic Design",
     modules: [
-      { id: "1", title: "What is 3D Printing?", subtitle: ["Basic explanation of 3D printing", "Live demo: Observe a cube being printed", "Understanding layers and object formation"] },
-      { id: "2", title: "How a 3D Printer Works", subtitle: ["Printer parts: Filament, hotend, bed", "Bed leveling basics", "Filament loading and preheating"] },
-      { id: "3", title: "Introduction to 3D Design (Tinkercad)", subtitle: ["Navigating Tinkercad", "Move, rotate, scale tools", "Grid and object placement"] },
-      { id: "4", title: "Creating Basic Shapes", subtitle: ["Cubes, cylinders, spheres", "Hands-on: Design a basic object"] },
-      { id: "5", title: "Combining Shapes", subtitle: ["Grouping and merging", "Hands-on: Personalized name keychain"] },
-      { id: "6", title: "Designing an Open Box", subtitle: ["Creating hollow objects", "Hands-on: Print a small open box"] },
-      { id: "7", title: "Slicing Software (Cura)", subtitle: ["Introduction to Cura", "Exporting STL and slicing"] },
-      { id: "8", title: "Understanding Print Settings", subtitle: ["Layer height, infill, supports", "Impact on print time and quality"] },
-      { id: "9", title: "Creating a Functional Object", subtitle: ["Design for usability", "Hands-on: Phone stand"] },
-      { id: "10", title: "Supports & Overhangs", subtitle: ["When supports are required", "Print a model with overhangs"] },
-      { id: "11", title: "Mini Puzzle Game Design", subtitle: ["Understanding tolerance", "Design and print a maze puzzle"] },
-      { id: "12", title: "Interlocking Parts", subtitle: ["Fit and spacing concepts", "Print Lego-style bricks"] },
-      { id: "13", title: "Organizing Your Desk", subtitle: ["Functional daily-use designs", "Stackable desk organizer"] },
-      { id: "14", title: "Basic Troubleshooting", subtitle: ["Common print issues", "Fixing and avoiding failures"] },
-      { id: "15", title: "Final Project", subtitle: ["Design a custom model", "Prepare and print"] },
-      { id: "16", title: "Show & Tell", subtitle: ["Explain design and process", "Peer presentation"] }
+      { id: "1", title: "Day 1", subtitle: ["3D World Unlocked"] },
+      { id: "2", title: "Day 2", subtitle: ["Meet the Machine"] },
+      { id: "3", title: "Day 3", subtitle: ["Design Lab Kickoff"] },
+      { id: "4", title: "Day 4", subtitle: ["Shape Builder Studio"] },
+      { id: "5", title: "Day 5", subtitle: ["Creative Combinations"] },
+      { id: "6", title: "Day 6", subtitle: ["Box It Up"] },
+      { id: "7", title: "Day 7", subtitle: ["Slice & Setup"] },
+      { id: "8", title: "Day 8", subtitle: ["Dialing In Quality"] },
+      { id: "9", title: "Day 9", subtitle: ["Function in Focus"] },
+      { id: "10", title: "Day 10", subtitle: ["Support Matters"] },
+      { id: "11", title: "Day 11", subtitle: ["Puzzle Creator"] },
+      { id: "12", title: "Day 12", subtitle: ["Click & Connect"] },
+      { id: "13", title: "Day 13", subtitle: ["Organize with Design"] },
+      { id: "14", title: "Day 14", subtitle: ["Fix It Fast"] },
+      { id: "15", title: "Day 15", subtitle: ["My Signature Model"] },
+      { id: "16", title: "Day 16", subtitle: ["Design Showcase"] }
     ]
   },
 
   level2: {
-    title: "Level 2: Fusion 360 + Blender + Advanced Printing ",
+    title: "Level 2: Fusion 360, Blender & Advanced Techniques",
     modules: [
-      { id: "1", title: "Advanced 3D Printing Techniques", subtitle: ["Multi-part models", "Demo of moving parts"] },
-      { id: "2", title: "Introduction to Fusion 360", subtitle: ["Interface and sketch basics", "Hands-on: Phone stand"] },
-      { id: "3", title: "Parametric Design & Constraints", subtitle: ["Dimensions and rules", "Snap-fit box design"] },
-      { id: "4", title: "Loft & Fillet Tools", subtitle: ["Smooth curves and edges", "Rounded case design"] },
-      { id: "5", title: "Precision in Design", subtitle: ["Using calipers", "Custom phone case"] },
-      { id: "6", title: "Getting Started with Blender", subtitle: ["UI and navigation", "Create a simple shape"] },
-      { id: "7", title: "Text and Engraving", subtitle: ["3D text tools", "Engraved keychain"] },
-      { id: "8", title: "Modifying STL Files", subtitle: ["Importing models", "Editing downloaded files"] },
-      { id: "9", title: "Engineering Design Concepts", subtitle: ["Multi-part fitting", "Pen holder"] },
-      { id: "10", title: "Tolerance Testing", subtitle: ["Fit testing", "Refinement prints"] },
-      { id: "11", title: "Functional Home Tools", subtitle: ["Problem-solving design", "Household tool"] },
-      { id: "12", title: "Fusion 360 Joints & Assemblies", subtitle: ["Moving parts", "Snap-fit enclosure"] },
-      { id: "13", title: "Preparing Large Models", subtitle: ["Splitting models", "Post-print assembly"] },
-      { id: "14", title: "Final Project Planning", subtitle: ["Idea brainstorming", "Prototype start"] },
-      { id: "15", title: "Final Model & Adjustments", subtitle: ["Troubleshooting", "Model finalization"] },
-      { id: "16", title: "Project Presentation", subtitle: ["Showcase project", "Explain applications"] }
+      { id: "1", title: "Day 1", subtitle: ["Next-Level Printing"] },
+      { id: "2", title: "Day 2", subtitle: ["Fusion Foundations"] },
+      { id: "3", title: "Day 3", subtitle: ["Design by Dimension"] },
+      { id: "4", title: "Day 4", subtitle: ["Curves & Smooth Transitions"] },
+      { id: "5", title: "Day 5", subtitle: ["Precision Matters"] },
+      { id: "6", title: "Day 6", subtitle: ["Blender Bootcamp"] },
+      { id: "7", title: "Day 7", subtitle: ["Engrave & Personalize"] },
+      { id: "8", title: "Day 8", subtitle: ["Edit like a Pro"] },
+      { id: "9", title: "Day 9", subtitle: ["Parts That Work Together"] },
+      { id: "10", title: "Day 10", subtitle: ["Fit Check & Adjust"] },
+      { id: "11", title: "Day 11", subtitle: ["Everyday Innovations"] },
+      { id: "12", title: "Day 12", subtitle: ["Smart Assembly"] },
+      { id: "13", title: "Day 13", subtitle: ["Big Build Strategy"] },
+      { id: "14", title: "Day 14", subtitle: ["Concept to CAD"] },
+      { id: "15", title: "Day 15", subtitle: ["Final Model Tuning"] },
+      { id: "16", title: "Day 16", subtitle: ["Project Exhibition"] }
     ]
   },
 
   level3: {
-    title: "Level 3: Advanced Projects & Real-World Applications ",
+    title: "Level 3: Advanced Projects & Real-World Applications",
     modules: [
-      { id: "1", title: "Mechanical Design Concepts", subtitle: ["Gear systems", "Working gear mechanism"] },
-      { id: "2", title: "Designing for Strength", subtitle: ["Wall thickness and infill", "Strong key holder"] },
-      { id: "3", title: "Modular Design Techniques", subtitle: ["Attachable modules", "Stackable storage"] },
-      { id: "4", title: "Snap-Fit & Hinged Models", subtitle: ["Open/close mechanisms", "Hinged case"] },
-      { id: "5", title: "Multi-Part Assembly", subtitle: ["Functional assemblies", "Hinged box"] },
-      { id: "6", title: "Architectural Modeling", subtitle: ["Scale and layout", "Mini city design"] },
-      { id: "7", title: "Threaded Parts & Screws", subtitle: ["Thread accuracy", "Screw-cap container"] },
-      { id: "8", title: "Jigs & Fixtures", subtitle: ["Everyday tools", "Custom stand"] },
-      { id: "9", title: "Medical & Engineering Use Cases", subtitle: ["Prosthetic concepts", "Prosthetic grip"] },
-      { id: "10", title: "Robotics & Automation", subtitle: ["Robotic components", "Arm joint"] },
-      { id: "11", title: "Gears & Motion Transfer", subtitle: ["Torque concepts", "Gear testing"] },
-      { id: "12", title: "Electronic Enclosure Design", subtitle: ["Arduino/Raspberry Pi cases", "Ventilation and wiring"] },
-      { id: "13", title: "Final Project Planning", subtitle: ["Ideation", "Design draft"] },
-      { id: "14", title: "Prototyping & Iterations", subtitle: ["Test prints", "Design improvement"] },
-      { id: "15", title: "Advanced Troubleshooting", subtitle: ["Error identification", "Quality optimization"] },
-      { id: "16", title: "Showcase & Feedback", subtitle: ["Final presentation", "Peer and mentor review"] }
+      { id: "1", title: "Day 1", subtitle: ["Mechanics in Motion"] },
+      { id: "2", title: "Day 2", subtitle: ["Strength by Design"] },
+      { id: "3", title: "Day 3", subtitle: ["Modular Thinking"] },
+      { id: "4", title: "Day 4", subtitle: ["Snap & Hinge Systems"] },
+      { id: "5", title: "Day 5", subtitle: ["Assembly Line Logic"] },
+      { id: "6", title: "Day 6", subtitle: ["Build the Future"] },
+      { id: "7", title: "Day 7", subtitle: ["Threads & Turns"] },
+      { id: "8", title: "Day 8", subtitle: ["Smart Tools Studio"] },
+      { id: "9", title: "Day 9", subtitle: ["Design with Purpose"] },
+      { id: "10", title: "Day 10", subtitle: ["Robotics in Focus"] },
+      { id: "11", title: "Day 11", subtitle: ["Gear Dynamics"] },
+      { id: "12", title: "Day 12", subtitle: ["Smart Tech Housing"] },
+      { id: "13", title: "Day 13", subtitle: ["Capstone Planning"] },
+      { id: "14", title: "Day 14", subtitle: ["Prototype & Iterate"] },
+      { id: "15", title: "Day 15", subtitle: ["Print, Review, Repeat"] },
+      { id: "16", title: "Day 16", subtitle: ["Innovation Showcase"] }
     ]
   }
 };
@@ -422,63 +420,19 @@ export const RoboticsWithQuarkyCurriculum = [
       id: "1",
       title: "Level 1: Foundations of Electronics & Motion ",
       modules: [
-        {
-          title: "Introduction to Arduino & LED Blink",
-          topics: [
-            "What Arduino is and how it works",
-            "Upload code to blink an LED",
-            "Simulate traffic lights using LEDs"
-          ]
-        },
-        {
-          title: "Button-Controlled Buzzer",
-          topics: [
-            "Understanding digital input and output",
-            "Trigger buzzer using push button"
-          ]
-        },
-        {
-          title: "Temperature Sensor (DHT11) Monitoring",
-          topics: [
-            "Connect DHT11 sensor",
-            "Read temperature data",
-            "View values on Serial Monitor"
-          ]
-        },
-        {
-          title: "Ultrasonic Sensor for Distance Sensing",
-          topics: [
-            "Measure distance using ultrasonic sensor",
-            "Display distance values"
-          ]
-        },
-        {
-          title: "Servo Motor Control via Potentiometer",
-          topics: [
-            "Rotate servo using potentiometer",
-            "Foundation for robotic walking"
-          ]
-        },
-        {
-          title: "BO Motor & Driver Integration (L293D / L298N)",
-          topics: [
-            "Connect motor driver with Arduino",
-            "Control DC motors in both directions"
-          ]
-        },
-        {
-          title: "IR Sensor with Buzzer / LED Feedback",
-          topics: [
-            "Detect obstacles or black lines",
-            "Trigger output on detection"
-          ]
-        }
+        { title: "Day 1", topics: ["Digital Output Basics"] },
+        { title: "Day 2", topics: ["Input Control Logic"] },
+        { title: "Day 3", topics: ["Sensor Data Monitoring"] },
+        { title: "Day 4", topics: ["Distance Measurement Logic"] },
+        { title: "Day 5", topics: ["Analog Input to Motion"] },
+        { title: "Day 6", topics: ["Light-Based Decision Making"] },
+        { title: "Day 7", topics: ["Motor and Driver Integration"] },
+        { title: "Day 8", topics: ["Obstacle Detection & Feedback"] }
       ],
       megaProjects: [
-        "Hand Follower or Edge Follower Robot (IR + motor control)",
-        "Obstacle Avoidance Car (Ultrasonic + motor driver)",
-        "Hollow Clock with Stepper Motor",
-        "Otto Bot – Walking Robot with Servo Motors"
+        "Shadow Tracker",
+        "Path Defender",
+        "Line Seeker"
       ]
     },
 
@@ -486,43 +440,18 @@ export const RoboticsWithQuarkyCurriculum = [
       id: "2",
       title: "Level 2: Intermediate Robotics & Smart Logic ",
       modules: [
-        {
-          title: "LDR + LED Indicators",
-          topics: ["Light detection using LDR", "Automatic LED ON/OFF"]
-        },
-        {
-          title: "Keypad Module",
-          topics: ["Password input system", "Access control basics"]
-        },
-        {
-          title: "IR Remote Control",
-          topics: ["Using IR remote buttons", "Control LEDs or servo motors"]
-        },
-        {
-          title: "Dual Motor Control with IR Remote",
-          topics: ["Drive two motors", "Forward, backward and turn logic"]
-        },
-        {
-          title: "Flame Sensor with Alerts",
-          topics: ["Fire detection", "Buzzer and LED alert"]
-        },
-        {
-          title: "Joystick-Controlled Servo",
-          topics: ["Multi-directional servo movement", "Robotic arm simulation"]
-        },
-        {
-          title: "OLED Display Integration",
-          topics: ["Display sensor values", "Show temperature or distance"]
-        },
-        {
-          title: "Sound Sensor (Clap Switch)",
-          topics: ["Detect clap sound", "Toggle LED or motor"]
-        }
+        { title: "Day 1", topics: ["Light-Based Triggers"] },
+        { title: "Day 2", topics: ["Rotational Scanning Mechanism"] },
+        { title: "Day 3", topics: ["Wireless Input Handling"] },
+        { title: "Day 4", topics: ["Remote Navigation Control"] },
+        { title: "Day 5", topics: ["Fire Detection Logic"] },
+        { title: "Day 6", topics: ["Analog Joystick Mapping"] },
+        { title: "Day 7", topics: ["Data Display Output"] },
+        { title: "Day 8", topics: ["Sound-Activated Control"] }
       ],
       megaProjects: [
-        "Wall-E Tracking Robot (Line tracking + motor logic)",
-        "Fire-Fighting Robot (Flame sensor + autonomous logic)",
-        "Robotic Arm (Joystick or potentiometer controlled)"
+        "Sentinel Rover",
+        "Blaze Buster"
       ]
     },
 
@@ -530,35 +459,18 @@ export const RoboticsWithQuarkyCurriculum = [
       id: "3",
       title: "Level 3: Advanced Automation & Wearables ",
       modules: [
-        {
-          title: "PIR Motion Detection",
-          topics: ["Detect human movement", "Motion-based light or alarm"]
-        },
-        {
-          title: "Relay Control for Appliances",
-          topics: ["Switch AC/DC devices", "Operate fans, bulbs, pumps"]
-        },
-        {
-          title: "Bluetooth Control (HC-05)",
-          topics: ["Mobile connectivity", "Remote control of robot or appliance"]
-        },
-        {
-          title: "Voice Recording Module",
-          topics: ["Record and play voice messages", "Security and alert use cases"]
-        },
-        {
-          title: "Gas / Smoke Detection (MQ Sensors)",
-          topics: ["Detect gas or smoke leaks", "Safety alert system"]
-        },
-        {
-          title: "RFID Technology",
-          topics: ["Read RFID tags", "Identification and access systems"]
-        }
+        { title: "Day 1", topics: ["Motion Detection Logic"] },
+        { title: "Day 2", topics: ["Appliance Control System"] },
+        { title: "Day 3", topics: ["Bluetooth-Based Interaction"] },
+        { title: "Day 4", topics: ["Precision Movement Control"] },
+        { title: "Day 5", topics: ["Wearable Input Response"] },
+        { title: "Day 6", topics: ["Environmental Monitoring"] },
+        { title: "Day 7", topics: ["Audio Output System"] },
+        { title: "Day 8", topics: ["Gas & Smoke Detection"] }
       ],
       megaProjects: [
-        "Home Automation System",
-        "Bionic Hand (Flex sensors + servo motors)",
-        "Pet Robot (Dog/Cat Bot with sound and walking logic)"
+        "NeoGrip",
+        "OptiCor"
       ]
     }
   ]
@@ -573,7 +485,7 @@ export const RoboticsWithQuarkyCurriculum = [
         "History and evolution of AI.",
         "Applications and domains of AI.",
         "Differences between AI and Machine Learning.",
-        "Introduction to supervised, unsupervisedand reinforcement learning.",
+        "Introduction to supervised, unsupervised and reinforcement learning.",
         "Overview of data and feature engineering.",
         "Basics of neural networks and their structure.",
         "Working principles of perceptrons and activation functions.",
@@ -660,30 +572,42 @@ export const RoboticsWithQuarkyCurriculum = [
   export const EarlySimplemachineCurriculum = [
     {
       id: "1",
-      title: "Level 1: Early Simple Machines",
+      title: "ESM LEVEL-01",
       subtitle: [
-        "Introduction to robotics and imported LEGO kit: Students are introduced to robotics using imported LEGO kits and learn to identify parts and build basic models.",
-        "Gear meshing: Students learn how gears mesh together to transfer motion from one part to another.",
-        "Distance measurement: Students understand distance by measuring how far a model moves during an activity.",
-        "Force and pressure: Students explore how pushing and pulling forces affect the movement of objects.",
-        "Motion concepts: Students learn basic motion concepts such as movement, direction, and speed.",
-        "Surface area: Students understand how surface area affects movement on different surfaces.",
-        "Pulley concept: Students are introduced to pulleys and learn how they help lift or move objects easily.",
-        "Real-life application of models: Students relate their models to real-life machines and everyday uses.",
-        "Motor skills and focus: Students develop fine motor skills, hand-eye coordination, and focus through hands-on building.",
+        "DAY-01-Gear basics & balancing",
+        "DAY-02-Area & speed change",
+        "DAY-03-Force & launcher comparison",
+        "DAY-04-Measurement & distance",
+        "DAY-05-Gear power transfer",
+        "DAY-06-Pulley speed control",
+        "DAY-07-Grip & friction safety",
+        "DAY-08-Gear direction & ratio",
+        "DAY-09-Worm gear application",
+        "DAY-10-Lifting mechanism basics",
+        "DAY-11-Gear motion control",
+        "DAY-12-Balance & gear coordination",
+        "DAY-13-Belt pulley movement",
+        "DAY-14-Pull-back force action",
       ],
     },
     {
       id: "2",
-      title: "Level 2: Early Simple Machines",
+      title: "ESM LEVEL-02",
       subtitle: [
-        "Flapping motion of bird wings: Students learn how flapping motion is created using mechanical linkages.",
-        "Pulley mechanism: Students understand how pulley systems change the direction and effort of force.",
-        "Hopping mechanisms: Students explore hopping mechanisms to understand repeated motion and energy release.",
-        "Weight balancing: Students learn how balancing weight improves stability in structures.",
-        "Circular and linear motion: Students learn how circular motion can be converted into linear motion.",
-        "Vertical gear meshing: Students understand how vertically placed gears transfer motion between different levels.",
-        "Motor skills and focus: Students develop fine motor skills, hand-eye coordination, and focus through hands-on building.",
+        "DAY-01-Flapping balance motion",
+        "DAY-02-Pulley lifting mechanics",
+        "DAY-03-Hopping machine mechanics",
+        "DAY-04-Crank motion control",
+        "DAY-05-Linear motion balance",
+        "DAY-06-Rolling motion connection",
+        "DAY-07-Pulley lifting system",
+        "DAY-08-Worm gear motion",
+        "DAY-09-Circular & linear motion",
+        "DAY-10-Weight balance control",
+        "DAY-11-Grip & speed ratio",
+        "DAY-12-Motion types coordination",
+        "DAY-13-Focus & system connection",
+        "DAY-14-Tilting gear movement",
       ],
     },
   
@@ -744,257 +668,351 @@ export const RoboticsWithQuarkyCurriculum = [
     {
       id: "1",
       title: "Level 1: Introduction to Python Basics",
-      subtitle: [
-        "Overview of Python language and syntax.",
-        "Variables, data typesand operators.",
-        "Print statements and input/output (I/O).",
-        "Conditional statements: if, else, elif.",
-        "Loops: for and while.",
-        "Lists and tuples for storing data.",
-        "Defining functions, understanding scopeand using modules.",
-        "Turtle Graphics - Create basic shapes and patterns.",
-        "Project - Build a simple calculator for arithmetic operations.",
-      ],
+       subtitle: [
+      "Day 1: Introduction to Python – Run first program using print(). | Task: Print 'Hello Python' | Outcome: Python Introduction | Mentor Note: Explain Python as a language used to talk to the computer | Link: Trial Class & Python Introduction",
+
+      "Day 2: Python Basics – Simple print statements & syntax. | Task: Write structured print statements | Outcome: Understand syntax | Mentor Note: Explain Python reads code line by line | Link: Python Setup & Basic Syntax",
+
+      "Day 3: Numbers – Arithmetic operations. | Task: Calculate sums and averages | Outcome: Number operations | Mentor Note: Relate numbers to calculator usage | Link: Numbers in Python",
+
+      "Day 4: Variables – Store and display values. | Task: Declare and assign variables | Outcome: Understand variable storage | Mentor Note: Explain variables as boxes storing values | Link: Variables",
+
+      "Day 5: Dynamic Typing – Change data types. | Task: Modify variable types | Outcome: Observe type flexibility | Mentor Note: Python doesn’t require type declaration | Link: Dynamic Typing",
+
+      "Day 6: Strings – Text handling basics. | Task: Create and print strings | Outcome: Text output | Mentor Note: Strings represent text data | Link: Strings – Basics",
+
+      "Day 7: String Formatting – f-strings & format(). | Task: Print formatted messages | Outcome: Structured text output | Mentor Note: Use name & age examples | Link: Strings – Advanced Formatting",
+
+      "Day 8: Lists – Create and access elements. | Task: Display list items | Outcome: Understand sequences | Mentor Note: Compare to shopping list | Link: Lists – Introduction",
+
+      "Day 9: List Operations – Add/remove/update items. | Task: Modify list content | Outcome: Dynamic list handling | Mentor Note: Show real-life list changes | Link: Lists – Operations",
+
+      "Day 10: Tuples – Immutable data. | Task: Create and access tuples | Outcome: Understand immutability | Mentor Note: Tuple = unchangeable list | Link: Tuples",
+
+      "Day 11: Dictionaries – Key-value pairs. | Task: Create dictionary | Outcome: Structured storage | Mentor Note: Compare to word → meaning dictionary | Link: Dictionaries – Basics",
+
+      "Day 12: Dictionary Operations – Update/access values. | Task: Manage structured data | Outcome: Advanced dictionary use | Mentor Note: Use student record examples | Link: Dictionaries – Advanced",
+
+      "Day 13: Sets – Unique values. | Task: Remove duplicates using sets | Outcome: Unique data handling | Mentor Note: Sets don’t allow duplicates | Link: Sets",
+
+      "Day 14: Booleans – True/False logic. | Task: Logical outputs | Outcome: Yes/No decisions | Mentor Note: Explain decision-making concept | Link: Booleans",
+
+      "Day 15: Comparison Operators – > < == !=. | Task: True/False comparisons | Outcome: Conditional logic | Mentor Note: Explain comparison for decision making | Link: Comparison Operators",
+
+      "Day 16: File Handling – Read/write text files. | Task: Save & retrieve data | Outcome: Persistent storage | Mentor Note: Compare files to notebooks | Link: File Handling"
+    ],
     },
     {
       id: "2",
       title: "Level 2: Intermediate Python",
       subtitle: [
-        "List slicing and comprehensions.",
-        "Working with dictionaries for key-value operations.",
-        "Read/write operations with files.",
-        "Handling exceptions to prevent runtime errors.",
-        "Classes, objects, inheritanceand methods.",
-        "Turtle Racing Game - Create a racing game with multiple turtles.",
-        "Project - To-Do List Application using OOP and file handling.",
-      ],
+      "Day 1: For Loops – Iteration basics. | Task: Print numbers & lists | Outcome: Repetition logic | Mentor Note: Loop = repeating instructions",
+
+      "Day 2: While Loops – Condition-based repetition. | Task: Countdown program | Outcome: Conditional looping | Mentor Note: Compare for vs while loops",
+
+      "Day 3: Useful Operators – range(), enumerate(), zip(). | Task: Generate sequences | Outcome: Efficient iteration | Mentor Note: Show coding shortcuts",
+
+      "Day 4: List Comprehension – One-line list creation. | Task: Create lists using comprehension | Outcome: Cleaner code | Mentor Note: Compare loop vs shortcut",
+
+      "Day 5: Methods – Built-in object methods. | Task: Modify lists & strings | Outcome: Object manipulation | Mentor Note: Methods = object abilities",
+
+      "Day 6: Functions – Define and call. | Task: Area calculator | Outcome: Reusable logic | Mentor Note: Functions = reusable blocks",
+
+      "Day 7: Lambda, Map & Filter – Functional tools. | Task: Transform lists | Outcome: Concise programming | Mentor Note: Anonymous functions simplify code",
+
+      "Day 8: Scope & Namespace – Local vs global. | Task: Scope demo | Outcome: Variable visibility | Mentor Note: Explain scope rules clearly",
+
+      "Day 9: *args & **kwargs – Flexible parameters. | Task: Flexible sum function | Outcome: Accept unlimited inputs | Mentor Note: Demonstrate dynamic arguments",
+
+      "Day 10: Modules & Packages – Code organization. | Task: Use math/random modules | Outcome: Import functionality | Mentor Note: Compare modules to toolboxes",
+
+      "Day 11: Turtle Animation – Graphics basics. | Task: Moving shapes | Outcome: Visual programming | Mentor Note: Animation = rapid frame updates",
+
+      "Day 12: Functions with Turtle – Modular drawing. | Task: Draw shapes using functions | Outcome: Reusable drawing logic | Mentor Note: Combine graphics + functions",
+
+      "Day 13: Event Handling – Keyboard & mouse input. | Task: Interactive program | Outcome: User interaction | Mentor Note: Explain event-driven logic",
+
+      "Day 14: Advanced Animation – tracer() & update(). | Task: Multi-object animation | Outcome: Smooth motion | Mentor Note: Teach frame control",
+
+      "Day 15: Advanced Animation – Multi-object coordination. | Task: Improve animation performance | Outcome: Optimized graphics | Mentor Note: Focus on smoothness",
+
+      "Day 16: File Handling – Persistent user data. | Task: Save user input to file | Outcome: Data storage | Mentor Note: Compare files to notebooks"
+    ],
     },
     {
       id: "3",
       title: "Level 3: Advanced Python",
-      subtitle: [
-        "Work with lambda functions, closuresand decorators.",
-        "Use regex for pattern matching in strings.",
-        "Project - Build a text analyzer that extracts data from user input.",
+   subtitle: [
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
     {
       id: "4",
       title: "Level 4: Game Development with Turtle Graphics",
-      subtitle: [
-        "Ball Game - Create a bouncing ball game.",
-        "Space Invader - Build a space-themed shooting game.",
-        "Brick Breaker - Design a brick breaker game.",
-        "Maze Game - Guide the Turtle through obstacles to a goal.",
-        "Pacman Clone - Develop a Pacman-style game.",
-        "Jump and Run Game - Implement a side-scrolling game.",
-        "Flappy Turtle - Build a Flappy Bird-inspired game.",
-        "Turtle Racing Game - Advanced race with custom speed and path.",
-        "Shooting Game - Design a shooting game with moving targets.",
+    subtitle: [
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
     {
       id: "5",
       title: "Level 5: Python Libraries and Advanced Applications",
-      subtitle: [
-        "Data manipulation with NumPy and Pandas.",
-        "Data visualization with Matplotlib and Seaborn.",
-        "Web Scraping with BeautifulSoup.",
-        "Interacting with APIs to gather data.",
-        "Project - Analyze a dataset and visualize insights.",
+        subtitle: [
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
     {
       id: "6",
       title: "Level 6: Advanced Python Applications",
-      subtitle: [
-        "Django or Flask - Build basic web applications.",
-        "SQL Integration - Perform queries using SQLite.",
-        "Machine Learning - Implement regression and classification models.",
-        "Project - Build a basic machine learning application.",
+   subtitle: [
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
   ];
 
-  export const RoboticsCurriculum = [
-    {
-      id: "1",
-      title: "Level 1: Introduction to Robotics and Components",
-      subtitle: [
-        "Introduction to the Robotic Kit and Components: Beams, Angular Beams, Axles, Gears, Bushes, Motors, Controller and Sensors (Ultrasonic, Touch, Color, etc.).",
-        "Learning Input-Output Devices and Port Mapping.",
-        "Motor Control Techniques: Adjust speed, directionand movement patterns.",
-        "Motor Movements in Different Directions: Implement axis and pivot turns.",
-        "Port View and Measurements: Monitor sensor values and motor states.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Level 2: Sensor Integration and Logical Programming",
-      subtitle: [
-        "Maze Solving Challenge: Develop problem-solving skills through pathfinding logic.",
-        "Introduction to Ultrasonic Sensor: Use for obstacle detection and distance measurement.",
-        "Comparison Operators and Conditional Logic.",
-        "Programming with Loops and Sequences.",
-        "Touch Sensor and Its Modes: Explore tactile input and interaction.",
-        "Boolean Data Types in Robotics Programming.",
-        "Color Sensor and Its Modes: Detect colors and implement conditional responses.",
-      ],
-    },
-    {
-      id: "3",
-      title: "Level 3: Programming Blocks and Flow Control",
-      subtitle: [
-        "Action Blocks: Move Steering, Move Tank, Large Motor, Medium Motor, Display, Soundand Light Blocks.",
-        "Sensor Blocks: Touch Sensor, Ultrasonic Sensor, Color Sensor, Gyro Sensor, Timer Blocks.",
-        "Flow Control Blocks: Start, Wait, Loop, Switchand Loop Interrupt Blocks.",
-        "Data Operations Blocks: Math, Compare, Logic, Variableand Random Blocks.",
-      ],
-    },
-    {
-      id: "4",
-      title: "Level 4: Advanced Programming and Customization",
-      subtitle: [
-        "My Blocks (Without and With Parameters): Creating reusable code modules.",
-        "Using Variables Within My Blocks to Manage Inputs Dynamically.",
-        "Advanced Blocks: Bluetooth, File Accessand Messaging Blocks.",
-        "Final Project: Integrating Learned Concepts into a Functional Robot.",
-      ],
-    },
-  ];
+  export const ev3Curriculum = [
+  {
+    id: "1",
+    title: "LEVEL 1 – Beginner Robotics Foundation",
+    subtitle: [
+      "Day 1: Movement Start (1) – Basic build, forward/backward movement.",
+      "Day 2: Movement Start (2) – Turning and shape path movement.",
+      "Day 3: Action Setup (1) – Simple mechanism build, motor introduction.",
+      "Day 4: Action Setup (2) – Trigger movement and basic timing.",
+      "Day 5: Touch Logic (1) – Button setup and input concept.",
+      "Day 6: Touch Logic (2) – Press reaction and loop usage.",
+      "Day 7: Spin System (1) – Rotating part build and speed testing.",
+      "Day 8: Spin System (2) – Timer control and repeat action.",
+      "Day 9: Distance Sense (1) – Sensor mounting and stop function.",
+      "Day 10: Distance Sense (2) – If–else logic and auto turning.",
+      "Day 11: Line Sense (1) – Surface detection and sensor reading.",
+      "Day 12: Line Sense (2) – Line following and correction.",
+      "Day 13: Team Move (1) – Dual bot introduction and sync start.",
+      "Day 14: Team Move (2) – Timing adjustment and accuracy improvement.",
+      "Day 15: Mini Mission (1) – Combine logic and practice run.",
+      "Day 16: Mini Mission (2) – Final test and challenge."
+    ],
+  },
+  {
+    id: "2",
+    title: "LEVEL 2 – Intermediate Control & Intelligence",
+    subtitle: [
+      "Day 1: Precision Drive (1) – Accurate forward movement and speed balance.",
+      "Day 2: Precision Drive (2) – Degree turns and path accuracy.",
+      "Day 3: Smart Response System – Condition-based action and trigger logic.",
+      "Day 4: Interactive Control (1) – Input setup and manual testing.",
+      "Day 5: Interactive Control (2) – Combine input with movement and response timing.",
+      "Day 6: Obstacle Intelligence (1) – Distance sensing and auto stop.",
+      "Day 7: Obstacle Intelligence (2) – Detect and turn with direction testing.",
+      "Day 8: Obstacle Intelligence (3) – Smooth navigation and practice run.",
+      "Day 9: Path Tracking (1) – Surface calibration and sensor adjustment.",
+      "Day 10: Path Tracking (2) – Continuous tracking and speed control.",
+      "Day 11: Path Tracking (3) – Sharp turns and stability improvement.",
+      "Day 12: Multi-Sensor Logic (1) – Dual sensor use and conditional programming.",
+      "Day 13: Multi-Sensor Logic (2) – Smart reactions and debugging.",
+      "Day 14: Advanced Challenge (1) – Mission planning and logic design.",
+      "Day 15: Advanced Challenge (2) – Full build and trial execution.",
+      "Day 16: Advanced Challenge (3) – Final run and performance review."
+    ],
+  },
+  {
+    id: "3",
+    title: "LEVEL 3 – Advanced Automation & Integration",
+    subtitle: [
+      "Day 1: Autonomous Core (1) – Independent run setup and flow planning.",
+      "Day 2: Autonomous Core (2) – Multi-condition logic and decision layers.",
+      "Day 3: Autonomous Core (3) – Sensor navigation and error handling.",
+      "Day 4: Autonomous Core (4) – Sequence testing and optimization.",
+      "Day 5: Precision Task Control – Timed actions and accuracy tuning.",
+      "Day 6: Sensor Strategy – Calibration and reading stability.",
+      "Day 7: Hybrid Control Mode – Manual and auto switch with mode testing.",
+      "Day 8: Object Handling (1) – Mechanism setup and grip testing.",
+      "Day 9: Object Handling (2) – Movement synchronization and coordination.",
+      "Day 10: Object Handling (3) – Multi-step sequence and speed balance.",
+      "Day 11: Object Handling (4) – Scenario testing and refinement.",
+      "Day 12: Mission Automation (1) – Mission planning and logic blueprint.",
+      "Day 13: Mission Automation (2) – Build integration and coding structure.",
+      "Day 14: Mission Automation (3) – Trial runs and problem solving.",
+      "Day 15: Mission Automation (4) – Optimization and final rehearsal.",
+      "Day 16: Grand Autonomous Showcase – Full execution and evaluation."
+    ],
+  },
+  {
+    id: "4",
+    title: "LEVEL 4 – Expert Robotics & Innovation",
+    subtitle: [
+      "Day 1: System Blueprint – Full project planning and logic structure.",
+      "Day 2: Advanced Strategy – Complex decisions and performance planning.",
+      "Day 3: Parallel Processing (1) – Multi-task logic and simultaneous actions.",
+      "Day 4: Parallel Processing (2) – Timing synchronization and efficiency balance.",
+      "Day 5: Parallel Processing (3) – Stress testing and stability refinement.",
+      "Day 6: Precision Optimization (1) – Sensor tuning and accuracy boost.",
+      "Day 7: Precision Optimization (2) – Speed control and error reduction.",
+      "Day 8: Precision Optimization (3) – Real simulation and performance upgrade.",
+      "Day 9: Strategic Navigation – Dynamic path logic and smart adjustment.",
+      "Day 10: Adaptive Response – Situation-based switching and smart reaction.",
+      "Day 11: Innovation Build (1) – Custom concept and prototype start.",
+      "Day 12: Innovation Build (2) – Coding integration and debugging.",
+      "Day 13: Capstone Project (1) – Full assembly and mission setup.",
+      "Day 14: Capstone Project (2) – Logic implementation and trial execution.",
+      "Day 15: Capstone Project (3) – Optimization and testing.",
+      "Day 16: Capstone Project (4) – Grand showcase and final evaluation."
+    ],
+  },
+];
+
 
   export const SimplePoweredMachines = [
-    {
-      id: "1",
-      title: "Simple & Powered Machines – Level 1",
-      subtitle: [
-        "Gear meshing and speed changing using different gear ratios: Students learn how different gear ratios change speed and force in a moving model.",
-        "Introduction to battery pack, motor, and energy transformation: Students understand how chemical energy from batteries is converted into electrical energy to run motors.",
-        "Area and boundary: Students explore area and boundary by observing how space and limits affect model movement.",
-        "Circular motion, linear motion, and cam mechanism: Students learn the difference between circular and linear motion and how a cam converts one motion into another.",
-        "Real-life application: Students connect machine models to real-life tools and everyday applications.",
-        "Vertical gear meshing: Students understand how vertical gears transfer motion between different levels.",
-        "Pawl and ratchet mechanism: Students learn how a pawl and ratchet allows motion in one direction only.",
-        "Idler gear: Students understand how an idler gear changes the direction of motion without affecting speed.",
-        "Gravity and friction: Students explore how gravity and friction influence the movement of machines.",
-      ],
-    },
-    {
-      id: "2",
-      title: "Simple & Powered Machines – Level 2",
-      subtitle: [
-        "Gear meshing and speed changing using different gear ratios: Students apply gear ratios to control speed and power in more complex mechanisms.",
-        "Lifting mechanism using pulleys: Students design pulley systems to lift loads with reduced effort.",
-        "Gear shifting and lever method: Students learn how gears and levers work together to change force and motion.",
-        "Balancing and measurement: Students develop balancing skills and use measurement to improve accuracy and stability.",
-        "Motion and movement: Students analyze different types of motion and movement in powered models.",
-        "Pawl and ratchet mechanism: Students apply the pawl and ratchet mechanism in functional machine designs.",
-        "Worm gear and speed control: Students learn how worm gears reduce speed and increase torque.",
-        "Clock mechanism: Students understand how gears and timing systems work together in a clock mechanism.",
-      ],
-    },
-   
-  ];
+  {
+    id: "1",
+    title: "Level 01 ",
+    subtitle: [
+      "Day 1:   Rotary Motion & Balance | Outcome – Understand push force converting into circular motion",
+      "Day 2:   Wind Force & Directional Movement | Outcome – Understand wind energy creating motion",
+      "Day 3:   Cam Mechanism (Rotary to Linear Conversion) | Outcome – Understand motion transformation",
+      "Day 4:   Gear Meshing & Motion Transfer | Outcome – Understand how gears transmit motion",
+      "Day 5:   Lever & Wheel-Axle Principle | Outcome – Understand effort and load relationship",
+      "Day 6:   Stored Energy & Release | Outcome – Understand force, distance, and energy transfer",
+      "Day 7:   Wheels, Axles & Distance Measurement | Outcome – Understand gravity and friction impact",
+      "Day 8:   Wind Energy Application | Outcome – Explain energy conversion process",
+      "Day 9:   Stability & Structure Optimization | Outcome – Improve structural balance",
+      "Day 10:   Motion Analysis & Observation | Outcome – Compare movement efficiency",
+      "Day 11:   Force vs Distance Investigation | Outcome – Analyze mechanical response",
+      "Day 12:   Alignment & Calibration | Outcome – Achieve smooth system operation",
+      "Day 13:   Integrated Mechanism Revision | Outcome – Connect multiple mechanical concepts",
+      "Day 14:   Engineering Presentation | Outcome – Explain mechanical concepts confidently"
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 02 ",
+    subtitle: [
+      "Day 1:   Gear Ratio & Speed vs Power | Outcome – Understand mechanical advantage",
+      "Day 2:   Pulley System & Load Distribution | Outcome – Compare lifting effort variations",
+      "Day 3:   Gearbox Testing & Performance | Outcome – Analyze speed differences",
+      "Day 4:   Lever Classification & Calibration | Outcome – Understand balancing systems",
+      "Day 5:   Linkages & Coordinated Motion | Outcome – Understand mechanical sequencing",
+      "Day 6:   Cam Timing & Motion Rhythm | Outcome – Measure repetitive motion cycles",
+      "Day 7:   Gear Synchronization & Timing | Outcome – Understand controlled movement",
+      "Day 8:   Energy Efficiency Testing | Outcome – Compare performance variations",
+      "Day 9:   Gear Optimization | Outcome – Improve motion output",
+      "Day 10:   Load Testing & Effort Analysis | Outcome – Evaluate mechanical efficiency",
+      "Day 11:   Structural Reinforcement | Outcome – Improve system durability",
+      "Day 12:   System Integration | Outcome – Combine multiple mechanisms",
+      "Day 13:   Creative Mechanism Application | Outcome – Apply learned principles",
+      "Day 14:   Final Evaluation & Demonstration | Outcome – Present engineering understanding"
+    ],
+  }
+];
 
 export const SpikeEssentialCurriculum = [
   {
     id: "1",
-    title: "Level 1: Introduction to Robotics & Engineering",
+    title: "SPIKE ESSENTIAL ",
     subtitle: [
-      "Hands-on robotics and coding program designed for primary students",
-      "Combines building, coding, engineering, and real-world problem solving",
-      "Uses Smart Hub, motors, sensors, and Scratch-based block programming",
-      "Beginner-friendly – no prior coding experience required",
-      "Introduction to robotics components and Smart Hub",
-      "Building moving models and simple machines",
-      "Sensor-based automation projects",
-      "Real-world challenge-based learning",
-      "Independent innovation project (Capstone Project)",
+      "Day 1: Hub Motor Drive System – Functions of hub motor.",
+      "Day 2: Tilt Control Game System – Game zone and tilt mechanism.",
+      "Day 3: Edge Detection Sensor System – Color sensor and sensing basics.",
+      "Day 4: Alert Sensor Response System – Sensor-based warning mechanism.",
+      "Day 5: Force Motion Interaction System – Understanding force and movement.",
+      "Day 6: Line Transport Mechanism – Simple machines and guided transport.",
+      "Day 7: Rotational Speed Control System – Circular motion and speed control.",
+      "Day 8: Directional Force Path System – Force and pathway control.",
+      "Day 9: Target Motion Control System – Force, angle, and aiming skills.",
+      "Day 10: Push Pull Mechanism System – Push and pull mechanics.",
+      "Day 11: Cause Effect Motion System – Mechanical action and reaction.",
+      "Day 12: Circular Spin Control System – Circular movement and speed variation.",
+      "Day 13: Advanced Circular Motion System – Spin balance and speed control.",
+      "Day 14: Fluid Motion Drive System – Motor movement in fluid context.",
+      "Day 15: Applied Force Transport System – Movement using force principles.",
+      "Day 16: Engineering Challenge System – Problem solving and design thinking."
     ],
   },
-]
+];
+
   export  const SpikePrimeCurriculum = [
     {
       id: "1",
       title: "Level 1: Introduction to Robotics & Engineering",
       subtitle: [
-        "Building mechanical models with motors, gears and sensors.",
-        "Understanding structural design (beams, axles, gears).",
-        "Problem-solving through challenges (e.g., obstacle courses, racing robots).",
+        "Day 1: Intro to the kit, basic construction using different parts, introduction to coding, drag-and-drop, sequential coding, and motor movement.",
+        "Day 2: Events, brick button, and motor movement.",
+        "Day 3: Introduction to sound, color sensor, and sequential and parallel coding.",
+        "Day 4: Construction - grabbing mechanism and hands-on construction.",
+        "Day 5: Programming - introduction to touch sensor, working of touch sensor, and variables.",
+        "Day 6: Construction - rack and pinion gear, connection, and gears.",
+        "Day 7: Programming - accurate motor movement, degrees, and rotations.",
+        "Day 8: Construction - gear meshing, speed change, and lever mechanism.",
+        "Day 9: Motor rotation, conditionals, events, and motor movement.",
+        "Day 10: Construction - two-motor movement.",
+        "Day 11: Program color sensor, segregation, and real-life application of model.",
+        "Day 12: One-by-one movement, parallel programming, two-motor movement, and use of sounds.",
+        "Day 13: Introduction of ultrasonic sensor and wait-until condition.",
+        "Day 14: Construction - rack and pinion gear mechanism and motor skills.",
+        "Day 15: Lever mechanism, conditional coding, and concentration.",
+        "Day 16: Challenge - creativity and self design.",
       ],
     },
     {
       id: "2",
       title: "Level 2: Mathematical & Programming Concepts",
       subtitle: [
-        "Ratios and proportions through gear ratios and motor speeds.",
-        "Measurements (angles, distancesand rotations).",
-        "Linear and circular motion with real-world applications.",
-        "Introduction to block-based programming using variables, loopsand conditional statements.",
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
     {
       id: "3",
       title: "Level 3: Robotics Programming & Control Mechanisms",
       subtitle: [
-        "Controlling motor speed, positionand synchronization.",
-        "Executing movement commands (forward, backward, turns, rotations).",
-        "Programming light and sound using LED and speaker functions.",
-        "Handling events like button press, tilt detectionand program start.",
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
     {
       id: "4",
       title: "Level 4: Advanced IoT & Smart Automation",
       subtitle: [
-        "Integrating sensors like color, distance, forceand gyro sensors.",
-        "Using variables to store and modify data in programs.",
-        "Creating custom functions with 'My Blocks' to optimize code reusability.",
-        "Applying IoT concepts for remote monitoring and automation.",
+        "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
       ],
     },
   ];
-  export const SpikePrimePythonCurriculum = [
-    {
-      id: "1",
-      title: "Level 1: Introduction to Python Programming",
-      subtitle: [
-        "Robotics Fundamentals: Understanding LEGO SPIKE Prime components, Motors, sensors, hub & port connections, Building stable and functional robotic models",
-        "Python Programming Basics: Writing simple Python programs, Understanding program flow (top to bottom execution), Using print() for output and debugging",
-        "Logic & Decision Making: Conditional statements (if / elif / else), Making robots react to real-world inputs, Applying logic to solve simple problems",
-        "Loops & Repetition: Using loops to repeat actions, Continuous sensor checking, Understanding automation concepts",
-        "Motor Control & Movement: Controlling motor speed and direction, Rotational movement and timing, Coordinating multiple motors",
-        "Sensor Integration: Color Sensor – detecting and responding to colors, Force Sensor – touch-based actions, Distance Sensor – proximity-based control",
-        "Data Handling & Sequencing: Using lists and dictionaries (basic introduction), Sequencing steps in the correct order, Mapping inputs to actions",
-        "Problem Solving & Computational Thinking: Breaking problems into smaller steps, Testing, debugging, and improving logic, Thinking like an engineer",
-        "Creativity & Real-World Applications: Creating music, games, and smart machines, Connecting coding with real-life scenarios, Encouraging innovation and imagination",
-      ],
-    },
-    {
-      id: "2",
-      title: "Level 2: Advanced Python Programming with SPIKE Prime",
-      subtitle: [
-        "Advanced Driving Base: Precise robot movement & navigation, Speed control, turns, and path accuracy, Using multiple motors together (coordination), Introduction to advanced driving logic",
-        "Guitar: Event-based interaction using sensors, Mapping inputs to different sounds, Creative programming with sequences, Understanding real-time response systems",
-        "Explorer: Distance-based navigation, Obstacle detection & avoidance, Decision-making using sensor values, Applying logic to unknown environments",
-        "Brain Game: Game logic and rule-based programming, Counters, scoring systems & conditions, Improving memory and logical thinking, Designing interactive challenges",
-        "Yoyo Ring: Repetitive motion & loop mastery, Timing, rhythm, and motor synchronization, Understanding circular and oscillating motion, Precision control using Python logic",
-        "Break Dance: Coordinated multi-motor movements, Pattern-based motion sequences, Combining loops with creative motion, Exploring rhythm through robotics",
-        "Smart Bike: Real-world inspired automation concepts, Speed & motion control based on input, Sensor-based decision making, Applying engineering logic to daily-life models",
-      ],
-    },
-    {
-      id: "3",
-      title: "Level 3: Advanced Line Following & Navigation",
-      subtitle: [
-        " Zig-Zag Line Follower: Understanding line detection using sensors, Basic correction logic (left–right decisions), Introducing real-time feedback, Foundation of autonomous navigation",
-        "Steering Line Follower: Smooth and controlled steering movement, Proportional motor speed adjustment, Improving accuracy and stability, Transition from simple to intelligent movement",
-        "Dual Line Follower: Using multiple sensors together, Comparing sensor values simultaneously, Advanced decision making, Building redundancy and reliability in robots",
-        "PID Line Follower: Introduction to PID control logic, Error calculation and correction, Fine-tuning robot performance, Industry-level robotics concepts simplified for kids",
-        "Gyro Straight Movement: Using Gyro Sensor for angle control, Maintaining straight-line accuracy, Correcting drift and orientation errors, Real-world applications in self-driving systems",
-      ],
-    },
-  ];
+ export const SpikePrimePythonCurriculum = [
+  {
+    id: "1",
+    title: "Level 1: SPIKE Prime with Python – Model Based Programming",
+    subtitle: [
+      "Day 1: Music Maker – Construction and Program 1 (basic sound logic)",
+      "Day 2: Music Maker – Program 2 (advanced sound sequencing)",
+      "Day 3: Grabber – Model construction and mechanism setup",
+      "Day 4: Grabber – Program 1 & 2 (basic grab and release control)",
+      "Day 5: Grabber – Program 3 (timing and controlled movement)",
+      "Day 6: Grabber – Program 4 (precision automation logic)",
+      "Day 7: Ferris Wheel – Construction and structural balancing",
+      "Day 8: Ferris Wheel – Program 1 & 2 (rotation and speed control)",
+      "Day 9: Ferris Wheel – Program 3 (continuous motion synchronization)",
+      "Day 10: Weather Forecaster – Construction and sensor setup",
+      "Day 11: Weather Forecaster – Sensor-based conditional programming",
+      "Day 12: Colour Sorter – Mechanical construction and alignment",
+      "Day 13: Colour Sorter – Advanced build and calibration",
+      "Day 14: Colour Sorter – Final structure refinement and testing",
+      "Day 15: Colour Sorter – Program 1 (color detection and sorting logic)",
+      "Day 16: Colour Sorter – Advanced automation, accuracy tuning, and testing"
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2: Advanced Python Programming with SPIKE Prime",
+    subtitle: [
+      "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
+    ],
+  },
+  {
+    id: "3",
+    title: "Level 3: Advanced Line Following & Navigation",
+    subtitle: [
+      "Be the first to explore this upcoming curriculum. Drop your email at info@cyborgrobotics.in and we’ll send you the syllabus as soon as it’s released.",
+    ],
+  },
+];
+
 
   export   const WebDesignCurriculum = [
     {
@@ -1095,40 +1113,40 @@ export const SpikeEssentialCurriculum = [
 export const PeeCeeCurriculumData = [
   {
     id: 1,
-    title: "Level 1: PeeCee Fundamentals",
+    title: "PeeCee – Level 1 ",
     ageGroup: "6 to 9 Years",
     subtitle: [
-      "PeeCee: Seeing, Hearing and Believing – Understanding sensors and outputs.",
-      "PeeCee Add-Ons – Next Cross and Elegant Light projects.",
-      "Scribbling Bot Construction – Basics of switches and motors.",
-      "Scribbling Robot Programming – Introduction to algorithms and logic.",
-      "Rookie Programmer + Stand in Line + Disco Light Hanger – Integrated project.",
-      "Walking Dog Construction – Mechanical design and assembly.",
-      "Walking Dog Programming – Motion logic and control.",
-      "Touch to Start + Automated Fan – Touch-based automation project.",
-      "Dependent on Light (LDR) + Laser Concept – Laser Burglar Alarm and Smart Night Lamp projects.",
-      "Servo Motors – Variable Speed Fan and Unique Beginner Motor projects.",
-      "Temperature Sensor + Throne of PeeCee – Sensor-based control system.",
-      "Challenge Day – Hands-on problem-solving and innovation tasks.",
+      "Day 1: Introduction to sensors, inputs, outputs, and instant response systems.",
+      "Day 2: Exploring add-on modules and creating light-based visual effects.",
+      "Day 3: Building a drawing bot and understanding motor direction control.",
+      "Day 4: Programming the drawing bot using sequences and basic algorithms.",
+      "Day 5: Developing beginner logic through coordinated light-action projects.",
+      "Day 6: Constructing a walking model and understanding motion mechanics.",
+      "Day 7: Programming walking movement with timing and repeat logic.",
+      "Day 8: Creating touch-based automation models.",
+      "Day 9: Building light-sensing safety and automatic response systems.",
+      "Day 10: Implementing precision motor speed and movement control.",
+      "Day 11: Designing temperature-based smart response systems.",
+      "Day 12: Challenge day applying logic, programming, and problem-solving skills.",
     ],
   },
   {
     id: 2,
-    title: "Level 2: Robotics and Automation",
+    title: "PeeCee – Level 2 ",
     ageGroup: "6 to 9 Years",
     subtitle: [
-      "Moving Robo Car Construction – Building a mobile robotic platform.",
-      "Programming of Moving Robo Car – Motion control and logic.",
-      "Ultrasonic Sensor Integration – Obstacle detection and programming.",
-      "Gesture Sensor and Robotic Claw – Construction and integration.",
-      "Robotic Claw Programming – Grip and movement control.",
-      "Sound Activated Car – Microphone, buzzer and control programming.",
-      "Potentiometer and Servo Motor – Camera Pan System project.",
-      "Proximity Sensor + Traffic Light – System construction.",
-      "Traffic Light Programming – Automated signal logic.",
-      "Home Automation System – Hardware construction.",
-      "Home Automation Programming – Control logic and automation.",
-      "Challenge Day – Advanced practical challenges and evaluation.",
+      "Day 1: Building a mobile robot with chassis and motion system.",
+      "Day 2: Programming robot movement with direction and timing logic.",
+      "Day 3: Integrating distance sensing for obstacle detection and avoidance.",
+      "Day 4: Constructing a gesture-controlled gripping mechanism.",
+      "Day 5: Programming gesture-based grip and release coordination.",
+      "Day 6: Designing a sound-responsive robotic vehicle.",
+      "Day 7: Implementing variable control for smooth positioning and angle adjustment.",
+      "Day 8: Building a signal-based detection and response system.",
+      "Day 9: Programming sequencing and real-world traffic signal logic.",
+      "Day 10: Assembling a complete automated smart system.",
+      "Day 11: Programming connected automation models.",
+      "Day 12: Final challenge focused on accuracy, logic, and teamwork.",
     ],
   },
 ];
@@ -1137,49 +1155,50 @@ export const PeeCeeCurriculumData = [
 export const EarlyElectronicsCurriculumData = [
   {
     id: "1",
-    title: "Level 1: Basic Electronics Fundamentals",
+    title: "Early Electronics – Level 1 ",
     subtitle: [
-      "Introduction to Electronics: Basic concepts and principles",
-      "Series and Parallel circuits: Understanding circuit configurations",
-      "Combinational circuits: Complex circuit designs",
-      "Smart Watch Display: Practical application project",
-      "Logic Gates: AND, OR, NOT, NAND, NOR gates",
-      "Project based on Logic Gates: Hands-on implementation",
-      "Introduction to Integrated Circuits (ICs): Understanding ICs",
-      "IC-Based Projects: Practical applications with ICs",
-      "Introduction to Potentiometer: Variable resistor applications",
-      "Introduction to Light Dependent Resistor (LDR): Light sensing components",
-      "Projects on LDR: Practical implementations",
-      "Introduction to Capacitor: Energy storage components",
-      "Project Day 1: Hands-on project work",
-      "Project Day 2: Continued project development",
-      "Project Day 3: Project completion and presentation",
-      "Challenge Day: Problem-solving and critical thinking exercise"
+      "Day 1: Introduction to electricity, components, and simple circuits",
+      "Day 2: Understanding current flow and brightness in series circuits",
+      "Day 3: Exploring multiple current paths in parallel circuits",
+      "Day 4: Comparing series and parallel circuits through models",
+      "Day 5: Learning combinational circuits using mixed configurations",
+      "Day 6: Building practical projects using combined circuits",
+      "Day 7: Creating a smart watch-style display circuit concept",
+      "Day 8: Introduction to AND, OR, and NOT logic gates with truth tables",
+      "Day 9: Applying logic gates in real-life decision-making circuits",
+      "Day 10: Building small electronic projects using logic gates",
+      "Day 11: Understanding Integrated Circuits (ICs) and pin functions",
+      "Day 12: Creating practical circuits using ICs",
+      "Day 13: Learning potentiometer-based variable resistance control",
+      "Day 14: Understanding LDR and automatic light-sensing systems",
+      "Day 15: Building LDR-based automatic street light models",
+      "Day 16: Understanding capacitors and completing final project challenge"
     ],
   },
   {
     id: "2",
-    title: "Level 2: Advanced Electronic Components",
+    title: "Early Electronics – Level 2 ",
     subtitle: [
-      "PNP Transistors: Understanding PNP transistor operation",
-      "NPN Transistors: Understanding NPN transistor operation",
-      "Recording IC: Audio recording integrated circuits",
-      "Amplifier: Signal amplification techniques",
-      "SCR (Silicon Controlled Rectifier): Power control devices",
-      "Project based on SCR: Practical SCR applications",
-      "Relay: Electromagnetic switching devices",
-      "Transformer: Voltage transformation principles",
-      "FM Module: Frequency modulation applications",
-      "Variable Capacitor: Tunable capacitance components",
-      "Solar Cell: Renewable energy applications",
-      "Antenna coil: RF and wireless communication components",
-      "Project Day 1: Hands-on project work",
-      "Project Day 2: Continued project development",
-      "Project Day 3: Project completion and presentation",
-      "Challenge Day: Advanced problem-solving exercise"
+      "Day 1: Introduction to PNP transistors and working principles",
+      "Day 2: Understanding NPN transistors and comparison with PNP",
+      "Day 3: Learning basics of sound recording and playback ICs",
+      "Day 4: Understanding signal amplification and amplifier concepts",
+      "Day 5: Introduction to SCR as a controlled electronic switch",
+      "Day 6: Building control circuit projects using SCR",
+      "Day 7: Understanding relay operation and switching systems",
+      "Day 8: Learning transformer concepts and voltage conversion",
+      "Day 9: Introduction to FM modules and wireless communication basics",
+      "Day 10: Understanding variable capacitors and tuning concepts",
+      "Day 11: Exploring solar cells and renewable energy systems",
+      "Day 12: Logic gates with 7-segment display applications",
+      "Day 13: Designing multi-transistor circuits for control and amplification",
+      "Day 14: Understanding electromagnetism in motors and generators",
+      "Day 15: Final project design, circuit building, and presentation",
+      "Day 16: Advanced challenge day with problem-solving and teamwork"
     ],
   }
 ];
+
 
 export const DroneCurriculumData = [
   {
@@ -1187,21 +1206,22 @@ export const DroneCurriculumData = [
     title: "Drone Curriculum – Level 1",
     ageGroup: "4+ Years",
     subtitle: [
-      "Discover the Drone World – Introduction to drones and their real-world uses.",
-      "Anatomy of a Drone – Understanding drone parts and their functions.",
-      "Secrets of Flight – Basics of how drones fly and stay stable.",
-      "Let’s Build (Part 1) – Drone assembly fundamentals.",
-      "Let’s Build (Part 2) – Completing drone assembly and setup.",
-      "Mastering the Controls – Learning basic drone control and handling.",
-      "Ignition and Inspection – Safety checks and pre-flight procedures.",
-      "Into the Skies – First guided flight experience.",
-      "Pilot in Command – Developing confidence and controlled flying skills.",
-      "Aerial Fun Missions (Part 1) – Simple flight challenges and tasks.",
-      "Aerial Fun Missions (Part 2) – Advanced fun missions and accuracy flying.",
-      "Drone Show and Awards – Demonstration, celebration and certification.",
+      "Day 1: Introduction to drones and their real-world applications",
+      "Day 2: Understanding drone anatomy including frame, motors, battery, and controller",
+      "Day 3: Learning flight basics including lift, thrust, drag, and gravity",
+      "Day 4: Identifying drone parts and assembling the frame with motor placement",
+      "Day 5: Attaching propellers and battery while ensuring balance and symmetry",
+      "Day 6: Mastering basic drone movements and joystick controls",
+      "Day 7: Performing pre-flight safety checks and inspection procedures",
+      "Day 8: First guided flight with take-off, hovering, and landing practice",
+      "Day 9: Developing pilot responsibility, coordination, and safe flying habits",
+      "Day 10: Completing hovering and path-following flight missions",
+      "Day 11: Executing obstacle avoidance and precision landing challenges",
+      "Day 12: Final drone demonstration, mini show, and award recognition"
     ],
   }
 ];
+
 
 // export const ThreeDPrintingArduinoCurriculum = {
 //   meta: {
@@ -1414,227 +1434,92 @@ export const CodingAIWithPictoBloxCurriculum = {
   levels: [
     {
       id: "1",
-      title: "Level 1: Coding & AI Foundations with PictoBlox",
+      title: "Level 1: Quarky Robotics Foundations ",
       modules: [
-        {
-          title: "Getting Started with PictoBlox",
-          topics: [
-            "Installing and setting up PictoBlox",
-            "Exploring interface, block categories, sprites, and stage",
-            "Activity: Make Tobi Walk"
-          ]
-        },
-        {
-          title: "Sprites & Animation",
-          topics: [
-            "Sprite motion and positioning",
-            "Backdrops and costumes",
-            "Creating simple animations"
-          ]
-        },
-        {
-          title: "Drawing with Code",
-          topics: [
-            "Pen extension introduction",
-            "Coordinates and direction",
-            "Drawing square and triangle using logic"
-          ]
-        },
-        {
-          title: "Variables – The Multitaskers",
-          topics: [
-            "Understanding variables and data storage",
-            "Creating and updating variables",
-            "Sprite tracker and input-based game"
-          ]
-        },
-        {
-          title: "Operators in Action",
-          topics: [
-            "Arithmetic operators",
-            "Relational and logical operators",
-            "Building a math quiz game"
-          ]
-        },
-        {
-          title: "Conditional Statements",
-          topics: [
-            "If–Else logic",
-            "Decision-based programs",
-            "Guess the Number game"
-          ]
-        },
-        {
-          title: "Loops for Automation",
-          topics: [
-            "Repetition and automation",
-            "Repeating motion and patterns",
-            "Dancing sprite or pattern animation"
-          ]
-        },
-        {
-          title: "Fun with Music",
-          topics: [
-            "Sound and music blocks",
-            "Interactive sound effects",
-            "Touch-based piano and dance party"
-          ]
-        },
-        {
-          title: "Play Time with Sensors",
-          topics: [
-            "Sensor-based inputs",
-            "Event-driven programming",
-            "Catch the Fruit game"
-          ]
-        },
-        {
-          title: "Introduction to AI & Coding",
-          topics: [
-            "Human vs machine intelligence",
-            "Real-world AI applications",
-            "AI Around Us poster activity"
-          ]
-        },
-        {
-          title: "Introduction to Artificial Intelligence",
-          topics: [
-            "What AI is and how it works",
-            "Everyday AI use cases",
-            "Activity-based AI exploration"
-          ]
-        },
-        {
-          title: "Introduction to Computer Vision",
-          topics: [
-            "Image recognition concepts",
-            "Object and face identification",
-            "Using vision-based AI models"
-          ]
-        }
+        { title: "Day 1", topics: ["Students connect Quarky with PictoBlox and execute their first robot interaction."] },
+        { title: "Day 2", topics: ["Learners use sensors and event-based programming to build an interactive input-output system."] },
+        { title: "Day 3", topics: ["Students assemble Quarky and control robot emotions and actions using keyboard inputs."] },
+        { title: "Day 4", topics: ["Learners program directional movement and geometric motion patterns in robotics."] },
+        { title: "Day 5", topics: ["Students use ultrasonic sensors to measure and interpret real-time distance data."] },
+        { title: "Day 6", topics: ["Learners apply conditional logic to build an obstacle-avoiding robot."] },
+        { title: "Day 7", topics: ["Students understand actuators and perform servo calibration and motion control."] },
+        { title: "Day 8", topics: ["Learners explore IR sensors and implement line detection logic."] },
+        { title: "Day 9", topics: ["Students build and test an autonomous line-following robot."] },
+        { title: "Day 10", topics: ["Learners create an edge-detection robot using multi-sensor safety logic."] },
+        { title: "Day 11", topics: ["Students program steering mechanisms using coordinated motor control."] },
+        { title: "Day 12", topics: ["Learners assemble and operate a four-wheel-drive robotic system."] },
+        { title: "Day 13", topics: ["Students integrate sensors, LED matrix, and audio to build an interactive control system."] },
+        { title: "Day 14", topics: ["Learners complete a line-following challenge demonstrating automation mastery."] }
       ],
       megaProjects: [
-        "BMI Calculator (Variables + Conditions + Operators)",
-        "Air Draw (Gesture-based Computer Vision Project)"
+        "Autonomous Line-Following Challenge",
+        "Interactive Quarky Control System (Sensors + LED Matrix + Audio)"
       ]
     },
 
     {
       id: "2",
-      title: "Level 2: Applied AI & Machine Learning with PictoBlox",
+      title: "Level 2: Advanced Quarky Robotics & AI",
       modules: [
-        {
-          title: "Face Detection",
-          topics: [
-            "Face detection concepts",
-            "Facial features and expressions",
-            "Face Mimic with Quarky"
-          ]
-        },
-        {
-          title: "Optical Character Recognition (OCR)",
-          topics: [
-            "Text recognition using AI",
-            "Extracting text from images",
-            "Postman – Read Text from Image"
-          ]
-        },
-        {
-          title: "Speech Recognition",
-          topics: [
-            "Speech-to-text systems",
-            "Voice command mapping",
-            "Make Your Own Alexa"
-          ]
-        },
-        {
-          title: "Machine Learning Basics",
-          topics: [
-            "Training data and models",
-            "Classification concepts",
-            "Cat vs Dog classifier"
-          ]
-        },
-        {
-          title: "Pose Classifier",
-          topics: [
-            "Pose detection concepts",
-            "Training pose models",
-            "Howdy Tobi! interaction"
-          ]
-        },
-        {
-          title: "AI Game Development – Rock Paper Scissors (Part 1)",
-          topics: [
-            "AI-based game logic",
-            "Data collection and labeling",
-            "Initial model training"
-          ]
-        },
-        {
-          title: "AI Game Development – Rock Paper Scissors (Part 2)",
-          topics: [
-            "Model evaluation",
-            "Improving accuracy",
-            "Handling incorrect predictions"
-          ]
-        },
-        {
-          title: "AI Game Development – Rock Paper Scissors (Part 3)",
-          topics: [
-            "Integrating AI with gameplay",
-            "Final testing and debugging",
-            "Demonstration of AI game"
-          ]
-        },
-        {
-          title: "Ethics in AI",
-          topics: [
-            "Bias and fairness in AI",
-            "Responsible AI usage",
-            "Debate: AI in education"
-          ]
-        },
-        {
-          title: "Real-World AI – Weather Monitoring",
-          topics: [
-            "Environmental data collection",
-            "Using sensors with Quarky",
-            "Real-time weather display"
-          ]
-        },
-        {
-          title: "Smart Waste Management",
-          topics: [
-            "Object classification concepts",
-            "AI-based waste sorting",
-            "Automation logic design"
-          ]
-        },
-        {
-          title: "Home Automation System",
-          topics: [
-            "Voice-controlled automation",
-            "Natural Language Processing basics",
-            "Smart home system using AI"
-          ]
-        },
-        {
-          title: "Road Safety & Smart Cities",
-          topics: [
-            "AI for public safety",
-            "Road safety simulations",
-            "Smart city AI applications"
-          ]
-        }
+        { title: "Day 1", topics: ["Students build an AI-based object tracking robot using computer vision."] },
+        { title: "Day 2", topics: ["Learners assemble a robotic arm for pick-and-place automation."] },
+        { title: "Day 3", topics: ["Students program servo motors to control arm and gripper movement."] },
+        { title: "Day 4", topics: ["Learners create an interactive AI-powered robo-pet using hand detection."] },
+        { title: "Day 5", topics: ["Students implement traffic sign detection for a self-driving robot prototype."] },
+        { title: "Day 6", topics: ["Learners integrate AI vision with motion control to build an autonomous vehicle system."] },
+        { title: "Day 7", topics: ["Students enhance robot tracking accuracy using advanced AI integration."] },
+        { title: "Day 8", topics: ["Learners design and control a precision robotic gripper mechanism."] },
+        { title: "Day 9", topics: ["Students assemble a vertical pick-and-place robotic structure."] },
+        { title: "Day 10", topics: ["Learners synchronize vertical and horizontal motion using coded automation."] },
+        { title: "Day 11", topics: ["Students automate a complete vertical pick-and-place robotic cycle."] },
+        { title: "Day 12", topics: ["Learners build a real-time Weather Monitoring system using environmental sensors."] },
+        { title: "Day 13", topics: ["Students design an AI-powered robotics solution to solve a real-world automation problem."] },
+        { title: "Day 14", topics: ["Learners demonstrate a fully integrated advanced automation capstone project."] }
       ],
       megaProjects: [
-        "AI-Based Rock Paper Scissors Game",
-        "Smart Weather Monitoring System",
-        "AI-Powered Waste Management Solution",
-        "Voice-Controlled Smart Home"
+        "AI Object Tracking Robot",
+        "Advanced Automation Capstone"
       ]
     }
   ]
 };
 
+
+export const kuboCurriculum = [
+  {
+    id: "1",
+    title: "KUBO – Level 01 ",
+    subtitle: [
+      "Day 1:   Introduction to Routes & Directional Commands | Outcome – Understand basic movement using TagTiles",
+      "Day 2:   Route Planning & Memory | Outcome – Create shortest paths and memorize sequences",
+      "Day 3:   Introduction to Functions | Outcome – Convert routes into reusable functions",
+      "Day 4:   Functions & Logical Storytelling | Outcome – Build and interpret functional sequences",
+      "Day 5:   Subroutines | Outcome – Combine multiple functions into structured execution",
+      "Day 6:   Subroutines & Debugging | Outcome – Execute and refine combined functions",
+      "Day 7:   Loops | Outcome – Identify repeatable patterns and optimize commands",
+      "Day 8:   Loops & Competitive Challenges | Outcome – Apply loops for efficiency and speed",
+      "Day 9:   IRO Challenge 1 | Outcome – Apply navigation logic with constraints",
+      "Day 10:   IRO Challenge 2 | Outcome – Execute task-based navigation with obstacle avoidance",
+      "Day 11:   IRO Challenge 3 | Outcome – Plan multi-step missions using structured logic",
+      "Day 12:   IRO Challenge 4 | Outcome – Complete integrated mission with optimized sequencing"
+    ]
+  },
+  {
+    id: "2",
+    title: "KUBO – Level 02 ",
+    subtitle: [
+      "Day 1:   Advanced Route Observation | Outcome – Analyze directional behavior and orientation",
+      "Day 2:   Advanced Functions | Outcome – Build, test, and debug functional sequences",
+      "Day 3:   Subroutines Integration | Outcome – Combine modular functions effectively",
+      "Day 4:   Loops Optimization | Outcome – Reduce repeated commands using loop logic",
+      "Day 5:   Coding+ TagTiles (Distance, Speed, Time, Direction) | Outcome – Control advanced movement parameters",
+      "Day 6:   Advanced Functions with Coding+ | Outcome – Design complex functional logic",
+      "Day 7:   Advanced Subroutines with Coding+ | Outcome – Execute layered function systems",
+      "Day 8:   Loops & Recursive Functions | Outcome – Implement repetition and continuous execution",
+      "Day 9:   IRO Challenge 1 | Outcome – Apply structured logic under mission constraints",
+      "Day 10:   IRO Challenge 2 | Outcome – Execute multi-condition task sequencing",
+      "Day 11:   IRO Challenge 3 | Outcome – Integrate navigation, avoidance, and delivery logic",
+      "Day 12:   IRO Challenge 4 | Outcome – Complete full mission with optimized coding strategy"
+    ]
+  }
+];

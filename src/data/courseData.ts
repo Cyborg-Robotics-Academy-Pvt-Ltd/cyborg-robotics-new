@@ -74,7 +74,7 @@ export const courseData: Record<string, CourseData> = {
     badge: "Electronics Course",
     description: "Build interactive electronics projects with Arduino programming and hardware integration",
     mode: "Offline",
-    duration: "16 CLASSES (1 HOUR PER CLASS)",
+   duration: "16 CLASSES (x3 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ARDUINO.pdf",
     syllabusFileName: "ARDUINO.pdf",
     imagePath: "/assets/classroom-course/arduino.webp",

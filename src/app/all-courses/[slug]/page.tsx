@@ -59,7 +59,7 @@ import {
   EarlySimplemachineCurriculum,
   // IotCurriculum,
   pythonCourseData,
-  RoboticsCurriculum,
+  ev3Curriculum,
   SimplePoweredMachines,
   SpikePrimeCurriculum,
   WebDesignCurriculum,
@@ -72,6 +72,7 @@ import {
   CodingAIWithPictoBloxCurriculum,
   SpikePrimePythonCurriculum,
   SpikeEssentialCurriculum,
+  kuboCurriculum,
 } from "../../../../utils/curriculum";
 import Header from "@/components/layout/header";
 // Define the type for key features
@@ -153,6 +154,51 @@ const mockData: Record<string, CourseData> = {
         description:
           "Create intelligent applications with Python ML frameworks",
         iconName: "BrainCircuit",
+      },
+    ],
+  },
+  kubo: {
+    id: "kubo",
+    title: "KUBO Robotics",
+    subtitle:
+      "Learn coding fundamentals through hands-on robot navigation using TagTiles",
+    badge: "Robotics Course",
+    description:
+      "Develop logical thinking and programming skills using KUBO's hands-on, screen-free coding system.",
+    mode: "Offline",
+    duration: "12 DAYS (x2 LEVELS) (1 HOUR PER SESSION)",
+    syllabusPath: "/assets/pdf/KUBO.pdf",
+    syllabusFileName: "KUBO.pdf",
+    imagePath: "/assets/classroom-course/kubo.png",
+    imageAlt: "KUBO Robotics Course",
+    price: 7499,
+    originalPrice: 9999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Screen-Free Coding",
+        description:
+          "Learn programming concepts using physical TagTiles without screens",
+        iconName: "Code",
+      },
+      {
+        title: "Functions & Subroutines",
+        description:
+          "Understand reusable code blocks and modular programming logic",
+        iconName: "Bot",
+      },
+      {
+        title: "Loops & Route Logic",
+        description:
+          "Optimize routes using loops and structured repetition patterns",
+        iconName: "Rocket",
+      },
+      {
+        title: "IRO Challenges",
+        description:
+          "Apply coding concepts in real-world mission-based challenges",
+        iconName: "Trophy",
       },
     ],
   },
@@ -1151,10 +1197,10 @@ export default async function SlugPage({
           title: level.title,
           subtitle: [
             ...level.modules.map(
-              (module: any) => `${module.title}: ${module.topics.join(", ")}`
+              (module: any) => `${module.title}: ${module.topics.join(", ")}`,
             ),
             ...level.megaProjects.map(
-              (project: string) => `Mega Project: ${project}`
+              (project: string) => `Mega Project: ${project}`,
             ),
           ],
         }));
@@ -1169,7 +1215,9 @@ export default async function SlugPage({
       case "artificial-intelligence":
         return ArtificialIntelligenceCurriculum;
       case "robotics-ev3":
-        return RoboticsCurriculum;
+        return ev3Curriculum;
+      case "kubo":
+        return kuboCurriculum;
       case "coding-ai-pictoblox":
         // Transform CodingAIWithPictoBloxCurriculum to match CurriculumLevel[] structure
         return CodingAIWithPictoBloxCurriculum.levels.map((level: any) => ({
@@ -1177,10 +1225,10 @@ export default async function SlugPage({
           title: level.title,
           subtitle: [
             ...level.modules.map(
-              (module: any) => `${module.title}: ${module.topics.join(", ")}`
+              (module: any) => `${module.title}: ${module.topics.join(", ")}`,
             ),
             ...level.megaProjects.map(
-              (project: string) => `Mega Project: ${project}`
+              (project: string) => `Mega Project: ${project}`,
             ),
           ],
         }));
@@ -1193,21 +1241,21 @@ export default async function SlugPage({
             id: "level1",
             title: ThreeDPrintingCurriculum.level1.title,
             subtitle: ThreeDPrintingCurriculum.level1.modules.map(
-              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`,
             ),
           },
           {
             id: "level2",
             title: ThreeDPrintingCurriculum.level2.title,
             subtitle: ThreeDPrintingCurriculum.level2.modules.map(
-              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`,
             ),
           },
           {
             id: "level3",
             title: ThreeDPrintingCurriculum.level3.title,
             subtitle: ThreeDPrintingCurriculum.level3.modules.map(
-              (module) => `${module.title}: ${module.subtitle.join(", ")}`
+              (module) => `${module.title}: ${module.subtitle.join(", ")}`,
             ),
           },
         ];

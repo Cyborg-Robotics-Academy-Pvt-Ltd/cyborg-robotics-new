@@ -265,7 +265,7 @@ const IROPage = () => {
                   className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
                   onClick={() => setTimeout(() => scrollToTimeline(), 10)}
                 >
-                  <div className="space-y-4">
+                  <div className="  ">
                     <div className="flex items-center gap-4">
                       <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>
                       <p className="text-2xl font-semibold text-gray-800">
@@ -304,7 +304,7 @@ const IROPage = () => {
                 <div className="relative z-10">
                   <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
                     <Image
-                      src="/assets/competition/iro-image.png"
+                      src="/assets/competition/iro-image1.png"
                       alt="IRO National Champions Trophy"
                       fill
                       className="object-contain "
@@ -313,7 +313,7 @@ const IROPage = () => {
 
                   {/* Bottom stats card */}
                   <div
-                    className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 w-4/5 cursor-pointer hover:shadow-2xl transition-shadow"
+                    className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-6 shadow-xl border border-gray-100 w-4/5 cursor-pointer hover:shadow-2xl transition-shadow"
                     onClick={() => setTimeout(() => scrollToTimeline(), 10)}
                   >
                     <div className="flex justify-between items-center">

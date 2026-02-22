@@ -1,94 +1,97 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
-import { motion, useInView } from "framer-motion";
+import { Loader2, Mail, MapPinHouse, PhoneCall, RotateCcw } from "lucide-react";
+import { motion } from "framer-motion";
 import styles from "./Footer.module.css";
+
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 interface FooterProps {
   [key: string]: unknown;
 }
 
 const Footer: React.FC<FooterProps> = () => {
-  // Refs for the four main sections
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [loadingImages, setLoadingImages] = useState(true);
+  const contactRefs = [
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+  ];
   const sectionRefs = useRef([
     React.createRef<HTMLDivElement>(),
     React.createRef<HTMLDivElement>(),
     React.createRef<HTMLDivElement>(),
     React.createRef<HTMLDivElement>(),
   ]);
-  // Refs for animated elements
-  const logoRef = useRef<HTMLImageElement>(null);
 
-  const contactRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ];
+  const fetchFooterImages = useCallback(async () => {
+    try {
+      setLoadingImages(true);
 
-  // Refs for quick links
-  const quickLinkRefs = useRef<(HTMLSpanElement | null)[]>([]);
+      const photosQuery = query(
+        collection(db, "photo"),
+        orderBy("uploadedAt", "desc"),
+      );
 
-  // Array of 10 inspirational quotes
-  const quotes = [
-    "Robotics is not about machines, it's about possibilities.",
-    "The future is built by those who code it—one robot at a time.",
-    "Every robot you build is a step toward tomorrow.",
-    "In robotics, failure is just another step to innovation.",
-    "Robots turn imagination into reality.",
-    "The best way to learn robotics is to build, break and rebuild.",
-    "Automation is the art of making the impossible, possible.",
-    "Robotics: where science meets creativity.",
-    "A robot is only as smart as the mind that builds it.",
-    "Dream, design and drive the world with robotics.",
-  ];
-  const [quoteIndex, setQuoteIndex] = useState(0);
-  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
-  const dailyQuote = quotes[quoteIndex];
-  const fetchNewQuote = () => {
-    setIsLoadingQuote(true);
-    setTimeout(() => {
-      setQuoteIndex((prev) => (prev + 1) % quotes.length);
-      setIsLoadingQuote(false);
-    }, 400); // Simulate loading
-  };
+      const snapshot = await getDocs(photosQuery);
+
+      const photosData: any[] = [];
+
+      snapshot.forEach((doc) => {
+        photosData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      const shuffled = photosData.sort(() => 0.5 - Math.random());
+      const randomFour = shuffled.slice(0, 4);
+
+      setGalleryImages(randomFour);
+    } catch (error) {
+      console.error("Error fetching footer images:", error);
+    } finally {
+      setLoadingImages(false);
+    }
+  }, []);
+
+  // Fetch 4 random images from "photo" collection
+  useEffect(() => {
+    fetchFooterImages();
+  }, [fetchFooterImages]);
 
   return (
     <footer className="bg-white mt-7 md:my-10 rounded-t-3xl overflow-hidden relative">
-      {/* Decorative elements */}
+      {/* Decorative Background */}
       <div className="absolute top-0 left-0 w-full h-full opacity-10">
         <div
           className={`absolute top-10 left-10 w-64 h-64 bg-red-800 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob}`}
-        ></div>
+        />
         <div
           className={`absolute top-10 right-10 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob} ${styles.animationDelay2000}`}
-        ></div>
+        />
         <div
           className={`absolute bottom-10 left-1/2 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob} ${styles.animationDelay4000}`}
-        ></div>
+        />
       </div>
 
       <div className="max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Card container */}
         <div className="rounded-2xl shadow-xl shadow-gray-300/20 p-6 md:p-8 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {/* Section 1: Company Info & Social */}
-            <div
-              className="space-y-4 bg-white rounded-xl p-5 "
-              ref={sectionRefs.current[0]}
-            >
-              <div>
-                <Image
-                  src="/assets/Cyborg-logo.png"
-                  width={150}
-                  height={150}
-                  alt="logo"
-                  loading="lazy"
-                  className="w-40 h-auto cursor-pointer"
-                  ref={logoRef}
-                />
-              </div>
+            {/* Section 1 */}
+            <div className="space-y-4 bg-white rounded-xl p-5">
+              <Image
+                src="/assets/Cyborg-logo.png"
+                width={150}
+                height={150}
+                alt="Cyborg Robotics Logo"
+                className="w-40 h-auto"
+              />
               <p className="text-sm text-gray-700 leading-relaxed">
                 <span className="font-bold text-gray-900">
                   Cyborg Robotics Academy Private Limited
@@ -197,37 +200,28 @@ const Footer: React.FC<FooterProps> = () => {
               </motion.div>
             </div>
 
-            {/* Section 3: Quick Links */}
-            <div className="space-y-4 bg-white rounded-xl p-5 ">
+            {/* Section 3 */}
+            <div className="space-y-4 bg-white rounded-xl p-5">
               <h3 className="text-lg font-bold text-gray-900">Quick Links</h3>
               <ul className="space-y-3">
                 {[
                   { href: "/", label: "Home" },
                   { href: "/about-us", label: "About" },
-                  { href: "/gallery/photos  ", label: "Gallery" },
+                  { href: "/gallery/photos", label: "Gallery" },
                   { href: "/contact-us", label: "Contact" },
-                  {
-                    href: "/terms-conditions",
-                    label: "Terms and Conditions",
-                  },
-                  {
-                    href: "/privacy-policy",
-                    label: "Privacy Policy",
-                  },
-                ].map((item, idx) => (
+                  { href: "/terms-conditions", label: "Terms & Conditions" },
+                  { href: "/privacy-policy", label: "Privacy Policy" },
+                ].map((item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-red-800 hover:font- transition-all block"
+                      className="text-gray-800 hover:text-red-800 transition-all block"
                     >
                       <motion.span
-                        ref={(el) => {
-                          quickLinkRefs.current[idx] = el;
-                        }}
-                        whileHover={{ x: 8, color: "#a63534" }}
+                        whileHover={{ x: 8 }}
                         transition={{ duration: 0.2 }}
                         style={{ display: "inline-block" }}
-                        className=""
+                        className="hover:font-semibold"
                       >
                         {item.label}
                       </motion.span>
@@ -237,43 +231,63 @@ const Footer: React.FC<FooterProps> = () => {
               </ul>
             </div>
 
-            {/* Section 4: Daily Inspiration */}
-            <div className="space-y-4 bg-white backdrop-blur-sm rounded-xl p-5  h-auto">
-              <h3 className="text-lg font-bold text-gray-900">
-                Daily Inspiration
-              </h3>
-              <div className="flex items-start gap-3 min-h-[40px]">
-                <div className="flex-1">
-                  <p className="text-lg font-semibold text-red-800 italic">
-                    &quot;{dailyQuote || "Loading inspiration..."}&quot;
-                  </p>
-                </div>
-                <motion.button
-                  onClick={fetchNewQuote}
-                  disabled={isLoadingQuote}
-                  className="p-2 rounded-full bg-red-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
+            {/* Section 4 - Gallery Highlights 2x2 */}
+            <div className="space-y-4 bg-white rounded-xl p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-gray-900">Photo Hub</h3>
+                <button
+                  type="button"
+                  onClick={fetchFooterImages}
+                  disabled={loadingImages}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-red-200 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label="Shuffle gallery images"
                 >
-                  <RefreshCw
-                    size={16}
-                    className={`transition-transform bg-red-800 duration-300 ${isLoadingQuote ? "animate-spin" : ""}`}
-                  />
-                </motion.button>
+                  {loadingImages ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <RotateCcw size={14} />
+                  )}
+                  Shuffle
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 4 }).map((_, index) => {
+                  const image = galleryImages[index];
+
+                  return (
+                    <motion.div
+                      key={index}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="relative aspect-square overflow-hidden rounded-xl bg-gray-100 shadow-sm hover:shadow-lg"
+                    >
+                      {image ? (
+                        <Image
+                          src={image.imageUrl || image.src}
+                          alt={image.fileName || "Gallery Image"}
+                          fill
+                          className="object-cover transition-transform duration-300"
+                          sizes="120px"
+                        />
+                      ) : (
+                        <div className="w-full h-full animate-pulse bg-gray-200" />
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Copyright Section */}
-        <div className="py-6 text-center border-t border-white/30">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-sm text-gray-700">
-              © Copyright All Rights Reserved by Cyborg Robotics Academy
-              Private Limited
-            </p>
-          </div>
+        {/* Copyright */}
+        <div className="py-6 text-center border-t border-gray-200">
+          <p className="text-sm text-gray-700">
+            © {new Date().getFullYear()} Cyborg Robotics Academy Private
+            Limited. All Rights Reserved.
+          </p>
         </div>
       </div>
     </footer>
