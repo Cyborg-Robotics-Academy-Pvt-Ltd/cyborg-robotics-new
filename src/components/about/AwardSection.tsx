@@ -15,40 +15,60 @@ const AwardSection = () => {
   const awards: Award[] = [
     {
       id: 1,
-      title: "1st, 2nd & 3rd Place – Indian Robotics Olympiad (IRO) 2024",
-      image: "/assets/awards/IRO.png",
+      title:
+        "1st place Indian Robotics Olympiad (IRO) 2024  (Techies Category)",
+      image: "/assets/awards/IRO-2024-TECHIES-1ST.png",
     },
     {
       id: 2,
+      title:
+        "3rd place Indian Robotics Olympiad (IRO) 2024  (Techies Category)",
+      image: "/assets/awards/IRO-2024-TECHIES-3RD.png",
+    },
+
+    {
+      id: 3,
+      title:
+        "3rd  Place – Indian Robotics Olympiad (IRO) 2024 (Innovators Category) ",
+      image: "/assets/awards/IRO-2024-INNOVATORS-3RD.png",
+    },
+    {
+      id: 4,
+      title:
+        "1ST  Place – Indian Robotics Olympiad (IRO) 2025 (Innovators Category) ",
+      image: "/assets/awards/IRO-2025-INNOVATORS-1ST.png",
+    },
+    {
+      id: 5,
       title:
         "3rd Place & Judges’ Award – Jr. Line Following (RoboTex), Ahmedabad",
       image: "/assets/awards/Jr.Line-following.png",
     },
     {
-      id: 3,
+      id: 6,
       title:
         "2nd Runner-Up – Jr. Robo Race, World STEM & Robotics Olympiad, Ahmedabad",
       image: "/assets/awards/jr.Robo-race.png",
     },
     {
-      id: 4,
+      id: 7,
       title: "Judges’ Award – World STEM & Robotics Olympiad",
       image: "/assets/awards/Judges-awards.png",
     },
     {
-      id: 5,
+      id: 8,
       title:
         "2nd Place (Beginner) & 3rd Place (National) – RoboTex 2025, LEGO Line Follower",
       image: "/assets/awards/Lego_Follower.png",
     },
     {
-      id: 6,
+      id: 9,
       title:
         "1st Place (Beginner) & 2nd Place (Intermediate) – RoboTex, Line Follower",
       image: "/assets/awards/Line-Follower.png",
     },
     {
-      id: 7,
+      id: 10,
       title:
         "1st & 3rd Prize – World STEM & Robotics Olympiad, LEGO Line Follower",
       image: "/assets/awards/lego-line-follower.png",

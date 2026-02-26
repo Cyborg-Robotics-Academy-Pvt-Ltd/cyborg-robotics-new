@@ -345,7 +345,17 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 570 },
     data: {
-      label: "Quarky Robotics & AI ",
+      label: "Robotics with Quarky",
+      color: "#22d3ee",
+      link: "/all-courses/robotics-with-quarky",
+    },
+  },
+  {
+    id: "QUARKY1",
+    type: "horizontal",
+    position: { x: 950, y: 570 },
+    data: {
+      label: "Coding with AI and Pictoblox",
       color: "#22d3ee",
       link: "/all-courses/robotics-with-quarky",
     },

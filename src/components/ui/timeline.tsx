@@ -36,7 +36,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
     <div className="w-full bg-white font-sans md:px-10" ref={containerRef}>
       <div className="max-w-7xl mx-auto p-2 mb-4">
         <div className="text-center">
-          <h2 className="text-lg md:text-4xl  text-black max-w-4xl mx-auto font-semibold gradient-text">
+          <h2 className="text-lg md:text-4xl   max-w-4xl mx-auto font-semibold gradient-text">
             IRO Competition Achievements Timeline
           </h2>
           <p className="text-gray-700 text-sm md:text-base max-w-sm mx-auto my-2">
@@ -61,7 +61,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
               <h3 className="md:hidden block text-2xl mb-4 text-left font-bold text-gray-700">
                 {item.title}
               </h3>
-              {item.content}{" "}
+              {item.content}
             </div>
           </div>
         ))}
