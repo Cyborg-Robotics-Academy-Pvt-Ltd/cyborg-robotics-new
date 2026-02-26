@@ -73,8 +73,8 @@ export default function CompetitionHubPage() {
               };
               img.onerror = reject;
               img.src = src;
-            })
-        )
+            }),
+        ),
       );
     };
 
@@ -93,7 +93,7 @@ export default function CompetitionHubPage() {
           }
         });
       },
-      { threshold: 0.1, rootMargin: "50px" }
+      { threshold: 0.1, rootMargin: "50px" },
     );
 
     const cards = document.querySelectorAll("[data-index]");
@@ -279,9 +279,10 @@ export default function CompetitionHubPage() {
   // Filter timelineEvents to show only the specified competitions
   const filteredTimelineEvents: TimelineEvent[] = [
     {
-      year: "2024",
-      achievement: "🇮🇳 Indian Robotics Olympiad (IRO) 2024",
-      description: "1st, 2nd & 3rd Place – Indian Robotics Olympiad (IRO) 2024",
+      year: "2024-2025",
+      achievement: "🇮🇳 Indian Robotics Olympiad (IRO) 2024 -2025",
+      description:
+        "1st, 2nd & 3rd Place – Indian Robotics Olympiad (IRO) 2024 -2025",
       icon: Trophy,
       color: "text-blue-500",
       images: ["/assets/competition/iro.avif"],
@@ -476,7 +477,7 @@ export default function CompetitionHubPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white/40 text-white hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                    className="border-white/40 text-[#8A2E2E] bg-white  backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <Calendar className="mr-2 w-5 h-5" />
                     Upcoming Competitions
@@ -802,14 +803,14 @@ export default function CompetitionHubPage() {
                               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMTYwIiByPSI0MCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                               onLoadingComplete={(img) => {
                                 img.parentElement?.classList.add(
-                                  "image-loaded"
+                                  "image-loaded",
                                 );
                                 img.style.transition =
                                   "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
                               }}
                               onError={(e) => {
                                 console.warn(
-                                  `Image failed to load: ${e.currentTarget.src}`
+                                  `Image failed to load: ${e.currentTarget.src}`,
                                 );
                                 e.currentTarget.src =
                                   "https://yourdomain.com/assets/events/competition.png";

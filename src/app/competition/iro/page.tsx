@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Header from "@/components/layout/header";
 import { Timeline } from "@/components/ui/timeline";
 
@@ -124,14 +124,14 @@ const IROPage = () => {
       year: "2024",
       category: "Junior Category",
       teams: "4 teams participated",
-      result: "🥇 National Winner",
+      result: "ðŸ¥‡ National Winner",
       highlight: true,
     },
     {
       year: "2025",
       category: "Junior + Intermediate",
       teams: "6 teams",
-      result: "🥈 Runner-up | 🏆 Judges' Award",
+      result: "ðŸ¥ˆ Runner-up | ðŸ† Judges' Award",
       highlight: true,
     },
   ];
@@ -139,24 +139,27 @@ const IROPage = () => {
   const awards = [
     {
       id: 1,
-      src: "/assets/awards/IRO.png",
-      alt: "IRO 2024 Championship",
-      year: "2024",
-      title: "National Champions",
+      title:
+        "1st place Indian Robotics Olympiad (IRO) 2024  (Techies Category)",
+      image: "/assets/awards/IRO-2024-TECHIES-1ST.png",
     },
     {
       id: 2,
-      src: "/assets/awards/IRO.png",
-      alt: "IRO 2025 Runner-up",
-      year: "2025",
-      title: "National Runner-up",
+      title:
+        "3rd place Indian Robotics Olympiad (IRO) 2024  (Techies Category)",
+      image: "/assets/awards/IRO-2024-TECHIES-3RD.png",
     },
     {
       id: 3,
-      src: "/assets/awards/Judges-awards.png",
-      alt: "IRO 2025 Judges Award",
-      year: "2025",
-      title: "Judges' Special Award",
+      title:
+        "3rd  Place - Indian Robotics Olympiad (IRO) 2024 (Innovators Category) ",
+      image: "/assets/awards/IRO-2024-INNOVATORS-3RD.png",
+    },
+    {
+      id: 4,
+      title:
+        "1ST  Place - Indian Robotics Olympiad (IRO) 2025 (Innovators Category) ",
+      image: "/assets/awards/IRO-2025-INNOVATORS-1ST.png",
     },
   ];
 
@@ -419,34 +422,30 @@ const IROPage = () => {
                 {
                   title: "2024",
                   content: (
-                    <div className="bg-white p-6 rounded-xl shadow-lg border border-red-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+                      <div>
                         <Image
-                          src=""
-                          alt="IRO 2024 National Champions"
+                          src="/assets/competition/iro/iro3.jpg"
+                          alt=" Indian Robotics Olympiad (IRO) 2024 "
                           width={400}
                           height={400}
-                          className="rounded-lg w-full h-52 object-cover border border-gray-200"
-                        />
-                        <Image
-                          src="https://placehold.co/400x200/ffffff/000000?text=IRO+2024+Team"
-                          alt="IRO 2024 Winning Team"
-                          width={400}
-                          height={400}
-                          className="rounded-lg w-full h-52 object-cover border border-gray-200"
+                          className="rounded-2xl w-full h-96 object-cover border border-gray-200 bg-white "
                         />
                       </div>
                       <h3 className="text-xl font-bold text-red-600 mb-3">
-                        National Champions
+                        Indian Robotics Olympiad 2024
                       </h3>
-                      <p className="text-gray-700 mb-2">
-                        <strong>Category:</strong> Junior Category
+                      <p className="text-gray-700 mb-2 flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span>1st place (Techies Category)</span>
                       </p>
-                      <p className="text-gray-700 mb-2">
-                        <strong>Teams:</strong> 4 teams participated
+                      <p className="text-gray-700 mb-2 flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-amber-600" />
+                        <span>3rd place (Techies Category)</span>
                       </p>
-                      <p className="text-gray-700">
-                        <strong>Result:</strong> 🥇 National Winner
+                      <p className="text-gray-700 flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-amber-600" />
+                        <span>3rd Place (Innovators Category)</span>
                       </p>
                     </div>
                   ),
@@ -455,26 +454,21 @@ const IROPage = () => {
                   title: "2025",
                   content: (
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-                      <div className="">
+                      <div>
                         <Image
                           src="/assets/competition/iro/iro1.avif"
-                          alt="IRO 2025 National Runners-up"
+                          alt="Indian Robotics Olympiad (IRO) 2025 "
                           width={400}
                           height={400}
-                          className="rounded-lg w-full h-96 object-cover border border-gray-200"
+                          className="rounded-2xl w-full h-96 object-cover border border-gray-200 bg-white "
                         />
                       </div>
                       <h3 className="text-xl font-bold text-blue-600 mb-3">
-                        National Runners-up
+                        Indian Robotics Olympiad 2025
                       </h3>
-                      <p className="text-gray-700 mb-2">
-                        <strong>Category:</strong> Junior + Intermediate
-                      </p>
-                      <p className="text-gray-700 mb-2">
-                        <strong>Teams:</strong> 6 teams
-                      </p>
-                      <p className="text-gray-700">
-                        <strong>Result:</strong> 🥈 Runner-up | 🏆 Judges' Award
+                      <p className="text-gray-700 mb-2 flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span>1st place (Techies Category)</span>
                       </p>
                     </div>
                   ),
@@ -489,7 +483,7 @@ const IROPage = () => {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold gradient-text mb-4">
               Awards & Recognition
             </h2>
             <p className="text-xl text-gray-600">
@@ -505,106 +499,17 @@ const IROPage = () => {
               >
                 <div className="relative h-48 bg-gray-100">
                   <Image
-                    src={award.src}
-                    alt={award.alt}
+                    src={award.image}
+                    alt={award.title}
                     fill
                     className="object-contain p-4"
                   />
                 </div>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-2">{award.title}</h3>
-                  <p className="text-gray-600">{award.year}</p>
+                  <h3 className="font-semibold text-lg">{award.title}</h3>
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Student Projects */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Student Projects
-            </h2>
-            <p className="text-xl text-gray-600">
-              What our students actually build and program
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {studentProjects.map((project, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-xl text-red-600">
-                    {project.name}
-                  </CardTitle>
-                  <p className="text-gray-600">{project.description}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Key Components:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.sensors.map((sensor, idx) => (
-                        <Badge key={idx} variant="secondary">
-                          {sensor}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">
-                      Programming Concepts:
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.concepts.map((concept, idx) => (
-                        <Badge key={idx} className="bg-red-100 text-red-800">
-                          {concept}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <p className="text-sm text-gray-500">
-                      Competition Focus: {project.scoring}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Preparation Process */}
-      <section className="py-16 bg-red-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              How We Prepare Students
-            </h2>
-            <p className="text-xl text-gray-600">
-              Systematic approach to competition success
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="space-y-4">
-              {preparationSteps.map((step, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-4 bg-white p-6 rounded-xl shadow-sm"
-                >
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center">
-                      <span className="text-white font-bold">{index + 1}</span>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 pt-1">{step}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -613,7 +518,7 @@ const IROPage = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold gradient-text mb-4">
               Skills Students Develop
             </h2>
             <p className="text-xl text-gray-600">
@@ -686,7 +591,7 @@ const IROPage = () => {
       <section className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold gradient-text mb-4">
               Who Should Join IRO
             </h2>
             <p className="text-xl text-gray-600">

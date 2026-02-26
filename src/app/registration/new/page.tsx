@@ -4,6 +4,7 @@ import { collection, addDoc } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { db } from "../../../lib/firebase";
+import { courseData } from "../../../data/courseData";
 import {
   User,
   Calendar,
@@ -32,11 +33,21 @@ interface FormData {
   primaryParentEmail: string;
   currentAddress: string;
   permanentAddress: string;
+  selectedCourseKey: string;
+  bankOrderId: string;
   dateOfRegistration: string;
 }
 
 const RegisterPage: React.FC = () => {
   const router = useRouter();
+  const courseOptions = Object.entries(courseData)
+    .map(([key, course]) => ({
+      key,
+      title: course.title,
+      price: course.price ?? 0,
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title));
+
   const [formData, setFormData] = useState<FormData>({
     studentName: "",
     dateOfBirth: "",
@@ -50,6 +61,8 @@ const RegisterPage: React.FC = () => {
     primaryParentEmail: "",
     currentAddress: "",
     permanentAddress: "",
+    selectedCourseKey: "",
+    bankOrderId: "",
     dateOfRegistration: "",
   });
 
@@ -58,12 +71,16 @@ const RegisterPage: React.FC = () => {
     useState<boolean>(false);
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  const selectedCourse = formData.selectedCourseKey
+    ? courseData[formData.selectedCourseKey]
+    : undefined;
 
   useEffect(() => {
     if (formData.dateOfBirth) {
@@ -152,11 +169,14 @@ const RegisterPage: React.FC = () => {
         newErrors.primaryParentEmail = "Primary parent email is required.";
       else if (!validateEmail(formData.primaryParentEmail))
         newErrors.primaryParentEmail = "Enter a valid email address.";
-    } else if (stepToValidate === 4) {
+    } else if (stepToValidate === 3) {
       if (!formData.currentAddress.trim())
         newErrors.currentAddress = "Current address is required.";
       if (!sameAsCurrentAddress && !formData.permanentAddress.trim())
         newErrors.permanentAddress = "Permanent address is required.";
+    } else if (stepToValidate === 4) {
+      if (!formData.selectedCourseKey)
+        newErrors.selectedCourseKey = "Please select a course.";
     } else if (stepToValidate === 5) {
       if (!termsAccepted)
         newErrors.termsAccepted = "You must accept the terms and conditions.";
@@ -168,7 +188,7 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!validateStep(5)) {
+    if (!validateStep(totalSteps)) {
       toast.error("Please fix the errors before submitting.", {
         position: "top-center",
         duration: 4000,
@@ -185,12 +205,11 @@ const RegisterPage: React.FC = () => {
       // Add current date to the form data
       const formDataWithDate = {
         ...formData,
+        selectedCourseName: selectedCourse?.title ?? "",
+        selectedCourseFee: selectedCourse?.price ?? null,
         dateOfRegistration: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD
       };
-      const docRef = await addDoc(
-        collection(db, "registrations"),
-        formDataWithDate
-      );
+      await addDoc(collection(db, "registrations"), formDataWithDate);
 
       openModal(); // Open the modal
       setFormData({
@@ -206,6 +225,8 @@ const RegisterPage: React.FC = () => {
         primaryParentEmail: "",
         currentAddress: "",
         permanentAddress: "",
+        selectedCourseKey: "",
+        bankOrderId: "",
         dateOfRegistration: "",
       });
       setSameAsCurrentAddress(false);
@@ -245,6 +266,61 @@ const RegisterPage: React.FC = () => {
   const prevStep = () => {
     if (step > 1) {
       setStep((prev) => prev - 1);
+    }
+  };
+
+  const handleInitiatePayment = async () => {
+    if (isInitiatingPayment) return;
+    if (!formData.selectedCourseKey) {
+      setErrors((prev) => ({ ...prev, selectedCourseKey: "Please select a course." }));
+      toast.error("Please select a course first.");
+      return;
+    }
+    const selectedAmount = selectedCourse?.price ?? 0;
+    if (!selectedAmount) {
+      toast.error("Selected course fee is not available.");
+      return;
+    }
+
+    setIsInitiatingPayment(true);
+    try {
+      const response = await fetch("/api/payment/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: selectedAmount,
+          currency: "INR",
+          courseKey: formData.selectedCourseKey,
+          courseName: selectedCourse?.title ?? "",
+          paymentMethod: "BANK_REDIRECT",
+          studentName: formData.studentName,
+          parentEmail: formData.primaryParentEmail,
+          parentPhone: formData.primaryParentContact,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        toast.error(data?.message || "Unable to initiate payment.");
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        bankOrderId: data.orderId || prev.bankOrderId,
+      }));
+
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+
+      toast.success("Payment initiated. Reference captured successfully.");
+    } catch (error) {
+      console.error("Payment initiation failed:", error);
+      toast.error("Failed to connect to payment service.");
+    } finally {
+      setIsInitiatingPayment(false);
     }
   };
 
@@ -502,7 +578,72 @@ const RegisterPage: React.FC = () => {
               )}
               {step === 4 && (
                 <div>
-                  <SectionTitle number="4" title="Terms & Conditions" />
+                  <SectionTitle number="4" title="Payment Details" />
+                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
+                      <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-4">
+                        <p className="text-sm text-gray-600">Course Fee</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">
+                          {selectedCourse?.price
+                            ? `Rs. ${selectedCourse.price.toLocaleString("en-IN")}`
+                            : "Select a course to view fee"}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Click Pay Now to continue on the bank checkout page.
+                        </p>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label
+                          className="block text-gray-700 text-sm font-semibold mb-2"
+                          htmlFor="selectedCourseKey"
+                        >
+                          COURSE <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          id="selectedCourseKey"
+                          name="selectedCourseKey"
+                          value={formData.selectedCourseKey}
+                          onChange={handleChange}
+                          className={`w-full py-3 px-4 border ${errors.selectedCourseKey ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-500 transition-all appearance-none bg-white`}
+                          required
+                        >
+                          <option value="">Select Course</option>
+                          {courseOptions.map((course) => (
+                            <option key={course.key} value={course.key}>
+                              {course.title}
+                              {course.price ? ` (Rs. ${course.price.toLocaleString("en-IN")})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.selectedCourseKey && (
+                          <p className="text-red-600 text-xs mt-1">
+                            {errors.selectedCourseKey}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <button
+                          type="button"
+                          onClick={handleInitiatePayment}
+                          disabled={isInitiatingPayment}
+                          className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300 disabled:opacity-60"
+                        >
+                          {isInitiatingPayment ? "Connecting to Bank..." : "Pay Now"}
+                        </button>
+                        <p className="text-xs text-gray-500 mt-2">
+                          This creates a bank order and redirects to the bank page.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 5 && (
+                <div>
+                  <SectionTitle number="5" title="Terms & Conditions" />
                   <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
                     <ul className="list-disc pl-5 text-sm text-gray-700 space-y-3">
                       <li className="pl-1">

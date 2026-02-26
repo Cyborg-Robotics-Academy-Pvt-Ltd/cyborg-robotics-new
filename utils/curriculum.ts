@@ -114,42 +114,42 @@ export const javaCurriculum = [
 export const RoboticsWithQuarkyCurriculum = [
   {
     id: "1",
-    title: "Level 1 ",
+    title: "Level 1",
     subtitle: [
-      "Day 1: Students connect Quarky with PictoBlox and execute their first robot interaction.",
-      "Day 2: Learners use sensors and event-based programming to build an interactive input-output system.",
-      "Day 3: Students assemble Quarky and control robot emotions and actions using keyboard inputs.",
-      "Day 4: Learners program directional movement and geometric motion patterns in robotics.",
-      "Day 5: Students use ultrasonic sensors to measure and interpret real-time distance data.",
-      "Day 6: Learners apply conditional logic to build an obstacle-avoiding robot.",
-      "Day 7: Students understand actuators and perform servo calibration and motion control.",
-      "Day 8: Learners explore IR sensors and implement line detection logic.",
-      "Day 9: Students build and test an autonomous line-following robot.",
-      "Day 10: Learners create an edge-detection robot using multi-sensor safety logic.",
-      "Day 11: Students program steering mechanisms using coordinated motor control.",
-      "Day 12: Learners assemble and operate a four-wheel-drive robotic system.",
-      "Day 13: Students integrate sensors, LED matrix, and audio to build an interactive control system.",
-      "Day 14: Learners complete a line-following challenge demonstrating automation mastery."
+      "Day 1: Students learn the working of PictoBlox, save projects, and connect Quarky using Bluetooth and USB methods.",
+      "Day 2: Learners use sensors and inputs to control sprites by creating a Catch the Fruit game.",
+      "Day 3: Students assemble the Quarky robot and control emotions using arrow keys, with start and stop controls via keyboard.",
+      "Day 4: Learners understand robotics basics and program the robot to move in geometric shapes like square and circle.",
+      "Day 5: Students explore different sensors and read real-time distance data using the ultrasonic sensor.",
+      "Day 6: Learners study actuators and perform servo sweep calibration and controlled movement.",
+      "Day 7: Students apply obstacle detection logic to build an obstacle-avoiding robot.",
+      "Day 8: Learners assemble and control a four-wheel-drive robot to understand multi-wheel mechanics.",
+      "Day 9: Students learn steering and differential motion to build an autonomous steering robot.",
+      "Day 10: Learners integrate line sensors to build an edge-detection robot using control logic.",
+      "Day 11: Students calibrate IR sensors and understand core concepts of line following.",
+      "Day 12: Learners code and test a fully functional line follower robot.",
+      "Day 13: Students build a capstone project using touch sensors, LED matrix for direction display, and speaker-based audio output.",
+      "Day 14: Learners test line-following skills by navigating Quarky on a blue/green mat."
     ],
   },
   {
     id: "2",
-    title: "Level 2 ",
+    title: "Level 2",
     subtitle: [
-      "Day 1: Students build an AI-based object tracking robot using computer vision.",
-      "Day 2: Learners assemble a robotic arm for pick-and-place automation.",
-      "Day 3: Students program servo motors to control arm and gripper movement.",
-      "Day 4: Learners create an interactive AI-powered robo-pet using hand detection.",
-      "Day 5: Students implement traffic sign detection for a self-driving robot prototype.",
-      "Day 6: Learners integrate AI vision with motion control to build an autonomous vehicle system.",
-      "Day 7: Students enhance robot tracking accuracy using advanced AI integration.",
-      "Day 8: Learners design and control a precision robotic gripper mechanism.",
-      "Day 9: Students assemble a vertical pick-and-place robotic structure.",
-      "Day 10: Learners synchronize vertical and horizontal motion using coded automation.",
+      "Day 1: Students are introduced to the gripper robot and understand gripping mechanisms.",
+      "Day 2: Learners assemble a horizontal pick-and-place robot as part of robotic arm construction.",
+      "Day 3: Students code servo motors to manually control pick-and-place arm movements.",
+      "Day 4: Learners build an AI-powered robo-pet using hand detection and behavior mapping.",
+      "Day 5: Students train and test an object tracking model for continuous robot motion.",
+      "Day 6: Learners build a face tracking robot by combining AI vision and motion control.",
+      "Day 7: Students explore self-driving concepts by detecting traffic signs and landmarks.",
+      "Day 8: Learners implement decision-making logic for a self-driving robot with multi-sign detection.",
+      "Day 9: Students assemble the structure for a vertical pick-and-place robot.",
+      "Day 10: Learners control vertical and horizontal motion using synchronized automation logic.",
       "Day 11: Students automate a complete vertical pick-and-place robotic cycle.",
-      "Day 12: Learners build a real-time Weather Monitoring system using environmental sensors.",
-      "Day 13: Students design an AI-powered robotics solution to solve a real-world automation problem.",
-      "Day 14: Learners demonstrate a fully integrated advanced automation capstone project."
+      "Day 12: Learners build a weather monitoring system using environmental sensors.",
+      "Day 13: Students design an AI-powered robotics solution to solve a real-world problem.",
+      "Day 14: Learners demonstrate a fully integrated advanced robotics capstone project."
     ],
   },
 ];
@@ -1425,7 +1425,7 @@ export const CodingAIWithPictoBloxCurriculum = {
   meta: {
     title: "CODING & AI WITH PICTOBLOX",
     teacher: "Certified Trainer",
-    duration: "14 Classes (1 Hour per Class)",
+    duration: "14 Days (1 Hour per Day)",
     mode: "Offline / Online",
     description:
       "A hands-on, concept-driven program that bridges foundational coding with Artificial Intelligence using PictoBlox. Students build interactive programs, games, and AI-powered projects while developing logical reasoning, computational thinking, and problem-solving skills through real-world applications."
@@ -1434,51 +1434,51 @@ export const CodingAIWithPictoBloxCurriculum = {
   levels: [
     {
       id: "1",
-      title: "Level 1: Quarky Robotics Foundations ",
+      title: "Level 1: Coding & AI Foundations",
       modules: [
-        { title: "Day 1", topics: ["Students connect Quarky with PictoBlox and execute their first robot interaction."] },
-        { title: "Day 2", topics: ["Learners use sensors and event-based programming to build an interactive input-output system."] },
-        { title: "Day 3", topics: ["Students assemble Quarky and control robot emotions and actions using keyboard inputs."] },
-        { title: "Day 4", topics: ["Learners program directional movement and geometric motion patterns in robotics."] },
-        { title: "Day 5", topics: ["Students use ultrasonic sensors to measure and interpret real-time distance data."] },
-        { title: "Day 6", topics: ["Learners apply conditional logic to build an obstacle-avoiding robot."] },
-        { title: "Day 7", topics: ["Students understand actuators and perform servo calibration and motion control."] },
-        { title: "Day 8", topics: ["Learners explore IR sensors and implement line detection logic."] },
-        { title: "Day 9", topics: ["Students build and test an autonomous line-following robot."] },
-        { title: "Day 10", topics: ["Learners create an edge-detection robot using multi-sensor safety logic."] },
-        { title: "Day 11", topics: ["Students program steering mechanisms using coordinated motor control."] },
-        { title: "Day 12", topics: ["Learners assemble and operate a four-wheel-drive robotic system."] },
-        { title: "Day 13", topics: ["Students integrate sensors, LED matrix, and audio to build an interactive control system."] },
-        { title: "Day 14", topics: ["Learners complete a line-following challenge demonstrating automation mastery."] }
+        { title: "Day 1", topics: ["Getting Started with PictoBlox – Interface, sprites, and setup."] },
+        { title: "Day 2", topics: ["Sprites & Animation – Motion, backdrops, costume switching."] },
+        { title: "Day 3", topics: ["Drawing with Code – Pen extension, coordinates, shapes."] },
+        { title: "Day 4", topics: ["Variables – Storing and tracking data in programs."] },
+        { title: "Day 5", topics: ["Operators – Arithmetic and logical operations."] },
+        { title: "Day 6", topics: ["Conditional Statements – If–Else logic and decisions."] },
+        { title: "Day 7", topics: ["Loops – Repetition and automation in coding."] },
+        { title: "Day 8", topics: ["Music & Sound – Keyboard interaction and sound effects."] },
+        { title: "Day 9", topics: ["Sensors & Controls – Interactive sprite control."] },
+        { title: "Day 10", topics: ["Introduction to AI – Applications and AI around us."] },
+        { title: "Day 11", topics: ["Computer Vision Part 1 – Object recognition basics."] },
+        { title: "Day 12", topics: ["Computer Vision Part 2 – Image classification projects."] },
+        { title: "Day 13", topics: ["Capstone Project – BMI Calculator."] },
+        { title: "Day 14", topics: ["Capstone Project – Air Draw System."] }
       ],
       megaProjects: [
-        "Autonomous Line-Following Challenge",
-        "Interactive Quarky Control System (Sensors + LED Matrix + Audio)"
+        "BMI Calculator",
+        "Air Draw AI Project"
       ]
     },
 
     {
       id: "2",
-      title: "Level 2: Advanced Quarky Robotics & AI",
+      title: "Level 2: Advanced AI & Real-World Applications",
       modules: [
-        { title: "Day 1", topics: ["Students build an AI-based object tracking robot using computer vision."] },
-        { title: "Day 2", topics: ["Learners assemble a robotic arm for pick-and-place automation."] },
-        { title: "Day 3", topics: ["Students program servo motors to control arm and gripper movement."] },
-        { title: "Day 4", topics: ["Learners create an interactive AI-powered robo-pet using hand detection."] },
-        { title: "Day 5", topics: ["Students implement traffic sign detection for a self-driving robot prototype."] },
-        { title: "Day 6", topics: ["Learners integrate AI vision with motion control to build an autonomous vehicle system."] },
-        { title: "Day 7", topics: ["Students enhance robot tracking accuracy using advanced AI integration."] },
-        { title: "Day 8", topics: ["Learners design and control a precision robotic gripper mechanism."] },
-        { title: "Day 9", topics: ["Students assemble a vertical pick-and-place robotic structure."] },
-        { title: "Day 10", topics: ["Learners synchronize vertical and horizontal motion using coded automation."] },
-        { title: "Day 11", topics: ["Students automate a complete vertical pick-and-place robotic cycle."] },
-        { title: "Day 12", topics: ["Learners build a real-time Weather Monitoring system using environmental sensors."] },
-        { title: "Day 13", topics: ["Students design an AI-powered robotics solution to solve a real-world automation problem."] },
-        { title: "Day 14", topics: ["Learners demonstrate a fully integrated advanced automation capstone project."] }
+        { title: "Day 1", topics: ["Face Detection – Understanding facial recognition systems."] },
+        { title: "Day 2", topics: ["Optical Character Recognition – Reading text from images."] },
+        { title: "Day 3", topics: ["Speech Recognition – Voice command systems."] },
+        { title: "Day 4", topics: ["Machine Learning Basics – Training simple models."] },
+        { title: "Day 5", topics: ["Pose Classifier – Body movement recognition."] },
+        { title: "Day 6", topics: ["Rock Paper Scissors – Model Training."] },
+        { title: "Day 7", topics: ["Rock Paper Scissors – Testing & Improving Accuracy."] },
+        { title: "Day 8", topics: ["Rock Paper Scissors – Final Functional Game Build."] },
+        { title: "Day 9", topics: ["Ethics in AI – Bias and responsible AI discussion."] },
+        { title: "Day 10", topics: ["Weather Monitoring System – Sensor-based AI project."] },
+        { title: "Day 11", topics: ["Smart Waste Management – Object classification system."] },
+        { title: "Day 12", topics: ["Home Automation – Voice-controlled smart system."] },
+        { title: "Day 13", topics: ["Road Safety & Smart Cities – AI integration project."] },
+        { title: "Day 14", topics: ["Capstone Project – Real-World AI Solution Presentation."] }
       ],
       megaProjects: [
-        "AI Object Tracking Robot",
-        "Advanced Automation Capstone"
+        "AI Game Development Project",
+        "Real-World AI Innovation Capstone"
       ]
     }
   ]
