@@ -283,7 +283,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 1250, y: 510 },
     data: {
-      label: "Bambino Coding ",
+      label: "ANIMATION & CODING",
       color: "#4ade80",
       link: "/all-courses/bambino-coding",
     },
@@ -291,7 +291,7 @@ const initialNodes: Node[] = [
   {
     id: "BAMBINO_LEVELS",
     type: "horizontal",
-    position: { x: 1450, y: 510 },
+    position: { x: 1480, y: 510 },
     data: {
       label: "2 levels",
       color: "#4ade80",
@@ -324,9 +324,9 @@ const initialNodes: Node[] = [
   {
     id: "CODE1",
     type: "horizontal",
-    position: { x: 1250, y: 510 },
+    position: { x: 1280, y: 510 },
     data: {
-      label: "Code.org ",
+      label: "ANIMATION & CODING ",
       color: "#22d3ee",
       link: "/all-courses/bambino-coding",
     },
@@ -334,7 +334,7 @@ const initialNodes: Node[] = [
   {
     id: "CODE1_LEVELS",
     type: "horizontal",
-    position: { x: 1450, y: 510 },
+    position: { x: 1510, y: 510 },
     data: {
       label: "2 levels",
       color: "#22d3ee",
