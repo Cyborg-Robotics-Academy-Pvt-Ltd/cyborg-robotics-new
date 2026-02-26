@@ -345,17 +345,7 @@ const initialNodes: Node[] = [
     type: "horizontal",
     position: { x: 950, y: 570 },
     data: {
-      label: "Robotics with Quarky",
-      color: "#22d3ee",
-      link: "/all-courses/robotics-with-quarky",
-    },
-  },
-  {
-    id: "QUARKY1",
-    type: "horizontal",
-    position: { x: 950, y: 570 },
-    data: {
-      label: "Coding with AI and Pictoblox",
+      label: "Quarky Robotics  ",
       color: "#22d3ee",
       link: "/all-courses/robotics-with-quarky",
     },
@@ -363,9 +353,19 @@ const initialNodes: Node[] = [
 
   // AGE 6–9 ADDITIONAL COURSES (Second column)
   {
-    id: "PEECEE",
+    id: "AI",
     type: "horizontal",
     position: { x: 950, y: 630 },
+    data: {
+      label: "Coding with AI and Pictoblox",
+      color: "#22d3ee",
+      link: "/all-courses/coding-ai-pictoblox",
+    },
+  },
+  {
+    id: "PEECEE",
+    type: "horizontal",
+    position: { x: 950, y: 690 },
     data: {
       label: "PEECEE ",
       color: "#22d3ee",
@@ -375,7 +375,7 @@ const initialNodes: Node[] = [
   {
     id: "SPIKE1",
     type: "horizontal",
-    position: { x: 950, y: 690 },
+    position: { x: 950, y: 750 },
     data: {
       label: "SPIKE Essential ",
       color: "#22d3ee",
@@ -837,6 +837,13 @@ const initialEdges: Edge[] = [
     id: "e16",
     source: "AGE69",
     target: "QUARKY1",
+    type: "default",
+    style: { stroke: "#22d3ee", strokeWidth: 2 },
+  },
+  {
+    id: "e16a",
+    source: "AGE69",
+    target: "AI",
     type: "default",
     style: { stroke: "#22d3ee", strokeWidth: 2 },
   },
@@ -1514,7 +1521,15 @@ const FlowWithProvider = () => {
               KUBO1: ["KUBO1_LEVELS"],
               BAMBINO: ["BAMBINO_LEVELS"],
               CODE1: ["CODE1_LEVELS"],
-              AGE69: ["KUBO2", "SPM", "CODE1", "QUARKY1", "PEECEE", "SPIKE1"],
+              AGE69: [
+                "KUBO2",
+                "SPM",
+                "CODE1",
+                "QUARKY1",
+                "AI",
+                "PEECEE",
+                "SPIKE1",
+              ],
               AGE911: ["EARLY", "MINI"],
               AGE1116: ["MECH", "CODING", "EMBEDDED"],
               MECH: ["SPRIME", "EV3", "SPYTHON"],
@@ -1630,7 +1645,7 @@ const FlowWithProvider = () => {
       KUBO1: ["KUBO1_LEVELS"],
       BAMBINO: ["BAMBINO_LEVELS"],
       CODE1: ["CODE1_LEVELS"],
-      AGE69: ["KUBO2", "SPM", "CODE1", "QUARKY1", "PEECEE", "SPIKE1"],
+      AGE69: ["KUBO2", "SPM", "CODE1", "QUARKY1", "AI", "PEECEE", "SPIKE1"],
       AGE911: ["EARLY", "MINI"],
       AGE1116: ["MECH", "CODING", "EMBEDDED"],
       MECH: ["SPRIME", "EV3", "SPYTHON"],
