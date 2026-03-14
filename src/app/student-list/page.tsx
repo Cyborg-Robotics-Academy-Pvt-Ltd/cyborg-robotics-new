@@ -122,7 +122,7 @@ const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [task, setTask] = useState("");
   const [dateTime, setDateTime] = useState(
-    format(new Date(), "yyyy-MM-dd'T'HH:mm")
+    format(new Date(), "yyyy-MM-dd'T'HH:mm"),
   );
   const [status, setStatus] = useState<"ongoing" | "complete">("complete");
   const [course, setCourse] = useState("");
@@ -144,7 +144,7 @@ const Page = () => {
   const [showEditCourseModal, setShowEditCourseModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(
-    null
+    null,
   );
   const [editCourseFields, setEditCourseFields] = useState({
     name: "",
@@ -294,7 +294,7 @@ const Page = () => {
           student.courses.some(
             (course) =>
               course.completed !== true &&
-              (!course.status || course.status.toLowerCase() !== "complete")
+              (!course.status || course.status.toLowerCase() !== "complete"),
           )
         );
       } else if (activeTab === "hold") {
@@ -304,7 +304,7 @@ const Page = () => {
           student.courses.every(
             (course) =>
               course.completed === true ||
-              (course.status && course.status.toLowerCase() === "complete")
+              (course.status && course.status.toLowerCase() === "complete"),
           )
         );
       }
@@ -327,7 +327,7 @@ const Page = () => {
               typeof course !== "string" &&
               (!course.trainerName || course.trainerName.trim() === "") &&
               course.completed !== true &&
-              (!course.status || course.status.toLowerCase() !== "complete")
+              (!course.status || course.status.toLowerCase() !== "complete"),
           );
         } else {
           // Check if any non-completed course has the selected trainer
@@ -336,7 +336,7 @@ const Page = () => {
               typeof course !== "string" &&
               course.trainerName === trainerFilter &&
               course.completed !== true &&
-              (!course.status || course.status.toLowerCase() !== "complete")
+              (!course.status || course.status.toLowerCase() !== "complete"),
           );
         }
       }
@@ -360,7 +360,7 @@ const Page = () => {
           const allTasks = student.tasks || [];
           if (allTasks.length === 0) return 0;
           return Math.max(
-            ...allTasks.map((t: Task) => new Date(t.dateTime).getTime())
+            ...allTasks.map((t: Task) => new Date(t.dateTime).getTime()),
           );
         };
         return getLatestTaskDate(b) - getLatestTaskDate(a);
@@ -438,8 +438,8 @@ const Page = () => {
         prevStudents.map((student) =>
           student.id === selectedStudentForTrainer.id
             ? { ...student, courses: updatedCourses }
-            : student
-        )
+            : student,
+        ),
       );
 
       toast.success("Trainer assigned to course successfully!");
@@ -464,7 +464,7 @@ const Page = () => {
       student.courses.some(
         (course) =>
           course.completed !== true &&
-          (!course.status || course.status.toLowerCase() !== "complete")
+          (!course.status || course.status.toLowerCase() !== "complete"),
       );
 
     const isHold = (student: Student) =>
@@ -472,7 +472,7 @@ const Page = () => {
       student.courses.every(
         (course) =>
           course.completed === true ||
-          (course.status && course.status.toLowerCase() === "complete")
+          (course.status && course.status.toLowerCase() === "complete"),
       );
 
     const matchesSearch = (student: Student) => {
@@ -522,7 +522,7 @@ const Page = () => {
             .filter((task) =>
               typeof course === "string"
                 ? task.course === course
-                : task.course === course?.name
+                : task.course === course?.name,
             )
             .map((task) => task.task)
             .join(", ");
@@ -534,7 +534,7 @@ const Page = () => {
                 task.status.toLowerCase() === "complete" &&
                 (typeof course === "string"
                   ? task.course === course
-                  : task.course === course?.name)
+                  : task.course === course?.name),
             )
             .map((task) => task.task)
             .join(", ");
@@ -559,7 +559,7 @@ const Page = () => {
             "Ongoing Classes": student.ongoingTasks,
             "Completed Classes List": completedTasks,
           } as Record<string, string | number>;
-        })
+        }),
       );
 
     const workbook = new ExcelJS.Workbook();
@@ -672,7 +672,7 @@ const Page = () => {
       const db = getFirestore(app);
       const q = query(
         collection(db, "students"),
-        where("PrnNumber", "==", editingStudent.PrnNumber)
+        where("PrnNumber", "==", editingStudent.PrnNumber),
       );
       const querySnapshot = await getDocs(q);
 
@@ -737,7 +737,7 @@ const Page = () => {
       const db = getFirestore(app);
       const q = query(
         collection(db, "students"),
-        where("PrnNumber", "==", editingStudent.PrnNumber)
+        where("PrnNumber", "==", editingStudent.PrnNumber),
       );
       const querySnapshot = await getDocs(q);
 
@@ -788,7 +788,7 @@ const Page = () => {
       .filter((task) => task.status.toLowerCase() === "complete")
       .sort(
         (a, b) =>
-          new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
+          new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
       )[0];
 
     if (lastCompletedTask) {
@@ -822,7 +822,7 @@ const Page = () => {
       const db = getFirestore(app);
       const q = query(
         collection(db, "students"),
-        where("PrnNumber", "==", selectedStudent.PrnNumber)
+        where("PrnNumber", "==", selectedStudent.PrnNumber),
       );
       const querySnapshot = await getDocs(q);
 
@@ -841,7 +841,7 @@ const Page = () => {
         resetForm();
         // Refresh the student list
         const updatedStudentSnapshot = await getDocs(
-          collection(db, "students")
+          collection(db, "students"),
         );
         const updatedStudentList = updatedStudentSnapshot.docs.map((doc) => {
           const data = doc.data();
@@ -1013,12 +1013,12 @@ const Page = () => {
                               course.trainerName &&
                               course.completed !== true &&
                               (!course.status ||
-                                course.status.toLowerCase() !== "complete")
+                                course.status.toLowerCase() !== "complete"),
                           )
                           .map((course) => course.trainerName)
-                          .filter(Boolean)
-                      )
-                    )
+                          .filter(Boolean),
+                      ),
+                    ),
                   )
                     .sort()
                     .map((trainerName, index) => (
@@ -1254,7 +1254,7 @@ const Page = () => {
                                     : course?.name +
                                         (course?.level
                                           ? ` (Lvl ${course.level})`
-                                          : "") || ""
+                                          : "") || "",
                                 )
                                 .filter(Boolean)
                                 .slice(0, 2)
@@ -1276,7 +1276,7 @@ const Page = () => {
                                     : course?.name +
                                         (course?.level
                                           ? ` (Lvl ${course.level})`
-                                          : "") || ""
+                                          : "") || "",
                                 )
                                 .filter(Boolean)
                                 .join(", ")}
@@ -1305,13 +1305,6 @@ const Page = () => {
                                           key={index}
                                           className="flex justify-between"
                                         >
-                                          <span>
-                                            {course.name}{" "}
-                                            {course.level
-                                              ? `(Lvl ${course.level})`
-                                              : ""}
-                                            :
-                                          </span>
                                           <span className="ml-2">
                                             {course.trainerName ? (
                                               <span className="text-blue-600 font-medium">
@@ -1324,7 +1317,7 @@ const Page = () => {
                                             )}
                                           </span>
                                         </div>
-                                      )
+                                      ),
                                   )}
                                 {student.courses.length > 2 && (
                                   <div className="text-gray-500 text-xs">
@@ -1351,20 +1344,13 @@ const Page = () => {
                                     !(
                                       course.status &&
                                       course.status.toLowerCase() === "complete"
-                                    )
+                                    ),
                                 )
                                 .map((course, index) => (
                                   <div
                                     key={index}
                                     className="flex justify-between"
                                   >
-                                    <span>
-                                      {course.name}{" "}
-                                      {course.level
-                                        ? `(Lvl ${course.level})`
-                                        : ""}
-                                      :
-                                    </span>
                                     <span className="ml-2">
                                       {course.trainerName ? (
                                         <span className="text-blue-300">
@@ -1389,7 +1375,7 @@ const Page = () => {
                             {student.nextCourse ? (
                               <div className="flex flex-col">
                                 {student.nextCourse.startsWith(
-                                  "Not Enrolling: "
+                                  "Not Enrolling: ",
                                 ) ? (
                                   <div className="flex items-center gap-1">
                                     <span className="inline-block px-2 py-0.5 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
@@ -1397,12 +1383,12 @@ const Page = () => {
                                     </span>
                                     <span className="text-xs text-gray-600 ml-1">
                                       {student.nextCourse.substring(
-                                        "Not Enrolling: ".length
+                                        "Not Enrolling: ".length,
                                       )}
                                     </span>
                                   </div>
                                 ) : student.nextCourse.startsWith(
-                                    "Join Soon: "
+                                    "Join Soon: ",
                                   ) ? (
                                   <div className="flex items-center gap-1">
                                     <span className="inline-block px-2 py-0.5 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
@@ -1410,7 +1396,7 @@ const Page = () => {
                                     </span>
                                     <span className="text-xs text-gray-600 ml-1">
                                       {student.nextCourse.substring(
-                                        "Join Soon: ".length
+                                        "Join Soon: ".length,
                                       )}
                                     </span>
                                   </div>
@@ -1430,22 +1416,22 @@ const Page = () => {
                         <div className="space-y-1 relative group ">
                           {student.tasks
                             .filter(
-                              (t) => t.status.toLowerCase() === "complete"
+                              (t) => t.status.toLowerCase() === "complete",
                             )
                             .sort(
                               (a, b) =>
                                 new Date(b.dateTime).getTime() -
-                                new Date(a.dateTime).getTime()
+                                new Date(a.dateTime).getTime(),
                             )
                             .slice(0, 1).length > 0 ? (
                             student.tasks
                               .filter(
-                                (t) => t.status.toLowerCase() === "complete"
+                                (t) => t.status.toLowerCase() === "complete",
                               )
                               .sort(
                                 (a, b) =>
                                   new Date(b.dateTime).getTime() -
-                                  new Date(a.dateTime).getTime()
+                                  new Date(a.dateTime).getTime(),
                               )
                               .slice(0, 1)
                               .map((task, i) => (
@@ -1469,7 +1455,7 @@ const Page = () => {
                               .sort(
                                 (a, b) =>
                                   new Date(b.dateTime).getTime() -
-                                  new Date(a.dateTime).getTime()
+                                  new Date(a.dateTime).getTime(),
                               )
                               .slice(0, 1)
                               .map((task, i) => (
@@ -1583,7 +1569,7 @@ const Page = () => {
                                         // Check if PRN is not assigned
                                         if (!student.PrnNumber) {
                                           toast.error(
-                                            "Contact to admin for PRN"
+                                            "Contact to admin for PRN",
                                           );
                                           return;
                                         }
@@ -1751,7 +1737,8 @@ const Page = () => {
                         } else {
                           // If there are multiple courses with the same name, show level
                           const sameNameCount = selectedStudent.courses.filter(
-                            (cc) => typeof cc !== "string" && cc.name === c.name
+                            (cc) =>
+                              typeof cc !== "string" && cc.name === c.name,
                           ).length;
                           return (
                             <option
@@ -1969,7 +1956,7 @@ const Page = () => {
                       const db = getFirestore(app);
                       const q = query(
                         collection(db, "students"),
-                        where("PrnNumber", "==", courseStudent.PrnNumber)
+                        where("PrnNumber", "==", courseStudent.PrnNumber),
                       );
                       const querySnapshot = await getDocs(q);
                       if (!querySnapshot.empty) {
@@ -1984,7 +1971,7 @@ const Page = () => {
                             c !== null &&
                             c.name?.toLowerCase() ===
                               newCourseFields.name.trim().toLowerCase() &&
-                            c.level === newCourseFields.level.trim()
+                            c.level === newCourseFields.level.trim(),
                         );
                         if (courseExists) {
                           alert("Course already exists for this student!");
@@ -2016,7 +2003,7 @@ const Page = () => {
                         });
                         // Optionally, refresh students list here
                         const updatedStudentSnapshot = await getDocs(
-                          collection(db, "students")
+                          collection(db, "students"),
                         );
                         const updatedStudentList =
                           updatedStudentSnapshot.docs.map((doc) => {
@@ -2440,7 +2427,8 @@ const Page = () => {
                         const [name, level] = e.target.value.split("_");
                         const course = selectedStudentForTrainer.courses.find(
                           (c) =>
-                            (c.name || "") === name && (c.level || "") === level
+                            (c.name || "") === name &&
+                            (c.level || "") === level,
                         );
                         setSelectedCourseForTrainer(course || null);
                       }}
@@ -2458,7 +2446,7 @@ const Page = () => {
                             {course.name}{" "}
                             {course.level ? `(Level ${course.level})` : ""}
                           </option>
-                        )
+                        ),
                       )}
                     </select>
                   </div>
