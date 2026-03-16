@@ -184,6 +184,7 @@ const Page = () => {
       const studentList = studentSnapshot.docs.map((doc) => {
         const data = doc.data();
         // Robust mapping with fallbacks
+        console.log(data);
         const tasks = data.tasks || [];
         const courses = data.courses || [];
         let completedTasksCount = 0;
@@ -196,12 +197,7 @@ const Page = () => {
         return {
           id: doc.id,
           PrnNumber: data.PrnNumber || "",
-          username:
-            data.name ||
-            data.fullName ||
-            data.username ||
-            data.email?.split("@")[0] ||
-            "",
+          username: data.name || data.fullName || data.username,
           completedTasks: completedTasksCount,
           ongoingTasks: ongoingTasksCount,
           tasks: tasks,
@@ -1799,9 +1795,9 @@ const Page = () => {
           <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in mt-44">
               {/* Modal Header */}
-              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-blue-50 to-blue-100 ">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                  <MdAdd className="mr-2 text-blue-700" size={20} />
+              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-800 to-red-700 ">
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center ">
+                  <MdAdd className="mr-2 text-white" size={20} />
                   Add New Course
                 </h2>
                 <button
@@ -1817,7 +1813,7 @@ const Page = () => {
                       startDate: format(new Date(), "yyyy-MM-dd"),
                     });
                   }}
-                  className="text-gray-500 hover:text-blue-700 p-1.5 md:p-2 rounded-full hover:bg-blue-50 transition-colors duration-200"
+                  className="text-white hover:text-blue-700 p-1.5 md:p-2 rounded-full hover:bg-blue-50 transition-colors duration-200"
                   aria-label="Close modal"
                 >
                   <MdClose size={20} />
@@ -1866,7 +1862,7 @@ const Page = () => {
                   </div>
                   <div className="form-group">
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5 md:mb-2">
-                      Class Number
+                      Total No Of Classes
                     </label>
                     <input
                       type="text"
@@ -2023,9 +2019,7 @@ const Page = () => {
                               id: doc.id,
                               PrnNumber: data.PrnNumber || "",
                               username:
-                                data.username ||
-                                data.email?.split("@")[0] ||
-                                "",
+                                data.name || data.fullName || data.username,
                               email: data.email || "",
                               completedTasks: completedTasksCount,
                               ongoingTasks: ongoingTasksCount,
@@ -2071,7 +2065,7 @@ const Page = () => {
           <div className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-8rem)] flex items-center justify-center py-6 md:py-12">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden transform transition-all duration-300 scale-95 animate-in">
               {/* Modal Header */}
-              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700">
+              <div className="sticky top-0 z-10 flex justify-between items-center border-b px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-800 to-red-700">
                 <h2 className="text-lg md:text-xl font-bold text-white flex items-center">
                   <UserPlus className="mr-2 text-white" size={20} />
                   Edit Courses for {editingStudent.username}
