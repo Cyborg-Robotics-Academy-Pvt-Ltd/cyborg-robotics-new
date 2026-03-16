@@ -861,7 +861,7 @@ const Page = () => {
           return {
             id: doc.id,
             PrnNumber: data.PrnNumber || "",
-            username: data.username || data.email?.split("@")[0] || "",
+            username: data.username,
             completedTasks: completedTasksCount,
             ongoingTasks: ongoingTasksCount,
             tasks: tasks,
