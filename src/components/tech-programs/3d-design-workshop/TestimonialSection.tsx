@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import Testimonials from "../home/Testimonials/Testimonials";
+import Testimonials from "../../home/Testimonials/Testimonials";
 
 const TestimonialSection = () => {
   const fadeInUp = {

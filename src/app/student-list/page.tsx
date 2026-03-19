@@ -958,7 +958,7 @@ const Page = () => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-12 pr-12 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none transition-all duration-300"
+                  className="block w-full pl-12 pr-12 py-3 bg-gray-50 border outline-none border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none transition-all duration-300 text-sm"
                   placeholder="Search by name, PRN, or classes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}

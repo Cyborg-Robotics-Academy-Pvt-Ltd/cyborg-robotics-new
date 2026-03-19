@@ -1,8 +1,8 @@
 "use client";
 
 import { CourseData } from "@/data/courseData";
-import { BookOpen, Clock, IndianRupee, Download, Star } from "lucide-react";
 import * as Icons from "lucide-react";
+import { BookOpen, Clock, Download, Star } from "lucide-react";
 
 interface CourseTemplateProps {
   course: CourseData;
