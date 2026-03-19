@@ -1,21 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import {
-  ArrowRight,
-  Brain,
-  Zap,
-  Globe,
-  Users,
-  Trophy,
-  Calendar,
-  Target,
-  Sparkles,
-} from "lucide-react";
+import { Brain, Calendar, Globe, Target, Users, Zap } from "lucide-react";
 // Removed unused ftcImage import
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 export function About() {

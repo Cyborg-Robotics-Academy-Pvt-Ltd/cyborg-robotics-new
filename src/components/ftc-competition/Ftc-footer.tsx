@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPinHouse, PhoneCall, RefreshCw } from "lucide-react";
-import { motion, useInView } from "framer-motion";
+import React, { useRef, useState } from "react";
 import styles from "../home/Footer.module.css";
 
 interface FooterProps {

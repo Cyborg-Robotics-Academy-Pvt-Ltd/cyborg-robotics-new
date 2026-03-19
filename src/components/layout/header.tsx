@@ -147,7 +147,7 @@ export default function Header() {
   // Helper to handle scroll or navigation
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    sectionId: string
+    sectionId: string,
   ) => {
     e.preventDefault();
     if (window.location.pathname === "/") {
@@ -230,7 +230,7 @@ export default function Header() {
     if (searchQuery.trim()) {
       setShowSuggestions(false);
       router.push(
-        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`
+        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`,
       );
     }
   };
@@ -262,7 +262,7 @@ export default function Header() {
       ) {
         // Check if the click is not on a suggestion item
         const suggestionElements = document.querySelectorAll(
-          ".search-suggestion-item"
+          ".search-suggestion-item",
         );
         let clickedOnSuggestion = false;
         suggestionElements.forEach((el) => {
@@ -288,7 +288,7 @@ export default function Header() {
     const handleClickOutside = (event: MouseEvent) => {
       if (showSearchPopup) {
         const popupElement = document.querySelector(
-          '[data-search-popup="true"]'
+          '[data-search-popup="true"]',
         ); // Use a data attribute to identify popup
         if (popupElement && !popupElement.contains(event.target as Node)) {
           setShowSearchPopup(false);
@@ -332,7 +332,7 @@ export default function Header() {
           ageRange: course.ageRange,
           category: course.category,
           imagePath: course.imagePath,
-        })
+        }),
       );
 
       // Filter suggestions based on search query
@@ -340,7 +340,9 @@ export default function Header() {
         .filter(
           (course) =>
             course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            course.description.toLowerCase().includes(searchQuery.toLowerCase())
+            course.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()),
         )
         .slice(0, 5); // Limit to 5 suggestions
 
@@ -580,33 +582,42 @@ export default function Header() {
                                     Lego Robotics
                                   </Link>
                                 </li>
-                                {/* <li>
+                                <li>
                                   <Link
-                                    href="/all-courses#3d-printing"
+                                    href="/tech-programs/3d-design-workshop"
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
-                                    3D Printing
+                                    3D Printing + Design
                                   </Link>
                                 </li>
                                 <li>
                                   <Link
-                                    href="/all-courses#arduino"
+                                    href="/tech-programs/drone"
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
-                                    Arduino
+                                    Drone
                                   </Link>
                                 </li>
                                 <li>
                                   <Link
-                                    href="/all-courses#animation-coding"
+                                    href="/tech-programs/pictoblox"
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
                                     onClick={() => setIsMenuOpen(false)}
                                   >
-                                    Animation Coding
+                                    PictoBlox
                                   </Link>
-                                </li> */}
+                                </li>
+                                <li>
+                                  <Link
+                                    href="/tech-programs/google-site"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    Google Site
+                                  </Link>
+                                </li>
                               </ul>
                             </motion.div>
                           )}

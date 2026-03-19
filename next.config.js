@@ -42,7 +42,7 @@ const nextConfig = {
     qualities: [10, 25, 50, 75, 100],
   },
   // Move serverComponentsExternalPackages from experimental to root level
-  serverExternalPackages: ["firebase-admin"],
+  serverExternalPackages: ["firebase-admin", "pdfkit"],
   experimental: {
     optimizePackageImports: [
       "lodash-es", 
@@ -60,7 +60,12 @@ const nextConfig = {
   // Add turbopack configuration to resolve the warning
   turbopack: {},
   // Enhanced performance optimizations
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
+    // Handle pdfkit font files
+    if (isServer) {
+      config.externals = [...(config.externals || []), { canvas: 'canvas' }];
+    }
+    
     // Optimize chunk splitting for better caching
     config.optimization.splitChunks = {
       ...config.optimization.splitChunks,
