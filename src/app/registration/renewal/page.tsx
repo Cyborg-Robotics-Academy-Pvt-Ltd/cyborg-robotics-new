@@ -6,6 +6,7 @@ import { db } from "../../../lib/firebase";
 import { User, Phone } from "lucide-react";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
+import { LucideIcon } from "lucide-react";
 
 interface FormData {
   studentName: string;
@@ -32,7 +33,7 @@ const Page: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox" && name === "preferredDay") {
@@ -52,7 +53,6 @@ const Page: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validation
     if (!formData.studentName) {
       toast.error("Please enter the name of the child.", {
         position: "top-center",
@@ -151,12 +151,12 @@ const Page: React.FC = () => {
                 <div
                   className="bg-white h-1.5 rounded-full transition-all duration-300 sm:h-2"
                   style={{ width: "0%" }}
-                ></div>
+                />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl rounded-b-3xl shadow-2xl border border-gray-200 ">
+          <div className="bg-white/80 backdrop-blur-xl rounded-b-3xl shadow-2xl border border-gray-200">
             <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -181,7 +181,7 @@ const Page: React.FC = () => {
                   type="tel"
                   value={formData.contactNumber}
                   onChange={handleChange}
-                  placeholder=" Contact Number"
+                  placeholder="Contact Number"
                   icon={Phone}
                   required
                 />
@@ -201,10 +201,10 @@ const Page: React.FC = () => {
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                    (day, idx) => (
+                    (day) => (
                       <label
-                        key={idx}
-                        className={`px-4 py-2 rounded-full border cursor-pointer select-none ${
+                        key={day}
+                        className={`px-4 py-2 rounded-full border cursor-pointer select-none transition-all duration-200 ${
                           formData.preferredDay.includes(day)
                             ? "bg-red-700 text-white border-red-700"
                             : "bg-gray-100 text-gray-700 border-gray-300"
@@ -220,14 +220,17 @@ const Page: React.FC = () => {
                         />
                         {day}
                       </label>
-                    )
+                    ),
                   )}
                 </div>
               </div>
 
               {/* Preferred Batch */}
               <div>
-                <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                <label
+                  htmlFor="preferredBatch"
+                  className="text-gray-700 text-sm font-semibold mb-2 block"
+                >
                   ⏰ Preferred Batch <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -294,7 +297,7 @@ const Page: React.FC = () => {
                       strokeLinejoin="round"
                       strokeWidth="2"
                       d="M5 13l4 4L19 7"
-                    ></path>
+                    />
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -319,6 +322,7 @@ const Page: React.FC = () => {
   );
 };
 
+// ✅ FIXED: Wrapped label children in <span> to resolve TypeScript 'never' type error
 interface FormFieldProps {
   id: string;
   label: string;
@@ -327,7 +331,9 @@ interface FormFieldProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   placeholder?: string;
-  icon?: React.ElementType;
+  icon?: LucideIcon;
+  error?: string;
+  className?: string;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -339,14 +345,17 @@ const FormField: React.FC<FormFieldProps> = ({
   required,
   placeholder,
   icon: Icon,
+  error,
+  className,
 }) => (
-  <div>
+  <div className={className}>
     <label
       htmlFor={id}
       className="flex items-center text-gray-700 text-sm font-semibold mb-2"
     >
       {Icon && <Icon className="h-4 w-4 mr-2" />}
-      {label} {required && <span className="text-red-500">*</span>}
+      <span>{label}</span>
+      {required && <span className="text-red-500 ml-1">*</span>}
     </label>
     <input
       id={id}
@@ -358,6 +367,7 @@ const FormField: React.FC<FormFieldProps> = ({
       placeholder={placeholder}
       className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 transition-all"
     />
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
 );
 
