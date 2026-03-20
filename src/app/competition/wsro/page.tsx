@@ -5,7 +5,7 @@ const page = () => {
   return (
     <div>
       <Header />
-      <h1>WSRO</h1>
+      <h1 className="mt-20">WSRO</h1>
     </div>
   );
 };
