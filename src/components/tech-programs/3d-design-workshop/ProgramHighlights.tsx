@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   CheckCircle2,
-  Cpu,
+  Box,
   Users,
   Rocket,
   Sparkles,
@@ -10,7 +10,7 @@ import {
   Globe,
 } from "lucide-react";
 
-const ProgramHighlights = () => {
+const ThreeDDesignProgramHighlights = () => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const containerVariants = {
@@ -31,34 +31,33 @@ const ProgramHighlights = () => {
   };
 
   const courseHighlights = [
-    "Hands-on 3D design training",
-    "Learn real 3D printing technology",
-    "Small batch mentor guided sessions",
-    "Practical STEM learning approach",
-    "Students take home their 3D printed models",
+    "Build your first 3D design project",
+    "Live online workshop via Zoom",
+    "Hands-on 3D modeling practice",
+    "Limited seats for personal guidance",
+    "Take home your completed 3D design",
     "Certificate of completion",
   ];
 
   const interests = [
-    "Technology",
-    "Engineering",
-    "Product design",
-    "Robotics",
-    "Creative problem solving",
+    "Design and technology",
+    "3D modeling and digital creation",
+    "Robotics and engineering",
+    "Product design concepts",
   ];
 
   const futureSkills = [
+    "3D modeling basics",
     "Design thinking",
-    "Engineering fundamentals",
-    "Creativity and innovation",
-    "Problem solving",
+    "Digital creativity",
+    "Shapes and spatial understanding",
     "Technology confidence",
   ];
 
   const cards = [
     {
       id: "highlights",
-      icon: Cpu,
+      icon: Box,
       label: "01",
       title: "Core Highlights",
       accent: "#10b981",
@@ -76,7 +75,10 @@ const ProgramHighlights = () => {
       accentBg: "rgba(8,85,171,0.08)",
       gradient: "linear-gradient(135deg, #0855AB 0%, #1a6fd4 100%)",
       items: interests,
-      extra: { badge: "Age: 9–16 yrs", note: "No prior experience required." },
+      extra: {
+        badge: "Age: 9–15 yrs",
+        note: "No prior design experience required.",
+      },
     },
     {
       id: "skills",
@@ -181,7 +183,7 @@ const ProgramHighlights = () => {
               margin: 0,
             }}
           >
-            Course{" "}
+            Workshop{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, #0855AB, #A81B1E)",
@@ -317,7 +319,7 @@ const ProgramHighlights = () => {
 
                   {card.id === "join" && (
                     <p style={{ color: "#64748b", fontSize: 12, margin: 0 }}>
-                      Perfect for students interested in:
+                      Suitable for students interested in:
                     </p>
                   )}
 
@@ -430,7 +432,7 @@ const ProgramHighlights = () => {
               }}
             />
             <span style={{ color: "#374151", fontSize: 12, fontWeight: 500 }}>
-              Enrollments open — limited seats per batch
+              Limited seats — ₹99 per session
             </span>
             <div
               style={{
@@ -447,4 +449,4 @@ const ProgramHighlights = () => {
   );
 };
 
-export default ProgramHighlights;
+export default ThreeDDesignProgramHighlights;

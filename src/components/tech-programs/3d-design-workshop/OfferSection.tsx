@@ -222,11 +222,11 @@ const OfferSection = () => {
                 muted
                 playsInline
                 preload="auto"
-                poster="/assets/3d-printing/3d-printing.gif"
+                poster="/assets/workshops/3d-printing/3d-printing.gif"
                 className="w-full h-full object-cover"
               >
                 <source
-                  src="/assets/3d-printing/3d-printing.mp4"
+                  src="/assets/workshops/3d-printing/3d-printing.mp4"
                   type="video/mp4"
                 />
               </video>

@@ -1,11 +1,7 @@
 "use client";
-import {
-  useMotionValueEvent,
-  useScroll,
-  useTransform,
-  motion,
-} from "motion/react";
+
 import React, { useEffect, useRef, useState } from "react";
+import { useScroll, useTransform, motion } from "motion/react";
 
 interface TimelineEntry {
   title: string;
@@ -13,73 +9,95 @@ interface TimelineEntry {
 }
 
 export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
-  const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
 
+  // Track height dynamically
   useEffect(() => {
-    if (ref.current) {
-      const rect = ref.current.getBoundingClientRect();
-      setHeight(rect.height);
-    }
-  }, [ref]);
+    if (!timelineRef.current) return;
 
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setHeight(entry.contentRect.height);
+      }
+    });
+
+    observer.observe(timelineRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Scroll animation
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 10%", "end 50%"],
+    offset: ["start 15%", "end 60%"],
   });
 
-  const heightTransform = useTransform(scrollYProgress, [0, 1], [0, height]);
-  const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
+  const lineHeight = useTransform(scrollYProgress, [0, 1], [0, height]);
+  const lineOpacity = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
   return (
-    <div className="w-full bg-white font-sans md:px-10" ref={containerRef}>
-      <div className="max-w-7xl mx-auto p-2 mb-4">
-        <div className="text-center">
-          <h2 className="text-lg md:text-4xl   max-w-4xl mx-auto font-semibold gradient-text">
-            IRO Competition Achievements Timeline
-          </h2>
-          <p className="text-gray-700 text-sm md:text-base max-w-sm mx-auto my-2">
-            Our journey through national robotics competitions
-          </p>
-        </div>
+    <section className="w-full bg-white font-sans md:px-10" ref={containerRef}>
+      {/* Section Header */}
+      <div className="max-w-7xl mx-auto text-center mb-10">
+        <h2 className="text-2xl md:text-4xl font-bold gradient-text">
+          IRO Competition Achievements Timeline
+        </h2>
+
+        <p className="text-gray-600 text-sm md:text-base max-w-md mx-auto mt-2">
+          Our journey through national robotics competitions
+        </p>
       </div>
 
-      <div ref={ref} className="relative max-w-7xl mx-auto pb-20 ">
+      {/* Timeline */}
+      <div ref={timelineRef} className="relative max-w-7xl mx-auto pb-20">
         {data.map((item, index) => (
-          <div key={index} className="flex justify-start  md:gap-10 mb-3">
-            <div className="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
-              <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-white flex items-center justify-center">
-                <div className="h-4 w-4 rounded-full bg-gray-300 border border-gray-400 p-2" />
+          <div key={index} className="flex justify-start md:gap-10 mb-12">
+            {/* Year + Timeline Dot */}
+            <div className="sticky top-32 flex flex-col md:flex-row items-center z-40 max-w-xs md:w-full">
+              {/* Dot */}
+              <div className="absolute left-3 md:left-3 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow">
+                <div className="h-4 w-4 rounded-full bg-red-500 border-4 border-white shadow" />
               </div>
-              <h3 className="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-gray-700">
+
+              {/* Year */}
+              <h3 className="hidden md:block text-4xl font-bold text-gray-700 md:pl-20">
                 {item.title}
               </h3>
             </div>
 
+            {/* Content */}
             <div className="relative pl-20 pr-4 md:pl-4 w-full">
-              <h3 className="md:hidden block text-2xl mb-4 text-left font-bold text-gray-700">
+              {/* Mobile Year */}
+              <h3 className="md:hidden block text-2xl font-bold text-gray-700 mb-4">
                 {item.title}
               </h3>
-              {item.content}
+
+              {/* Animated Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                viewport={{ once: true }}
+              >
+                {item.content}
+              </motion.div>
             </div>
           </div>
         ))}
-        <div
-          style={{
-            height: height + "px",
-          }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-gray-300 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
-        >
+
+        {/* Timeline Line */}
+        <div className="absolute left-8 top-0 w-[2px] bg-gray-200 hidden md:block">
           <motion.div
             style={{
-              height: heightTransform,
-              opacity: opacityTransform,
+              height: lineHeight,
+              opacity: lineOpacity,
             }}
-            className="absolute inset-x-0 top-0  w-[2px] bg-gradient-to-t from-red-500 via-blue-500 to-transparent from-[0%] via-[10%] rounded-full"
+            className="absolute top-0 w-[2px] bg-red-500"
           />
         </div>
       </div>
-    </div>
+    </section>
   );
 };

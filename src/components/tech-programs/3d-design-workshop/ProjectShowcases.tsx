@@ -68,6 +68,7 @@ const ProjectShowcases = () => {
       >
         <div className="pointer-events-none absolute -left-20 top-8 h-52 w-52 rounded-full bg-[#A81B1E]/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 bottom-6 h-56 w-56 rounded-full bg-[#0855AB]/10 blur-3xl" />
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
           <motion.div className="text-center" variants={fadeInUp}>
             <div className="inline-flex items-center gap-2 rounded-full bg-[#062341]/5 px-4 py-1.5 text-sm font-semibold text-[#062341] mb-4">
@@ -90,44 +91,62 @@ const ProjectShowcases = () => {
             </motion.p>
           </motion.div>
 
-          <div className="mt-10 overflow-x-auto pb-4">
-            <div className="relative min-w-[1180px] lg:min-w-0 flex items-stretch gap-4 lg:gap-5">
+          <div className="mt-10 overflow-x-auto pb-6">
+            {/* 
+              Key fixes:
+              - min-w card: 260px → 280px (was 220px, too narrow)
+              - min-h card: 260px (was 180px, too short)
+              - gap increased: gap-6 lg:gap-7
+              - inner padding: p-6 lg:p-7 (was p-5 lg:p-6)
+              - icon size: 56x56 (was 48x48)
+              - description: text-sm → text-[15px] with more line-height
+              - arrow connector vertically centered at 80px (accounts for taller cards)
+            -->
+            */}
+            <div className="relative min-w-[1360px] lg:min-w-0 flex items-stretch gap-6 lg:gap-7">
               {studentJourney.map((step, index) => {
                 const StepIcon = step.icon;
                 return (
                   <React.Fragment key={step.title}>
                     <motion.div
-                      className="relative w-[220px] lg:flex-1 self-stretch"
+                      className="relative w-[280px] lg:flex-1 self-stretch"
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.45, delay: index * 0.1 }}
                     >
                       <div className="h-full rounded-2xl bg-gradient-to-br from-[#A81B1E]/15 via-[#0855AB]/10 to-transparent p-[1px]">
-                        <div className="h-full min-h-[180px] rounded-2xl border border-white/70 bg-white/95 p-5 lg:p-6 shadow-lg shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                          <div className="absolute right-3 top-3 rounded-full bg-[#062341]/5 px-2 py-0.5 text-xs font-semibold text-[#062341]">
+                        <div className="h-full min-h-[260px] rounded-2xl border border-white/70 bg-white/95 p-6 lg:p-7 shadow-lg shadow-slate-200/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col">
+                          {/* Step number */}
+                          <div className="absolute right-4 top-4 rounded-full bg-[#062341]/5 px-2.5 py-1 text-xs font-semibold text-[#062341] tracking-wide">
                             {`0${index + 1}`}
                           </div>
 
+                          {/* Icon */}
                           <div
-                            className={`w-12 h-12 rounded-full ${step.bg} ring-4 ring-white flex items-center justify-center mb-3 shadow-sm`}
+                            className={`w-14 h-14 rounded-full ${step.bg} ring-4 ring-white flex items-center justify-center mb-5 shadow-sm shrink-0`}
                           >
-                            <StepIcon size={21} className={step.color} />
+                            <StepIcon size={24} className={step.color} />
                           </div>
-                          <h3 className="font-bold text-lg text-[#062341] mb-2">
+
+                          {/* Title */}
+                          <h3 className="font-bold text-xl text-[#062341] mb-3 leading-snug">
                             {step.title}
                           </h3>
-                          <p className="text-sm text-gray-700 leading-relaxed">
+
+                          {/* Description — flex-1 pushes it to fill remaining card height */}
+                          <p className="text-[15px] text-gray-600 leading-relaxed flex-1">
                             {step.description}
                           </p>
                         </div>
                       </div>
                     </motion.div>
 
+                    {/* Arrow connector — pt adjusted for taller cards */}
                     {index < studentJourney.length - 1 && (
-                      <div className="pt-[64px] text-[#0855AB]/70 shrink-0">
-                        <div className="h-6 w-6 rounded-full bg-white border border-[#0855AB]/20 flex items-center justify-center shadow-sm">
-                          <ArrowRight size={14} />
+                      <div className="pt-[80px] text-[#0855AB]/70 shrink-0">
+                        <div className="h-7 w-7 rounded-full bg-white border border-[#0855AB]/20 flex items-center justify-center shadow-sm">
+                          <ArrowRight size={15} />
                         </div>
                       </div>
                     )}
