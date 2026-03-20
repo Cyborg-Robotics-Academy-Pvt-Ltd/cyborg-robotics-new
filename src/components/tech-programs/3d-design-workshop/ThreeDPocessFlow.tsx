@@ -1,17 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const ThreeDPocessFlow = () => {
+const ThreeDDesignProcessFlow = () => {
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   const formatItems = [
-    "Learn 3D Design Basics",
-    "Hands-on Practical Sessions",
-    "Small Batch Learning",
-    "Guided by Robotics Mentors",
+    "Live Online Session via Zoom",
+    "Hands-on 3D Modeling Practice",
+    "Limited Seats per Batch",
+    "Guided by Design Mentors",
   ];
 
   return (
@@ -35,7 +35,7 @@ const ThreeDPocessFlow = () => {
 
           <div className="relative max-w-5xl mx-auto mt-8 md:mt-10">
             <div className="absolute left-5 top-0 h-full w-1 rounded-full bg-gradient-to-b from-[#A81B1E]/30 via-[#0855AB]/40 to-[#A81B1E]/30 md:hidden" />
-            <div className="absolute left-0 right-0 top-4 hidden h-1 rounded-full bg-gradient-to-r from-[#A81B1E]  md:block" />
+            <div className="absolute left-0 right-0 top-4 hidden h-1 rounded-full bg-gradient-to-r from-[#A81B1E] md:block" />
 
             <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
               {formatItems.map((item, index) => (
@@ -63,4 +63,4 @@ const ThreeDPocessFlow = () => {
   );
 };
 
-export default ThreeDPocessFlow;
+export default ThreeDDesignProcessFlow;

@@ -22,7 +22,7 @@ interface SidebarContextProps {
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
+  undefined,
 );
 
 export const useSidebar = () => {
@@ -95,7 +95,7 @@ export const DesktopSidebar = ({
         className={cn(
           "fixed left-0  h-screen  hidden md:flex md:flex-col bg-white z-40 hide-scrollbar ", // changed to use full screen height
           open ? "w-[250px] px-4" : "w-[60px] px-2",
-          className
+          className,
         )}
         animate={{
           width: animate ? (open ? "250px" : "60px") : "300px",
@@ -124,7 +124,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          " px-4  flex flex-row md:hidden   items-center justify-between bg-neutral-100  w-full"
+          " px-4  flex flex-row md:hidden   items-center justify-between bg-neutral-100  w-full",
         )}
         {...props}
       >
@@ -140,7 +140,7 @@ export const MobileSidebar = ({
               }}
               className={cn(
                 "fixed h-full w-[85%] inset-0 bg-white  md:p-10 p-4  flex flex-col justify-between hide-scrollbar z-40",
-                className
+                className,
               )}
             >
               {children}
@@ -177,9 +177,9 @@ const SidebarLinkComponent = ({
           className: cn(
             (link.icon.props as { className?: string }).className,
             "transition-colors duration-150 group-hover/sidebar:text-[#B13133]",
-            isActive && "text-[#B13133]"
+            isActive && "text-[#B13133]",
           ),
-        }
+        },
       );
     }
     return link.icon;
@@ -197,7 +197,7 @@ const SidebarLinkComponent = ({
           open ? "justify-start gap-2 pl-3" : "justify-center gap-0 pl-0",
           isActive && "bg-red-200 rounded-md",
           "transition-colors duration-200",
-          className
+          className,
         )}
         onClick={(e) => {
           if (link.onClick) {
@@ -221,7 +221,7 @@ const SidebarLinkComponent = ({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className={cn(
               "text-gray-700 text-[15px] group-hover/sidebar:text-[#B13133] group-hover/sidebar:font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0",
-              isActive && "text-[#B13133] font-semibold "
+              isActive && "text-[#B13133] font-semibold ",
             )}
           >
             {link.label}

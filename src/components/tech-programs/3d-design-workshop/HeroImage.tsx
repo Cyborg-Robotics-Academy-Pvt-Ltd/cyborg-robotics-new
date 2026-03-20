@@ -14,7 +14,7 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
-import { ArrowRight, Sparkles, Users, Award, Printer } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Award, Box } from "lucide-react";
 
 interface StaticImage {
   url: string;
@@ -22,7 +22,7 @@ interface StaticImage {
   title: string;
 }
 
-const HeroImage = () => {
+const ThreeDDesignHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -54,27 +54,27 @@ const HeroImage = () => {
 
   const staticImages: StaticImage[] = [
     {
-      url: "/assets/3d-printing/IMG_0327.jpeg",
+      url: "/assets/workshops/3d-printing/IMG_0327.jpeg",
       alt: "3D design workshop session 1",
       title: "Doraemon",
     },
     {
-      url: "/assets/3d-printing/IMG_0332.jpeg",
+      url: "/assets/workshops/3d-printing/IMG_0332.jpeg",
       alt: "3D design workshop session 2",
       title: "Gojo (Anime)",
     },
     {
-      url: "/assets/3d-printing/IMG_0333.jpeg",
+      url: "/assets/workshops/3d-printing/IMG_0333.jpeg",
       alt: "3D design workshop session 3",
       title: "Solo-Leveling",
     },
     {
-      url: "/assets/3d-printing/IMG_0328.jpeg",
+      url: "/assets/workshops/3d-printing/IMG_0328.jpeg",
       alt: "3D design workshop session 4",
       title: "Bholenath",
     },
     {
-      url: "/assets/3d-printing/IMG_0335.jpeg",
+      url: "/assets/workshops/3d-printing/IMG_0335.jpeg",
       alt: "3D design workshop session 5",
       title: "Iron-Man",
     },
@@ -98,15 +98,15 @@ const HeroImage = () => {
   };
 
   const stats = [
-    { label: "Duration", value: "1 Hour", icon: "⏱" },
-    { label: "Age Group", value: "9–16 Years", icon: "🎯" },
-    { label: "Mode", value: "Hands-on Lab", icon: "🔬", wide: true },
+    { label: "Duration", value: "2 Hours", icon: "⏱" },
+    { label: "Age Group", value: "9–15 Years", icon: "🎯" },
+    { label: "Mode", value: "Live Online", icon: "💻" },
   ];
 
   const highlights = [
-    { icon: <Award size={11} />, text: "300+ Students" },
-    { icon: <Sparkles size={11} />, text: "Certificate" },
-    { icon: <Printer size={11} />, text: "3D Printing" },
+    { icon: <Award size={11} />, text: "Certificate" },
+    { icon: <Sparkles size={11} />, text: "3D Modeling" },
+    { icon: <Box size={11} />, text: "Real Project" },
   ];
 
   return (
@@ -355,7 +355,7 @@ const HeroImage = () => {
                       textTransform: "uppercase",
                     }}
                   >
-                    STEM 3D Printing Program
+                    Cyborg Weekend Tech Series
                   </span>
                 </div>
               </motion.div>
@@ -372,7 +372,7 @@ const HeroImage = () => {
                   margin: 0,
                 }}
               >
-                Build. Think.{" "}
+                Design. Build.{" "}
                 <span
                   style={{
                     background:
@@ -399,7 +399,7 @@ const HeroImage = () => {
                   lineHeight: 1.4,
                 }}
               >
-                Turn Ideas into Real{" "}
+                Create Your First{" "}
                 <span
                   style={{
                     background: "linear-gradient(135deg, #A81B1E, #C73E1D)",
@@ -408,7 +408,7 @@ const HeroImage = () => {
                     backgroundClip: "text",
                   }}
                 >
-                  3D Creations
+                  3D Design Project
                 </span>
               </motion.h2>
 
@@ -422,8 +422,8 @@ const HeroImage = () => {
                   maxWidth: 420,
                 }}
               >
-                Kids learn 3D design and printing through hands-on projects —
-                guided by expert mentors.
+                Kids learn 3D modeling and digital design through a hands-on
+                live workshop — guided step by step in a 2-hour session.
               </motion.p>
 
               {/* Trust pills */}
@@ -462,7 +462,7 @@ const HeroImage = () => {
                   onClick={() => setIsModalOpen(true)}
                 >
                   <Sparkles size={13} />
-                  Book Free Trial Class
+                  Register for ₹99
                   <ArrowRight size={13} />
                 </button>
                 <button className="cta-secondary">
@@ -567,10 +567,10 @@ const HeroImage = () => {
                       letterSpacing: "0.06em",
                     }}
                   >
-                    Rated
+                    Workshop Fee
                   </div>
                   <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>
-                    5.0 · 300+ Kids
+                    ₹99 · 3 May 2026
                   </div>
                 </div>
               </div>
@@ -708,7 +708,7 @@ const HeroImage = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Register for 3D Designing & 3D Printing Course"
+        title="Register for 3D Designing Workshop"
       >
         <div className="p-4">
           <iframe
@@ -726,4 +726,4 @@ const HeroImage = () => {
   );
 };
 
-export default HeroImage;
+export default ThreeDDesignHero;
