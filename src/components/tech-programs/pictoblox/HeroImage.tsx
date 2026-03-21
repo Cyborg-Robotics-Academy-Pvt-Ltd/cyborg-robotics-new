@@ -13,27 +13,8 @@ interface StaticImage {
   alt: string;
 }
 
-interface RegistrationFormData {
-  email: string;
-  contactNumber: string;
-  childName: string;
-  age: string;
-  city: string;
-  area: string;
-}
-
-const HeroImage = () => {
+const PictoBloxHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [formData, setFormData] = useState<RegistrationFormData>({
-    email: "",
-    contactNumber: "",
-    childName: "",
-    age: "",
-    city: "",
-    area: "",
-  });
   const cardRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -62,82 +43,27 @@ const HeroImage = () => {
     mouseY.set(0);
   };
 
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = event.target;
-    setFormError("");
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
-
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (isInitiatingPayment) {
-      return;
-    }
-
-    try {
-      setIsInitiatingPayment(true);
-      setFormError("");
-
-      const response = await fetch("/api/payment/initiate-workshop", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          workshopKey: "lego-robotics-workshop",
-          email: formData.email,
-          contactNumber: formData.contactNumber,
-          childName: formData.childName,
-          age: formData.age,
-          city: formData.city,
-          area: formData.area,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success && data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-        return;
-      }
-
-      setFormError(
-        data.message || "Unable to start payment. Please try again.",
-      );
-    } catch (error) {
-      console.error("Workshop payment initiation failed:", error);
-      setFormError("Unable to start payment. Please try again.");
-    } finally {
-      setIsInitiatingPayment(false);
-    }
-  };
-
+  // TODO: Replace with actual PictoBlox workshop images from Cloudinary
   const staticImages: StaticImage[] = [
     {
       url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397913/iuq8qsrh6qjl8yyw1rim.jpg",
-      alt: "LEGO Robotics Workshop 1",
+      alt: "PictoBlox Workshop 1",
     },
     {
       url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/cyguz9zagyyhkiwi2wmx.jpg",
-      alt: "LEGO Robotics Workshop 2",
+      alt: "PictoBlox Workshop 2",
     },
     {
       url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/ovp3syigyxkvw0q4gxyt.jpg",
-      alt: "LEGO Robotics Workshop 3",
+      alt: "PictoBlox Workshop 3",
     },
     {
       url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652659/vo7lj3pjmseccvf20sgx.jpg",
-      alt: "LEGO Robotics Workshop 4",
+      alt: "PictoBlox Workshop 4",
     },
     {
       url: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768651632/fh1qaoyeqztmwytqrqr1.jpg",
-      alt: "LEGO Robotics Workshop 5",
+      alt: "PictoBlox Workshop 5",
     },
   ];
 
@@ -151,7 +77,6 @@ const HeroImage = () => {
     visible: {
       y: 0,
       opacity: 1,
-
       transition: {
         duration: 0.5,
         ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
@@ -287,110 +212,22 @@ const HeroImage = () => {
           font-size: 13px; flex-shrink: 0;
         }
 
-        .registration-shell {
-          background: linear-gradient(180deg, #fff 0%, #fff7f7 100%);
+        .meta-row {
+          display: flex; flex-wrap: wrap; gap: 8px;
+          margin-bottom: 14px;
         }
-        .registration-card {
-          border: 1px solid rgba(168,27,30,0.12);
-          border-radius: 18px;
+        .meta-chip {
+          display: inline-flex; align-items: center; gap: 5px;
           background: #fff;
-          box-shadow: 0 12px 40px rgba(168,27,30,0.08);
+          border: 1px solid rgba(168,27,30,0.15);
+          border-radius: 8px; padding: 4px 10px;
+          font-size: 11px; color: #444; font-weight: 600;
         }
-        .registration-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-        }
-        .registration-field {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .registration-field.full-width {
-          grid-column: 1 / -1;
-        }
-        .registration-label {
-          font-size: 13px;
-          font-weight: 700;
-          color: #2a2a2a;
-        }
-        .registration-input {
-          width: 100%;
-          border: 1px solid rgba(168,27,30,0.18);
-          border-radius: 12px;
-          padding: 12px 14px;
-          font-size: 14px;
-          color: #222;
-          background: #fff;
-          outline: none;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .registration-input:focus {
-          border-color: #A81B1E;
-          box-shadow: 0 0 0 4px rgba(168,27,30,0.08);
-        }
-        .registration-note {
-          font-size: 12px;
-          line-height: 1.6;
-          color: #666;
-        }
-        .registration-submit {
-          width: 100%;
-          background: linear-gradient(135deg, #A81B1E 0%, #C73E1D 100%);
-          color: #fff;
-          border: none;
-          border-radius: 14px;
-          padding: 14px 18px;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 10px 26px rgba(168,27,30,0.26);
-        }
-        .payment-card {
-          border-radius: 16px;
-          border: 1px solid rgba(168,27,30,0.12);
-          background: linear-gradient(135deg, rgba(168,27,30,0.05), rgba(199,62,29,0.08));
-          padding: 16px;
-        }
-        .qr-placeholder {
-          min-height: 180px;
-          border-radius: 16px;
-          border: 1px dashed rgba(168,27,30,0.24);
-          background:
-            linear-gradient(45deg, rgba(168,27,30,0.03) 25%, transparent 25%),
-            linear-gradient(-45deg, rgba(168,27,30,0.03) 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, rgba(168,27,30,0.03) 75%),
-            linear-gradient(-45deg, transparent 75%, rgba(168,27,30,0.03) 75%);
-          background-size: 24px 24px;
-          background-position: 0 0, 0 12px, 12px -12px, -12px 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 20px;
-          color: #7a4d4e;
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .error-banner {
-          border-radius: 14px;
-          border: 1px solid rgba(239, 68, 68, 0.18);
-          background: rgba(239, 68, 68, 0.08);
-          padding: 12px 14px;
-          color: #b91c1c;
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-        @media (max-width: 640px) {
-          .registration-grid {
-            grid-template-columns: 1fr;
-          }
-        }
+        .meta-chip span { color: #A81B1E; }
       `}</style>
 
       <motion.section
-        className="hero-bg"
+        className="hero-bg md:mt-5"
         style={{ padding: "0 24px" }}
         initial="hidden"
         animate="visible"
@@ -443,7 +280,9 @@ const HeroImage = () => {
               style={{ flex: "1 1 340px", minWidth: 260 }}
             >
               <motion.div variants={itemVariants} style={{ marginBottom: 12 }}>
-                <span className="tag-chip">🤖 Ages 4–16 · STEM Workshop</span>
+                <span className="tag-chip">
+                  🎮 Ages 8–14 · Live Online Workshop
+                </span>
               </motion.div>
 
               <motion.h1
@@ -458,10 +297,7 @@ const HeroImage = () => {
                   margin: 0,
                 }}
               >
-                Build. Think.{" "}
-                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                  Create.
-                </span>
+                Code. Build. <span className="gradient-text">Play.</span>
               </motion.h1>
 
               <div className="divider-line" />
@@ -477,7 +313,7 @@ const HeroImage = () => {
                   lineHeight: 1.4,
                 }}
               >
-                Your Child's First Step into Robotics Starts Here…
+                Build Your First Maze Game with PictoBlox — in Just 90 Minutes!
               </motion.h2>
 
               <motion.p
@@ -489,11 +325,11 @@ const HeroImage = () => {
                   margin: "0 0 4px",
                 }}
               >
-                A fun, hands-on{" "}
+                A beginner-friendly{" "}
                 <strong style={{ color: "#1a1a1a" }}>
-                  LEGO® Robotics Workshop
+                  Block-Based Coding Workshop
                 </strong>{" "}
-                for young minds (Ages 4–16).
+                for young minds (Ages 8–14).
               </motion.p>
               <motion.p
                 variants={itemVariants}
@@ -501,12 +337,25 @@ const HeroImage = () => {
                   fontSize: 14,
                   color: "#555",
                   lineHeight: 1.6,
-                  margin: "0 0 14px",
+                  margin: "0 0 12px",
                 }}
               >
-                Your child will build, explore and bring ideas to life —
-                learning logic, creativity and STEM thinking.
+                Students design, code, and take home a working Maze Game —
+                learning logic, events, and game mechanics along the way.
               </motion.p>
+
+              {/* Event meta */}
+              <motion.div variants={itemVariants} className="meta-row">
+                {[
+                  { icon: "📅", label: "1 May 2026" },
+                  { icon: "🕙", label: "11:00 AM – 12:30 PM" },
+                  { icon: "💻", label: "Live on Zoom" },
+                ].map((m) => (
+                  <div key={m.label} className="meta-chip">
+                    <span>{m.icon}</span> {m.label}
+                  </div>
+                ))}
+              </motion.div>
 
               {/* Trust pills */}
               <motion.div
@@ -519,9 +368,9 @@ const HeroImage = () => {
                 }}
               >
                 {[
-                  "👨‍🏫 Expert Mentors",
-                  "🧠 STEM Learning",
-                  "🧩 Project Based",
+                  "🧑‍💻 No Coding Exp Needed",
+                  "🧠 Project-Based",
+                  "🎮 Build a Real Game",
                 ].map((t) => (
                   <span key={t} className="trust-pill">
                     {t}
@@ -535,7 +384,7 @@ const HeroImage = () => {
                   className="cta-btn"
                   onClick={() => setIsModalOpen(true)}
                 >
-                  🎟 Book LEGO Experience – ₹499
+                  🎟 Secure Your Seat – ₹49
                 </button>
                 <p
                   style={{
@@ -545,7 +394,7 @@ const HeroImage = () => {
                     marginBottom: 0,
                   }}
                 >
-                  Limited seats · Instant confirmation
+                  Limited seats · Live interactive session
                 </p>
               </motion.div>
 
@@ -581,7 +430,7 @@ const HeroImage = () => {
                   <span
                     style={{ fontWeight: 700, fontSize: 13, color: "#1a1a1a" }}
                   >
-                    Special Inclusions
+                    What's Included
                   </span>
                 </div>
                 <div
@@ -589,14 +438,11 @@ const HeroImage = () => {
                 >
                   {[
                     {
-                      icon: "⏰",
-                      text: "1-hour Structured Workshop just @₹499",
+                      icon: "🎮",
+                      text: "90-min live coding session @ just ₹49",
                     },
-                    {
-                      icon: "🏆",
-                      text: "STEM Certified workshop participation",
-                    },
-                    { icon: "🎁", text: "Take-away Souvenir as memento" },
+                    { icon: "🏆", text: "Working Maze Game project to keep" },
+                    { icon: "📜", text: "Certificate of participation" },
                   ].map((item) => (
                     <div
                       key={item.text}
@@ -626,41 +472,6 @@ const HeroImage = () => {
               }}
             >
               <div
-                className="float-badge"
-                style={{
-                  position: "absolute",
-                  top: -14,
-                  left: -18,
-                  zIndex: 20,
-                  background: "linear-gradient(135deg, #8a1518, #A81B1E)",
-                  borderRadius: 11,
-                  padding: "7px 12px",
-                  boxShadow: "0 6px 20px rgba(168,27,30,0.38)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <span style={{ fontSize: 14 }}>🤖</span>
-                <div>
-                  <div
-                    style={{
-                      fontSize: 9,
-                      color: "rgba(255,255,255,0.6)",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
-                    Workshop
-                  </div>
-                  <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>
-                    LEGO Robotics
-                  </div>
-                </div>
-              </div>
-
-              <div
                 className="float-badge-2"
                 style={{
                   position: "absolute",
@@ -676,7 +487,7 @@ const HeroImage = () => {
                   gap: 7,
                 }}
               >
-                <span style={{ fontSize: 14 }}>⭐</span>
+                <span style={{ fontSize: 14 }}>⚡</span>
                 <div>
                   <div
                     style={{
@@ -687,10 +498,10 @@ const HeroImage = () => {
                       letterSpacing: "0.06em",
                     }}
                   >
-                    Rated
+                    Only
                   </div>
                   <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>
-                    5.0 · 200+ Kids
+                    ₹49 · 1 May 2026
                   </div>
                 </div>
               </div>
@@ -710,7 +521,7 @@ const HeroImage = () => {
                     style={{
                       width: 260,
                       height: 360,
-
+                      borderRadius: 20,
                       overflow: "hidden",
 
                       position: "relative",
@@ -794,165 +605,22 @@ const HeroImage = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Register for LEGO Robotics Workshop"
+        title="Register for PictoBlox Coding Workshop"
       >
-        <div className="registration-shell p-4 sm:p-5">
-          <div className="registration-card p-4 sm:p-6">
-            <div className="mb-5">
-              <h3
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: "1.5rem",
-                  fontWeight: 800,
-                  color: "#1a1a1a",
-                  margin: 0,
-                }}
-              >
-                LEGO Robotics Workshop Registration
-              </h3>
-              <p
-                style={{
-                  fontSize: 14,
-                  color: "#5b5b5b",
-                  lineHeight: 1.6,
-                  margin: "10px 0 0",
-                }}
-              >
-                Register your child for the LEGO Robotics Experience Workshop.
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  marginTop: 12,
-                }}
-              >
-                <span className="trust-pill">Age Group: 4-16 Years</span>
-                <span className="trust-pill">Workshop Fee: Rs. 499</span>
-              </div>
-            </div>
-
-            {formError && <div className="error-banner mb-5">{formError}</div>}
-
-            <form onSubmit={handleFormSubmit}>
-              <div className="registration-grid">
-                <div className="registration-field full-width">
-                  <label className="registration-label" htmlFor="email">
-                    Email *
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="registration-input"
-                    placeholder="Enter your email address"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="registration-field full-width">
-                  <label className="registration-label" htmlFor="contactNumber">
-                    Contact Number (WhatsApp Preferred) *
-                  </label>
-                  <input
-                    id="contactNumber"
-                    name="contactNumber"
-                    type="tel"
-                    required
-                    className="registration-input"
-                    placeholder="Enter contact number"
-                    value={formData.contactNumber}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="registration-field full-width">
-                  <label className="registration-label" htmlFor="childName">
-                    Name of the Child *
-                  </label>
-                  <input
-                    id="childName"
-                    name="childName"
-                    type="text"
-                    required
-                    className="registration-input"
-                    placeholder="Enter child's full name"
-                    value={formData.childName}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="registration-field">
-                  <label className="registration-label" htmlFor="age">
-                    Age *
-                  </label>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    min="4"
-                    max="16"
-                    required
-                    className="registration-input"
-                    placeholder="4-16"
-                    value={formData.age}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="registration-field">
-                  <label className="registration-label" htmlFor="city">
-                    City *
-                  </label>
-                  <input
-                    id="city"
-                    name="city"
-                    type="text"
-                    required
-                    className="registration-input"
-                    placeholder="Enter city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="registration-field full-width">
-                  <label className="registration-label" htmlFor="area">
-                    Area / Location *
-                  </label>
-                  <input
-                    id="area"
-                    name="area"
-                    type="text"
-                    required
-                    className="registration-input"
-                    placeholder="Enter area or location"
-                    value={formData.area}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-
-              <p className="registration-note mt-4 mb-4">
-                Please fill in the details below and continue to the integrated
-                payment checkout. Contact form owner:{" "}
-                <strong>gshrikant199980@gmail.com</strong>
-              </p>
-
-              <button type="submit" className="registration-submit">
-                {isInitiatingPayment
-                  ? "Connecting to Payment..."
-                  : "Register & Pay Rs. 499"}
-              </button>
-            </form>
-          </div>
+        <div className="p-4">
+          <iframe
+            src="https://docs.google.com/forms/d/e/1FAIpQLSfJfYegfWy-YCE75jDcy3b37Q23a3ppS8uOZXf4YsBNPFItKQ/viewform"
+            width="100%"
+            height="600px"
+            frameBorder="0"
+            title="PictoBlox Registration Form"
+          >
+            Loading Registration Form...
+          </iframe>
         </div>
       </Modal>
     </div>
   );
 };
 
-export default HeroImage;
+export default PictoBloxHero;

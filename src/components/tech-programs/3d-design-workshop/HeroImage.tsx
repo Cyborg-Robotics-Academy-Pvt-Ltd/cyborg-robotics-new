@@ -373,15 +373,7 @@ const ThreeDDesignHero = () => {
                 }}
               >
                 Design. Build.{" "}
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #A81B1E 20%, #C73E1D 80%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
+                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
                   Create.
                 </span>
               </motion.h1>

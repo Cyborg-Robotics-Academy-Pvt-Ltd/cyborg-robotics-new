@@ -1,51 +1,72 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  HandMetal,
-  Users,
-  Award,
-  Smile,
-  Leaf,
+  Blocks,
+  Gamepad2,
+  Zap,
+  Brain,
+  Bug,
+  MousePointer2,
   ArrowRight,
   Sparkles,
-  Zap,
 } from "lucide-react";
+import Image from "next/image";
 
-const OfferSection = () => {
+const PictoBloxOfferSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const whyLearn = [
     {
-      text: "100% hands-on LEGO® learning",
-      subtext: "One hour that could spark a lifelong interest in technology",
-      icon: HandMetal,
+      text: "Learn block-based coding with PictoBlox",
+      subtext:
+        "Drag-and-drop visual programming — no syntax errors, pure logic",
+      icon: Blocks,
       accent: "#0855AB",
-      category: "What You Get",
+      category: "Skills",
     },
     {
-      text: "Expert mentors, child-friendly approach",
-      subtext: "Give Your Child an Experience — Not Just a Class",
-      icon: Users,
+      text: "Understand events, actions & movement controls",
+      subtext:
+        "Core programming concepts taught through game mechanics — not textbooks",
+      icon: MousePointer2,
       accent: "#A81B1E",
-      category: "What You Get",
+      category: "Skills",
     },
     {
-      text: "Small batches for personal attention",
-      subtext: "Limited seats available per batch to ensure quality learning",
-      icon: Smile,
+      text: "Learn basic game logic & rules",
+      subtext:
+        "Understand how conditions and triggers make interactive games work",
+      icon: Zap,
+      accent: "#0855AB",
+      category: "Skills",
+    },
+    {
+      text: "Build a complete Maze Game from scratch",
+      subtext:
+        "Design the maze, code the character, set goals — ship a working game in 90 min",
+      icon: Gamepad2,
+      accent: "#A81B1E",
+      category: "Experience",
+    },
+    {
+      text: "Test, play and debug your own project",
+      subtext:
+        "Real developer workflow — write code, find bugs, fix and improve",
+      icon: Bug,
       accent: "#0855AB",
       category: "Experience",
     },
     {
-      text: "Souvenir + certificate your child takes home",
-      subtext: "A real memory from a real learning experience",
-      icon: Award,
+      text: "Develop logical thinking & creative problem solving",
+      subtext:
+        "Skills that transfer to every coding platform and every subject",
+      icon: Brain,
       accent: "#A81B1E",
       category: "Experience",
     },
   ];
 
-  const tags = ["Hands-on Learning", "LEGO® Powered", "STEM Focused"];
+  const tags = ["Block Coding", "Build a Real Game", "STEM Focused"];
 
   return (
     <div className="relative">
@@ -55,71 +76,46 @@ const OfferSection = () => {
         .offer-section { font-family: 'DM Sans', sans-serif; }
         .offer-heading { font-family: 'Syne', sans-serif; }
 
-       
-
         .learn-card {
           transition: all 0.28s cubic-bezier(0.23, 1, 0.32, 1);
           cursor: default;
         }
-        .learn-card:hover {
-          transform: translateX(4px);
-        }
+        .learn-card:hover { transform: translateX(4px); }
 
-        .video-card {
-          transition: box-shadow 0.3s ease;
-        }
-        .video-card:hover {
-          box-shadow: 0 28px 64px rgba(6,35,65,0.18);
-        }
+        .video-card { transition: box-shadow 0.3s ease; }
+        .video-card:hover { box-shadow: 0 28px 64px rgba(6,35,65,0.18); }
 
         .tag-pill {
           font-family: 'Syne', sans-serif;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
+          font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
         }
-
         .section-badge {
           font-family: 'Syne', sans-serif;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
+          font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
         }
-
         .category-label {
           font-family: 'Syne', sans-serif;
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.12em; text-transform: uppercase;
         }
-
         .cta-btn {
           font-family: 'Syne', sans-serif;
-          font-weight: 700;
-          letter-spacing: 0.04em;
+          font-weight: 700; letter-spacing: 0.04em;
           transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
         }
         .cta-btn:hover {
           transform: translateY(-1px);
           box-shadow: 0 8px 24px rgba(168,27,30,0.35);
         }
-        .cta-btn:hover .arrow-icon {
-          transform: translateX(3px);
-        }
-        .arrow-icon {
-          transition: transform 0.25s ease;
-        }
+        .cta-btn:hover .arrow-icon { transform: translateX(3px); }
+        .arrow-icon { transition: transform 0.25s ease; }
 
         .first-card {
           background: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%) !important;
         }
-
         .stat-chip {
           font-family: 'Syne', sans-serif;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
+          font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
         }
       `}</style>
 
@@ -149,7 +145,7 @@ const OfferSection = () => {
         <div className="pointer-events-none absolute -right-40 bottom-10 h-[400px] w-[400px] rounded-full bg-[#A81B1E]/6 blur-[100px]" />
 
         <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6">
-          {/* ── Header ── */}
+          {/* Header */}
           <motion.div
             className="mb-12 md:mb-16 max-w-2xl"
             initial={{ opacity: 0, y: 24 }}
@@ -165,27 +161,29 @@ const OfferSection = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              UNBEATABLE VALUE
+              WHY THIS WORKSHOP MATTERS
             </motion.div>
 
             <h2 className="offer-heading text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-[#062341] mb-4 leading-[1.1] tracking-tight">
-              Why we are <span className="gradient-text">offering This</span>
+              Why Learn{" "}
+              <span className="gradient-text">Block-Based Coding</span>
               <br />
-              <span className="gradient-text">@ ₹499.</span>
+              <span className="gradient-text">with PictoBlox?</span>
             </h2>
 
             <p className="text-slate-500 text-base md:text-lg leading-relaxed font-light mt-4 max-w-xl">
-              We believe every child deserves access to world-class STEM
-              learning. That's why we've kept the price accessible —{" "}
+              Coding becomes powerful when students build something real. In
+              this workshop, students don't just study programming — they{" "}
               <span className="text-[#062341] font-medium">
-                without cutting corners.
-              </span>
+                design, code, and walk away
+              </span>{" "}
+              with a fully working Maze Game they built themselves.
             </p>
           </motion.div>
 
-          {/* ── Two-column layout ── */}
+          {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
-            {/* ── Image panel — same slot/structure as video in doc 3 ── */}
+            {/* Media panel */}
             <motion.div
               className="video-card relative h-[320px] md:h-[440px] rounded-3xl overflow-hidden lg:sticky lg:top-8"
               initial={{ opacity: 0, x: -24 }}
@@ -207,21 +205,21 @@ const OfferSection = () => {
                 }}
               />
 
-              {/* Image — replace src with your actual asset */}
-              <img
-                src="/assets/workshops/lego/image.png"
-                alt="Kids learning with LEGO"
+              <Image
+                src="/assets/workshops/pictoblox/image1.png"
+                alt="PictoBlox course"
+                width={500}
+                height={700}
                 className="w-full h-full object-cover"
               />
 
-              {/* Overlay — identical structure to doc 3 */}
+              {/* Overlay */}
               <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#062341]/95 via-[#062341]/60 to-transparent p-5 md:p-6">
-                {/* Mini stat row */}
                 <div className="flex gap-3 mb-3">
                   {[
-                    { val: "200+", label: "Students" },
-                    { val: "100%", label: "Hands-on" },
-                    { val: "9–16", label: "Age group" },
+                    { val: "8–14", label: "Age group" },
+                    { val: "90 min", label: "Session" },
+                    { val: "₹49", label: "Only" },
                   ].map(({ val, label }) => (
                     <div key={label} className="flex flex-col">
                       <span className="offer-heading text-white text-sm font-bold leading-none">
@@ -235,9 +233,8 @@ const OfferSection = () => {
                 </div>
 
                 <p className="offer-heading text-white text-sm md:text-base font-semibold mb-3 leading-snug">
-                  From ₹499 — a session they'll never forget.
+                  From zero code to a working Maze Game.
                 </p>
-
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <span
@@ -251,11 +248,10 @@ const OfferSection = () => {
               </div>
             </motion.div>
 
-            {/* ── Why-learn list — 100% identical to doc 3 ── */}
+            {/* Why-learn list */}
             <div>
-              {["What You Get", "Experience"].map((cat, catIdx) => (
+              {["Skills", "Experience"].map((cat, catIdx) => (
                 <div key={cat} className={catIdx > 0 ? "mt-1" : ""}>
-                  {/* Category label */}
                   <motion.div
                     className="flex items-center gap-2 mb-1"
                     initial={{ opacity: 0 }}
@@ -277,7 +273,6 @@ const OfferSection = () => {
                     />
                   </motion.div>
 
-                  {/* Cards */}
                   <div className="space-y-2">
                     {whyLearn
                       .map((item, originalIndex) => ({
@@ -322,7 +317,6 @@ const OfferSection = () => {
                               }
                               onMouseLeave={() => setHoveredIndex(null)}
                             >
-                              {/* Icon */}
                               <div
                                 className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center mt-0.5"
                                 style={{
@@ -337,7 +331,6 @@ const OfferSection = () => {
                                 />
                               </div>
 
-                              {/* Text */}
                               <div className="flex-1 min-w-0">
                                 <p
                                   className="text-slate-800 text-sm md:text-base leading-snug font-semibold"
@@ -381,14 +374,14 @@ const OfferSection = () => {
               >
                 <button className="cta-btn inline-flex items-center gap-2 bg-[#A81B1E] text-white text-sm px-6 py-3 rounded-xl shadow-md">
                   <Zap size={15} strokeWidth={2.2} />
-                  Book a Free Trial Class
+                  Secure Your Seat – ₹49
                   <ArrowRight size={14} className="arrow-icon" />
                 </button>
                 <p className="text-slate-400 text-xs font-light leading-snug">
-                  Only ₹499 per session &middot; Age 9–16
+                  No prior experience needed &middot; Age 8–14
                   <br />
                   <span className="text-[#0855AB] font-medium">
-                    Certificate included
+                    1 May 2026 · Live on Zoom
                   </span>
                 </p>
               </motion.div>
@@ -420,4 +413,4 @@ const OfferSection = () => {
   );
 };
 
-export default OfferSection;
+export default PictoBloxOfferSection;
