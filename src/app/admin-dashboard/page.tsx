@@ -393,7 +393,7 @@ const AdminDashboard = () => {
           refreshAdminData();
         }
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     ); // 5 minutes
 
     return () => clearInterval(interval);
@@ -442,7 +442,7 @@ const AdminDashboard = () => {
       const monthlyGrowth = Math.round(
         (recentRegistrationsCount /
           Math.max(studentsSnapshot.size - recentRegistrationsCount, 1)) *
-          100
+          100,
       );
 
       const overviewDataResult = {
@@ -493,7 +493,7 @@ const AdminDashboard = () => {
             : new Date(createdAt);
           // Last 7 days
           const sevenDaysAgo = new Date(
-            now.getTime() - 7 * 24 * 60 * 60 * 1000
+            now.getTime() - 7 * 24 * 60 * 60 * 1000,
           );
           return createdDate >= sevenDaysAgo;
         })
@@ -514,7 +514,9 @@ const AdminDashboard = () => {
           id: `student-${index}`,
           type: "registration",
           name: "New Student Registration",
-          description: `${data.fullName || data.username || "Student"} registered for courses`,
+          description: data.trainerName
+            ? `${data.fullName || data.username || "Student"} has been assigned to trainer ${data.trainerName}`
+            : `${data.fullName || data.username || "Student"} registered for courses`,
           time: data.createdAt?.toDate
             ? data.createdAt.toDate()
             : new Date(data.createdAt),
@@ -534,7 +536,7 @@ const AdminDashboard = () => {
             ? createdAt.toDate()
             : new Date(createdAt);
           const sevenDaysAgo = new Date(
-            now.getTime() - 7 * 24 * 60 * 60 * 1000
+            now.getTime() - 7 * 24 * 60 * 60 * 1000,
           );
           return createdDate >= sevenDaysAgo;
         })
@@ -769,7 +771,7 @@ const AdminDashboard = () => {
                 (c) =>
                   c.toLowerCase().trim() === normalizedInput ||
                   c.toLowerCase().includes(normalizedInput) ||
-                  normalizedInput.includes(c.toLowerCase().trim())
+                  normalizedInput.includes(c.toLowerCase().trim()),
               );
 
               if (matchedCourse) {
@@ -814,7 +816,7 @@ const AdminDashboard = () => {
             fullName: course,
             value: Math.floor(Math.random() * 20) + 5,
             color: colors[index % colors.length],
-          }))
+          })),
         );
       } else {
         setCourseCategoryData(validatedCourseData);
@@ -936,7 +938,7 @@ const AdminDashboard = () => {
 
   const dashboardCards = [
     {
-      title: "Student Management",
+      title: "Student Record",
       description: "View and manage the list of students and trainers",
       href: "/student-list",
       icon: GraduationCap,
@@ -994,36 +996,6 @@ const AdminDashboard = () => {
       borderColor: "border-purple-200",
       action: "Assign Trainers",
       delay: 0.4,
-    },
-    {
-      title: "New Accounts",
-      description: "View newly registered accounts awaiting setup",
-      href: "/admin-dashboard/new-accounts",
-      icon: User,
-      color: "orange",
-      gradient: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-50",
-      iconBg: "bg-gradient-to-br from-orange-100 to-orange-200",
-      textColor: "text-orange-600",
-      hoverColor: "group-hover:text-orange-600",
-      borderColor: "border-orange-200",
-      action: "View New",
-      delay: 0.5,
-    },
-    {
-      title: "Course Management",
-      description: "Manage course offerings and curriculum",
-      href: "/all-courses",
-      icon: BookOpen,
-      color: "green",
-      gradient: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50",
-      iconBg: "bg-gradient-to-br from-green-100 to-green-200",
-      textColor: "text-green-600",
-      hoverColor: "group-hover:text-green-600",
-      borderColor: "border-green-200",
-      action: "Manage Courses",
-      delay: 0.6,
     },
   ];
 
@@ -1349,9 +1321,9 @@ const AdminDashboard = () => {
                                       (item.value /
                                         courseCategoryData.reduce(
                                           (sum, cat) => sum + cat.value,
-                                          0
+                                          0,
                                         )) *
-                                        100
+                                        100,
                                     )
                                   : 0}
                                 %
@@ -1450,7 +1422,7 @@ const AdminDashboard = () => {
                         time={(() => {
                           const minutesAgo = Math.ceil(
                             (new Date().getTime() - activity.time.getTime()) /
-                              (1000 * 60)
+                              (1000 * 60),
                           );
                           const hoursAgo = Math.floor(minutesAgo / 60);
                           const daysAgo = Math.floor(hoursAgo / 24);

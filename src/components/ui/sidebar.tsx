@@ -6,6 +6,12 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsRight, Menu } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Links {
   label: string;
@@ -159,7 +165,7 @@ const SidebarLinkComponent = ({
   link: Links;
   className?: string;
 }) => {
-  const { open, animate, setOpen } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const pathname = usePathname();
   const isActive =
     (typeof link.activeWhen === "function" && link.activeWhen(pathname)) ||
@@ -185,7 +191,7 @@ const SidebarLinkComponent = ({
     return link.icon;
   }, [link.icon, isActive, open]);
 
-  return (
+  const linkContent = (
     <motion.div
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -229,6 +235,25 @@ const SidebarLinkComponent = ({
         )}
       </Link>
     </motion.div>
+  );
+
+  if (open) {
+    return linkContent;
+  }
+
+  return (
+    <TooltipProvider delayDuration={40} skipDelayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+        <TooltipContent
+          side="right"
+          sideOffset={10}
+          className="border border-[#8D0F11] bg-[#8D0F11] px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
+        >
+          {link.label}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

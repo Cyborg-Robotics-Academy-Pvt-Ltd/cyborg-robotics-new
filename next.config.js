@@ -2,7 +2,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({ enabled: process.e
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
+  allowedDevOrigins: ['filamentary-max-segmental.ngrok-free.dev'],
   images: {
     remotePatterns: [
       {
@@ -33,6 +33,7 @@ const nextConfig = {
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
+     
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 31536000, // 1 year cache

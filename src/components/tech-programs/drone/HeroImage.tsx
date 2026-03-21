@@ -1,28 +1,19 @@
 "use client";
 import Image from "next/image";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  useSpring,
-  cubicBezier,
-  type Variants,
-} from "framer-motion";
-import { useRef, useState } from "react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { useState, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
-import { ArrowRight, Sparkles, Users, Award, Box } from "lucide-react";
 
 interface StaticImage {
   url: string;
   alt: string;
-  title: string;
 }
 
-const ThreeDDesignHero = () => {
+const DroneHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -52,31 +43,19 @@ const ThreeDDesignHero = () => {
     mouseY.set(0);
   };
 
+  // TODO: Replace with actual drone workshop images from Cloudinary
   const staticImages: StaticImage[] = [
     {
-      url: "/assets/workshops/3d-printing/IMG_0327.jpeg",
-      alt: "3D design workshop session 1",
-      title: "Doraemon",
+      url: "/assets/workshops/drone/Drone_1.jpeg",
+      alt: "Drone Workshop 1",
     },
     {
-      url: "/assets/workshops/3d-printing/IMG_0332.jpeg",
-      alt: "3D design workshop session 2",
-      title: "Gojo (Anime)",
+      url: "/assets/workshops/drone/Drone_2.jpeg",
+      alt: "Drone Workshop 2",
     },
     {
-      url: "/assets/workshops/3d-printing/IMG_0333.jpeg",
-      alt: "3D design workshop session 3",
-      title: "Solo-Leveling",
-    },
-    {
-      url: "/assets/workshops/3d-printing/IMG_0328.jpeg",
-      alt: "3D design workshop session 4",
-      title: "Bholenath",
-    },
-    {
-      url: "/assets/workshops/3d-printing/IMG_0335.jpeg",
-      alt: "3D design workshop session 5",
-      title: "Iron-Man",
+      url: "/assets/workshops/drone/Drone_3.jpeg",
+      alt: "Drone Workshop 3",
     },
   ];
 
@@ -85,42 +64,27 @@ const ThreeDDesignHero = () => {
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
-  const itemVariants: Variants = {
+  const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         duration: 0.5,
-        ease: cubicBezier(0.22, 1, 0.36, 1),
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
       },
     },
   };
 
-  const stats = [
-    { label: "Duration", value: "2 Hours", icon: "⏱" },
-    { label: "Age Group", value: "9–15 Years", icon: "🎯" },
-    { label: "Mode", value: "Live Online", icon: "💻" },
-  ];
-
-  const highlights = [
-    { icon: <Award size={11} />, text: "Certificate" },
-    { icon: <Sparkles size={11} />, text: "3D Modeling" },
-    { icon: <Box size={11} />, text: "Real Project" },
-  ];
-
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", overflow: "hidden" }}>
+    <div
+      style={{ fontFamily: "'DM Sans', sans-serif", overflow: "hidden" }}
+      className="mt-10"
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-        .hero-bg {
-          background: #ffffff;
-          position: relative;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-        }
+       
         .hero-bg::before {
           content: '';
           position: absolute; inset: 0;
@@ -169,40 +133,39 @@ const ThreeDDesignHero = () => {
         .hero-swiper .swiper-slide { border-radius: 16px; overflow: hidden; }
         .hero-swiper .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-        .cta-primary {
+        .cta-btn {
           background: linear-gradient(135deg, #A81B1E 0%, #C73E1D 100%);
           color: white; border: none; border-radius: 12px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 14px; font-weight: 700;
-          padding: 11px 24px; cursor: pointer;
+          font-size: 15px; font-weight: 700;
+          padding: 12px 28px; cursor: pointer;
           position: relative; overflow: hidden;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
           box-shadow: 0 6px 22px rgba(168,27,30,0.35);
-          display: inline-flex; align-items: center; gap: 7px;
           white-space: nowrap;
         }
-        .cta-primary::before {
+        .cta-btn::before {
           content: ''; position: absolute; top: 0; left: -100%;
           width: 60%; height: 100%;
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
           transition: left 0.5s ease;
         }
-        .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(168,27,30,0.42); }
-        .cta-primary:hover::before { left: 150%; }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(168,27,30,0.42); }
+        .cta-btn:hover::before { left: 150%; }
 
-        .cta-secondary {
-          background: rgba(168,27,30,0.05);
-          color: #A81B1E; border: 1px solid rgba(168,27,30,0.2);
-          border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px; font-weight: 600;
-          padding: 11px 22px; cursor: pointer;
-          display: inline-flex; align-items: center; gap: 6px;
-          transition: all 0.2s ease; white-space: nowrap;
+        .inclusion-card {
+          background: linear-gradient(135deg, #fff 0%, #fff8f8 100%);
+          border: 1px solid rgba(168,27,30,0.13);
+          border-radius: 14px;
+          box-shadow: 0 3px 16px rgba(168,27,30,0.06);
         }
-        .cta-secondary:hover {
-          background: rgba(168,27,30,0.09);
-          border-color: rgba(168,27,30,0.35);
+
+        .card-shadow {
+          position: absolute; bottom: -16px; left: 50%;
+          transform: translateX(-50%);
+          width: 70%; height: 24px;
+          background: radial-gradient(ellipse, rgba(168,27,30,0.18) 0%, transparent 70%);
+          filter: blur(8px); pointer-events: none;
         }
 
         .tag-chip {
@@ -217,7 +180,7 @@ const ThreeDDesignHero = () => {
         .divider-line {
           width: 40px; height: 3px;
           background: linear-gradient(90deg, #A81B1E, #C73E1D);
-          border-radius: 2px; margin: 8px 0 10px;
+          border-radius: 2px; margin: 8px 0 12px;
         }
 
         .trust-pill {
@@ -228,54 +191,11 @@ const ThreeDDesignHero = () => {
           font-size: 11px; color: #666; font-weight: 500;
         }
 
-        .highlight-pill {
-          display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(168,27,30,0.06);
-          border: 1px solid rgba(168,27,30,0.14);
-          border-radius: 8px; padding: 5px 10px;
-          font-size: 11px; font-weight: 600; color: #A81B1E;
-          transition: all 0.2s ease;
-        }
-        .highlight-pill:hover { background: rgba(168,27,30,0.1); transform: translateY(-1px); }
-
-        .stat-card {
-          background: rgba(255,255,255,0.9);
-          border: 1px solid rgba(168,27,30,0.1);
-          border-radius: 12px; padding: 10px 12px;
-          box-shadow: 0 2px 10px rgba(168,27,30,0.05);
-          transition: all 0.2s ease;
-        }
-        .stat-card:hover {
-          box-shadow: 0 4px 16px rgba(168,27,30,0.1);
-          transform: translateY(-1px);
-        }
-
-        .pulse-dot {
-          position: relative;
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          background: #A81B1E;
-          flex-shrink: 0;
-        }
-        .pulse-dot::after {
-          content: '';
-          position: absolute; inset: -3px;
-          border-radius: 50%;
-          background: #A81B1E;
-          animation: pulseRing 2s ease-out infinite;
-          opacity: 0.5;
-        }
-        @keyframes pulseRing {
-          0% { transform: scale(1); opacity: 0.5; }
-          100% { transform: scale(2); opacity: 0; }
-        }
-
-        .card-shadow {
-          position: absolute; bottom: -16px; left: 50%;
-          transform: translateX(-50%);
-          width: 70%; height: 24px;
-          background: radial-gradient(ellipse, rgba(168,27,30,0.18) 0%, transparent 70%);
-          filter: blur(8px); pointer-events: none;
+        .inclusion-icon {
+          width: 26px; height: 26px; border-radius: 7px;
+          background: rgba(168,27,30,0.08);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 13px; flex-shrink: 0;
         }
       `}</style>
 
@@ -332,32 +252,8 @@ const ThreeDDesignHero = () => {
               variants={itemVariants}
               style={{ flex: "1 1 340px", minWidth: 260 }}
             >
-              {/* Badge */}
               <motion.div variants={itemVariants} style={{ marginBottom: 12 }}>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "rgba(168,27,30,0.07)",
-                    border: "1px solid rgba(168,27,30,0.16)",
-                    borderRadius: 100,
-                    padding: "4px 14px",
-                  }}
-                >
-                  <div className="pulse-dot" />
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#A81B1E",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Cyborg Weekend Tech Series
-                  </span>
-                </div>
+                <span className="tag-chip">🚁 Ages 4–16 · Drone Course</span>
               </motion.div>
 
               <motion.h1
@@ -372,18 +268,7 @@ const ThreeDDesignHero = () => {
                   margin: 0,
                 }}
               >
-                Design. Build.{" "}
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #A81B1E 20%, #C73E1D 80%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Create.
-                </span>
+                Build. Fly. <span className="gradient-text">Soar.</span>
               </motion.h1>
 
               <div className="divider-line" />
@@ -399,31 +284,36 @@ const ThreeDDesignHero = () => {
                   lineHeight: 1.4,
                 }}
               >
-                Create Your First{" "}
-                <span
-                  style={{
-                    background: "linear-gradient(135deg, #A81B1E, #C73E1D)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  3D Design Project
-                </span>
+                Your Child's First Step into Drone Technology Starts Here…
               </motion.h2>
 
               <motion.p
                 variants={itemVariants}
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   color: "#555",
                   lineHeight: 1.6,
-                  margin: "0 0 12px",
-                  maxWidth: 420,
+                  margin: "0 0 4px",
                 }}
               >
-                Kids learn 3D modeling and digital design through a hands-on
-                live workshop — guided step by step in a 2-hour session.
+                A hands-on{" "}
+                <strong style={{ color: "#1a1a1a" }}>
+                  Drone Building &amp; Flying Course
+                </strong>{" "}
+                for young minds (Ages 10–16).
+              </motion.p>
+              <motion.p
+                variants={itemVariants}
+                style={{
+                  fontSize: 14,
+                  color: "#555",
+                  lineHeight: 1.6,
+                  margin: "0 0 14px",
+                }}
+              >
+                Students learn how drones work, how to build them, and how to
+                fly them safely — exploring aerial robotics, aerodynamics, and
+                future tech careers.
               </motion.p>
 
               {/* Trust pills */}
@@ -433,13 +323,13 @@ const ThreeDDesignHero = () => {
                   display: "flex",
                   flexWrap: "wrap",
                   gap: 6,
-                  marginBottom: 14,
+                  marginBottom: 16,
                 }}
               >
                 {[
-                  "👨‍🏫 Expert Mentors",
+                  "👨‍🏫 Mentor Guided",
                   "🧠 STEM Learning",
-                  "🧩 Project Based",
+                  "✈️ Real Drone Flying",
                 ].map((t) => (
                   <span key={t} className="trust-pill">
                     {t}
@@ -447,84 +337,91 @@ const ThreeDDesignHero = () => {
                 ))}
               </motion.div>
 
-              {/* CTAs */}
-              <motion.div
-                variants={itemVariants}
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 14,
-                }}
-              >
+              {/* CTA */}
+              <motion.div variants={itemVariants} style={{ marginBottom: 4 }}>
                 <button
-                  className="cta-primary"
+                  className="cta-btn"
                   onClick={() => setIsModalOpen(true)}
                 >
-                  <Sparkles size={13} />
-                  Register for ₹99
-                  <ArrowRight size={13} />
+                  🚁 Enroll in Drone Course
                 </button>
-                <button className="cta-secondary">
-                  <Users size={13} />
-                  View Gallery
-                </button>
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "#bbb",
+                    marginTop: 6,
+                    marginBottom: 0,
+                  }}
+                >
+                  Small batch · Offline at Cyborg Robotics Lab
+                </p>
               </motion.div>
 
-              {/* Highlight pills */}
+              {/* Inclusions */}
               <motion.div
                 variants={itemVariants}
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 6,
-                  marginBottom: 14,
-                }}
+                className="inclusion-card"
+                style={{ padding: "13px 16px", marginTop: 14 }}
               >
-                {highlights.map(({ icon, text }) => (
-                  <div key={text} className="highlight-pill">
-                    {icon}
-                    {text}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 9,
+                    marginBottom: 11,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: "50%",
+                      background: "rgba(168,27,30,0.09)",
+                      border: "1px solid rgba(168,27,30,0.16)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 15,
+                    }}
+                  >
+                    🎁
                   </div>
-                ))}
-              </motion.div>
-
-              {/* Stat cards */}
-              <motion.div
-                variants={itemVariants}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: 8,
-                }}
-              >
-                {stats.map(({ label, value, icon }) => (
-                  <div key={label} className="stat-card">
-                    <p
-                      style={{
-                        fontSize: 10,
-                        color: "#999",
-                        margin: "0 0 2px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 3,
-                      }}
+                  <span
+                    style={{ fontWeight: 700, fontSize: 13, color: "#1a1a1a" }}
+                  >
+                    Course Highlights
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 7 }}
+                >
+                  {[
+                    {
+                      icon: "🔧",
+                      text: "Hands-on drone assembly & components",
+                    },
+                    {
+                      icon: "✈️",
+                      text: "Real drone flying practice sessions",
+                    },
+                    {
+                      icon: "🏆",
+                      text: "Certificate of completion",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.text}
+                      style={{ display: "flex", alignItems: "center", gap: 9 }}
                     >
-                      <span>{icon}</span>
-                      {label}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "#A81B1E",
-                        margin: 0,
-                      }}
-                    >
-                      {value}
-                    </p>
-                  </div>
-                ))}
+                      <div className="inclusion-icon">{item.icon}</div>
+                      <span
+                        style={{ fontSize: 12, color: "#444", fontWeight: 500 }}
+                      >
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             </motion.div>
 
@@ -539,7 +436,6 @@ const ThreeDDesignHero = () => {
                 position: "relative",
               }}
             >
-              {/* Badge bottom-right */}
               <div
                 className="float-badge-2"
                 style={{
@@ -567,15 +463,14 @@ const ThreeDDesignHero = () => {
                       letterSpacing: "0.06em",
                     }}
                   >
-                    Workshop Fee
+                    Ages
                   </div>
                   <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>
-                    ₹99 · 3 May 2026
+                    10–16 · No Prior Exp
                   </div>
                 </div>
               </div>
 
-              {/* 3D tilt card */}
               <div
                 ref={cardRef}
                 className="card-3d-wrapper"
@@ -591,13 +486,12 @@ const ThreeDDesignHero = () => {
                     style={{
                       width: 260,
                       height: 360,
-
+                      borderRadius: 20,
                       overflow: "hidden",
 
                       position: "relative",
                     }}
                   >
-                    {/* Glare */}
                     <motion.div
                       className="glare"
                       style={{
@@ -619,51 +513,22 @@ const ThreeDDesignHero = () => {
                     >
                       {staticImages.map((image, index) => (
                         <SwiperSlide key={index}>
-                          <div
+                          <Image
+                            src={image.url}
+                            alt={image.alt}
+                            width={260}
+                            height={360}
                             style={{
-                              position: "relative",
                               width: "100%",
                               height: "100%",
+                              objectFit: "cover",
                             }}
-                          >
-                            <Image
-                              src={image.url}
-                              alt={image.alt}
-                              width={260}
-                              height={360}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                              unoptimized
-                            />
-                            <span
-                              style={{
-                                position: "absolute",
-                                top: 10,
-                                right: 10,
-                                background:
-                                  "linear-gradient(135deg, #8a1518, #C73E1D)",
-                                borderRadius: 100,
-                                padding: "3px 10px",
-                                fontSize: 10,
-                                fontWeight: 700,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05em",
-                                color: "#fff",
-                                boxShadow: "0 2px 8px rgba(168,27,30,0.4)",
-                                border: "1px solid rgba(255,255,255,0.25)",
-                              }}
-                            >
-                              {image.title}
-                            </span>
-                          </div>
+                            unoptimized
+                          />
                         </SwiperSlide>
                       ))}
                     </Swiper>
 
-                    {/* Bottom overlay */}
                     <div
                       style={{
                         position: "absolute",
@@ -705,7 +570,7 @@ const ThreeDDesignHero = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Register for 3D Designing Workshop"
+        title="Enroll in Drone Building & Flying Course"
       >
         <div className="p-4">
           <iframe
@@ -713,7 +578,7 @@ const ThreeDDesignHero = () => {
             width="100%"
             height="600px"
             frameBorder="0"
-            title="Registration Form"
+            title="Drone Course Registration Form"
           >
             Loading Registration Form...
           </iframe>
@@ -723,4 +588,4 @@ const ThreeDDesignHero = () => {
   );
 };
 
-export default ThreeDDesignHero;
+export default DroneHero;
