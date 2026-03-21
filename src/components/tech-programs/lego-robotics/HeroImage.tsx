@@ -13,8 +13,27 @@ interface StaticImage {
   alt: string;
 }
 
+interface RegistrationFormData {
+  email: string;
+  contactNumber: string;
+  childName: string;
+  age: string;
+  city: string;
+  area: string;
+}
+
 const HeroImage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formData, setFormData] = useState<RegistrationFormData>({
+    email: "",
+    contactNumber: "",
+    childName: "",
+    age: "",
+    city: "",
+    area: "",
+  });
   const cardRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -41,6 +60,62 @@ const HeroImage = () => {
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
+  };
+
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    setFormError("");
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (isInitiatingPayment) {
+      return;
+    }
+
+    try {
+      setIsInitiatingPayment(true);
+      setFormError("");
+
+      const response = await fetch("/api/payment/initiate-workshop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workshopKey: "lego-robotics-workshop",
+          email: formData.email,
+          contactNumber: formData.contactNumber,
+          childName: formData.childName,
+          age: formData.age,
+          city: formData.city,
+          area: formData.area,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success && data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+
+      setFormError(
+        data.message || "Unable to start payment. Please try again.",
+      );
+    } catch (error) {
+      console.error("Workshop payment initiation failed:", error);
+      setFormError("Unable to start payment. Please try again.");
+    } finally {
+      setIsInitiatingPayment(false);
+    }
   };
 
   const staticImages: StaticImage[] = [
@@ -210,6 +285,107 @@ const HeroImage = () => {
           background: rgba(168,27,30,0.08);
           display: flex; align-items: center; justify-content: center;
           font-size: 13px; flex-shrink: 0;
+        }
+
+        .registration-shell {
+          background: linear-gradient(180deg, #fff 0%, #fff7f7 100%);
+        }
+        .registration-card {
+          border: 1px solid rgba(168,27,30,0.12);
+          border-radius: 18px;
+          background: #fff;
+          box-shadow: 0 12px 40px rgba(168,27,30,0.08);
+        }
+        .registration-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+        .registration-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .registration-field.full-width {
+          grid-column: 1 / -1;
+        }
+        .registration-label {
+          font-size: 13px;
+          font-weight: 700;
+          color: #2a2a2a;
+        }
+        .registration-input {
+          width: 100%;
+          border: 1px solid rgba(168,27,30,0.18);
+          border-radius: 12px;
+          padding: 12px 14px;
+          font-size: 14px;
+          color: #222;
+          background: #fff;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .registration-input:focus {
+          border-color: #A81B1E;
+          box-shadow: 0 0 0 4px rgba(168,27,30,0.08);
+        }
+        .registration-note {
+          font-size: 12px;
+          line-height: 1.6;
+          color: #666;
+        }
+        .registration-submit {
+          width: 100%;
+          background: linear-gradient(135deg, #A81B1E 0%, #C73E1D 100%);
+          color: #fff;
+          border: none;
+          border-radius: 14px;
+          padding: 14px 18px;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 10px 26px rgba(168,27,30,0.26);
+        }
+        .payment-card {
+          border-radius: 16px;
+          border: 1px solid rgba(168,27,30,0.12);
+          background: linear-gradient(135deg, rgba(168,27,30,0.05), rgba(199,62,29,0.08));
+          padding: 16px;
+        }
+        .qr-placeholder {
+          min-height: 180px;
+          border-radius: 16px;
+          border: 1px dashed rgba(168,27,30,0.24);
+          background:
+            linear-gradient(45deg, rgba(168,27,30,0.03) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(168,27,30,0.03) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(168,27,30,0.03) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(168,27,30,0.03) 75%);
+          background-size: 24px 24px;
+          background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 20px;
+          color: #7a4d4e;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .error-banner {
+          border-radius: 14px;
+          border: 1px solid rgba(239, 68, 68, 0.18);
+          background: rgba(239, 68, 68, 0.08);
+          padding: 12px 14px;
+          color: #b91c1c;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+          .registration-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
 
@@ -531,12 +707,9 @@ const HeroImage = () => {
                     style={{
                       width: 260,
                       height: 360,
-                      borderRadius: 20,
+
                       overflow: "hidden",
-                      boxShadow:
-                        "0 24px 64px rgba(168,27,30,0.16), 0 6px 20px rgba(168,27,30,0.09), inset 0 1px 0 rgba(255,255,255,0.7)",
-                      border: "1px solid rgba(168,27,30,0.1)",
-                      background: "#fff",
+
                       position: "relative",
                     }}
                   >
@@ -550,29 +723,6 @@ const HeroImage = () => {
                         ),
                       }}
                     />
-
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 10,
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        zIndex: 10,
-                        background: "rgba(168,27,30,0.88)",
-                        backdropFilter: "blur(8px)",
-                        borderRadius: 100,
-                        padding: "3px 12px",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: "#fff",
-                        letterSpacing: "0.06em",
-                        textTransform: "uppercase",
-                        whiteSpace: "nowrap",
-                        border: "1px solid rgba(255,255,255,0.15)",
-                      }}
-                    >
-                      🎓 Live Workshop Gallery
-                    </div>
 
                     <Swiper
                       effect="cards"
@@ -643,16 +793,159 @@ const HeroImage = () => {
         onClose={() => setIsModalOpen(false)}
         title="Register for LEGO Robotics Workshop"
       >
-        <div className="p-4">
-          <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSfJfYegfWy-YCE75jDcy3b37Q23a3ppS8uOZXf4YsBNPFItKQ/viewform"
-            width="100%"
-            height="600px"
-            frameBorder="0"
-            title="Registration Form"
-          >
-            Loading Registration Form...
-          </iframe>
+        <div className="registration-shell p-4 sm:p-5">
+          <div className="registration-card p-4 sm:p-6">
+            <div className="mb-5">
+              <h3
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: "1.5rem",
+                  fontWeight: 800,
+                  color: "#1a1a1a",
+                  margin: 0,
+                }}
+              >
+                LEGO Robotics Workshop Registration
+              </h3>
+              <p
+                style={{
+                  fontSize: 14,
+                  color: "#5b5b5b",
+                  lineHeight: 1.6,
+                  margin: "10px 0 0",
+                }}
+              >
+                Register your child for the LEGO Robotics Experience Workshop.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginTop: 12,
+                }}
+              >
+                <span className="trust-pill">Age Group: 4-16 Years</span>
+                <span className="trust-pill">Workshop Fee: Rs. 499</span>
+              </div>
+            </div>
+
+            {formError && <div className="error-banner mb-5">{formError}</div>}
+
+            <form onSubmit={handleFormSubmit}>
+              <div className="registration-grid">
+                <div className="registration-field full-width">
+                  <label className="registration-label" htmlFor="email">
+                    Email *
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="registration-input"
+                    placeholder="Enter your email address"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="registration-field full-width">
+                  <label className="registration-label" htmlFor="contactNumber">
+                    Contact Number (WhatsApp Preferred) *
+                  </label>
+                  <input
+                    id="contactNumber"
+                    name="contactNumber"
+                    type="tel"
+                    required
+                    className="registration-input"
+                    placeholder="Enter contact number"
+                    value={formData.contactNumber}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="registration-field full-width">
+                  <label className="registration-label" htmlFor="childName">
+                    Name of the Child *
+                  </label>
+                  <input
+                    id="childName"
+                    name="childName"
+                    type="text"
+                    required
+                    className="registration-input"
+                    placeholder="Enter child's full name"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="registration-field">
+                  <label className="registration-label" htmlFor="age">
+                    Age *
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="4"
+                    max="16"
+                    required
+                    className="registration-input"
+                    placeholder="4-16"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="registration-field">
+                  <label className="registration-label" htmlFor="city">
+                    City *
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                    className="registration-input"
+                    placeholder="Enter city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="registration-field full-width">
+                  <label className="registration-label" htmlFor="area">
+                    Area / Location *
+                  </label>
+                  <input
+                    id="area"
+                    name="area"
+                    type="text"
+                    required
+                    className="registration-input"
+                    placeholder="Enter area or location"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <p className="registration-note mt-4 mb-4">
+                Please fill in the details below and continue to the integrated
+                payment checkout. Contact form owner:{" "}
+                <strong>gshrikant199980@gmail.com</strong>
+              </p>
+
+              <button type="submit" className="registration-submit">
+                {isInitiatingPayment
+                  ? "Connecting to Payment..."
+                  : "Register & Pay Rs. 499"}
+              </button>
+            </form>
+          </div>
         </div>
       </Modal>
     </div>
