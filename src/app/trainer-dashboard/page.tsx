@@ -72,7 +72,7 @@ type Student = {
 };
 
 const theme = {
-  background: "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100",
+  background: "bg-gradient-to-br from-rose-50 via-red-50 to-orange-100",
   cardBg: "bg-white/70 backdrop-blur-sm",
   textPrimary: "text-gray-900",
   textSecondary: "text-gray-600",
@@ -82,8 +82,8 @@ const theme = {
 };
 
 const chartConfig = {
-  students: { label: "Students", color: "hsl(var(--primary))" },
-  tasks: { label: "Tasks", color: "#2563eb" },
+  students: { label: "Students", color: "#AB2F30" },
+  tasks: { label: "Tasks", color: "#8B1A1B" },
 };
 
 const fallbackTrend = [
@@ -302,7 +302,7 @@ export default function TrainerDashboard() {
                 description: `${student.username} has been assigned to trainer ${trainerName}`,
                 time: registrationTime,
                 icon: GraduationCap,
-                iconColor: "text-emerald-600",
+                iconColor: "text-red-700",
               },
             ]
           : [];
@@ -319,8 +319,8 @@ export default function TrainerDashboard() {
             name: "Task updated",
             description: `${student.username}: ${task.task || "Task"}${task.course ? ` (${task.course})` : ""}`,
             time: new Date(task.dateTime || now),
-            icon: ClipboardCheck,
-            iconColor: "text-blue-600",
+                icon: ClipboardCheck,
+                iconColor: "text-red-700",
           }));
         return [...base, ...taskItems];
       })
@@ -370,11 +370,11 @@ export default function TrainerDashboard() {
       description: "Review students assigned to your courses.",
       href: "/student-list",
       icon: Users,
-      gradient: "from-emerald-500 to-teal-500",
-      bgColor: "bg-emerald-50",
-      iconBg: "bg-gradient-to-br from-emerald-100 to-emerald-200",
-      textColor: "text-emerald-600",
-      hoverColor: "group-hover:text-emerald-600",
+      gradient: "from-[#AB2F30] to-[#8B1A1B]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
       action: "Open roster",
       delay: 0.1,
     },
@@ -383,11 +383,11 @@ export default function TrainerDashboard() {
       description: "Manage student media and gallery content.",
       href: "/media",
       icon: Video,
-      gradient: "from-blue-500 to-indigo-500",
-      bgColor: "bg-blue-50",
-      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
-      textColor: "text-blue-600",
-      hoverColor: "group-hover:text-blue-600",
+      gradient: "from-[#991B1B] to-[#6B1516]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
       action: "Open media",
       delay: 0.2,
     },
@@ -415,7 +415,7 @@ export default function TrainerDashboard() {
                   <div
                     className={`inline-flex items-center gap-3 px-4 py-2 rounded-full ${theme.cardBg} ${theme.shadow} mb-4`}
                   >
-                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    <Sparkles className="w-4 h-4 text-red-700" />
                     <span
                       className={`text-sm font-medium ${theme.textSecondary}`}
                     >
@@ -443,7 +443,7 @@ export default function TrainerDashboard() {
                         />
                       </div>
                     ) : (
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#AB2F30] to-[#8B1A1B] flex items-center justify-center text-white shadow-sm">
                         <User className="w-6 h-6" />
                       </div>
                     )}
@@ -464,7 +464,7 @@ export default function TrainerDashboard() {
                     title="Refresh dashboard"
                   >
                     <RefreshCw
-                      className={`h-4 w-4 text-blue-600 ${isRefreshing ? "animate-spin" : ""}`}
+                      className={`h-4 w-4 text-red-700 ${isRefreshing ? "animate-spin" : ""}`}
                     />
                   </Button>
                 </div>
@@ -477,21 +477,21 @@ export default function TrainerDashboard() {
                 value={overview.totalStudents}
                 change={`${overview.recentStudents} new in 30 days`}
                 trend={overview.recentStudents > 0 ? "up" : "down"}
-                icon={<Users className="h-5 w-5 text-blue-600" />}
+                icon={<Users className="h-5 w-5 text-red-700" />}
               />
               <StatCard
                 title="Active Students"
                 value={overview.activeStudents}
                 change={`${overview.monthlyGrowth}% monthly growth`}
                 trend={overview.monthlyGrowth >= 0 ? "up" : "down"}
-                icon={<GraduationCap className="h-5 w-5 text-emerald-600" />}
+                icon={<GraduationCap className="h-5 w-5 text-red-700" />}
               />
               <StatCard
                 title="Assigned Courses"
                 value={overview.assignedCourses}
                 change={`${overview.completedCourses} completed`}
                 trend={overview.completedCourses > 0 ? "up" : "down"}
-                icon={<BookOpen className="h-5 w-5 text-violet-600" />}
+                icon={<BookOpen className="h-5 w-5 text-red-700" />}
               />
               <StatCard
                 title="Task Completion"
@@ -503,7 +503,7 @@ export default function TrainerDashboard() {
                     ? "up"
                     : "down"
                 }
-                icon={<CheckCircle2 className="h-5 w-5 text-amber-600" />}
+                icon={<CheckCircle2 className="h-5 w-5 text-red-700" />}
               />
             </div>
 
@@ -517,7 +517,10 @@ export default function TrainerDashboard() {
                         Assigned student additions across recent months
                       </CardDescription>
                     </div>
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 bg-red-500/10 text-red-700"
+                    >
                       <TrendingUp className="h-3.5 w-3.5" />
                       {overview.monthlyGrowth}%
                     </Badge>
@@ -539,12 +542,12 @@ export default function TrainerDashboard() {
                         >
                           <stop
                             offset="5%"
-                            stopColor="hsl(var(--primary))"
+                            stopColor="#AB2F30"
                             stopOpacity={0.3}
                           />
                           <stop
                             offset="95%"
-                            stopColor="hsl(var(--primary))"
+                            stopColor="#AB2F30"
                             stopOpacity={0}
                           />
                         </linearGradient>
@@ -579,7 +582,7 @@ export default function TrainerDashboard() {
                       <Area
                         type="monotone"
                         dataKey="students"
-                        stroke="hsl(var(--primary))"
+                        stroke="#AB2F30"
                         strokeWidth={3}
                         fillOpacity={1}
                         fill="url(#trainerGrowth)"
@@ -693,7 +696,7 @@ export default function TrainerDashboard() {
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar
                         dataKey="tasks"
-                        fill="hsl(var(--primary))"
+                        fill="#AB2F30"
                         radius={[4, 4, 0, 0]}
                         barSize={30}
                       />
@@ -846,18 +849,41 @@ function StatCard({
   icon: React.ReactNode;
   trend: "up" | "down";
 }) {
+  const isBrandPrimary =
+    title === "Assigned Students" || title === "Active Students";
+
   return (
-    <Card className="bg-white/50 backdrop-blur-sm transition-all hover:shadow-lg overflow-hidden relative group shadow-lg">
+    <Card
+      className={`transition-all hover:shadow-lg overflow-hidden relative group shadow-lg ${
+        isBrandPrimary
+          ? "border-0 bg-gradient-to-br from-[#6B1516] via-[#8B1A1B] to-[#AB2F30] text-white shadow-red-900/20"
+          : "bg-white/50 backdrop-blur-sm"
+      }`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600">
+        <CardTitle
+          className={`text-sm font-medium ${
+            isBrandPrimary ? "text-red-100/85" : "text-gray-600"
+          }`}
+        >
           {title}
         </CardTitle>
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+        <div
+          className={`text-2xl font-bold ${
+            isBrandPrimary ? "text-white" : "text-gray-900"
+          }`}
+        >
+          {value}
+        </div>
+        <p
+          className={`text-xs mt-1 flex items-center gap-1 ${
+            isBrandPrimary ? "text-red-50" : "text-muted-foreground"
+          }`}
+        >
           {trend === "up" ? (
             <ArrowUpRight className="h-3 w-3 text-green-600" />
           ) : (

@@ -58,6 +58,7 @@ const DroneHero = () => {
       alt: "Drone Workshop 3",
     },
   ];
+  const shouldLoopSlides = staticImages.length > 3;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -508,7 +509,7 @@ const DroneHero = () => {
                       grabCursor
                       modules={[EffectCards, Autoplay]}
                       autoplay={{ delay: 2800, disableOnInteraction: false }}
-                      loop
+                      loop={shouldLoopSlides}
                       className="hero-swiper"
                     >
                       {staticImages.map((image, index) => (
