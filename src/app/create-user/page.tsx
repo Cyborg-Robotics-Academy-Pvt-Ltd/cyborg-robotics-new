@@ -16,26 +16,37 @@ import toast, { Toaster } from "react-hot-toast";
 import {
   BookOpen,
   CheckCircle,
+  Building,
   GraduationCap,
   Loader2,
+  Lock,
   Mail,
   ShieldCheckIcon,
   UserCog,
   UserIcon,
   XCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Dropdown, { DropdownOption } from "../../components/ui/dropdown";
 import courses from "../../../utils/courses";
 import { enhancedCourseData } from "../../data/enhancedCourseData";
 import Head from "next/head";
 import Image from "next/image";
+import {
+  generatePrnNumber,
+  getCenterPrefix,
+  type CenterLocation,
+} from "../../lib/prn-utils";
 
 const CreateUser = () => {
   const router = useRouter();
   const [userRole, setUserRole] = useState("student");
   const [email, setEmail] = useState("");
   const [studentName, setStudentName] = useState("");
+  const [password, setPassword] = useState("");
   const [PrnNumber, setPrnNumber] = useState("");
+  const [selectedCenter, setSelectedCenter] = useState("KALYANI NAGAR");
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [courseDetails, setCourseDetails] = useState<{
     [key: string]: { level: string; classNumber: string; status: string };
@@ -44,6 +55,7 @@ const CreateUser = () => {
   const [prnExists, setPrnExists] = useState(false);
   const [emailChecking, setEmailChecking] = useState(false);
   const [prnChecking, setPrnChecking] = useState(false);
+  const [prnAutoGenerating, setPrnAutoGenerating] = useState(false);
   const [enrollmentSuccess, setEnrollmentSuccess] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
@@ -56,6 +68,7 @@ const CreateUser = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [filteredCourses, setFilteredCourses] = useState<string[]>(courses);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Role options for dropdown
   const roleOptions: DropdownOption[] = [
@@ -76,37 +89,79 @@ const CreateUser = () => {
     },
   ];
 
-  const checkEmailExists = async (email: string) => {
-    if (!email || email.trim() === "") {
-      setEmailExists(false);
-      setEmailChecking(false);
+  const centerOptions: DropdownOption[] = [
+    {
+      value: "KALYANI NAGAR",
+      label: "Kalyani Nagar",
+      icon: <Building className="h-4 w-4" />,
+    },
+    {
+      value: "VIMAN NAGAR",
+      label: "Viman Nagar",
+      icon: <Building className="h-4 w-4" />,
+    },
+  ];
+
+  const handleCenterChange = async (center: string) => {
+    setSelectedCenter(center);
+    await generateNextPrnForCenter(center);
+  };
+
+  const generateNextPrnForCenter = async (center?: string | null) => {
+    setPrnAutoGenerating(true);
+    try {
+      const prefix = getCenterPrefix(center || "");
+      const centerLocation: CenterLocation =
+        prefix === "VN" ? "VIMAN NAGAR" : "KALYANI NAGAR";
+      const nextPrn = await generatePrnNumber(centerLocation);
+      setPrnNumber(nextPrn);
+      setPrnExists(false);
+    } catch (error) {
+      console.error("Error auto-generating PRN:", error);
+    } finally {
+      setPrnAutoGenerating(false);
+    }
+  };
+
+  const populateStudentContext = async (
+    student: { id: string; name: string; email: string },
+    options?: { skipPrnGeneration?: boolean }
+  ) => {
+    setStudentName(student.name);
+    setEmail(student.email);
+    setUsername(student.name);
+    setStudentId(student.id);
+    setEmailExists(true);
+    setShowSuggestions(false);
+
+    if (options?.skipPrnGeneration) {
       return;
     }
 
-    setEmailChecking(true);
     try {
-      // Query students collection to check if email already exists
-      const studentsRef = collection(db, "students");
-      const emailTrimmed = email.trim().toLowerCase();
-
-      const q = query(studentsRef, where("email", "==", emailTrimmed));
-      const querySnapshot = await getDocs(q);
-
-      const exists = !querySnapshot.empty;
-
-      if (exists) {
-        // Get the student ID and username for later use
-        const doc = querySnapshot.docs[0];
-        setStudentId(doc.id);
-        setUsername(doc.data().username || "");
+      const studentDoc = await getDoc(doc(db, "students", student.id));
+      if (!studentDoc.exists()) {
+        await generateNextPrnForCenter();
+        return;
       }
 
-      setEmailExists(exists);
+      const studentData = studentDoc.data();
+      const studentCenter = studentData?.center || studentData?.location;
+      if (studentCenter) {
+        const prefix = getCenterPrefix(studentCenter);
+        setSelectedCenter(prefix === "VN" ? "VIMAN NAGAR" : "KALYANI NAGAR");
+      }
+
+      if (studentData?.PrnNumber) {
+        setPrnNumber(studentData.PrnNumber);
+        setPrnExists(false);
+        return;
+      }
+
+      await generateNextPrnForCenter(studentCenter);
     } catch (error) {
-      console.error("Error checking email:", error);
-      setEmailExists(false);
-    } finally {
-      setEmailChecking(false);
+      console.error("Error loading student context:", error);
+      await generateNextPrnForCenter();
     }
   };
 
@@ -157,6 +212,42 @@ const CreateUser = () => {
       setShowSuggestions(false);
     } finally {
       setSearchingStudents(false);
+    }
+  };
+
+  const checkEmailExists = async (emailValue: string) => {
+    if (!emailValue || emailValue.trim() === "") {
+      setEmailExists(false);
+      setEmailChecking(false);
+      return;
+    }
+
+    setEmailChecking(true);
+    try {
+      const studentsRef = collection(db, "students");
+      const emailTrimmed = emailValue.trim().toLowerCase();
+      const q = query(studentsRef, where("email", "==", emailTrimmed));
+      const querySnapshot = await getDocs(q);
+      const exists = !querySnapshot.empty;
+
+      setEmailExists(exists);
+
+      if (exists) {
+        const existingStudent = querySnapshot.docs[0];
+        setStudentId(existingStudent.id);
+        setUsername(
+          existingStudent.data().fullName ||
+            existingStudent.data().username ||
+            "",
+        );
+      } else {
+        setStudentId("");
+      }
+    } catch (error) {
+      console.error("Error checking email:", error);
+      setEmailExists(false);
+    } finally {
+      setEmailChecking(false);
     }
   };
 
@@ -224,18 +315,16 @@ const CreateUser = () => {
     checkAuth();
   }, [router]);
 
-  // Debounced email checking
   useEffect(() => {
-    if (email) {
-      const timeoutId = setTimeout(() => {
-        checkEmailExists(email);
-      }, 500); // Wait 500ms after user stops typing
+    void generateNextPrnForCenter();
+  }, []);
 
-      return () => clearTimeout(timeoutId);
-    } else {
-      setEmailExists(false);
-      setEmailChecking(false);
-    }
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      void checkEmailExists(email);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
   }, [email]);
 
   // Debounced student name searching
@@ -330,6 +419,24 @@ const CreateUser = () => {
       return;
     }
 
+    if (!password) {
+      setError("Password is required");
+      setEnrolling(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setEnrolling(false);
+      return;
+    }
+
+    if (emailExists) {
+      setError("This email already has an account. You can't create another one.");
+      setEnrolling(false);
+      return;
+    }
+
     if (!PrnNumber) {
       setError("PRN Number is required");
       setEnrolling(false);
@@ -390,33 +497,6 @@ const CreateUser = () => {
       return;
     }
 
-    let studentDocId = studentId;
-
-    // If we don't have studentId, we need to find it
-    if (!studentDocId) {
-      try {
-        // Find by email
-        const studentsRef = collection(db, "students");
-        const emailTrimmed = email.trim().toLowerCase();
-
-        const q = query(studentsRef, where("email", "==", emailTrimmed));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          studentDocId = querySnapshot.docs[0].id;
-        } else {
-          setError("No student found with this email");
-          setEnrolling(false);
-          return;
-        }
-      } catch (error) {
-        console.error("Error finding student:", error);
-        setError("Error finding student. Please try again.");
-        setEnrolling(false);
-        return;
-      }
-    }
-
     try {
       // Prepare course data for enrollment
       const coursesToEnroll = selectedCourses.map((courseName) => ({
@@ -426,12 +506,53 @@ const CreateUser = () => {
         status: courseDetails[courseName]?.status || "ongoing",
       }));
 
+      const currentAdminUid = auth.currentUser?.uid;
+      if (!currentAdminUid) {
+        setError("Admin session not found. Please log in again.");
+        setEnrolling(false);
+        return;
+      }
+
+      const createResponse = await fetch("/api/create-users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          users: [
+            {
+              fullName: studentName.trim(),
+              email: email.trim().toLowerCase(),
+              password,
+              role: "student",
+              center: selectedCenter,
+            },
+          ],
+          adminUid: currentAdminUid,
+        }),
+      });
+
+      const createResult = await createResponse.json();
+      if (!createResponse.ok) {
+        throw new Error(createResult.error || "Failed to create account");
+      }
+
+      const createdStudentUid = createResult?.createdUsers?.[0]?.uid;
+      if (!createdStudentUid) {
+        throw new Error("Student account was created without a valid UID");
+      }
+
       // Update student document with PRN number and courses
       await setDoc(
-        doc(db, "students", studentDocId),
+        doc(db, "students", createdStudentUid),
         {
+          email: email.trim().toLowerCase(),
+          fullName: studentName.trim(),
+          username: studentName.trim(),
           PrnNumber: PrnNumber,
+          center: selectedCenter,
           courses: coursesToEnroll,
+          status: "active",
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -444,9 +565,12 @@ const CreateUser = () => {
       setSelectedCourses([]);
       setCourseDetails({});
       setEmail("");
+      setPassword("");
       setPrnNumber("");
       setStudentId("");
       setUsername("");
+      setStudentName("");
+      void generateNextPrnForCenter();
     } catch (error) {
       console.error("Error enrolling courses:", error);
       setError("Failed to assign PRN and enroll courses. Please try again.");
@@ -575,12 +699,7 @@ const CreateUser = () => {
                             key={student.id}
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
                             onMouseDown={() => {
-                              setStudentName(student.name);
-                              setEmail(student.email);
-                              setUsername(student.name);
-                              setStudentId(student.id);
-                              setShowSuggestions(false);
-                              checkEmailExists(student.email);
+                              void populateStudentContext(student);
                             }}
                           >
                             <div>
@@ -614,25 +733,21 @@ const CreateUser = () => {
                         name="email"
                         type="email"
                         autoComplete="email"
-                        readOnly
-                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-gray-50 ${
+                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
                           emailExists
-                            ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
+                            ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
                             : emailChecking
                               ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
-                              : email && !emailExists
-                                ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
-                                : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
+                              : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
                         }`}
-                        placeholder="Student email will be populated automatically"
+                        placeholder="Enter student email"
                         value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
                         {emailChecking ? (
                           <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                         ) : emailExists ? (
-                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-                        ) : email && !emailExists ? (
                           <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#AB2F30]" />
                         ) : null}
                       </div>
@@ -643,18 +758,49 @@ const CreateUser = () => {
                         <span>Checking email...</span>
                       </p>
                     )}
-                    {emailExists && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-green-600 flex items-center space-x-1.5 sm:space-x-2">
-                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>Student found: {username}</span>
-                      </p>
-                    )}
-                    {email && !emailExists && !emailChecking && (
+                    {emailExists && !emailChecking && (
                       <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-[#AB2F30] flex items-center space-x-1.5 sm:space-x-2">
                         <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>No student found with this email</span>
+                        <span>Already have an account. You can't create another one.</span>
                       </p>
                     )}
+                  </div>
+                  <div className="group">
+                    <label
+                      htmlFor="password"
+                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
+                    >
+                      Password *
+                    </label>
+                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
+                      <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
+                      </div>
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        className="block w-full pl-8 sm:pl-10 md:pl-12 pr-16 sm:pr-16 md:pr-16 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
+                        placeholder="Create password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                        ) : (
+                          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">
+                      Minimum 6 characters. Student will use this to log in.
+                    </p>
                   </div>
                   <div className="group">
                     <label
@@ -672,18 +818,18 @@ const CreateUser = () => {
                         className={`block w-full pl-3 sm:pl-4 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
                           prnExists
                             ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
-                            : prnChecking
+                            : prnChecking || prnAutoGenerating
                               ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
                               : PrnNumber && !prnExists
                                 ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
                                 : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
                         }`}
-                        placeholder="Enter student PRN number"
+                        placeholder="PRN will be generated automatically"
                         value={PrnNumber}
                         onChange={(e) => setPrnNumber(e.target.value)}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
-                        {prnChecking ? (
+                        {prnChecking || prnAutoGenerating ? (
                           <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                         ) : prnExists ? (
                           <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#AB2F30]" />
@@ -692,10 +838,14 @@ const CreateUser = () => {
                         ) : null}
                       </div>
                     </div>
-                    {prnChecking && (
+                    {(prnChecking || prnAutoGenerating) && (
                       <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-yellow-600 flex items-center space-x-1.5 sm:space-x-2">
                         <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Checking PRN availability...</span>
+                        <span>
+                          {prnAutoGenerating
+                            ? "Generating next PRN number..."
+                            : "Checking PRN availability..."}
+                        </span>
                       </p>
                     )}
                     {prnExists && (
@@ -704,12 +854,33 @@ const CreateUser = () => {
                         <span>This PRN number is already assigned</span>
                       </p>
                     )}
-                    {PrnNumber && !prnExists && !prnChecking && (
+                    {PrnNumber && !prnExists && !prnChecking && !prnAutoGenerating && (
                       <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-green-600 flex items-center space-x-1.5 sm:space-x-2">
                         <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>PRN number is available</span>
+                        <span>PRN number is ready. You can still edit it manually.</span>
                       </p>
                     )}
+                  </div>
+
+                  <div className="group">
+                    <label
+                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
+                    >
+                      Center *
+                    </label>
+                    <Dropdown
+                      options={centerOptions}
+                      value={selectedCenter}
+                      onChange={(value) => {
+                        void handleCenterChange(value);
+                      }}
+                      placeholder="Select center"
+                      size="md"
+                      className="w-full"
+                    />
+                    <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">
+                      PRN generation uses the selected center prefix.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -791,7 +962,7 @@ const CreateUser = () => {
                                 }
                               }}
                               className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#AB2F30] focus:ring-[#AB2F30] border-gray-300 rounded transition-all duration-200"
-                              disabled={!emailExists}
+                              disabled={!email.trim()}
                             />
                             <label
                               htmlFor={`course-${courseName}`}
@@ -950,11 +1121,14 @@ const CreateUser = () => {
                   disabled={
                     enrolling ||
                     !email ||
+                    !password ||
                     !studentName ||
                     !PrnNumber ||
                     selectedCourses.length === 0 ||
-                    !emailExists ||
-                    prnExists
+                    emailExists ||
+                    emailChecking ||
+                    prnExists ||
+                    prnAutoGenerating
                   }
                   className="group relative w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto flex justify-center py-2.5 sm:py-3.5 md:py-4 px-4 sm:px-6 md:px-8 border border-transparent rounded-xl sm:rounded-2xl text-white bg-gradient-to-r from-red-700 via-red-800 to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-sm sm:text-base md:text-lg shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
                 >

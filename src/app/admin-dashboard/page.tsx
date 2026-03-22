@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -31,6 +31,9 @@ import {
   Activity,
   CreditCard,
   Download,
+  AlertTriangle,
+  Clock3,
+  CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
@@ -193,16 +196,64 @@ const visitData = [
 const chartConfig = {
   enrollments: {
     label: "Enrollments",
-    color: "hsl(var(--primary))",
+    color: "#AB2F30",
   },
   courses: {
     label: "Courses",
-    color: "#10b981",
+    color: "#8B1A1B",
   },
   visits: {
     label: "Visits",
-    color: "#3b82f6",
+    color: "#AB2F30",
   },
+};
+
+const SUCCESS_PAYMENT_STATUSES = new Set(["SUCCESS", "CHARGED"]);
+const PENDING_PAYMENT_STATUSES = new Set([
+  "PENDING",
+  "CREATED",
+  "AUTHORIZED",
+  "PENDING_VBV",
+]);
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const getRelativeTime = (date: Date) => {
+  const minutesAgo = Math.ceil((Date.now() - date.getTime()) / (1000 * 60));
+  const hoursAgo = Math.floor(minutesAgo / 60);
+  const daysAgo = Math.floor(hoursAgo / 24);
+
+  if (daysAgo > 0) {
+    if (daysAgo === 1) return "1 day ago";
+    if (daysAgo < 30) return `${daysAgo} days ago`;
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  if (hoursAgo > 0) {
+    return `${hoursAgo} hr${hoursAgo !== 1 ? "s" : ""} ago`;
+  }
+
+  return `${minutesAgo} min${minutesAgo !== 1 ? "s" : ""} ago`;
+};
+
+const extractAmount = (value: unknown) => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const cleaned = Number(value.replace(/[^0-9.-]+/g, ""));
+    return Number.isFinite(cleaned) ? cleaned : 0;
+  }
+  return 0;
 };
 
 const AdminDashboard = () => {
@@ -233,7 +284,12 @@ const AdminDashboard = () => {
     totalInstructors: 0,
     activeStudents: 0,
     recentRegistrations: 0,
+    weeklyEnrollments: 0,
     pendingApprovals: 0,
+    totalRevenue: 0,
+    pendingPayments: 0,
+    conversionRate: 0,
+    atRiskStudents: 0,
     monthlyGrowth: 0,
   });
   const [loadingOverview, setLoadingOverview] = useState(true);
@@ -407,7 +463,7 @@ const AdminDashboard = () => {
       // Fetch actual data from Firebase using your collections
       const studentsSnapshot = await getDocs(collection(db, "students"));
       const trainersSnapshot = await getDocs(collection(db, "trainers"));
-      const adminsSnapshot = await getDocs(collection(db, "admins"));
+      const paymentsSnapshot = await getDocs(collection(db, "payments"));
 
       // Get courses from the static courses.ts file
       const coursesModule = await import("../../../utils/courses");
@@ -433,11 +489,50 @@ const AdminDashboard = () => {
         return createdDate >= thirtyDaysAgo;
       }).length;
 
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const weeklyEnrollmentsCount = studentsSnapshot.docs.filter((doc) => {
+        const createdAt = doc.data().createdAt;
+        if (!createdAt) return false;
+        const createdDate = createdAt.toDate
+          ? createdAt.toDate()
+          : new Date(createdAt);
+        return createdDate >= sevenDaysAgo;
+      }).length;
+
       // Calculate pending approvals (students without active status)
       const pendingApprovalsCount = studentsSnapshot.docs.filter((doc) => {
         const status = doc.data().status;
         return !status || (status !== "active" && status !== "Active");
       }).length;
+
+      const atRiskStudentsCount = studentsSnapshot.docs.filter((doc) => {
+        const status = String(doc.data().status || "").toLowerCase();
+        return ["hold", "inactive", "paused", "pending"].includes(status);
+      }).length;
+
+      const successfulPayments = paymentsSnapshot.docs.filter((doc) =>
+        SUCCESS_PAYMENT_STATUSES.has(
+          String(doc.data().status || "").toUpperCase(),
+        ),
+      );
+
+      const pendingPaymentsCount = paymentsSnapshot.docs.filter((doc) =>
+        PENDING_PAYMENT_STATUSES.has(
+          String(doc.data().status || "").toUpperCase(),
+        ),
+      ).length;
+
+      const totalRevenue = successfulPayments.reduce(
+        (sum, doc) => sum + extractAmount(doc.data().amount),
+        0,
+      );
+
+      const conversionRate =
+        studentsSnapshot.size > 0
+          ? Math.round((activeStudentsCount / studentsSnapshot.size) * 100)
+          : 0;
 
       const monthlyGrowth = Math.round(
         (recentRegistrationsCount /
@@ -451,7 +546,12 @@ const AdminDashboard = () => {
         totalInstructors: trainersSnapshot.size, // Trainers are the instructors
         activeStudents: activeStudentsCount, // Count of students with active status
         recentRegistrations: recentRegistrationsCount,
+        weeklyEnrollments: weeklyEnrollmentsCount,
         pendingApprovals: pendingApprovalsCount,
+        totalRevenue,
+        pendingPayments: pendingPaymentsCount,
+        conversionRate,
+        atRiskStudents: atRiskStudentsCount,
         monthlyGrowth: monthlyGrowth,
       };
 
@@ -465,7 +565,12 @@ const AdminDashboard = () => {
         totalInstructors: 0,
         activeStudents: 0,
         recentRegistrations: 0,
+        weeklyEnrollments: 0,
         pendingApprovals: 0,
+        totalRevenue: 0,
+        pendingPayments: 0,
+        conversionRate: 0,
+        atRiskStudents: 0,
         monthlyGrowth: 0,
       });
     } finally {
@@ -521,7 +626,7 @@ const AdminDashboard = () => {
             ? data.createdAt.toDate()
             : new Date(data.createdAt),
           icon: GraduationCap,
-          iconColor: "text-blue-600",
+          iconColor: "text-red-700",
         });
       });
 
@@ -665,19 +770,18 @@ const AdminDashboard = () => {
         const dayStart = new Date(date.setHours(0, 0, 0, 0));
         const dayEnd = new Date(date.setHours(23, 59, 59, 999));
 
-        const visits =
-          students.filter((student) => {
-            const createdAt = student.createdAt;
-            if (!createdAt) return false;
-            const createdDate = createdAt.toDate
-              ? createdAt.toDate()
-              : new Date(createdAt);
-            return createdDate >= dayStart && createdDate <= dayEnd;
-          }).length * 5; // Multiply by 5 to simulate more activity
+        const registrations = students.filter((student) => {
+          const createdAt = student.createdAt;
+          if (!createdAt) return false;
+          const createdDate = createdAt.toDate
+            ? createdAt.toDate()
+            : new Date(createdAt);
+          return createdDate >= dayStart && createdDate <= dayEnd;
+        }).length;
 
         activityData.push({
           day: days[date.getDay()],
-          visits: Math.max(20, visits), // Minimum 20 visits
+          visits: registrations,
         });
       }
 
@@ -787,7 +891,7 @@ const AdminDashboard = () => {
       });
 
       // Convert to chart format and filter out zero counts
-      const courseData = Object.entries(courseEnrollmentMap)
+      const rankedCourseData = Object.entries(courseEnrollmentMap)
         .filter(([_, count]) => count > 0)
         .map(([name, count], index) => ({
           name: name.length > 20 ? name.substring(0, 17) + "..." : name, // Truncate long names
@@ -795,8 +899,25 @@ const AdminDashboard = () => {
           value: count,
           color: name === "Other" ? "#64748b" : colors[index % colors.length],
         }))
-        .sort((a, b) => b.value - a.value) // Sort by count descending
-        .slice(0, 8); // Show top 8 courses plus "Other"
+        .sort((a, b) => b.value - a.value);
+
+      const topCourses = rankedCourseData.slice(0, 3);
+      const remainingValue = rankedCourseData
+        .slice(3)
+        .reduce((sum, item) => sum + item.value, 0);
+
+      const courseData =
+        remainingValue > 0
+          ? [
+              ...topCourses,
+              {
+                name: "Others",
+                fullName: "Other enrolled courses",
+                value: remainingValue,
+                color: "#94a3b8",
+              },
+            ]
+          : topCourses;
 
       // Ensure all entries have required properties
       const validatedCourseData = courseData.map((item) => ({
@@ -863,78 +984,161 @@ const AdminDashboard = () => {
   // Overview cards data
   const overviewCards = [
     {
-      title: "Total Students",
-      value: overviewData.totalUsers, // Students are stored in the students collection
-      change: `+${overviewData.monthlyGrowth}%`,
-      icon: GraduationCap,
-      color: "blue",
-      gradient: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50",
-      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
-      textColor: "text-blue-600",
-      delay: 0.1,
-    },
-    {
-      title: "Total Courses",
-      value: overviewData.totalCourses,
-      change: "+5%",
-      icon: BookOpen,
-      color: "green",
-      gradient: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-50",
-      iconBg: "bg-gradient-to-br from-green-100 to-green-200",
-      textColor: "text-green-600",
-      delay: 0.2,
-    },
-    {
-      title: "Total Instructors",
-      value: overviewData.totalInstructors,
-      change: "",
-      icon: UserCog,
-      color: "purple",
-      gradient: "from-purple-500 to-violet-500",
-      bgColor: "bg-purple-50",
-      iconBg: "bg-gradient-to-br from-purple-100 to-purple-200",
-      textColor: "text-purple-600",
-      delay: 0.3,
-    },
-    {
       title: "Active Students",
       value: overviewData.activeStudents,
-      change: "+10%",
-      icon: User,
-      color: "indigo",
-      gradient: "from-indigo-500 to-purple-500",
-      bgColor: "bg-indigo-50",
-      iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200",
-      textColor: "text-indigo-600",
-      delay: 0.4,
+      change: `+${overviewData.monthlyGrowth}%`,
+      icon: Users,
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#8B1A1B]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      delay: 0.1,
+      trend: "up",
+      emphasis: "primary",
+      helper: `${overviewData.conversionRate}% activation rate`,
     },
     {
-      title: "Recent Registrations",
-      value: overviewData.recentRegistrations,
-      change: "Last 30 days",
-      icon: UserRoundPlus,
-      color: "orange",
-      gradient: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-50",
-      iconBg: "bg-gradient-to-br from-orange-100 to-orange-200",
-      textColor: "text-orange-600",
-      delay: 0.5,
+      title: "Monthly Revenue",
+      value: formatCurrency(overviewData.totalRevenue),
+      change: `${overviewData.pendingPayments} pending`,
+      icon: DollarSign,
+      color: "red",
+      gradient: "from-[#991B1B] to-[#7F1D1D]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      delay: 0.2,
+      trend: "up",
+      emphasis: "primary",
+      helper: "Successful payments collected",
     },
     {
       title: "Pending Approvals",
       value: overviewData.pendingApprovals,
       change: "Awaiting review",
       icon: ClipboardCheck,
+      color: "red",
+      gradient: "from-[#B91C1C] to-[#991B1B]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      delay: 0.3,
+      trend: overviewData.pendingApprovals > 0 ? "down" : "up",
+      helper: "New accounts blocked from activation",
+    },
+    {
+      title: "New Enrollments",
+      value: overviewData.weeklyEnrollments,
+      change: "Last 7 days",
+      icon: ShoppingCart,
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#6B1516]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      delay: 0.4,
+      trend: "up",
+      helper: "Fresh registrations this week",
+    },
+    {
+      title: "Conversion Rate",
+      value: `${overviewData.conversionRate}%`,
+      change: `${overviewData.totalUsers} total students`,
+      icon: TrendingUp,
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#8B1A1B]",
+      bgColor: "bg-orange-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      delay: 0.5,
+      trend: "up",
+      helper: "Registered to active ratio",
+    },
+    {
+      title: "Pending Payments",
+      value: overviewData.pendingPayments,
+      change:
+        overviewData.pendingPayments > 0 ? "Needs follow-up" : "All clear",
+      icon: CreditCard,
       color: "yellow",
       gradient: "from-yellow-500 to-orange-500",
       bgColor: "bg-yellow-50",
       iconBg: "bg-gradient-to-br from-yellow-100 to-yellow-200",
       textColor: "text-yellow-600",
       delay: 0.6,
+      trend: overviewData.pendingPayments > 0 ? "down" : "up",
+      helper: "Open payment transactions",
+    },
+    {
+      title: "At-Risk Students",
+      value: overviewData.atRiskStudents,
+      change: "Hold or inactive",
+      icon: AlertTriangle,
+      color: "rose",
+      gradient: "from-rose-500 to-orange-500",
+      bgColor: "bg-rose-50",
+      iconBg: "bg-gradient-to-br from-rose-100 to-rose-200",
+      textColor: "text-rose-600",
+      delay: 0.7,
+      trend: overviewData.atRiskStudents > 0 ? "down" : "up",
+      helper: "Students needing retention attention",
+    },
+    {
+      title: "Total Instructors",
+      value: overviewData.totalInstructors,
+      change: `${overviewData.totalCourses} active courses`,
+      icon: UserCog,
+      color: "slate",
+      gradient: "from-slate-500 to-slate-700",
+      bgColor: "bg-slate-50",
+      iconBg: "bg-gradient-to-br from-slate-100 to-slate-200",
+      textColor: "text-slate-600",
+      delay: 0.8,
+      trend: "up",
+      helper: "Teaching capacity snapshot",
     },
   ];
+
+  const actionCenterItems = useMemo(
+    () => [
+      {
+        title: "Review pending accounts",
+        description: `${overviewData.pendingApprovals} approvals are waiting for admin action.`,
+        href: "/admin-dashboard/access-control",
+        icon: Clock3,
+        cta: "Open approvals",
+        tone:
+          overviewData.pendingApprovals > 0
+            ? "border-red-200 bg-red-50 text-red-700"
+            : "border-red-200 bg-red-50 text-red-700",
+      },
+      {
+        title: "Follow up on open payments",
+        description: `${overviewData.pendingPayments} payment records are still pending confirmation.`,
+        href: "/admin-dashboard/payment-management",
+        icon: CreditCard,
+        cta: "Check payments",
+        tone:
+          overviewData.pendingPayments > 0
+            ? "border-red-200 bg-red-50 text-red-700"
+            : "border-red-200 bg-red-50 text-red-700",
+      },
+      {
+        title: "Assign new registrations",
+        description: `${overviewData.weeklyEnrollments} new enrollments landed this week and may need course assignment.`,
+        href: "/admin-dashboard/create-user",
+        icon: UserRoundPlus,
+        cta: "View new accounts",
+        tone: "border-red-200 bg-red-50 text-red-700",
+      },
+    ],
+    [
+      overviewData.pendingApprovals,
+      overviewData.pendingPayments,
+      overviewData.weeklyEnrollments,
+    ],
+  );
 
   const dashboardCards = [
     {
@@ -942,12 +1146,12 @@ const AdminDashboard = () => {
       description: "View and manage the list of students and trainers",
       href: "/student-list",
       icon: GraduationCap,
-      color: "emerald",
-      gradient: "from-emerald-500 to-teal-500",
-      bgColor: "bg-emerald-50",
-      iconBg: "bg-gradient-to-br from-emerald-100 to-emerald-200",
-      textColor: "text-emerald-600",
-      hoverColor: "group-hover:text-emerald-600",
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#8B1A1B]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
       borderColor: "border-emerald-200",
       action: "Manage Students",
       delay: 0.1,
@@ -957,13 +1161,13 @@ const AdminDashboard = () => {
       description: "Manage user permissions and access levels",
       href: "/admin-dashboard/access-control",
       icon: Shield,
-      color: "blue",
-      gradient: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-50",
-      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
-      textColor: "text-blue-600",
-      hoverColor: "group-hover:text-blue-600",
-      borderColor: "border-blue-200",
+      color: "red",
+      gradient: "from-[#991B1B] to-[#7F1D1D]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
+      borderColor: "border-red-200",
       action: "Manage Access",
       delay: 0.2,
     },
@@ -972,12 +1176,12 @@ const AdminDashboard = () => {
       description: "Create multiple user accounts without email verification",
       href: "/admin-dashboard/create-user",
       icon: UserRoundPlus,
-      color: "violet",
-      gradient: "from-violet-500 to-purple-500",
-      bgColor: "bg-violet-50",
-      iconBg: "bg-gradient-to-br from-violet-100 to-violet-200",
-      textColor: "text-violet-600",
-      hoverColor: "group-hover:text-violet-600",
+      color: "red",
+      gradient: "from-[#B91C1C] to-[#991B1B]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
       borderColor: "border-violet-200",
       action: "Create Accounts",
       delay: 0.3,
@@ -987,12 +1191,12 @@ const AdminDashboard = () => {
       description: "Assign trainers to students and courses",
       href: "/admin-dashboard/assign-trainer",
       icon: UserCog,
-      color: "purple",
-      gradient: "from-purple-500 to-fuchsia-500",
-      bgColor: "bg-purple-50",
-      iconBg: "bg-gradient-to-br from-purple-100 to-purple-200",
-      textColor: "text-purple-600",
-      hoverColor: "group-hover:text-purple-600",
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#6B1516]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
       borderColor: "border-purple-200",
       action: "Assign Trainers",
       delay: 0.4,
@@ -1117,43 +1321,83 @@ const AdminDashboard = () => {
           </motion.div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {overviewCards.map((card, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            {overviewCards.map((card) => (
               <StatCard
                 key={card.title}
                 title={card.title}
-                value={
-                  typeof card.value === "number"
-                    ? card.value.toString()
-                    : card.value
-                }
+                value={card.value}
                 change={card.change}
                 icon={<card.icon className={`h-4 w-4 ${card.textColor}`} />}
-                trend={index < 4 ? "up" : ""} // First 4 cards show upward trend
-                theme={theme}
+                trend={card.trend}
+                helper={card.helper}
+                emphasis={card.emphasis}
               />
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
+            <Card className="xl:col-span-1 border-0 bg-gradient-to-br from-[#6B1516] via-[#8B1A1B] to-[#AB2F30] text-white shadow-xl shadow-red-900/20">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl text-white">
+                  <Sparkles className="h-5 w-5 " />
+                  Action Center
+                </CardTitle>
+                <CardDescription className="text-red-100/85">
+                  The highest-priority admin tasks from today&apos;s live data.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {actionCenterItems.map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="block rounded-2xl border border-white/15 bg-white/10 p-4 transition hover:bg-white/15"
+                  >
+                    <div className="mb-3 flex items-start gap-3">
+                      <div
+                        className={`rounded-xl border px-2.5 py-2 ${item.tone}`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white">{item.title}</p>
+                        <p className="mt-1 text-sm text-red-50/85">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm font-medium text-red-100">
+                      <span>{item.cta}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Main Enrollment Chart */}
-            <Card className="lg:col-span-2 bg-white/50 backdrop-blur-sm shadow-lg">
+            <Card className="xl:col-span-2 bg-white/50 backdrop-blur-sm shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
                   <CardTitle className="text-xl font-semibold">
                     Enrollment Overview
                   </CardTitle>
                   <CardDescription>
-                    Monthly enrollment trends for the current year
+                    Rolling 12-month enrollment trend with live student
+                    registrations
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="secondary"
-                    className="bg-blue-500/10 text-blue-600"
+                    className="bg-red-500/10 text-red-700"
                   >
                     <TrendingUp className="mr-1 h-3 w-3" /> Growth:{" "}
                     {overviewData.monthlyGrowth}%
+                  </Badge>
+                  <Badge variant="outline">
+                    {overviewData.weeklyEnrollments} this week
                   </Badge>
                 </div>
               </CardHeader>
@@ -1179,12 +1423,12 @@ const AdminDashboard = () => {
                       >
                         <stop
                           offset="5%"
-                          stopColor="hsl(var(--primary))"
+                          stopColor="#AB2F30"
                           stopOpacity={0.3}
                         />
                         <stop
                           offset="95%"
-                          stopColor="hsl(var(--primary))"
+                          stopColor="#AB2F30"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -1196,6 +1440,11 @@ const AdminDashboard = () => {
                     />
                     <XAxis
                       dataKey="month"
+                      label={{
+                        value: "Month",
+                        position: "insideBottom",
+                        offset: -5,
+                      }}
                       axisLine={false}
                       tickLine={false}
                       tick={{
@@ -1206,6 +1455,11 @@ const AdminDashboard = () => {
                       dy={10}
                     />
                     <YAxis
+                      label={{
+                        value: "Enrollments",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
                       axisLine={false}
                       tickLine={false}
                       tick={{
@@ -1220,7 +1474,7 @@ const AdminDashboard = () => {
                     <Area
                       type="monotone"
                       dataKey="enrollments"
-                      stroke="hsl(var(--primary))"
+                      stroke="#AB2F30"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorEnrollments)"
@@ -1245,13 +1499,13 @@ const AdminDashboard = () => {
               <CardHeader>
                 <CardTitle>Courses by Category</CardTitle>
                 <CardDescription>
-                  Distribution of courses based on student enrollments
+                  Top enrolled categories grouped into a readable mix
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 {loadingCategories ? (
                   <div className="flex items-center justify-center h-64 w-full">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
                   </div>
                 ) : (
                   <>
@@ -1315,7 +1569,7 @@ const AdminDashboard = () => {
                                 {item.value} student
                                 {item.value !== 1 ? "s" : ""}
                               </span>
-                              <span className="text-xs font-semibold text-primary">
+                              <span className="text-xs font-semibold text-red-700">
                                 {courseCategoryData.length > 0
                                   ? Math.round(
                                       (item.value /
@@ -1345,7 +1599,7 @@ const AdminDashboard = () => {
               <CardHeader>
                 <CardTitle>Weekly Activity</CardTitle>
                 <CardDescription>
-                  Daily platform activity across the past week
+                  Daily student registrations across the last 7 days
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1382,10 +1636,19 @@ const AdminDashboard = () => {
                         fontSize: 12,
                       }}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [
+                            `${value} registrations`,
+                            "Registrations",
+                          ]}
+                        />
+                      }
+                    />
                     <Bar
                       dataKey="visits"
-                      fill="hsl(var(--primary))"
+                      fill="#AB2F30"
                       radius={[4, 4, 0, 0]}
                       barSize={30}
                     />
@@ -1398,19 +1661,21 @@ const AdminDashboard = () => {
             <Card className="bg-white/50 backdrop-blur-sm shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="space-y-1">
-                  <CardTitle>Recent Activity</CardTitle>
+                  <CardTitle>Activity Feed</CardTitle>
                   <CardDescription>
-                    Latest administrative activities
+                    Live registration and team updates from the last 7 days
                   </CardDescription>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <Link href="/admin-dashboard/new-accounts">
+                  <Button variant="ghost" size="sm">
+                    Review queue
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent>
                 {loadingActivities ? (
                   <div className="flex items-center justify-center h-48">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700"></div>
                   </div>
                 ) : recentActivities.length > 0 ? (
                   <div className="space-y-6">
@@ -1419,33 +1684,7 @@ const AdminDashboard = () => {
                         key={activity.id}
                         name={activity.name}
                         description={activity.description}
-                        time={(() => {
-                          const minutesAgo = Math.ceil(
-                            (new Date().getTime() - activity.time.getTime()) /
-                              (1000 * 60),
-                          );
-                          const hoursAgo = Math.floor(minutesAgo / 60);
-                          const daysAgo = Math.floor(hoursAgo / 24);
-
-                          if (daysAgo > 0) {
-                            if (daysAgo === 1) return "1 day ago";
-                            if (daysAgo < 30) return `${daysAgo} days ago`;
-
-                            // For older dates, show actual date
-                            const activityDate = activity.time;
-                            return activityDate.toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            });
-                          } else if (hoursAgo > 0) {
-                            return `${hoursAgo} hr${hoursAgo !== 1 ? "s" : ""} ago`;
-                          } else {
-                            return `${minutesAgo} min${minutesAgo !== 1 ? "s" : ""} ago`;
-                          }
-                        })()}
+                        time={getRelativeTime(activity.time)}
                         icon={
                           <activity.icon
                             className={`h-4 w-4 ${activity.iconColor}`}
@@ -1573,29 +1812,88 @@ const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ title, value, change, icon, trend, theme }: any) => {
+const StatCard = ({
+  title,
+  value,
+  change,
+  icon,
+  trend,
+  helper,
+  emphasis,
+}: any) => {
+  const isBrandPrimary =
+    emphasis === "primary" &&
+    (title === "Active Students" || title === "Monthly Revenue");
+
   return (
-    <Card className="bg-white/50 backdrop-blur-sm transition-all hover:shadow-lg overflow-hidden relative group shadow-lg">
+    <Card
+      className={`overflow-hidden relative group shadow-lg transition-all hover:shadow-xl ${
+        isBrandPrimary
+          ? "border-0 bg-gradient-to-br from-[#6B1516] via-[#8B1A1B] to-[#AB2F30] text-white shadow-red-900/20"
+          : emphasis === "primary"
+            ? "border-0 bg-slate-950 text-white"
+          : "bg-white/50 backdrop-blur-sm"
+      }`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600">
+        <CardTitle
+          className={`text-sm font-medium ${
+            isBrandPrimary
+              ? "text-red-100/85"
+              : emphasis === "primary"
+                ? "text-slate-300"
+                : "text-gray-600"
+          }`}
+        >
           {title}
         </CardTitle>
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+        <div
+          className={`text-2xl font-bold ${
+            emphasis === "primary" ? "text-white" : "text-gray-900"
+          }`}
+        >
+          {value}
+        </div>
+        {helper ? (
+          <p
+            className={`mt-1 text-xs ${
+              isBrandPrimary
+                ? "text-red-50/85"
+                : emphasis === "primary"
+                  ? "text-slate-300"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {helper}
+          </p>
+        ) : null}
+        <p
+          className={`mt-2 flex items-center gap-1 text-xs ${
+            isBrandPrimary
+              ? "text-red-50"
+              : emphasis === "primary"
+                ? "text-slate-200"
+                : "text-muted-foreground"
+          }`}
+        >
           {trend === "up" ? (
             <ArrowUpRight className="h-3 w-3 text-green-600" />
-          ) : (
+          ) : trend === "down" ? (
             <ArrowDownRight className="h-3 w-3 text-red-600" />
+          ) : (
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
           )}
           <span
             className={
               trend === "up"
                 ? "text-green-600 font-medium"
-                : "text-red-600 font-medium"
+                : trend === "down"
+                  ? "text-red-600 font-medium"
+                  : "text-emerald-600 font-medium"
             }
           >
             {change.split(" ")[0]}
