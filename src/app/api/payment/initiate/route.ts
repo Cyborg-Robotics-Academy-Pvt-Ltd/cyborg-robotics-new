@@ -1,118 +1,271 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
+import { generateCustomerId } from "@/lib/customer-id-utils";
+import { courseData } from "@/data/courseData";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
-type BankResponse = {
-  paymentUrl?: string;
-  transactionReference?: string;
-  orderId?: string;
-  message?: string;
-};
+// Validate required string field
+function requireString(value: unknown, fieldName: string): string | null {
+  if (!value || typeof value !== "string" || !value.trim()) return fieldName;
+  return null;
+}
 
-const pickString = (
-  source: Record<string, unknown>,
-  keys: string[]
-): string | undefined => {
-  for (const key of keys) {
-    const value = source[key];
-    if (typeof value === "string" && value.trim()) return value;
-  }
-  return undefined;
-};
-
-export async function POST(request: Request) {
-  const bankApiUrl = process.env.BANK_API_URL;
-  if (!bankApiUrl) {
-    return NextResponse.json(
-      { success: false, message: "BANK_API_URL is not configured." },
-      { status: 500 }
-    );
-  }
-
-  const apiKey = process.env.BANK_API_KEY;
-  const apiKeyHeader = process.env.BANK_API_KEY_HEADER || "x-api-key";
-  const authToken = process.env.BANK_API_BEARER_TOKEN;
-
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
+    console.log("Payment Initiation Request:", body);
 
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    if (apiKey) headers[apiKeyHeader] = apiKey;
-    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    const {
+      studentName,
+      dateOfBirth,
+      currentAge,
+      schoolName,
+      class: studentClass,
+      board,
+      primaryParentType,
+      primaryParentName,
+      primaryParentContact,
+      primaryParentEmail,
+      currentAddress,
+      permanentAddress,
+      courseKey,
+      paymentType,
+      installmentAmount,
+      paymentRemark,
+      amount: clientAmount,
+    } = body;
 
-    const payload = {
-      amount: body.amount,
-      currency: body.currency || "INR",
-      courseKey: body.courseKey,
-      courseName: body.courseName,
-      paymentMethod: body.paymentMethod,
-      customer: {
-        name: body.studentName,
-        email: body.parentEmail,
-        phone: body.parentPhone,
-      },
-      metadata: {
-        source: "registration_form",
-      },
-    };
+    // --- Input validation (no zod) ---
+    const missingFields: string[] = [];
 
-    const response = await fetch(bankApiUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
+    const fields: [unknown, string][] = [
+      [studentName, "studentName"],
+      [dateOfBirth, "dateOfBirth"],
+      [currentAge, "currentAge"],
+      [schoolName, "schoolName"],
+      [studentClass, "class"],
+      [board, "board"],
+      [primaryParentType, "primaryParentType"],
+      [primaryParentName, "primaryParentName"],
+      [primaryParentContact, "primaryParentContact"],
+      [primaryParentEmail, "primaryParentEmail"],
+      [currentAddress, "currentAddress"],
+      [permanentAddress, "permanentAddress"],
+      [courseKey, "courseKey"],
+    ];
 
-    const rawText = await response.text();
-    let data: Record<string, unknown> = {};
-    try {
-      data = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
-    } catch {
-      data = {};
+    for (const [value, name] of fields) {
+      const error = requireString(value, name);
+      if (error) {
+        console.log(`Missing field: ${name}, value:`, value);
+        missingFields.push(name);
+      }
     }
 
-    if (!response.ok) {
+    if (missingFields.length > 0) {
+      console.log("Validation failed. Missing fields:", missingFields);
       return NextResponse.json(
-        {
-          success: false,
-          message:
-            pickString(data, ["message", "error", "detail"]) ||
-            `Bank API error (${response.status}).`,
-        },
-        { status: response.status }
+        { success: false, message: `Missing required fields: ${missingFields.join(", ")}` },
+        { status: 400 }
       );
     }
 
-    const result: BankResponse = {
-      paymentUrl: pickString(data, [
-        "paymentUrl",
-        "payment_url",
-        "redirectUrl",
-        "redirect_url",
-        "checkoutUrl",
-        "url",
-      ]),
-      transactionReference: pickString(data, [
-        "transactionReference",
-        "transaction_reference",
-        "reference",
-        "txnId",
-        "txn_id",
-        "transactionId",
-        "transaction_id",
-      ]),
-      orderId: pickString(data, ["orderId", "order_id", "paymentId", "payment_id"]),
-      message: pickString(data, ["message"]),
-    };
+    // Email format check
+    if (primaryParentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primaryParentEmail)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    // Phone format check
+    if (primaryParentContact && !/^\d{10}$/.test(primaryParentContact)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid phone number - must be 10 digits" },
+        { status: 400 }
+      );
+    }
+
+    // --- Server-side amount resolution — never trust client ---
+    const course = courseData[courseKey as string];
+    if (!course) {
+      return NextResponse.json(
+        { success: false, message: "Invalid course selection" },
+        { status: 400 }
+      );
+    }
+
+    const coursePrice = course.price;
+    if (!coursePrice || coursePrice <= 0) {
+      return NextResponse.json(
+        { success: false, message: "Course price is not configured" },
+        { status: 500 }
+      );
+    }
+
+    const resolvedPaymentType =
+      paymentType === "installment" ? "installment" : "full";
+
+    // Determine amount to charge
+    let amount: number;
+    if (resolvedPaymentType === "installment") {
+      const parsed = Number(installmentAmount);
+      if (!parsed || isNaN(parsed) || parsed <= 0 || parsed > coursePrice) {
+        return NextResponse.json(
+          { success: false, message: `Installment amount must be between 1 and ${coursePrice}` },
+          { status: 400 }
+        );
+      }
+      amount = parsed;
+    } else {
+      // Default to full payment
+      amount = coursePrice;
+    }
+
+    if (clientAmount && Number(clientAmount) !== amount) {
+      console.warn(
+        `Client amount ignored. Expected ${amount}, got ${clientAmount}. Using server amount.`
+      );
+    }
+
+    // --- Environment variables ---
+    const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+    const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+    const API_KEY = process.env.HDFC_API_KEY;
+    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY || !BASE_URL) {
+      return NextResponse.json(
+        { success: false, message: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    // --- Generate IDs server-side ---
+    const orderId = `ORDER_${randomUUID()}`; // not client-supplied, not predictable
+    const customerId = await generateCustomerId();
+
+    // --- Create Juspay order ---
+    const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-merchantid": MERCHANT_ID,
+        Authorization: `Basic ${Buffer.from(API_KEY + ":").toString("base64")}`,
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        amount,
+        currency: "INR",
+        customer_id: customerId,
+        customer_email: primaryParentEmail,
+        customer_phone: primaryParentContact,
+        return_url: `${BASE_URL}/api/payment/return`,
+        metadata: {
+          studentName,
+          courseName: course.title,
+          courseKey,
+          internalCustomerId: customerId,
+          paymentType: resolvedPaymentType,
+        },
+      }),
+    });
+
+    const juspayData = await juspayResponse.json();
+
+    if (!juspayResponse.ok) {
+      // Log internally, never expose juspay error to client
+      console.error("Juspay order creation failed:", juspayData);
+      return NextResponse.json(
+        { success: false, message: "Failed to create payment order. Please try again." },
+        { status: 502 }
+      );
+    }
+
+    const paymentUrl = juspayData?.payment_links?.web;
+    if (!paymentUrl) {
+      console.error("Juspay did not return a payment URL:", juspayData);
+      return NextResponse.json(
+        { success: false, message: "Payment URL not received. Please try again." },
+        { status: 502 }
+      );
+    }
+
+    // --- Save pending payment record to Firestore before redirecting ---
+    // This ensures we have a record even if user abandons after payment
+    await addDoc(collection(db, "payments"), {
+      orderId,
+      customerId,
+      studentName,
+      courseName: course.title,
+      courseKey,
+      parentEmail: primaryParentEmail,
+      parentPhone: primaryParentContact,
+      studentData: {
+        studentName,
+        dateOfBirth,
+        currentAge,
+        schoolName,
+        class: studentClass,
+        board,
+      },
+      parentData: {
+        primaryParentType,
+        primaryParentName,
+        primaryParentContact,
+        primaryParentEmail,
+      },
+      addressData: {
+        currentAddress,
+        permanentAddress,
+      },
+      course: {
+        key: courseKey,
+        name: course.title,
+        price: coursePrice,
+      },
+      registrationDraft: {
+        studentName,
+        dateOfBirth,
+        currentAge,
+        schoolName,
+        class: studentClass,
+        board,
+        primaryParentType,
+        primaryParentName,
+        primaryParentContact,
+        primaryParentEmail,
+        currentAddress,
+        permanentAddress,
+        selectedCourseKey: courseKey,
+        selectedCourseName: course.title,
+        selectedCourseFee: coursePrice,
+        paymentType: resolvedPaymentType,
+        paidAmount: amount,
+        paymentRemark:
+          resolvedPaymentType === "installment"
+            ? String(paymentRemark || "").trim()
+            : "",
+      },
+      amount,
+      currency: "INR",
+      coursePrice,
+      paymentType: resolvedPaymentType,
+      status: "PENDING",
+      createdAt: serverTimestamp(),
+    });
 
     return NextResponse.json({
       success: true,
-      ...result,
-      raw: data,
+      paymentUrl,
+      orderId,
     });
   } catch (error) {
-    console.error("Bank payment initiation failed:", error);
+    // Log internally, never expose stack trace to client
+    console.error("Payment initiation error:", error);
     return NextResponse.json(
-      { success: false, message: "Unable to initiate bank payment." },
+      { success: false, message: "Payment initiation failed. Please try again." },
       { status: 500 }
     );
   }

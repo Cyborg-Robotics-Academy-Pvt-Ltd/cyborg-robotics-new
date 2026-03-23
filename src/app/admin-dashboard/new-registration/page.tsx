@@ -13,6 +13,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Search,
   Loader2,
   ChevronUp,
@@ -25,6 +32,12 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+
+type FirestoreTimestampLike = {
+  toDate: () => Date;
+};
+
+type FirestoreRecord = Record<string, any>;
 
 interface Registration {
   id: string;
@@ -61,9 +74,118 @@ interface Registration {
   studentRegistrationNo?: string;
   registrationDate?: string;
   dateOfRegistration?: string;
+  selectedCourseKey?: string;
+  selectedCourseName?: string;
+  selectedCourseFee?: number | string;
+  paymentType?: string;
+  paidAmount?: number | string;
+  paymentRemark?: string;
+  createdAt?: FirestoreTimestampLike | string;
+  orderId?: string;
 }
 
-const ITEMS_PER_PAGE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
+
+const isFirestoreTimestampLike = (
+  value: unknown,
+): value is FirestoreTimestampLike => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (value as FirestoreTimestampLike).toDate === "function"
+  );
+};
+
+const getRegistrationDateValue = (registration: Registration) => {
+  if (isFirestoreTimestampLike(registration.createdAt)) {
+    return registration.createdAt.toDate().getTime();
+  }
+
+  if (typeof registration.createdAt === "string") {
+    const createdAtTimestamp = new Date(registration.createdAt).getTime();
+
+    if (!Number.isNaN(createdAtTimestamp)) {
+      return createdAtTimestamp;
+    }
+  }
+
+  const dateValue =
+    registration.dateOfRegistration ||
+    registration.registrationDate ||
+    registration.dateOfJoining;
+
+  if (!dateValue) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const parsedDate = new Date(dateValue);
+  const timestamp = parsedDate.getTime();
+
+  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+};
+
+const normalizeRegistration = (
+  record: FirestoreRecord,
+  id: string,
+): Registration => {
+  const draft = record.registrationDraft || {};
+  const course = record.course || {};
+  const studentData = record.studentData || {};
+  const parentData = record.parentData || {};
+
+  return {
+    id,
+    orderId: record.orderId,
+    studentName:
+      record.studentName ||
+      draft.studentName ||
+      studentData.studentName ||
+      studentData.fullName ||
+      "",
+    dateOfBirth: record.dateOfBirth || draft.dateOfBirth || studentData.dateOfBirth || "",
+    currentAge: record.currentAge || draft.currentAge || studentData.currentAge || "",
+    schoolName: record.schoolName || draft.schoolName || studentData.schoolName || "",
+    class: record.class || draft.class || studentData.class || "",
+    board: record.board || draft.board || studentData.board || "",
+    primaryParentType:
+      record.primaryParentType || draft.primaryParentType || parentData.primaryParentType || "",
+    primaryParentName:
+      record.primaryParentName ||
+      draft.primaryParentName ||
+      parentData.primaryParentName ||
+      "",
+    primaryParentContact:
+      record.primaryParentContact ||
+      record.parentPhone ||
+      draft.primaryParentContact ||
+      parentData.primaryParentContact ||
+      "",
+    primaryParentEmail:
+      record.primaryParentEmail ||
+      record.parentEmail ||
+      draft.primaryParentEmail ||
+      parentData.primaryParentEmail ||
+      "",
+    currentAddress: record.currentAddress || draft.currentAddress || "",
+    permanentAddress: record.permanentAddress || draft.permanentAddress || "",
+    selectedCourseKey:
+      record.selectedCourseKey || record.courseKey || draft.selectedCourseKey || course.key || "",
+    selectedCourseName:
+      record.selectedCourseName || record.courseName || draft.selectedCourseName || course.name || "",
+    selectedCourseFee:
+      record.selectedCourseFee || draft.selectedCourseFee || course.price || record.amount || "",
+    paymentType: record.paymentType || draft.paymentType || "",
+    paidAmount: record.paidAmount || draft.paidAmount || record.amount || "",
+    paymentRemark: record.paymentRemark || draft.paymentRemark || "",
+    dateOfRegistration:
+      record.dateOfRegistration ||
+      draft.dateOfRegistration ||
+      record.createdAt?.toDate?.()?.toISOString?.().split("T")[0] ||
+      "",
+    createdAt: record.createdAt,
+  };
+};
 
 const Page = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -74,10 +196,14 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Registration;
     direction: "asc" | "desc";
-  } | null>(null);
+  }>({
+    key: "dateOfRegistration",
+    direction: "desc",
+  });
   const [exporting, setExporting] = useState(false);
 
   const fetchRegistrations = useCallback(async () => {
@@ -86,13 +212,34 @@ const Page = () => {
       setError(null);
       const db = getFirestore(app);
       const registrationsCollection = collection(db, "registrations");
-      const snapshot = await getDocs(registrationsCollection);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Registration, "id">),
-      }));
-      setRegistrations(data);
-      setFilteredRegistrations(data);
+      const paymentsCollection = collection(db, "payments");
+
+      const [registrationsSnapshot, paymentsSnapshot] = await Promise.all([
+        getDocs(registrationsCollection),
+        getDocs(paymentsCollection),
+      ]);
+
+      const registrationData = registrationsSnapshot.docs.map((doc) =>
+        normalizeRegistration(doc.data() as FirestoreRecord, doc.id),
+      );
+
+      const paymentFallbackData = paymentsSnapshot.docs.map((doc) => {
+        const payment = doc.data() as FirestoreRecord;
+        return normalizeRegistration(payment, `payment-${doc.id}`);
+      });
+
+      const merged = [...registrationData, ...paymentFallbackData].filter(
+        (item, index, array) => {
+          const itemKey = item.orderId || item.id;
+          return (
+            index ===
+            array.findIndex((entry) => (entry.orderId || entry.id) === itemKey)
+          );
+        },
+      );
+
+      setRegistrations(merged);
+      setFilteredRegistrations(merged);
     } catch {
       setError("Failed to load registrations. Please try again later.");
     } finally {
@@ -116,17 +263,28 @@ const Page = () => {
         reg.studentName?.toLowerCase().includes(term) ||
         reg.primaryParentName?.toLowerCase().includes(term) ||
         reg.schoolName?.toLowerCase().includes(term) ||
-        reg.dateOfRegistration?.toLowerCase().includes(term)
+        reg.dateOfRegistration?.toLowerCase().includes(term) ||
+        reg.selectedCourseName?.toLowerCase().includes(term) ||
+        reg.paymentType?.toLowerCase().includes(term) ||
+        reg.paymentRemark?.toLowerCase().includes(term),
     );
     setFilteredRegistrations(filtered);
     setCurrentPage(1);
   }, [searchTerm, registrations]);
 
   const sortedRegistrations = useMemo(() => {
-    if (!sortConfig) return filteredRegistrations;
     return [...filteredRegistrations].sort((a, b) => {
-      const aValue = a[sortConfig.key] || "";
-      const bValue = b[sortConfig.key] || "";
+      if (sortConfig.key === "dateOfRegistration") {
+        const aValue = getRegistrationDateValue(a);
+        const bValue = getRegistrationDateValue(b);
+
+        return sortConfig.direction === "asc"
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+
+      const aValue = String(a[sortConfig.key] ?? "");
+      const bValue = String(b[sortConfig.key] ?? "");
       return sortConfig.direction === "asc"
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
@@ -137,7 +295,7 @@ const Page = () => {
     setSortConfig((prev) =>
       prev?.key === key && prev.direction === "asc"
         ? { key, direction: "desc" }
-        : { key, direction: "asc" }
+        : { key, direction: "asc" },
     );
   };
 
@@ -149,16 +307,18 @@ const Page = () => {
       worksheet.columns = [
         { header: "Registration Date", key: "dateOfRegistration", width: 20 },
         { header: "Student Name", key: "studentName", width: 25 },
-        { header: "DOB", key: "dateOfBirth", width: 15 },
         { header: "Age", key: "currentAge", width: 10 },
         { header: "School", key: "schoolName", width: 25 },
         { header: "Class", key: "class", width: 10 },
-        { header: "Board", key: "board", width: 15 },
         { header: "Primary Parent", key: "primaryParentName", width: 20 },
         { header: "Primary Contact", key: "primaryParentContact", width: 15 },
         { header: "Primary Email", key: "primaryParentEmail", width: 20 },
-        { header: "Current Address", key: "currentAddress", width: 25 },
         { header: "Permanent Address", key: "permanentAddress", width: 25 },
+        { header: "Course", key: "selectedCourseName", width: 25 },
+        { header: "Course Fee", key: "selectedCourseFee", width: 15 },
+        { header: "Payment Type", key: "paymentType", width: 15 },
+        { header: "Paid Amount", key: "paidAmount", width: 15 },
+        { header: "Payment Remark", key: "paymentRemark", width: 30 },
       ];
       sortedRegistrations.forEach((reg) => worksheet.addRow(reg));
       const buffer = await workbook.xlsx.writeBuffer();
@@ -168,11 +328,15 @@ const Page = () => {
     }
   };
 
-  const totalPages = Math.ceil(sortedRegistrations.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(sortedRegistrations.length / itemsPerPage));
   const paginated = sortedRegistrations.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   return (
     <motion.div
@@ -245,20 +409,24 @@ const Page = () => {
                       {[
                         { key: "dateOfRegistration", label: "Date" },
                         { key: "studentName", label: "Name" },
-                        { key: "dateOfBirth", label: "DOB" },
                         { key: "currentAge", label: "Age" },
                         { key: "schoolName", label: "School" },
                         { key: "class", label: "Class" },
+                        { key: "selectedCourseName", label: "Course" },
+                        { key: "paymentType", label: "Payment Type" },
+                        { key: "paidAmount", label: "Paid Amount" },
+                        { key: "paymentRemark", label: "Payment Remark" },
                         { key: "primaryParentName", label: "Parent" },
                         { key: "primaryParentContact", label: "Contact" },
-                        { key: "currentAddress", label: "Current Addr" },
                       ].map((col) => (
                         <TableHead
                           key={col.label}
                           onClick={() =>
                             col.key && handleSort(col.key as keyof Registration)
                           }
-                          className="cursor-pointer  px-4 py-3"
+                          className={`cursor-pointer px-4 py-3 ${
+                            col.key === "dateOfRegistration" ? "w-28" : ""
+                          }`}
                         >
                           <div className="flex items-center gap-1">
                             {col.label}
@@ -279,30 +447,54 @@ const Page = () => {
                         key={reg.id}
                         className={`${i % 2 ? "bg-gray-50" : "bg-white"}`}
                       >
-                        <TableCell>{reg.dateOfRegistration || "-"}</TableCell>
+                        <TableCell className="min-w-32">
+                          {reg.dateOfRegistration || "-"}
+                        </TableCell>
                         <TableCell>{reg.studentName || "-"}</TableCell>
-                        <TableCell>{reg.dateOfBirth || "-"}</TableCell>
                         <TableCell>{reg.currentAge || "-"}</TableCell>
                         <TableCell>{reg.schoolName || "-"}</TableCell>
                         <TableCell>{reg.class || "-"}</TableCell>
+                        <TableCell>{reg.selectedCourseName || "-"}</TableCell>
+                        <TableCell>{reg.paymentType || "-"}</TableCell>
+                        <TableCell>{reg.paidAmount ?? "-"}</TableCell>
+                        <TableCell>{reg.paymentRemark || "-"}</TableCell>
                         <TableCell>{reg.primaryParentName || "-"}</TableCell>
                         <TableCell>{reg.primaryParentContact || "-"}</TableCell>
-                        <TableCell>{reg.currentAddress || "-"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
-              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white">
-                <span className="text-sm">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                  {Math.min(
-                    currentPage * ITEMS_PER_PAGE,
-                    sortedRegistrations.length
-                  )}{" "}
-                  of {sortedRegistrations.length}
-                </span>
-                <div className="flex gap-2">
+              <div className="flex flex-col gap-4 p-4 bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
+                  <span>
+                    Showing {(currentPage - 1) * itemsPerPage + 1}-
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      sortedRegistrations.length,
+                    )} {""}
+                    of {sortedRegistrations.length}
+                  </span>
+                  <Select
+                    value={String(itemsPerPage)}
+                    onValueChange={(value) => {
+                      setItemsPerPage(Number(value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px] bg-white text-black">
+                      <SelectValue placeholder="Rows per page" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={String(size)}>
+                          {size} / page
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -311,18 +503,17 @@ const Page = () => {
                   >
                     Prev
                   </Button>
-                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(
-                    (n) => (
-                      <Button
-                        key={n}
-                        size="sm"
-                        variant={n === currentPage ? "default" : "outline"}
-                        onClick={() => setCurrentPage(n)}
-                      >
-                        {n}
-                      </Button>
-                    )
-                  )}
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((n) => (
+                    <Button
+                      key={n}
+                      size="sm"
+                      variant={n === currentPage ? "default" : "outline"}
+                      onClick={() => setCurrentPage(n)}
+                      className="min-w-10"
+                    >
+                      {n}
+                    </Button>
+                  ))}
                   <Button
                     variant="outline"
                     size="sm"
@@ -344,3 +535,4 @@ const Page = () => {
 };
 
 export default Page;
+

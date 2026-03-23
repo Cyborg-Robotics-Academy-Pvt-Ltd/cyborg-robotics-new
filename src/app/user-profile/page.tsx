@@ -7,7 +7,6 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 import Image from "next/image";
 import {
-  User,
   Mail,
   Phone,
   Calendar,
@@ -16,6 +15,7 @@ import {
   Save,
   X,
   Camera,
+  User,
 } from "lucide-react";
 
 const UserProfile = () => {
@@ -26,11 +26,11 @@ const UserProfile = () => {
   const [editedUsername, setEditedUsername] = useState("");
   const [saving, setSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showProfilePreview, setShowProfilePreview] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     if (authLoading) return;
-
     if (!authUser) {
       router.push("/login");
       return;
@@ -53,10 +53,8 @@ const UserProfile = () => {
           default:
             collectionName = "students";
         }
-
         const userDocRef = doc(db, collectionName, authUser.uid);
         const userDoc = await getDoc(userDocRef);
-
         if (userDoc.exists()) {
           const data = userDoc.data();
           setProfileData(data);
@@ -68,36 +66,28 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-
     fetchProfileData();
   }, [authUser, userRole, authLoading, router]);
 
+  const getCollectionName = () => {
+    switch (userRole) {
+      case "admin":
+        return "admins";
+      case "trainer":
+        return "trainers";
+      case "student":
+        return "students";
+      default:
+        return "students";
+    }
+  };
+
   const handleSaveUsername = async () => {
     if (!authUser || !userRole || !editedUsername.trim()) return;
-
     try {
       setSaving(true);
-      let collectionName = "";
-      switch (userRole) {
-        case "admin":
-          collectionName = "admins";
-          break;
-        case "trainer":
-          collectionName = "trainers";
-          break;
-        case "student":
-          collectionName = "students";
-          break;
-        default:
-          collectionName = "students";
-      }
-
-      const userDocRef = doc(db, collectionName, authUser.uid);
-      await updateDoc(userDocRef, {
-        username: editedUsername.trim(),
-      });
-
-      // Update local state
+      const userDocRef = doc(db, getCollectionName(), authUser.uid);
+      await updateDoc(userDocRef, { username: editedUsername.trim() });
       setProfileData({ ...profileData, username: editedUsername.trim() });
       setIsEditingUsername(false);
     } catch (error) {
@@ -109,81 +99,38 @@ const UserProfile = () => {
   };
 
   const handleProfilePictureUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (!file || !authUser) return;
-
     try {
       setIsUploading(true);
-
-      // Create FormData for the file upload
       const formData = new FormData();
       formData.append("file", file);
       formData.append("userId", authUser.uid);
       formData.append("userType", userRole || "student");
-
-      // Upload to Cloudinary via your API route
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-
       const data = await response.json();
-
-      if (!response.ok || !data.imageUrl) {
+      if (!response.ok || !data.imageUrl)
         throw new Error(data.error || "Failed to upload image");
-      }
-
-      // Update Firestore with the new image URL
-      let collectionName = "";
-      switch (userRole) {
-        case "admin":
-          collectionName = "admins";
-          break;
-        case "trainer":
-          collectionName = "trainers";
-          break;
-        case "student":
-          collectionName = "students";
-          break;
-        default:
-          collectionName = "students";
-      }
-
-      const userDocRef = doc(db, collectionName, authUser.uid);
-
-      // Update with the new image URL in the profileimage field
-      const updateData = { profileimage: data.imageUrl };
-
-      await updateDoc(userDocRef, updateData);
-
-      // Update local state with the profile image
-      setProfileData({
-        ...profileData,
-        profileimage: data.imageUrl,
-      });
+      const userDocRef = doc(db, getCollectionName(), authUser.uid);
+      await updateDoc(userDocRef, { profileimage: data.imageUrl });
+      setProfileData({ ...profileData, profileimage: data.imageUrl });
     } catch (error: any) {
       console.error("Error uploading profile picture:", error);
       alert("Failed to upload profile picture. Please try again.");
     } finally {
       setIsUploading(false);
-      // Reset the file input
-      if (e.target) {
-        e.target.value = "";
-      }
+      if (e.target) e.target.value = "";
     }
   };
 
-  if (authLoading || loading) {
-    return <AuthLoadingSpinner />;
-  }
+  if (authLoading || loading) return <AuthLoadingSpinner />;
+  if (!authUser) return null;
 
-  if (!authUser) {
-    return null;
-  }
-
-  // Format the creation date
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-GB", {
@@ -193,92 +140,122 @@ const UserProfile = () => {
     });
   };
 
-  // Determine display name with proper fallback for all user roles
   const getDisplayName = () => {
-    // Check for username field first (consistent with admin dashboard)
-    if (profileData?.username && profileData.username.trim()) {
-      return profileData.username.trim();
-    }
-
-    // Fallback to name field
-    if (profileData?.name && profileData.name.trim()) {
-      return profileData.name.trim();
-    }
-
-    // Fallback to auth user display name
-    if (authUser.displayName && authUser.displayName.trim()) {
-      return authUser.displayName.trim();
-    }
-
-    // Extract name from email if available
+    if (profileData?.username?.trim()) return profileData.username.trim();
+    if (profileData?.name?.trim()) return profileData.name.trim();
+    if (authUser.displayName?.trim()) return authUser.displayName.trim();
     if (authUser.email) {
       const emailName = authUser.email.split("@")[0];
       return emailName.charAt(0).toUpperCase() + emailName.slice(1);
     }
-
-    // Default fallback
     return "User";
   };
+
+  const getInitials = () => {
+    const name = getDisplayName();
+    return name
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const profileImageSrc =
+    profileData?.profileimage ||
+    profileData?.imageUrl ||
+    (Array.isArray(profileData?.imageUrls) ? profileData.imageUrls[0] : null);
+
+  const statusColorMap: Record<string, string> = {
+    active: "bg-green-50 text-green-700 border border-green-200",
+    inactive: "bg-red-50 text-red-700 border border-red-200",
+  };
+  const statusColor = profileData?.status
+    ? (statusColorMap[profileData.status] ??
+      "bg-yellow-50 text-yellow-700 border border-yellow-200")
+    : "";
 
   return (
     <div className="min-h-full bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-xs">
-        {/* ID Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative">
-          {/* Decorative Background Pattern - Reduced height */}
-          <div className="absolute top-0 left-0 w-full h-32 overflow-hidden">
-            <div className="absolute -top-10 -left-10 w-24 h-24 bg-red-400 opacity-20 transform rotate-45"></div>
-            <div className="absolute top-5 -right-5 w-20 h-20 bg-red-500 opacity-20 transform rotate-12"></div>
-            <div className="absolute -top-5 right-10 w-16 h-16 bg-red-300 opacity-20 transform -rotate-45"></div>
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            border: "0.5px solid rgba(0,0,0,0.1)",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          }}
+        >
+          {/* â”€â”€ Header â”€â”€ */}
+          <div
+            className="relative p-5 overflow-hidden"
+            style={{
+              background: "#A81B1E",
+              paddingBottom: "44px",
+            }}
+          >
+            {/* Decorative circles */}
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-white opacity-[0.06]" />
+            <div className="absolute -bottom-5 -left-5 w-16 h-16 rounded-full bg-white opacity-[0.04]" />
+            <p
+              className="relative text-white font-bold tracking-[2.5px] uppercase"
+              style={{ fontFamily: "'Syne', sans-serif", fontSize: "11px" }}
+            >
+              Cyborg Robotics
+            </p>
           </div>
 
-          {/* Header with Logo */}
-          <div className="relative bg-gradient-to-r from-red-800 to-red-700 p-4 pb-12">
-            <div className="text-white text-lg font-bold">CYBORG ROBOTICS</div>
-          </div>
-
-          {/* Photo */}
-          <div className="relative -mt-12 flex justify-center">
-            <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 relative group">
-              {profileData?.profileimage ? (
-                <Image
-                  src={profileData.profileimage}
-                  alt={profileData?.username || profileData?.name || "User"}
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-cover"
-                />
-              ) : profileData?.imageUrls && profileData.imageUrls[0] ? (
-                <Image
-                  src={profileData.imageUrls[0]}
-                  alt={profileData?.username || profileData?.name || "User"}
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-cover"
-                />
-              ) : profileData?.imageUrl ? (
-                <Image
-                  src={profileData.imageUrl}
-                  alt={profileData?.username || profileData?.name || "User"}
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-cover"
-                />
+          {/* â”€â”€ Avatar â”€â”€ */}
+          <div className="flex justify-center" style={{ marginTop: "-36px" }}>
+            <div className="relative w-[76px] h-[76px]">
+              {profileImageSrc ? (
+                <button
+                  type="button"
+                  onClick={() => setShowProfilePreview(true)}
+                  className="block w-full h-full"
+                  aria-label="View profile photo"
+                >
+                  <Image
+                    src={profileImageSrc}
+                    alt={getDisplayName()}
+                    width={76}
+                    height={76}
+                    className="w-full h-full object-cover rounded-full"
+                    style={{ border: "3px solid white" }}
+                    unoptimized
+                  />
+                </button>
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-12 h-12 text-gray-400" />
-                </div>
+                <label
+                  htmlFor="profile-picture-upload"
+                  className="flex items-center justify-center w-full h-full rounded-full cursor-pointer"
+                  style={{
+                    border: "3px solid white",
+                    background: "#062341",
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "20px",
+                    color: "white",
+                  }}
+                >
+                  {getInitials()}
+                </label>
               )}
 
-              {/* Camera icon overlay for uploading */}
+              {/* Camera button */}
               <label
-                className="absolute inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                 htmlFor="profile-picture-upload"
+                className="absolute bottom-0 right-0 flex items-center justify-center cursor-pointer"
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "50%",
+                  background: "#062341",
+                  border: "2px solid white",
+                }}
               >
-                <Camera className="w-6 h-6 text-white" />
+                <Camera className="w-[9px] h-[9px] text-white" />
               </label>
 
-              {/* Hidden file input */}
               <input
                 id="profile-picture-upload"
                 type="file"
@@ -288,170 +265,262 @@ const UserProfile = () => {
                 disabled={isUploading}
               />
 
-              {/* Upload indicator */}
+              {/* Upload overlay */}
               {isUploading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Name */}
-          <div className="text-center  px-4">
+          {/* â”€â”€ Name â”€â”€ */}
+          <div className="px-5">
             {isEditingUsername ? (
-              <div className="flex flex-col items-center gap-3 py-2">
+              <div className="flex flex-col items-center gap-3 py-3">
                 <input
                   type="text"
                   value={editedUsername}
                   onChange={(e) => setEditedUsername(e.target.value)}
-                  className="text-lg font-bold text-gray-800 bg-gray-100 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-red-500 text-center"
                   autoFocus
+                  className="w-full rounded-lg px-3 py-2 text-center text-base font-bold bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  style={{ fontFamily: "'Syne', sans-serif" }}
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveUsername}
                     disabled={saving || !editedUsername.trim()}
-                    className="px-3 py-1 rounded-lg bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-medium disabled:opacity-50 transition-colors"
                   >
-                    <Save className="w-4 h-4 text-white" />
-                    <span className="text-white text-sm font-medium">Save</span>
+                    <Save className="w-3 h-3" /> Save
                   </button>
                   <button
                     onClick={() => {
                       setIsEditingUsername(false);
                       setEditedUsername(profileData?.username || "");
                     }}
-                    className="px-3 py-1 rounded-lg bg-gray-500 hover:bg-gray-600 flex items-center gap-1 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium transition-colors"
                   >
-                    <X className="w-4 h-4 text-white" />
-                    <span className="text-white text-sm font-medium">
-                      Cancel
-                    </span>
+                    <X className="w-3 h-3" /> Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-2 py-2">
-                <h2 className="text-xl font-bold text-gray-800">
+              <div className="flex items-center justify-center gap-2 pt-3 pb-1">
+                <h2
+                  className="text-lg font-bold text-gray-900"
+                  style={{ fontFamily: "'Syne', sans-serif" }}
+                >
                   {getDisplayName()}
                 </h2>
                 <button
                   onClick={() => setIsEditingUsername(true)}
-                  className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+                  className="flex items-center justify-center rounded-full transition-colors"
+                  style={{
+                    width: "26px",
+                    height: "26px",
+                    background: "rgba(0,0,0,0.05)",
+                    flexShrink: 0,
+                  }}
                   aria-label="Edit username"
                 >
-                  <Edit className="w-4 h-4 text-gray-700" />
+                  <Edit className="w-3 h-3 text-gray-500" />
                 </button>
               </div>
             )}
+
+            {/* Role pill */}
+            <div className="flex justify-center pb-3">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.6px] px-2.5 py-1 rounded-full"
+                style={{ background: "rgba(8,85,171,0.09)", color: "#0855AB" }}
+              >
+                <Award className="w-[9px] h-[9px]" />
+                {profileData?.superAdmin ? "Super Admin" : userRole || "User"}
+              </span>
+            </div>
           </div>
 
-          {/* Details - Reduced padding */}
-          <div className="p-4 space-y-2">
-            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Award className="w-4 h-4 text-red-600" />
+          {/* â”€â”€ Info Rows â”€â”€ */}
+          <div className="px-4 pb-4 flex flex-col gap-1.5">
+            {/* Email */}
+            <div
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+              style={{ background: "rgba(0,0,0,0.03)" }}
+            >
+              <div
+                className="flex items-center justify-center rounded-lg flex-shrink-0"
+                style={{
+                  width: "30px",
+                  height: "30px",
+                  background: "rgba(8,85,171,0.09)",
+                }}
+              >
+                <Mail className="w-3.5 h-3.5" style={{ color: "#0855AB" }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 font-medium">ROLE</p>
-                <p className="text-sm text-gray-800 font-semibold uppercase">
-                  {profileData?.superAdmin ? "Super Admin" : userRole || "User"}
+              <div className="min-w-0">
+                <p className="text-[9.5px] font-medium uppercase tracking-[0.9px] text-gray-400">
+                  Email
                 </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Mail className="w-4 h-4 text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 font-medium">EMAIL</p>
-                <p className="text-sm text-gray-800 font-semibold truncate">
+                <p className="text-[12.5px] font-medium text-gray-800 truncate">
                   {authUser.email}
                 </p>
               </div>
             </div>
 
+            {/* Phone */}
             {profileData?.phoneNumber && (
-              <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-4 h-4 text-green-600" />
+              <div
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                style={{ background: "rgba(0,0,0,0.03)" }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-lg flex-shrink-0"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    background: "rgba(22,163,74,0.09)",
+                  }}
+                >
+                  <Phone className="w-3.5 h-3.5 text-green-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 font-medium">PHONE</p>
-                  <p className="text-sm text-gray-800 font-semibold">
+                <div className="min-w-0">
+                  <p className="text-[9.5px] font-medium uppercase tracking-[0.9px] text-gray-400">
+                    Phone
+                  </p>
+                  <p className="text-[12.5px] font-medium text-gray-800">
                     {profileData.phoneNumber}
                   </p>
                 </div>
               </div>
             )}
 
-            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 h-4 text-purple-600" />
+            {/* Member Since */}
+            <div
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+              style={{ background: "rgba(0,0,0,0.03)" }}
+            >
+              <div
+                className="flex items-center justify-center rounded-lg flex-shrink-0"
+                style={{
+                  width: "30px",
+                  height: "30px",
+                  background: "rgba(124,58,237,0.09)",
+                }}
+              >
+                <Calendar className="w-3.5 h-3.5 text-purple-600" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 font-medium">
-                  MEMBER SINCE
+              <div className="min-w-0">
+                <p className="text-[9.5px] font-medium uppercase tracking-[0.9px] text-gray-400">
+                  Member Since
                 </p>
-                <p className="text-sm text-gray-800 font-semibold">
+                <p className="text-[12.5px] font-medium text-gray-800">
                   {formatDate(authUser.metadata?.creationTime)}
                 </p>
               </div>
             </div>
 
-            <>
-              {profileData?.PrnNumber && (
-                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-                  <div className="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-cyan-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 font-medium">
-                      PRN NUMBER
-                    </p>
-                    <p className="text-sm text-gray-800 font-semibold truncate">
-                      {profileData.PrnNumber}
-                    </p>
-                  </div>
+            {/* PRN */}
+            {profileData?.PrnNumber && (
+              <div
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                style={{ background: "rgba(0,0,0,0.03)" }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-lg flex-shrink-0"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    background: "rgba(6,148,162,0.09)",
+                  }}
+                >
+                  <User className="w-3.5 h-3.5 text-cyan-600" />
                 </div>
-              )}
-              {profileData?.status && (
-                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 font-medium">STATUS</p>
-                    <p className="text-sm text-gray-800 font-semibold truncate">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          profileData.status === "active"
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : profileData.status === "inactive"
-                              ? "bg-red-100 text-red-800 border border-red-200"
-                              : "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                        }`}
-                      >
-                        {profileData.status.charAt(0).toUpperCase() +
-                          profileData.status.slice(1)}
-                      </span>
-                    </p>
-                  </div>
+                <div className="min-w-0">
+                  <p className="text-[9.5px] font-medium uppercase tracking-[0.9px] text-gray-400">
+                    PRN Number
+                  </p>
+                  <p className="text-[12.5px] font-medium text-gray-800 truncate">
+                    {profileData.PrnNumber}
+                  </p>
                 </div>
-              )}
-            </>
+              </div>
+            )}
+
+            {/* Status */}
+            {profileData?.status && (
+              <div
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                style={{ background: "rgba(0,0,0,0.03)" }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-lg flex-shrink-0"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    background: "rgba(124,58,237,0.09)",
+                  }}
+                >
+                  <User className="w-3.5 h-3.5 text-purple-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9.5px] font-medium uppercase tracking-[0.9px] text-gray-400">
+                    Status
+                  </p>
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${statusColor}`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                    {profileData.status.charAt(0).toUpperCase() +
+                      profileData.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Footer */}
-          <div className="bg-gradient-to-r from-red-800 to-red-700 p-3 text-center">
-            <p className="text-white text-sm font-medium">
+          {/* â”€â”€ Footer â”€â”€ */}
+          <div className="p-3 text-center" style={{ background: "#A81B1E" }}>
+            <p
+              className="text-white font-medium"
+              style={{ fontSize: "11.5px", letterSpacing: "0.3px" }}
+            >
               www.cyborgrobotics.in
             </p>
           </div>
         </div>
       </div>
+
+      {/* â”€â”€ Profile Preview Modal â”€â”€ */}
+      {showProfilePreview && profileImageSrc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)" }}
+          onClick={() => setShowProfilePreview(false)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowProfilePreview(false)}
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/80 text-white flex items-center justify-center"
+              aria-label="Close preview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <Image
+              src={profileImageSrc}
+              alt={getDisplayName()}
+              width={600}
+              height={600}
+              className="w-full h-auto object-cover"
+              unoptimized
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
