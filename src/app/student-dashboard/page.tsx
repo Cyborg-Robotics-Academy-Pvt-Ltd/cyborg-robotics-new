@@ -31,6 +31,7 @@ interface CourseTrainer {
   courseName: string;
   trainerId: string;
   trainerName: string;
+  trainerImage?: string;
 }
 
 interface Course {
@@ -53,11 +54,22 @@ interface Student {
   username?: string;
   email: string;
   profileimage?: string;
+  imageUrl?: string;
   imageUrls?: string[];
   courses: Course[];
   courseTrainers: CourseTrainer[];
   status?: string;
+  trainerId?: string;
+  trainerName?: string;
+  trainerImage?: string;
 }
+
+const getInitials = (name?: string) =>
+  (name || "T")
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2);
 
 const StudentDashboard = () => {
   const router = useRouter();
@@ -67,10 +79,46 @@ const StudentDashboard = () => {
   const [prnMatch, setPrnMatch] = useState<boolean | null>(null);
   const { user, userRole, loading: authLoading } = useAuth();
 
+  const resolveTrainerImage = (
+    courseTrainerInfo?: CourseTrainer | null,
+    detailedTrainer?: Trainer | null,
+    fallbackImage?: string,
+  ) =>
+    fallbackImage ||
+    detailedTrainer?.profileimage ||
+    courseTrainerInfo?.trainerImage ||
+    "";
+
+  const getPrimaryTrainer = () => Object.values(trainerData)[0] || null;
+
+  const getHeaderTrainer = () => {
+    const fetchedTrainer = getPrimaryTrainer();
+    const courseTrainer = studentData?.courseTrainers?.find((ct) => ct.trainerImage);
+    const courseTrainerImage =
+      courseTrainer?.trainerImage ||
+      studentData?.courses?.find((course) => course.trainerImage)?.trainerImage ||
+      studentData?.trainerImage ||
+      "";
+
+    return {
+      name:
+        fetchedTrainer?.name ||
+        courseTrainer?.trainerName ||
+        studentData?.trainerName ||
+        "Unknown Trainer",
+      image:
+        fetchedTrainer?.profileimage ||
+        courseTrainerImage ||
+        (fetchedTrainer as any)?.imageUrl ||
+        (fetchedTrainer as any)?.imageUrls?.[0] ||
+        "",
+    };
+  };
+
   // Function to fetch trainer data
   const fetchTrainerData = async (
     trainerId: string,
-    expectedTrainerName?: string
+    expectedTrainerName?: string,
   ) => {
     if (!trainerId) {
       setTrainerData((prev) => {
@@ -116,7 +164,7 @@ const StudentDashboard = () => {
             "Trainer ID mismatch: expected",
             trainerId,
             "but got",
-            trainerDocSnap.id
+            trainerDocSnap.id,
           );
           setTrainerData((prev) => {
             const newState = { ...prev };
@@ -201,6 +249,13 @@ const StudentDashboard = () => {
             studentData.username ||
             "Unknown Student",
           email: studentData.email || "",
+          profileimage:
+            studentData.profileimage ||
+            studentData.imageUrl ||
+            studentData.imageUrls?.[0] ||
+            "",
+          imageUrl: studentData.imageUrl || "",
+          imageUrls: studentData.imageUrls || [],
           courses: studentData.courses || [],
           courseTrainers: studentData.courseTrainers || [],
         };
@@ -225,7 +280,7 @@ const StudentDashboard = () => {
               if (courseTrainer.trainerId) {
                 await fetchTrainerData(
                   courseTrainer.trainerId,
-                  courseTrainer.trainerName
+                  courseTrainer.trainerName,
                 );
               }
             }
@@ -240,7 +295,7 @@ const StudentDashboard = () => {
         console.error("Document listener error:", error);
         setPrnMatch(false);
         setLoading(false);
-      }
+      },
     );
 
     // Clean up the document listener when component unmounts
@@ -298,7 +353,7 @@ const StudentDashboard = () => {
               <div className="flex items-center gap-3">
                 <div className="md:w-20 md:h-20 w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden border-2 border-white border-opacity-50">
                   {studentData?.profileimage ? (
-                    <Image
+                    <img
                       src={studentData.profileimage}
                       alt={
                         studentData?.fullName ||
@@ -306,15 +361,23 @@ const StudentDashboard = () => {
                         studentData?.username ||
                         "Student Avatar"
                       }
-                      width={80}
-                      height={80}
                       className="w-full h-full object-cover"
-                      unoptimized={true}
+                    />
+                  ) : studentData?.imageUrl ? (
+                    <img
+                      src={studentData.imageUrl}
+                      alt={
+                        studentData?.fullName ||
+                        studentData?.name ||
+                        studentData?.username ||
+                        "Student Avatar"
+                      }
+                      className="w-full h-full object-cover"
                     />
                   ) : studentData?.imageUrls &&
                     Array.isArray(studentData.imageUrls) &&
                     studentData.imageUrls[0] ? (
-                    <Image
+                    <img
                       src={studentData.imageUrls[0]}
                       alt={
                         studentData?.fullName ||
@@ -322,10 +385,7 @@ const StudentDashboard = () => {
                         studentData?.username ||
                         "Student Avatar"
                       }
-                      width={80}
-                      height={80}
                       className="w-full h-full object-cover"
-                      unoptimized={true}
                     />
                   ) : (
                     <span className="text-black font-bold text-lg">
@@ -351,7 +411,7 @@ const StudentDashboard = () => {
                       "Student"}
                   </h1>
                   {studentData?.PrnNumber && (
-                    <p className="text-red-100 text-sm">
+                    <p className="text-red-100 text-sm mt-1">
                       PRN: {studentData.PrnNumber}
                     </p>
                   )}
@@ -373,42 +433,38 @@ const StudentDashboard = () => {
                 </div>
               </div>
 
-              {/* General Trainer Info (fallback) - Use the first trainer from trainerData if available */}
-              {!studentData?.courseTrainers &&
-                Object.keys(trainerData).length > 0 && (
-                  <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
-                    <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
-                      {(() => {
-                        const firstTrainer = Object.values(trainerData)[0];
-                        return firstTrainer?.profileimage ? (
-                          <Image
-                            src={firstTrainer.profileimage}
-                            alt={firstTrainer.name || "Trainer Avatar"}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                            unoptimized={true}
-                          />
-                        ) : (
-                          <span className="text-black text-xl font-bold">
-                            {firstTrainer?.name
-                              ?.split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
-                              .slice(0, 2) || "T"}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <div>
-                      <p className="text-black font-semibold">Trainer:</p>
-                      <p className="text-black text-sm">
-                        {Object.values(trainerData)[0]?.name ||
-                          "Unknown Trainer"}
-                      </p>
-                    </div>
+              {/* General Trainer Info */}
+              {(Object.keys(trainerData).length > 0 ||
+                studentData?.trainerName ||
+                studentData?.trainerImage ||
+                studentData?.courseTrainers?.some((ct) => ct.trainerImage) ||
+                studentData?.courses?.some((course) => course.trainerImage)) && (
+                <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
+                    {(() => {
+                      const headerTrainer = getHeaderTrainer();
+
+                      return headerTrainer.image ? (
+                        <img
+                          src={headerTrainer.image}
+                          alt={headerTrainer.name || "Trainer Avatar"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-black text-xl font-bold">
+                          {getInitials(headerTrainer.name)}
+                        </span>
+                      );
+                    })()}
                   </div>
-                )}
+                  <div>
+                    <p className="text-black font-semibold">Trainer:</p>
+                    <p className="text-black text-sm">
+                      {getHeaderTrainer().name}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -421,7 +477,7 @@ const StudentDashboard = () => {
           {studentData?.courses && studentData.courses.length > 0 ? (
             (() => {
               const ongoingCourses = studentData.courses.filter(
-                (course: any) => !course.completed
+                (course: any) => !course.completed,
               );
               return ongoingCourses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -437,7 +493,7 @@ const StudentDashboard = () => {
                         trainerName?: string;
                         trainerImage?: string;
                       },
-                      idx: number
+                      idx: number,
                     ) => {
                       // Demo: course icon (use emoji or static image, or map to real icons if available)
                       const courseIcons: Record<string, string> = {
@@ -512,7 +568,7 @@ const StudentDashboard = () => {
                         courseTrainerInfo = studentData.courseTrainers.find(
                           (ct) =>
                             ct.courseName === course.name ||
-                            ct.courseId === course.name
+                            ct.courseId === course.name,
                         );
                       }
                       // Fallback to general trainer info if no specific trainer for this course
@@ -574,98 +630,55 @@ const StudentDashboard = () => {
                               course.trainerImage) && (
                               <div className="flex items-center gap-2 mt-2 p-2 bg-red-50 rounded-lg">
                                 <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden relative">
-                                  {course.trainerImage ? (
-                                    <Image
-                                      src={course.trainerImage}
-                                      alt={course.trainerName || "Trainer"}
-                                      width={24}
-                                      height={24}
-                                      className="w-full h-full object-cover"
-                                      unoptimized={true}
-                                      onError={(e) => {
-                                        // On error, hide the image element
-                                        e.currentTarget.style.display = "none";
-                                        // Show the initials span
-                                        const initialsSpan = e.currentTarget
-                                          .nextSibling as HTMLElement;
-                                        if (
-                                          initialsSpan &&
-                                          initialsSpan.classList.contains(
-                                            "initials-display"
-                                          )
-                                        ) {
-                                          initialsSpan.style.display = "block";
-                                        }
-                                      }}
-                                      onLoad={(e) => {
-                                        // On load, hide the initials span
-                                        const initialsSpan = e.currentTarget
-                                          .nextSibling as HTMLElement;
-                                        if (
-                                          initialsSpan &&
-                                          initialsSpan.classList.contains(
-                                            "initials-display"
-                                          )
-                                        ) {
-                                          initialsSpan.style.display = "none";
-                                        }
-                                      }}
-                                    />
-                                  ) : detailedTrainer?.profileimage ? (
-                                    <Image
-                                      src={detailedTrainer.profileimage}
-                                      alt={
-                                        detailedTrainer.name ||
-                                        courseTrainerInfo?.trainerName ||
-                                        "Trainer"
-                                      }
-                                      width={24}
-                                      height={24}
-                                      className="w-full h-full object-cover"
-                                      unoptimized={true}
-                                      onError={(e) => {
-                                        // On error, hide the image element
-                                        e.currentTarget.style.display = "none";
-                                        // Show the initials span
-                                        const initialsSpan = e.currentTarget
-                                          .nextSibling as HTMLElement;
-                                        if (
-                                          initialsSpan &&
-                                          initialsSpan.classList.contains(
-                                            "initials-display"
-                                          )
-                                        ) {
-                                          initialsSpan.style.display = "block";
-                                        }
-                                      }}
-                                      onLoad={(e) => {
-                                        // On load, hide the initials span
-                                        const initialsSpan = e.currentTarget
-                                          .nextSibling as HTMLElement;
-                                        if (
-                                          initialsSpan &&
-                                          initialsSpan.classList.contains(
-                                            "initials-display"
-                                          )
-                                        ) {
-                                          initialsSpan.style.display = "none";
-                                        }
-                                      }}
-                                    />
-                                  ) : (
-                                    <span className="text-white text-xs font-bold initials-display absolute inset-0 flex items-center justify-center">
-                                      {(
-                                        course.trainerName ||
-                                        detailedTrainer?.name ||
-                                        courseTrainerInfo?.trainerName ||
-                                        ""
-                                      )
-                                        .split(" ")
-                                        .map((n: string) => n[0])
-                                        .join("")
-                                        .slice(0, 2)}
-                                    </span>
-                                  )}
+                                  {(() => {
+                                    const trainerName =
+                                      course.trainerName ||
+                                      detailedTrainer?.name ||
+                                      courseTrainerInfo?.trainerName ||
+                                      "Trainer";
+                                    const trainerImage = resolveTrainerImage(
+                                      courseTrainerInfo,
+                                      detailedTrainer,
+                                      course.trainerImage,
+                                    );
+
+                                    return trainerImage ? (
+                                      <>
+                                        <img
+                                          src={trainerImage}
+                                          alt={trainerName}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            e.currentTarget.style.display =
+                                              "none";
+                                            const initialsSpan =
+                                              e.currentTarget
+                                                .nextSibling as HTMLElement;
+                                            if (initialsSpan) {
+                                              initialsSpan.style.display =
+                                                "block";
+                                            }
+                                          }}
+                                          onLoad={(e) => {
+                                            const initialsSpan =
+                                              e.currentTarget
+                                                .nextSibling as HTMLElement;
+                                            if (initialsSpan) {
+                                              initialsSpan.style.display =
+                                                "none";
+                                            }
+                                          }}
+                                        />
+                                        <span className="text-white text-xs font-bold initials-display absolute inset-0 hidden flex items-center justify-center">
+                                          {getInitials(trainerName)}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="text-white text-xs font-bold initials-display absolute inset-0 flex items-center justify-center">
+                                        {getInitials(trainerName)}
+                                      </span>
+                                    );
+                                  })()}
                                 </div>
                                 <div>
                                   <p className="text-xs text-gray-700 font-medium">
@@ -707,7 +720,7 @@ const StudentDashboard = () => {
                           </div>
                         </Link>
                       );
-                    }
+                    },
                   )}
                 </div>
               ) : (
@@ -729,7 +742,7 @@ const StudentDashboard = () => {
           {studentData?.courses && studentData.courses.length > 0 ? (
             (() => {
               const completedCourses = studentData.courses.filter(
-                (course: any) => course.completed
+                (course: any) => course.completed,
               );
               return completedCourses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -745,7 +758,7 @@ const StudentDashboard = () => {
                         trainerName?: string;
                         trainerImage?: string;
                       },
-                      idx: number
+                      idx: number,
                     ) => {
                       // Demo: course icon (use emoji or static image, or map to real icons if available)
                       const courseIcons: Record<string, string> = {
@@ -820,7 +833,7 @@ const StudentDashboard = () => {
                         courseTrainerInfo = studentData.courseTrainers.find(
                           (ct) =>
                             ct.courseName === course.name ||
-                            ct.courseId === course.name
+                            ct.courseId === course.name,
                         );
                       }
                       // Fallback to general trainer info if no specific trainer for this course
@@ -885,7 +898,7 @@ const StudentDashboard = () => {
                                         if (
                                           initialsSpan &&
                                           initialsSpan.classList.contains(
-                                            "initials-display"
+                                            "initials-display",
                                           )
                                         ) {
                                           initialsSpan.style.display = "block";
@@ -898,7 +911,7 @@ const StudentDashboard = () => {
                                         if (
                                           initialsSpan &&
                                           initialsSpan.classList.contains(
-                                            "initials-display"
+                                            "initials-display",
                                           )
                                         ) {
                                           initialsSpan.style.display = "none";
@@ -926,7 +939,7 @@ const StudentDashboard = () => {
                                         if (
                                           initialsSpan &&
                                           initialsSpan.classList.contains(
-                                            "initials-display"
+                                            "initials-display",
                                           )
                                         ) {
                                           initialsSpan.style.display = "block";
@@ -939,7 +952,7 @@ const StudentDashboard = () => {
                                         if (
                                           initialsSpan &&
                                           initialsSpan.classList.contains(
-                                            "initials-display"
+                                            "initials-display",
                                           )
                                         ) {
                                           initialsSpan.style.display = "none";
@@ -1018,7 +1031,7 @@ const StudentDashboard = () => {
                           </div>
                         </Link>
                       );
-                    }
+                    },
                   )}
                 </div>
               ) : (

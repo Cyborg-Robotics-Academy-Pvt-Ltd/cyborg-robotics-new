@@ -17,9 +17,11 @@ const mainMenu: MenuItem[] = [
     mobileOnly: true,
     children: [
       { title: 'Lego Robotics', href: '/tech-programs/lego-robotics', icon: Target },
-      // { title: '3D Printing', href: '/all-courses#3d-printing', icon: Target },
-      // { title: 'Arduino', href: '/all-courses#arduino', icon: Target },
-      // { title: 'Animation Coding', href: '/all-courses#animation-coding', icon: Target },
+      { title: '3D Printing', href: '/tech-programs/3d-design-workshop', icon: Target },
+      { title: 'Drone', href: '/tech-programs/drone', icon: Target },
+      { title: 'Pictoblox', href: '/tech-programs/pictoblox', icon: Target },
+      { title: 'Google Site', href: '/tech-programs/google-site', icon: Target },
+
     ],
   },
   {

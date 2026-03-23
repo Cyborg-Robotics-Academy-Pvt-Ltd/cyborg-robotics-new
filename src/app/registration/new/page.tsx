@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { collection, addDoc } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import { db } from "../../../lib/firebase";
 import { courseData } from "../../../data/courseData";
 import {
   User,
@@ -18,7 +15,6 @@ import {
   Map,
   ChevronDown,
 } from "lucide-react";
-import Head from "next/head";
 
 interface FormData {
   studentName: string;
@@ -34,12 +30,12 @@ interface FormData {
   currentAddress: string;
   permanentAddress: string;
   selectedCourseKey: string;
-  bankOrderId: string;
-  dateOfRegistration: string;
+  paymentType: string;
+  paidAmount: string;
+  paymentRemark: string;
 }
 
 const RegisterPage: React.FC = () => {
-  const router = useRouter();
   const courseOptions = Object.entries(courseData)
     .map(([key, course]) => ({
       key,
@@ -62,25 +58,32 @@ const RegisterPage: React.FC = () => {
     currentAddress: "",
     permanentAddress: "",
     selectedCourseKey: "",
-    bankOrderId: "",
-    dateOfRegistration: "",
+    paymentType: "full",
+    paidAmount: "",
+    paymentRemark: "",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [sameAsCurrentAddress, setSameAsCurrentAddress] =
     useState<boolean>(false);
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [isInitiatingPayment, setIsInitiatingPayment] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isInitiatingPayment, setIsInitiatingPayment] =
+    useState<boolean>(false);
   const [step, setStep] = useState(1);
   const totalSteps = 5;
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
   const selectedCourse = formData.selectedCourseKey
     ? courseData[formData.selectedCourseKey]
     : undefined;
+
+  useEffect(() => {
+    if (formData.paymentType === "full") {
+      setFormData((prev) => ({
+        ...prev,
+        paidAmount: selectedCourse?.price ? String(selectedCourse.price) : "",
+        paymentRemark: "",
+      }));
+    }
+  }, [formData.paymentType, formData.selectedCourseKey, selectedCourse?.price]);
 
   useEffect(() => {
     if (formData.dateOfBirth) {
@@ -120,7 +123,7 @@ const RegisterPage: React.FC = () => {
   ]);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -148,35 +151,81 @@ const RegisterPage: React.FC = () => {
   const validateStep = (stepToValidate = step): boolean => {
     const newErrors: { [key: string]: string } = {};
     if (stepToValidate === 1) {
-      if (!formData.studentName.trim())
+      if (!formData.studentName.trim()) {
         newErrors.studentName = "Student name is required.";
-      if (!formData.dateOfBirth)
+        console.log("❌ Step 1 Error: Student name is empty");
+      }
+      if (!formData.dateOfBirth) {
         newErrors.dateOfBirth = "Date of birth is required.";
-      if (!formData.schoolName.trim())
+        console.log("❌ Step 1 Error: Date of birth is empty");
+      }
+      if (!formData.schoolName.trim()) {
         newErrors.schoolName = "School name is required.";
-      if (!formData.class.trim()) newErrors.class = "Grade is required.";
-      if (!formData.board) newErrors.board = "Board is required.";
+        console.log("❌ Step 1 Error: School name is empty");
+      }
+      if (!formData.class.trim()) {
+        newErrors.class = "Grade is required.";
+        console.log("❌ Step 1 Error: Class is empty");
+      }
+      if (!formData.board) {
+        newErrors.board = "Board is required.";
+        console.log("❌ Step 1 Error: Board is empty");
+      }
     } else if (stepToValidate === 2) {
-      if (!formData.primaryParentType)
+      if (!formData.primaryParentType) {
         newErrors.primaryParentType = "Primary parent type is required.";
-      if (!formData.primaryParentName.trim())
+        console.log("❌ Step 2 Error: Primary parent type is empty");
+      }
+      if (!formData.primaryParentName.trim()) {
         newErrors.primaryParentName = "Primary parent name is required.";
-      if (!formData.primaryParentContact.trim())
+        console.log("❌ Step 2 Error: Primary parent name is empty");
+      }
+      if (!formData.primaryParentContact.trim()) {
         newErrors.primaryParentContact = "Primary parent contact is required.";
-      else if (!validatePhone(formData.primaryParentContact))
+        console.log("❌ Step 2 Error: Primary parent contact is empty");
+      } else if (!validatePhone(formData.primaryParentContact)) {
         newErrors.primaryParentContact = "Enter a valid 10-digit phone number.";
-      if (!formData.primaryParentEmail.trim())
+        console.log(
+          "❌ Step 2 Error: Invalid phone number:",
+          formData.primaryParentContact,
+        );
+      }
+      if (!formData.primaryParentEmail.trim()) {
         newErrors.primaryParentEmail = "Primary parent email is required.";
-      else if (!validateEmail(formData.primaryParentEmail))
+        console.log("❌ Step 2 Error: Primary parent email is empty");
+      } else if (!validateEmail(formData.primaryParentEmail)) {
         newErrors.primaryParentEmail = "Enter a valid email address.";
+        console.log(
+          "❌ Step 2 Error: Invalid email:",
+          formData.primaryParentEmail,
+        );
+      }
     } else if (stepToValidate === 3) {
-      if (!formData.currentAddress.trim())
+      if (!formData.currentAddress.trim()) {
         newErrors.currentAddress = "Current address is required.";
-      if (!sameAsCurrentAddress && !formData.permanentAddress.trim())
+        console.log("❌ Step 3 Error: Current address is empty");
+      }
+      if (!sameAsCurrentAddress && !formData.permanentAddress.trim()) {
         newErrors.permanentAddress = "Permanent address is required.";
+        console.log("❌ Step 3 Error: Permanent address is empty");
+      }
     } else if (stepToValidate === 4) {
-      if (!formData.selectedCourseKey)
+      if (!formData.selectedCourseKey) {
         newErrors.selectedCourseKey = "Please select a course.";
+        console.log("❌ Step 4 Error: No course selected");
+      }
+      if (formData.paymentType === "installment") {
+        if (!formData.paidAmount.trim()) {
+          newErrors.paidAmount = "Please enter amount to pay.";
+          console.log("❌ Step 4 Error: Installment amount is empty");
+        } else if (Number(formData.paidAmount) <= 0) {
+          newErrors.paidAmount = "Amount must be greater than 0.";
+          console.log(
+            "❌ Step 4 Error: Invalid installment amount:",
+            formData.paidAmount,
+          );
+        }
+      }
     } else if (stepToValidate === 5) {
       if (!termsAccepted)
         newErrors.termsAccepted = "You must accept the terms and conditions.";
@@ -187,64 +236,7 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-    if (!validateStep(totalSteps)) {
-      toast.error("Please fix the errors before submitting.", {
-        position: "top-center",
-        duration: 4000,
-        style: {
-          background: "#EF4444",
-          color: "#FFFFFF",
-          fontWeight: "bold",
-        },
-      });
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      // Add current date to the form data
-      const formDataWithDate = {
-        ...formData,
-        selectedCourseName: selectedCourse?.title ?? "",
-        selectedCourseFee: selectedCourse?.price ?? null,
-        dateOfRegistration: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD
-      };
-      await addDoc(collection(db, "registrations"), formDataWithDate);
-
-      openModal(); // Open the modal
-      setFormData({
-        studentName: "",
-        dateOfBirth: "",
-        currentAge: "",
-        schoolName: "",
-        class: "",
-        board: "",
-        primaryParentType: "",
-        primaryParentName: "",
-        primaryParentContact: "",
-        primaryParentEmail: "",
-        currentAddress: "",
-        permanentAddress: "",
-        selectedCourseKey: "",
-        bankOrderId: "",
-        dateOfRegistration: "",
-      });
-      setSameAsCurrentAddress(false);
-      setTermsAccepted(false);
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      toast.error("Failed to submit form. Please try again.", {
-        position: "top-center",
-        duration: 4000,
-        style: {
-          background: "#EF4444",
-          color: "#FFFFFF",
-          fontWeight: "bold",
-        },
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await handleInitiatePayment();
   };
 
   const nextStep = () => {
@@ -268,57 +260,104 @@ const RegisterPage: React.FC = () => {
       setStep((prev) => prev - 1);
     }
   };
-
   const handleInitiatePayment = async () => {
     if (isInitiatingPayment) return;
-    if (!formData.selectedCourseKey) {
-      setErrors((prev) => ({ ...prev, selectedCourseKey: "Please select a course." }));
-      toast.error("Please select a course first.");
-      return;
-    }
-    const selectedAmount = selectedCourse?.price ?? 0;
-    if (!selectedAmount) {
-      toast.error("Selected course fee is not available.");
+
+    const step1Valid = validateStep(1);
+    const step2Valid = validateStep(2);
+    const step3Valid = validateStep(3);
+    const step4Valid = validateStep(4);
+    const step5Valid = validateStep(5);
+
+    if (!step1Valid || !step2Valid || !step3Valid || !step4Valid || !step5Valid) {
+      const issues: string[] = [];
+      if (!step1Valid) {
+        issues.push("Step 1: Student Information");
+        setStep(1);
+      } else if (!step2Valid) {
+        issues.push("Step 2: Parent Information");
+        setStep(2);
+      } else if (!step3Valid) {
+        issues.push("Step 3: Address Information");
+        setStep(3);
+      } else if (!step4Valid) {
+        issues.push("Step 4: Payment Details");
+        setStep(4);
+      } else if (!step5Valid) {
+        issues.push("Step 5: Terms & Conditions");
+        setStep(5);
+      }
+
+      toast.error(`Please complete ${issues.join(", ")}.`, {
+        position: "top-center",
+        duration: 6000,
+        style: {
+          background: "#EF4444",
+          color: "#FFFFFF",
+          fontWeight: "bold",
+        },
+      });
       return;
     }
 
-    setIsInitiatingPayment(true);
     try {
-      const response = await fetch("/api/payment/initiate", {
+      setIsInitiatingPayment(true);
+      const res = await fetch("/api/payment/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: selectedAmount,
-          currency: "INR",
-          courseKey: formData.selectedCourseKey,
-          courseName: selectedCourse?.title ?? "",
-          paymentMethod: "BANK_REDIRECT",
           studentName: formData.studentName,
-          parentEmail: formData.primaryParentEmail,
-          parentPhone: formData.primaryParentContact,
+          dateOfBirth: formData.dateOfBirth,
+          currentAge: formData.currentAge,
+          schoolName: formData.schoolName,
+          class: formData.class,
+          board: formData.board,
+          primaryParentType: formData.primaryParentType,
+          primaryParentName: formData.primaryParentName,
+          primaryParentContact: formData.primaryParentContact,
+          primaryParentEmail: formData.primaryParentEmail,
+          currentAddress: formData.currentAddress,
+          permanentAddress: formData.permanentAddress,
+          courseKey: formData.selectedCourseKey,
+          paymentType: formData.paymentType,
+          installmentAmount:
+            formData.paymentType === "installment"
+              ? Number(formData.paidAmount)
+              : undefined,
+          paymentRemark: formData.paymentRemark,
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        toast.error(data?.message || "Unable to initiate payment.");
-        return;
-      }
+      const data = await res.json();
 
-      setFormData((prev) => ({
-        ...prev,
-        bankOrderId: data.orderId || prev.bankOrderId,
-      }));
-
-      if (data.paymentUrl) {
+      if (data.success && data.paymentUrl) {
         window.location.href = data.paymentUrl;
-        return;
+      } else {
+        console.error("Payment initiation error:", data);
+        toast.error(
+          `Payment initiation failed: ${data.message || "Unknown error"}`,
+          {
+            position: "top-center",
+            duration: 5000,
+            style: {
+              background: "#EF4444",
+              color: "#FFFFFF",
+              fontWeight: "bold",
+            },
+          },
+        );
       }
-
-      toast.success("Payment initiated. Reference captured successfully.");
     } catch (error) {
-      console.error("Payment initiation failed:", error);
-      toast.error("Failed to connect to payment service.");
+      console.error("Payment initiation exception:", error);
+      toast.error("Payment initiation failed. Please try again.", {
+        position: "top-center",
+        duration: 5000,
+        style: {
+          background: "#EF4444",
+          color: "#FFFFFF",
+          fontWeight: "bold",
+        },
+      });
     } finally {
       setIsInitiatingPayment(false);
     }
@@ -593,6 +632,16 @@ const RegisterPage: React.FC = () => {
                         </p>
                       </div>
 
+                      <DropdownField
+                        id="paymentType"
+                        label="PAYMENT TYPE"
+                        value={formData.paymentType}
+                        onChange={handleChange}
+                        required
+                        options={["full", "installment"]}
+                        icon="file"
+                      />
+
                       <div className="md:col-span-2">
                         <label
                           className="block text-gray-700 text-sm font-semibold mb-2"
@@ -612,7 +661,9 @@ const RegisterPage: React.FC = () => {
                           {courseOptions.map((course) => (
                             <option key={course.key} value={course.key}>
                               {course.title}
-                              {course.price ? ` (Rs. ${course.price.toLocaleString("en-IN")})` : ""}
+                              {course.price
+                                ? ` (Rs. ${course.price.toLocaleString("en-IN")})`
+                                : ""}
                             </option>
                           ))}
                         </select>
@@ -623,17 +674,34 @@ const RegisterPage: React.FC = () => {
                         )}
                       </div>
 
+                      {formData.paymentType === "installment" && (
+                        <>
+                          <FormField
+                            id="paidAmount"
+                            label="AMOUNT / PRICE TO PAY"
+                            type="number"
+                            value={formData.paidAmount}
+                            onChange={handleChange}
+                            required
+                            placeholder="Enter installment amount"
+                            icon="file"
+                            error={errors.paidAmount}
+                          />
+
+                          <div className="md:col-span-2">
+                            <TextareaField
+                              id="paymentRemark"
+                              label="REMARK"
+                              value={formData.paymentRemark}
+                              onChange={handleChange}
+                              placeholder="Example: First installment"
+                            />
+                          </div>
+                        </>
+                      )}
                       <div className="md:col-span-2">
-                        <button
-                          type="button"
-                          onClick={handleInitiatePayment}
-                          disabled={isInitiatingPayment}
-                          className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300 disabled:opacity-60"
-                        >
-                          {isInitiatingPayment ? "Connecting to Bank..." : "Pay Now"}
-                        </button>
                         <p className="text-xs text-gray-500 mt-2">
-                          This creates a bank order and redirects to the bank page.
+                          Payment will be initiated after you accept the terms on the next step.
                         </p>
                       </div>
                     </div>
@@ -710,73 +778,34 @@ const RegisterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300"
+                    className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300"
                   >
                     Next Step
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300"
+                    disabled={isInitiatingPayment}
+                    className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300 disabled:opacity-60"
                   >
-                    Submit Registration
+                    {isInitiatingPayment ? "Connecting to Bank..." : "Submit & Pay"}
                   </button>
                 )}
               </div>
             </form>
           </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-600 text-sm">
-              Your information will be kept confidential and used only for
-              registration purposes.
-            </p>
+        <div className="mt-8 text-center">
+          <p className="text-gray-600 text-sm">
+            Your information will be kept confidential and used only for
+            registration purposes.
+          </p>
             <p className="text-gray-500 text-xs mt-2">
               &copy; {new Date().getFullYear()} Cyborg Robotics Academy Pvt Ltd.
               All rights reserved.
             </p>
           </div>
         </div>
-
-        {/* Success Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center transform transition-all duration-300 scale-100 opacity-100">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                <svg
-                  className="h-10 w-10 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Thank You!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your registration form has been submitted successfully.
-                We&#39;ll contact you shortly to confirm your registration.
-              </p>
-              <button
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium py-3 px-6 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                onClick={() => {
-                  closeModal();
-                  router.push("/login");
-                }}
-              >
-                Ok
-              </button>
-            </div>
-          </div>
-        )}
       </main>
     </>
   );
@@ -999,3 +1028,7 @@ const DropdownField: React.FC<DropdownFieldProps> = ({
 );
 
 export default RegisterPage;
+
+
+
+
