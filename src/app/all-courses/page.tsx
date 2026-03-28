@@ -21,6 +21,7 @@ import { useScrollToSection } from "@/hooks/useScrollToSection";
 import Header from "@/components/layout/header";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Image from "next/image";
 
 // Helper function to extract levels from duration string
 const extractLevels = (duration: string): string => {
@@ -454,8 +455,10 @@ const AllCoursesPageContent = () => {
                       {/* Brand Logo in Top Right Corner */}
                       <div className="absolute top-3 right-3 z-10">
                         <div className="bg-white/80 backdrop-blur-sm rounded-full p-[1px] shadow-md border border-red-100">
-                          <img
+                          <Image
                             src="/assets/logo1.png"
+                            width={100}
+                            height={100}
                             alt="Cyborg Robotics"
                             className="w-8 h-8 object-contain"
                             onError={(e) => {
@@ -468,8 +471,10 @@ const AllCoursesPageContent = () => {
                       </div>
 
                       <div className="relative h-48 overflow-hidden">
-                        <img
+                        <Image
                           src={course.imagePath}
+                          width={500}
+                          height={300}
                           alt={course.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
@@ -632,7 +637,9 @@ const AllCoursesPageContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/SarikaGemawat.jpeg"
                     alt="Sarika Gemawat"
                     className="w-12 h-12 rounded-full object-cover border-2 border-red-200"
@@ -652,7 +659,9 @@ const AllCoursesPageContent = () => {
 
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/IndraniGhoshChoudhary.png"
                     alt="Indrani Ghosh Choudhary"
                     className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
@@ -673,7 +682,9 @@ const AllCoursesPageContent = () => {
 
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/JishaAlex.jpeg"
                     alt="Jisha Alex"
                     className="w-12 h-12 rounded-full object-cover border-2 border-green-200"
@@ -692,7 +703,9 @@ const AllCoursesPageContent = () => {
 
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/SahilSankla.jpeg"
                     alt="Sahil Sankla"
                     className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
@@ -712,7 +725,9 @@ const AllCoursesPageContent = () => {
 
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/RuchikaOswal.jpeg"
                     alt="Ruchika Oswal"
                     className="w-12 h-12 rounded-full object-cover border-2 border-yellow-200"
@@ -732,7 +747,9 @@ const AllCoursesPageContent = () => {
 
               <div className="bg-white p-6 rounded-xl border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <img
+                  <Image
+                    width={50}
+                    height={50}
                     src="/assets/testimonials/parents/AkanshaGaur.png"
                     alt="Akansha Gaur"
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200"

@@ -39,7 +39,7 @@ const GallerySection = () => {
       try {
         const q = query(
           collection(db, "homeGalleryImage"),
-          orderBy("uploadedAt", "desc")
+          orderBy("uploadedAt", "desc"),
         );
         const querySnapshot = await getDocs(q);
         const images: any[] = [];
@@ -97,7 +97,7 @@ const GallerySection = () => {
         // Refresh the gallery to show the new images
         const q = query(
           collection(db, "homeGalleryImage"),
-          orderBy("uploadedAt", "desc")
+          orderBy("uploadedAt", "desc"),
         );
         const querySnapshot = await getDocs(q);
         const images: any[] = [];
@@ -113,7 +113,7 @@ const GallerySection = () => {
 
         if (failedUploads.length > 0) {
           alert(
-            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`
+            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`,
           );
         } else {
           alert(`Uploaded ${successfulUploads.length} images successfully!`);
@@ -294,8 +294,10 @@ const GallerySection = () => {
         >
           {galleryImages.map((item: any, index) => (
             <SwiperSlide key={item.id}>
-              <img
+              <Image
                 src={item.imageUrl || item.src}
+                width={500}
+                height={500}
                 alt={`Gallery item ${item.id}`}
                 className="cursor-pointer"
                 onClick={() => openImageModal(item, index)}
