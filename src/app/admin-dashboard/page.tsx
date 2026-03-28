@@ -9,7 +9,6 @@ import Image from "next/image";
 import {
   UserCog,
   GraduationCap,
-  BarChart3,
   ClipboardCheck,
   UserRoundPlus,
   RotateCw,
@@ -45,15 +44,11 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   AreaChart,
   Area,
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
 } from "recharts";
 import {
   Card,
@@ -69,8 +64,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   DropdownMenu,
@@ -176,13 +169,6 @@ const enrollmentData = [
   { month: "Jul", enrollments: 84, courses: 25 },
 ];
 
-const categoryData = [
-  { name: "Robotics", value: 40, color: "#3b82f6" },
-  { name: "Programming", value: 30, color: "#10b981" },
-  { name: "STEM", value: 20, color: "#f59e0b" },
-  { name: "AI/ML", value: 10, color: "#ef4444" },
-];
-
 const visitData = [
   { day: "Mon", visits: 240 },
   { day: "Tue", visits: 140 },
@@ -247,14 +233,42 @@ const getRelativeTime = (date: Date) => {
   return `${minutesAgo} min${minutesAgo !== 1 ? "s" : ""} ago`;
 };
 
-const extractAmount = (value: unknown) => {
-  if (typeof value === "number") return value;
-  if (typeof value === "string") {
-    const cleaned = Number(value.replace(/[^0-9.-]+/g, ""));
-    return Number.isFinite(cleaned) ? cleaned : 0;
-  }
-  return 0;
-};
+  const extractAmount = (value: unknown) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const cleaned = Number(value.replace(/[^0-9.-]+/g, ""));
+      return Number.isFinite(cleaned) ? cleaned : 0;
+    }
+    return 0;
+  };
+
+  const hasTrainerAssignment = (student: Record<string, any>) => {
+    const hasValue = (value: unknown) =>
+      typeof value === "string" ? value.trim().length > 0 : Boolean(value);
+
+    if (hasValue(student.trainerId) || hasValue(student.trainerName)) {
+      return true;
+    }
+
+    const courseTrainers = Array.isArray(student.courseTrainers)
+      ? student.courseTrainers
+      : [];
+    if (
+      courseTrainers.some(
+        (courseTrainer: Record<string, any>) =>
+          hasValue(courseTrainer?.trainerId) ||
+          hasValue(courseTrainer?.trainerName),
+      )
+    ) {
+      return true;
+    }
+
+    const courses = Array.isArray(student.courses) ? student.courses : [];
+    return courses.some(
+      (course: Record<string, any>) =>
+        hasValue(course?.trainerId) || hasValue(course?.trainerName),
+    );
+  };
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -282,6 +296,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalCourses: 0,
     totalInstructors: 0,
+    unassignedTrainerStudents: 0,
     activeStudents: 0,
     recentRegistrations: 0,
     weeklyEnrollments: 0,
@@ -524,6 +539,10 @@ const AdminDashboard = () => {
         ),
       ).length;
 
+      const unassignedTrainerStudentsCount = studentsSnapshot.docs.filter(
+        (doc) => !hasTrainerAssignment(doc.data() as Record<string, any>),
+      ).length;
+
       const totalRevenue = successfulPayments.reduce(
         (sum, doc) => sum + extractAmount(doc.data().amount),
         0,
@@ -544,6 +563,7 @@ const AdminDashboard = () => {
         totalUsers: studentsSnapshot.size, // Students are considered users
         totalCourses: totalCoursesCount,
         totalInstructors: trainersSnapshot.size, // Trainers are the instructors
+        unassignedTrainerStudents: unassignedTrainerStudentsCount,
         activeStudents: activeStudentsCount, // Count of students with active status
         recentRegistrations: recentRegistrationsCount,
         weeklyEnrollments: weeklyEnrollmentsCount,
@@ -563,6 +583,7 @@ const AdminDashboard = () => {
         totalUsers: 0,
         totalCourses: 0,
         totalInstructors: 0,
+        unassignedTrainerStudents: 0,
         activeStudents: 0,
         recentRegistrations: 0,
         weeklyEnrollments: 0,
@@ -803,7 +824,7 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Function to fetch course category distribution based on student enrollments
+  // Function to fetch course enrollment distribution based on unique students
   const fetchCourseCategories = useCallback(async () => {
     try {
       setLoadingCategories(true);
@@ -819,13 +840,27 @@ const AdminDashboard = () => {
       const coursesModule = await import("../../../utils/courses");
       const allCourses = coursesModule.default;
 
-      // Create a map to count enrollments for each course
-      const courseEnrollmentMap: Record<string, number> = {};
+      const resolveCourseName = (courseName: string) => {
+        const normalizedInput = courseName.toLowerCase().trim();
 
-      // Initialize all courses with 0 count
-      allCourses.forEach((course) => {
-        courseEnrollmentMap[course] = 0;
-      });
+        const exactMatch = allCourses.find(
+          (course) => course.toLowerCase().trim() === normalizedInput,
+        );
+        if (exactMatch) return exactMatch;
+
+        const partialMatch = allCourses.find((course) => {
+          const normalizedCourse = course.toLowerCase().trim();
+          return (
+            normalizedCourse.includes(normalizedInput) ||
+            normalizedInput.includes(normalizedCourse)
+          );
+        });
+
+        return partialMatch || courseName;
+      };
+
+      // Count each student only once per course
+      const courseEnrollmentMap: Record<string, Set<string>> = {};
 
       // Color palette for courses
       const colors = [
@@ -858,69 +893,50 @@ const AdminDashboard = () => {
 
       // Process each student's courses
       students.forEach((student: any) => {
+        const studentKey = String(
+          student.PrnNumber || student.id || student.username || "",
+        ).trim();
+        if (!studentKey) return;
+
         const courses = student.courses || [];
         if (Array.isArray(courses)) {
+          const seenCoursesForStudent = new Set<string>();
+
           courses.forEach((course: any) => {
             const courseName =
               typeof course === "string" ? course : course.name || "";
             if (!courseName) return;
 
-            // Exact match with courses from courses.ts
-            if (courseEnrollmentMap.hasOwnProperty(courseName)) {
-              courseEnrollmentMap[courseName]++;
-            } else {
-              // Handle partial matches or variations
-              const normalizedInput = courseName.toLowerCase().trim();
-              const matchedCourse = allCourses.find(
-                (c) =>
-                  c.toLowerCase().trim() === normalizedInput ||
-                  c.toLowerCase().includes(normalizedInput) ||
-                  normalizedInput.includes(c.toLowerCase().trim()),
-              );
+            const resolvedCourse = resolveCourseName(courseName);
 
-              if (matchedCourse) {
-                courseEnrollmentMap[matchedCourse]++;
-              } else {
-                // Group unmatched courses as "Other"
-                courseEnrollmentMap["Other"] =
-                  (courseEnrollmentMap["Other"] || 0) + 1;
-              }
+            if (seenCoursesForStudent.has(resolvedCourse)) {
+              return;
             }
+
+            seenCoursesForStudent.add(resolvedCourse);
+
+            if (!courseEnrollmentMap[resolvedCourse]) {
+              courseEnrollmentMap[resolvedCourse] = new Set();
+            }
+
+            courseEnrollmentMap[resolvedCourse].add(studentKey);
           });
         }
       });
 
       // Convert to chart format and filter out zero counts
       const rankedCourseData = Object.entries(courseEnrollmentMap)
-        .filter(([_, count]) => count > 0)
-        .map(([name, count], index) => ({
-          name: name.length > 20 ? name.substring(0, 17) + "..." : name, // Truncate long names
-          fullName: name, // Keep full name for tooltip
-          value: count,
+        .filter(([_, studentIds]) => studentIds.size > 0)
+        .map(([name, studentIds], index) => ({
+          name: name.length > 20 ? name.substring(0, 17) + "..." : name,
+          fullName: name,
+          value: studentIds.size,
           color: name === "Other" ? "#64748b" : colors[index % colors.length],
         }))
         .sort((a, b) => b.value - a.value);
 
-      const topCourses = rankedCourseData.slice(0, 3);
-      const remainingValue = rankedCourseData
-        .slice(3)
-        .reduce((sum, item) => sum + item.value, 0);
-
-      const courseData =
-        remainingValue > 0
-          ? [
-              ...topCourses,
-              {
-                name: "Others",
-                fullName: "Other enrolled courses",
-                value: remainingValue,
-                color: "#94a3b8",
-              },
-            ]
-          : topCourses;
-
       // Ensure all entries have required properties
-      const validatedCourseData = courseData.map((item) => ({
+      const validatedCourseData = rankedCourseData.map((item) => ({
         ...item,
         name: item.name || "Unknown",
         fullName: item.fullName || item.name || "Unknown",
@@ -928,35 +944,10 @@ const AdminDashboard = () => {
         color: item.color || "#64748b",
       }));
 
-      // If no data, provide sample data from courses.ts
-      if (validatedCourseData.length === 0) {
-        const sampleCourses = allCourses.slice(0, 5);
-        setCourseCategoryData(
-          sampleCourses.map((course, index) => ({
-            name: course.length > 20 ? course.substring(0, 17) + "..." : course,
-            fullName: course,
-            value: Math.floor(Math.random() * 20) + 5,
-            color: colors[index % colors.length],
-          })),
-        );
-      } else {
-        setCourseCategoryData(validatedCourseData);
-      }
+      setCourseCategoryData(validatedCourseData);
     } catch (error) {
       console.error("Error fetching course categories:", error);
-      // Fallback to sample data from courses.ts
-      const coursesModule = await import("../../../utils/courses");
-      const sampleCourses = coursesModule.default.slice(0, 5);
-      const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
-
-      const fallbackData = sampleCourses.map((course, index) => ({
-        name: course.length > 20 ? course.substring(0, 17) + "..." : course,
-        fullName: course,
-        value: 10,
-        color: colors[index],
-      }));
-
-      setCourseCategoryData(fallbackData);
+      setCourseCategoryData([]);
     } finally {
       setLoadingCategories(false);
     }
@@ -1071,20 +1062,6 @@ const AdminDashboard = () => {
       helper: "Open payment transactions",
     },
     {
-      title: "At-Risk Students",
-      value: overviewData.atRiskStudents,
-      change: "Hold or inactive",
-      icon: AlertTriangle,
-      color: "rose",
-      gradient: "from-rose-500 to-orange-500",
-      bgColor: "bg-rose-50",
-      iconBg: "bg-gradient-to-br from-rose-100 to-rose-200",
-      textColor: "text-rose-600",
-      delay: 0.7,
-      trend: overviewData.atRiskStudents > 0 ? "down" : "up",
-      helper: "Students needing retention attention",
-    },
-    {
       title: "Total Instructors",
       value: overviewData.totalInstructors,
       change: `${overviewData.totalCourses} active courses`,
@@ -1094,9 +1071,26 @@ const AdminDashboard = () => {
       bgColor: "bg-slate-50",
       iconBg: "bg-gradient-to-br from-slate-100 to-slate-200",
       textColor: "text-slate-600",
-      delay: 0.8,
+      delay: 0.7,
       trend: "up",
       helper: "Teaching capacity snapshot",
+    },
+    {
+      title: "Unassigned Trainer Students",
+      value: overviewData.unassignedTrainerStudents,
+      change:
+        overviewData.unassignedTrainerStudents > 0
+          ? "Need assignment"
+          : "All assigned",
+      icon: UserRoundPlus,
+      color: "amber",
+      gradient: "from-amber-500 to-orange-500",
+      bgColor: "bg-amber-50",
+      iconBg: "bg-gradient-to-br from-amber-100 to-orange-200",
+      textColor: "text-amber-700",
+      delay: 0.8,
+      trend: overviewData.unassignedTrainerStudents > 0 ? "down" : "up",
+      helper: "Students without a trainer linked yet",
     },
   ];
 
@@ -1494,18 +1488,27 @@ const AdminDashboard = () => {
               </CardFooter>
             </Card>
 
-            {/* Courses by Category */}
-            <Card className="bg-white/50 backdrop-blur-sm shadow-lg">
+            {/* Students by Course */}
+            <Card className="bg-white/50 backdrop-blur-sm shadow-lg xl:h-[780px] xl:flex xl:flex-col">
               <CardHeader>
-                <CardTitle>Courses by Category</CardTitle>
+                <CardTitle>Students by Course</CardTitle>
                 <CardDescription>
-                  Top enrolled categories grouped into a readable mix
+                  Unique student enrollments by course are shown here
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col items-center">
+              <CardContent className="flex min-h-0 flex-1 flex-col items-center">
                 {loadingCategories ? (
                   <div className="flex items-center justify-center h-64 w-full">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+                  </div>
+                ) : courseCategoryData.length === 0 ? (
+                  <div className="flex h-64 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white/60 px-6 text-center">
+                    <p className="text-sm font-medium text-gray-900">
+                      No course enrollment data yet
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Add student course records to populate this chart.
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -1534,8 +1537,7 @@ const AdminDashboard = () => {
                               formatter={(value, name, props) => {
                                 const entry =
                                   courseCategoryData[props.payload?.index];
-                                if (!entry)
-                                  return [`${value} students :`, name];
+                                if (!entry) return [`${value} students`, name];
                                 return [
                                   `${value} students`,
                                   entry.fullName || entry.name,
@@ -1546,42 +1548,80 @@ const AdminDashboard = () => {
                         />
                       </PieChart>
                     </ChartContainer>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-6">
+                    <p className="mt-4 text-xs text-gray-700">
+                      Based on {overviewData.totalUsers} total students,{" "}
+                      {overviewData.totalCourses} available courses, and{" "}
+                      <span className="font-semibold">
+                        {overviewData.unassignedTrainerStudents} unassigned
+                        trainer student
+                        {overviewData.unassignedTrainerStudents !== 1
+                          ? "s"
+                          : ""}
+                        .
+                      </span>
+                    </p>
+                    <div className="styled-scrollbar mt-6 w-full flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
                       {courseCategoryData.map((item) => (
                         <div
                           key={item.name}
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                          className="rounded-xl border border-gray-200/80 bg-white/80 p-3 shadow-sm transition-all hover:border-red-200 hover:shadow-md"
                           title={item.fullName || item.name}
                         >
-                          <div
-                            className="h-3 w-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <span
-                              className="text-sm font-medium truncate block"
-                              title={item.fullName || item.name}
-                            >
-                              {item.name}
-                            </span>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">
-                                {item.value} student
-                                {item.value !== 1 ? "s" : ""}
-                              </span>
-                              <span className="text-xs font-semibold text-red-700">
-                                {courseCategoryData.length > 0
-                                  ? Math.round(
-                                      (item.value /
-                                        courseCategoryData.reduce(
-                                          (sum, cat) => sum + cat.value,
-                                          0,
-                                        )) *
-                                        100,
-                                    )
-                                  : 0}
-                                %
-                              </span>
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="mt-1 h-3 w-3 flex-shrink-0 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-4">
+                                <span
+                                  className="text-sm font-semibold leading-snug text-gray-900 break-words"
+                                  title={item.fullName || item.name}
+                                >
+                                  {item.fullName || item.name}
+                                </span>
+                                <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                                  {courseCategoryData.length > 0
+                                    ? Math.round(
+                                        (item.value /
+                                          courseCategoryData.reduce(
+                                            (sum, cat) => sum + cat.value,
+                                            0,
+                                          )) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                              <div className="mt-1 flex items-end justify-between gap-3">
+                                <span className="text-base font-bold text-gray-900">
+                                  {item.value}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  student{item.value !== 1 ? "s" : ""}
+                                </span>
+                              </div>
+                              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${
+                                      courseCategoryData.length > 0
+                                        ? Math.round(
+                                            (item.value /
+                                              courseCategoryData.reduce(
+                                                (sum, cat) => sum + cat.value,
+                                                0,
+                                              )) *
+                                              100,
+                                          )
+                                        : 0
+                                    }%`,
+                                    backgroundColor: item.color,
+                                  }}
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>

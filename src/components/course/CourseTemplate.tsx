@@ -3,6 +3,7 @@
 import { CourseData } from "@/data/courseData";
 import * as Icons from "lucide-react";
 import { BookOpen, Clock, Download, Star } from "lucide-react";
+import Image from "next/image";
 
 interface CourseTemplateProps {
   course: CourseData;
@@ -25,7 +26,9 @@ export default function CourseTemplate({ course }: CourseTemplateProps) {
     <div className="max-w-6xl mx-auto py-16 px-6">
       {/* Header Section */}
       <div className="grid md:grid-cols-2 gap-10 items-center">
-        <img
+        <Image
+          width={500}
+          height={300}
           src={course.imagePath}
           alt={course.imageAlt}
           className="w-full rounded-2xl shadow-md"

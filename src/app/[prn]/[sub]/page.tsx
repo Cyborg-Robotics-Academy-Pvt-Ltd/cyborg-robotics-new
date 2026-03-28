@@ -43,6 +43,7 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
 
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 // Task type
 interface Task {
@@ -91,7 +92,7 @@ function fromSlug(slug: string) {
   // Check if the slug contains level information
   const levelMatch = normalized.match(/-level-(\d+)$/);
   const levelTextMatch = normalized.match(
-    /-level-(beginner|intermediate|advanced|expert)$/
+    /-level-(beginner|intermediate|advanced|expert)$/,
   );
   let level = "";
   if (levelMatch) {
@@ -103,7 +104,7 @@ function fromSlug(slug: string) {
     // Remove the level part from the slug for course name processing
     normalized = normalized.replace(
       /-level-(beginner|intermediate|advanced|expert)$/,
-      ""
+      "",
     );
   }
 
@@ -232,7 +233,7 @@ function extractCourseAndLevel(courseString: string): {
   // Check for level patterns in URL format
   const levelMatch = normalized.match(/\blevel\s*(\d+)\b/i);
   const levelTextMatch = normalized.match(
-    /\blevel\s*(beginner|intermediate|advanced|expert)\b/i
+    /\blevel\s*(beginner|intermediate|advanced|expert)\b/i,
   );
 
   let level = null;
@@ -256,7 +257,7 @@ function isSameCourseAndLevel(
   aName: string,
   aLevel: string | null,
   bName: string,
-  bLevel: string | null
+  bLevel: string | null,
 ) {
   return (
     aName.toLowerCase().trim() === bName.toLowerCase().trim() &&
@@ -303,7 +304,7 @@ const Page = ({
   >([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [assignedClasses, setAssignedClasses] = useState<string | number>(
-    "N/A"
+    "N/A",
   );
   const [activeTab, setActiveTab] = useState<number>(0);
   const [courseLevel, setCourseLevel] = useState("");
@@ -360,25 +361,25 @@ const Page = ({
 
       // Update local state after successful database update
       setStudent((prev) =>
-        prev ? { ...prev, courses: updatedCourses } : null
+        prev ? { ...prev, courses: updatedCourses } : null,
       );
       setIsCourseCompleted(newCompletedState);
       toast.success(
         newCompletedState
           ? "Course marked as completed!"
-          : "Course marked as ongoing!"
+          : "Course marked as ongoing!",
       );
     } catch (error) {
       console.error(
         "[Checkbox] Error updating course completion status:",
-        error
+        error,
       );
       toast.error("Failed to update course status");
     }
   };
 
   const handleCertificateChange = async (
-    checked: boolean | "indeterminate"
+    checked: boolean | "indeterminate",
   ) => {
     if (!student) return;
 
@@ -411,13 +412,13 @@ const Page = ({
 
       // Update local state after successful database update
       setStudent((prev) =>
-        prev ? { ...prev, courses: updatedCourses } : null
+        prev ? { ...prev, courses: updatedCourses } : null,
       );
       setIsCertificateIssued(newCertificateState);
       toast.success(
         newCertificateState
           ? "Certificate marked as issued!"
-          : "Certificate marked as not issued!"
+          : "Certificate marked as not issued!",
       );
     } catch (error) {
       console.error("[Checkbox] Error updating certificate status:", error);
@@ -439,7 +440,7 @@ const Page = ({
 
     if (nextCourseOption === "not-interested" && !nextCourseComment.trim()) {
       toast.error(
-        "Please provide a comment explaining why the student is not interested"
+        "Please provide a comment explaining why the student is not interested",
       );
       return;
     }
@@ -488,7 +489,7 @@ const Page = ({
 
       // Update local state
       setStudent((prev) =>
-        prev ? { ...prev, nextCourse: updateData.nextCourse } : null
+        prev ? { ...prev, nextCourse: updateData.nextCourse } : null,
       );
 
       setShowNextCourseModal(false);
@@ -582,7 +583,7 @@ const Page = ({
         const studentsRef = collection(db, "students");
         const q = query(
           studentsRef,
-          where("PrnNumber", "==", resolvedParams.prn)
+          where("PrnNumber", "==", resolvedParams.prn),
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
@@ -628,12 +629,12 @@ const Page = ({
             taskCourseName,
             taskLevel,
             currentCourseName,
-            currentLevel
+            currentLevel,
           );
         });
 
         const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete"
+          (t) => t.status === "complete",
         );
 
         // Log task filtering results for debugging
@@ -650,7 +651,7 @@ const Page = ({
           Object.keys(statusCount).map((status) => ({
             name: status,
             value: statusCount[status],
-          }))
+          })),
         );
         // Bar chart: tasks by date and status
         const dateMap: Record<string, { complete: number; ongoing: number }> =
@@ -665,7 +666,7 @@ const Page = ({
           Object.keys(dateMap).map((date) => ({
             date,
             ...dateMap[date],
-          }))
+          })),
         );
 
         // Assigned classes logic - strict to handle course and level separately
@@ -686,7 +687,7 @@ const Page = ({
               keyCourseName,
               keyLevel,
               currentCourseName,
-              currentLevel
+              currentLevel,
             );
           });
 
@@ -786,13 +787,13 @@ const Page = ({
       const courseIdx = student.courses.findIndex((c) => {
         if (!c.name) return false;
         const { courseName: cName, level: cLevel } = extractCourseAndLevel(
-          c.name
+          c.name,
         );
         return isSameCourseAndLevel(
           cName,
           cLevel,
           currentCourseName,
-          currentLevel
+          currentLevel,
         );
       });
 
@@ -824,7 +825,7 @@ const Page = ({
 
   const remainingClasses = Math.max(
     0,
-    (Number(classNumber) || 0) - completedTasks.length
+    (Number(classNumber) || 0) - completedTasks.length,
   );
 
   // State for edit modal
@@ -864,7 +865,7 @@ const Page = ({
           t.course === editingTask.task.course &&
           t.task === editingTask.task.task &&
           t.dateTime === editingTask.task.dateTime &&
-          t.status === editingTask.task.status
+          t.status === editingTask.task.status,
       );
 
       if (taskIndex !== -1) {
@@ -893,12 +894,12 @@ const Page = ({
             taskCourseName,
             taskLevel,
             currentCourseName,
-            currentLevel
+            currentLevel,
           );
         });
 
         const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete"
+          (t) => t.status === "complete",
         );
 
         setCompletedTasks(completedTasksForCourse);
@@ -938,7 +939,7 @@ const Page = ({
           t.course === task.course &&
           t.task === task.task &&
           t.dateTime === task.dateTime &&
-          t.status === task.status
+          t.status === task.status,
       );
 
       if (taskIndex !== -1) {
@@ -961,12 +962,12 @@ const Page = ({
             taskCourseName,
             taskLevel,
             currentCourseName,
-            currentLevel
+            currentLevel,
           );
         });
 
         const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete"
+          (t) => t.status === "complete",
         );
 
         setCompletedTasks(completedTasksForCourse);
@@ -1061,7 +1062,9 @@ const Page = ({
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-red-700 p-0.5">
                     <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                       {student.profileimage ? (
-                        <img
+                        <Image
+                          width={50}
+                          height={50}
                           src={student.profileimage}
                           alt={
                             student.fullName || student.username || "Student"
@@ -1164,7 +1167,7 @@ const Page = ({
                     let percent = 0;
                     if (assignedClassesNum > 0) {
                       percent = Math.round(
-                        (completedTasksCount / assignedClassesNum) * 100
+                        (completedTasksCount / assignedClassesNum) * 100,
                       );
                     }
 
@@ -1653,7 +1656,7 @@ const Page = ({
                               </span>
                               <p className="text-sm text-gray-600 mt-1">
                                 {student.nextCourse.substring(
-                                  "Not Enrolling: ".length
+                                  "Not Enrolling: ".length,
                                 )}
                               </p>
                             </div>
@@ -1666,7 +1669,7 @@ const Page = ({
                                 {(() => {
                                   const dateString =
                                     student.nextCourse.substring(
-                                      "Join Soon: ".length
+                                      "Join Soon: ".length,
                                     );
                                   try {
                                     const date = new Date(dateString);

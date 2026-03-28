@@ -93,10 +93,13 @@ const StudentDashboard = () => {
 
   const getHeaderTrainer = () => {
     const fetchedTrainer = getPrimaryTrainer();
-    const courseTrainer = studentData?.courseTrainers?.find((ct) => ct.trainerImage);
+    const courseTrainer = studentData?.courseTrainers?.find(
+      (ct) => ct.trainerImage,
+    );
     const courseTrainerImage =
       courseTrainer?.trainerImage ||
-      studentData?.courses?.find((course) => course.trainerImage)?.trainerImage ||
+      studentData?.courses?.find((course) => course.trainerImage)
+        ?.trainerImage ||
       studentData?.trainerImage ||
       "";
 
@@ -353,7 +356,9 @@ const StudentDashboard = () => {
               <div className="flex items-center gap-3">
                 <div className="md:w-20 md:h-20 w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden border-2 border-white border-opacity-50">
                   {studentData?.profileimage ? (
-                    <img
+                    <Image
+                      width={50}
+                      height={50}
                       src={studentData.profileimage}
                       alt={
                         studentData?.fullName ||
@@ -364,7 +369,9 @@ const StudentDashboard = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : studentData?.imageUrl ? (
-                    <img
+                    <Image
+                      width={50}
+                      height={50}
                       src={studentData.imageUrl}
                       alt={
                         studentData?.fullName ||
@@ -377,7 +384,9 @@ const StudentDashboard = () => {
                   ) : studentData?.imageUrls &&
                     Array.isArray(studentData.imageUrls) &&
                     studentData.imageUrls[0] ? (
-                    <img
+                    <Image
+                      width={50}
+                      height={50}
                       src={studentData.imageUrls[0]}
                       alt={
                         studentData?.fullName ||
@@ -438,14 +447,18 @@ const StudentDashboard = () => {
                 studentData?.trainerName ||
                 studentData?.trainerImage ||
                 studentData?.courseTrainers?.some((ct) => ct.trainerImage) ||
-                studentData?.courses?.some((course) => course.trainerImage)) && (
+                studentData?.courses?.some(
+                  (course) => course.trainerImage,
+                )) && (
                 <div className="flex items-center gap-3 bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
                   <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden">
                     {(() => {
                       const headerTrainer = getHeaderTrainer();
 
                       return headerTrainer.image ? (
-                        <img
+                        <Image
+                          width={50}
+                          height={50}
                           src={headerTrainer.image}
                           alt={headerTrainer.name || "Trainer Avatar"}
                           className="w-full h-full object-cover"
@@ -644,25 +657,25 @@ const StudentDashboard = () => {
 
                                     return trainerImage ? (
                                       <>
-                                        <img
+                                        <Image
+                                          width={50}
+                                          height={50}
                                           src={trainerImage}
                                           alt={trainerName}
                                           className="w-full h-full object-cover"
                                           onError={(e) => {
                                             e.currentTarget.style.display =
                                               "none";
-                                            const initialsSpan =
-                                              e.currentTarget
-                                                .nextSibling as HTMLElement;
+                                            const initialsSpan = e.currentTarget
+                                              .nextSibling as HTMLElement;
                                             if (initialsSpan) {
                                               initialsSpan.style.display =
                                                 "block";
                                             }
                                           }}
                                           onLoad={(e) => {
-                                            const initialsSpan =
-                                              e.currentTarget
-                                                .nextSibling as HTMLElement;
+                                            const initialsSpan = e.currentTarget
+                                              .nextSibling as HTMLElement;
                                             if (initialsSpan) {
                                               initialsSpan.style.display =
                                                 "none";

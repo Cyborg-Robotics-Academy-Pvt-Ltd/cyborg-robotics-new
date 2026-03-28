@@ -148,7 +148,7 @@ const STATUS_CONFIG: Record<
     dot: "bg-gray-400",
   },
   completed: {
-    label: "Completed",
+    label: "Hold",
     cls: "bg-[#9F0712]/10 text-[#9F0712] border-[#9F0712]/20",
     dot: "bg-[#9F0712]",
   },
@@ -1126,26 +1126,13 @@ const Page = () => {
               color: "text-gray-700",
               bg: "bg-white",
             },
-            {
-              label: "Active",
-              value: statCounts.active,
-              icon: CheckCircle2,
-              color: "text-emerald-700",
-              bg: "bg-emerald-50",
-            },
+
             {
               label: "Needs Trainer",
               value: statCounts.needsTrainer,
               icon: AlertCircle,
               color: "text-[#9F0712]",
               bg: "bg-[#9F0712]/10",
-            },
-            {
-              label: "Not Enrolled",
-              value: statCounts.noCourse,
-              icon: BookOpen,
-              color: "text-gray-500",
-              bg: "bg-gray-50",
             },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div
@@ -1236,18 +1223,20 @@ const Page = () => {
                     DerivedStatus,
                     (typeof STATUS_CONFIG)[DerivedStatus],
                   ][]
-                ).map(([key, cfg]) => (
-                  <button
-                    key={key}
-                    onClick={() =>
-                      setStatusFilter(statusFilter === key ? "" : key)
-                    }
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${statusFilter === key ? cfg.cls + " shadow-sm" : "bg-white text-gray-500 border-gray-200 hover:border-[#9F0712]/20 hover:text-[#9F0712]"}`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                    {cfg.label}
-                  </button>
-                ))}
+                )
+                  .filter(([key]) => key !== "active" && key !== "no_course")
+                  .map(([key, cfg]) => (
+                    <button
+                      key={key}
+                      onClick={() =>
+                        setStatusFilter(statusFilter === key ? "" : key)
+                      }
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${statusFilter === key ? cfg.cls + " shadow-sm" : "bg-white text-gray-500 border-gray-200 hover:border-[#9F0712]/20 hover:text-[#9F0712]"}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                      {cfg.label}
+                    </button>
+                  ))}
               </div>
             </div>
 
@@ -1374,9 +1363,6 @@ const Page = () => {
                         Student <SortIcon col="username" />
                       </button>
                     </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider">
-                      Status
-                    </th>
                     <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider hidden md:table-cell">
                       Course
                     </th>
@@ -1475,11 +1461,6 @@ const Page = () => {
                               </p>
                             </div>
                           </div>
-                        </td>
-
-                        {/* Status */}
-                        <td className="px-3 py-3 whitespace-nowrap">
-                          <StatusBadge status={derivedStatus} />
                         </td>
 
                         {/* Courses */}

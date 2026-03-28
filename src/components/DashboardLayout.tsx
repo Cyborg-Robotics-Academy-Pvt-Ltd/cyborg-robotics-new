@@ -299,17 +299,21 @@ export default function DashboardLayout({
   return (
     <div
       className={cn(
-        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row",
-        "min-h-screen"
+        "flex w-full flex-1 flex-col mt-0 overflow-hidden bg-white md:flex-row ",
+        "min-h-screen",
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 bg-white shadow-lg">
-          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
-            {open ? <Logo setOpen={setOpen} /> : <LogoIcon setOpen={setOpen} />}
-            <div className="mt-2 flex flex-col gap-2">
+        <SidebarBody className="bg-white shadow-lg">
+          <div className="flex h-full flex-col">
+            <div className="flex-none pt-2 bg-white">
+              {open ? (
+                <Logo setOpen={setOpen} />
+              ) : (
+                <LogoIcon setOpen={setOpen} />
+              )}
               {open && (
-                <div className="px-3 py-2 w-full text-center bg-red-800 text-xs font-semibold text-white uppercase tracking-wider rounded-lg">
+                <div className="mt-2 px-3 py-2 w-full text-center bg-red-800 text-xs font-semibold text-white uppercase tracking-wider rounded-lg">
                   {role === "admin"
                     ? "Admin Panel"
                     : role === "trainer"
@@ -317,111 +321,117 @@ export default function DashboardLayout({
                       : "Student Panel"}
                 </div>
               )}
-              {linksWithHandlers.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
             </div>
-          </div>
-          <div>
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={cn(
-                  "flex items-center group/bottom-sidebar w-full p-1 rounded-lg hover:bg-gray-100 transition-colors text-left",
-                  open ? "justify-start gap-2 pl-3" : "justify-center"
-                )}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  {profileImage ? (
-                    <Image
-                      src={profileImage}
-                      className="h-7 w-7 shrink-0 rounded-full object-cover"
-                      width={28}
-                      height={28}
-                      alt="User Profile"
-                    />
-                  ) : (
-                    <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
-                      {getDisplayText()?.charAt(0).toUpperCase() ||
-                        role.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  {open && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                      className="text-md font-bold"
-                    >
-                      {getDisplayText() ||
-                        (role === "admin"
-                          ? "Admin"
-                          : role === "trainer"
-                            ? "Trainer"
-                            : "Student")}
-                    </motion.span>
-                  )}
-                </div>
-              </button>
 
-              {showProfileMenu && (
-                <div className="absolute  bottom-full mb-2 left-0 w-56 bg-white rounded-xl shadow-xl border border-gray-200  overflow-hidden">
-                  <div className="p-3 bg-gradient-to-r from-red-700 to-red-800 text-white">
-                    <div className="flex items-center gap-3">
-                      {profileImage ? (
-                        <Image
-                          src={profileImage}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-white"
-                          width={48}
-                          height={48}
-                          alt="User Profile"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-lg">
-                          {getDisplayText()?.charAt(0).toUpperCase() ||
-                            role.charAt(0).toUpperCase()}
+            <div className="flex-1 overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
+              <div className="flex flex-col gap-2 pb-4">
+                {linksWithHandlers.map((link, idx) => (
+                  <SidebarLink key={idx} link={link} />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-none bg-white pt-2 pb-2">
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className={cn(
+                    "flex items-center group/bottom-sidebar w-full p-1 rounded-lg hover:bg-gray-100 transition-colors text-left",
+                    open ? "justify-start gap-2 pl-3" : "justify-center",
+                  )}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    {profileImage ? (
+                      <Image
+                        src={profileImage}
+                        className="h-7 w-7 shrink-0 rounded-full object-cover"
+                        width={28}
+                        height={28}
+                        alt="User Profile"
+                      />
+                    ) : (
+                      <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
+                        {getDisplayText()?.charAt(0).toUpperCase() ||
+                          role.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {open && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="text-md font-bold"
+                      >
+                        {getDisplayText() ||
+                          (role === "admin"
+                            ? "Admin"
+                            : role === "trainer"
+                              ? "Trainer"
+                              : "Student")}
+                      </motion.span>
+                    )}
+                  </div>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute bottom-full mb-2 left-0 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                    <div className="bg-gradient-to-r from-red-700 to-red-800 p-3 text-white">
+                      <div className="flex items-center gap-3">
+                        {profileImage ? (
+                          <Image
+                            src={profileImage}
+                            className="h-12 w-12 rounded-full border-2 border-white object-cover"
+                            width={48}
+                            height={48}
+                            alt="User Profile"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white bg-opacity-20 text-lg font-bold text-white">
+                            {getDisplayText()?.charAt(0).toUpperCase() ||
+                              role.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate text-sm font-semibold">
+                            {getDisplayText() ||
+                              (role === "admin"
+                                ? "Admin"
+                                : role === "trainer"
+                                  ? "Trainer"
+                                  : "Student")}
+                          </h3>
+                          <p className="truncate text-xs text-white text-opacity-80">
+                            {profileEmail || "No email"}
+                          </p>
                         </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate">
-                          {getDisplayText() ||
-                            (role === "admin"
-                              ? "Admin"
-                              : role === "trainer"
-                                ? "Trainer"
-                                : "Student")}
-                        </h3>
-                        <p className="text-xs text-white text-opacity-80 truncate">
-                          {profileEmail || "No email"}
-                        </p>
                       </div>
                     </div>
+                    <div className="p-2">
+                      <Link
+                        href="/user-profile"
+                        className="flex w-full items-center gap-2 rounded-lg p-3 text-sm transition-colors hover:bg-gray-50"
+                        onClick={() => setShowProfileMenu(false)}
+                      >
+                        <IconUserBolt className="h-4 w-4 text-gray-600" />
+                        My Profile
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleLogout();
+                          setShowProfileMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg p-3 text-left text-sm transition-colors hover:bg-gray-50"
+                      >
+                        <LogOut className="h-4 w-4 text-gray-600" />
+                        Logout
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-2">
-                    <Link
-                      href="/user-profile"
-                      className="flex items-center gap-2 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <IconUserBolt className="h-4 w-4 text-gray-600" />
-                      My Profile
-                    </Link>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleLogout();
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-sm text-left"
-                    >
-                      <LogOut className="h-4 w-4 text-gray-600" />
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </SidebarBody>

@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Image from "next/image";
 
 interface Course {
   name: string;
@@ -148,7 +149,7 @@ const AssignTrainerPage = () => {
   const handleAssignTrainerToCourse = async (
     studentId: string,
     courseIndex: number,
-    trainerId: string
+    trainerId: string,
   ) => {
     // Only handle course-specific assignments (courseIndex >= 0)
     if (courseIndex < 0) {
@@ -180,7 +181,7 @@ const AssignTrainerPage = () => {
             return { ...student, courses: updatedCourses };
           }
           return student;
-        })
+        }),
       );
 
       // Update Firestore
@@ -212,7 +213,7 @@ const AssignTrainerPage = () => {
 
   const handleRemoveTrainerFromCourse = async (
     studentId: string,
-    courseIndex: number
+    courseIndex: number,
   ) => {
     try {
       // Update local state
@@ -231,7 +232,7 @@ const AssignTrainerPage = () => {
             return { ...student, courses: updatedCourses };
           }
           return student;
-        })
+        }),
       );
 
       // Update Firestore
@@ -288,7 +289,7 @@ const AssignTrainerPage = () => {
               course.trainerName &&
               course.trainerName
                 .toLowerCase()
-                .includes(searchTerm.toLowerCase())
+                .includes(searchTerm.toLowerCase()),
           ));
 
       const matchesFilter =
@@ -407,7 +408,9 @@ const AssignTrainerPage = () => {
                     <SelectItem key={trainer.id} value={trainer.id}>
                       <div className="flex items-center gap-3">
                         {trainer.profileimage ? (
-                          <img
+                          <Image
+                            width={50}
+                            height={50}
                             src={trainer.profileimage}
                             alt={trainer.name || trainer.username || "Trainer"}
                             className="w-7 h-7 rounded-full object-cover border-2 border-gray-200"
@@ -561,7 +564,9 @@ const AssignTrainerPage = () => {
                                               </span>
                                               <div className="flex items-center gap-2">
                                                 {course.trainerImage ? (
-                                                  <img
+                                                  <Image
+                                                    width={50}
+                                                    height={50}
                                                     src={course.trainerImage}
                                                     alt={course.trainerName}
                                                     className="w-6 h-6 rounded-full object-cover border border-gray-200"
@@ -570,7 +575,7 @@ const AssignTrainerPage = () => {
                                                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#A81B1E] to-[#062341] flex items-center justify-center text-xs font-medium text-white">
                                                     {(
                                                       course.trainerName?.charAt(
-                                                        0
+                                                        0,
                                                       ) || "?"
                                                     ).toUpperCase()}
                                                   </div>
@@ -594,7 +599,7 @@ const AssignTrainerPage = () => {
                                                   handleAssignTrainerToCourse(
                                                     student.id,
                                                     index,
-                                                    value
+                                                    value,
                                                   )
                                                 }
                                               >
@@ -609,7 +614,9 @@ const AssignTrainerPage = () => {
                                                     >
                                                       <div className="flex items-center gap-2">
                                                         {trainer.profileimage ? (
-                                                          <img
+                                                          <Image
+                                                            width={50}
+                                                            height={50}
                                                             src={
                                                               trainer.profileimage
                                                             }
@@ -624,13 +631,13 @@ const AssignTrainerPage = () => {
                                                           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#A81B1E] to-[#062341] flex items-center justify-center text-xs font-medium text-white">
                                                             {(
                                                               trainer.name?.charAt(
-                                                                0
+                                                                0,
                                                               ) ||
                                                               trainer.username?.charAt(
-                                                                0
+                                                                0,
                                                               ) ||
                                                               trainer.email?.charAt(
-                                                                0
+                                                                0,
                                                               ) ||
                                                               "?"
                                                             ).toUpperCase()}
@@ -680,7 +687,7 @@ const AssignTrainerPage = () => {
                                                   onClick={() =>
                                                     handleRemoveTrainerFromCourse(
                                                       student.id,
-                                                      index
+                                                      index,
                                                     )
                                                   }
                                                   className="h-10 text-red-600 border-red-300 hover:bg-red-50 transition-colors"
