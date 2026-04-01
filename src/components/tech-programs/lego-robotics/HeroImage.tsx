@@ -7,6 +7,7 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
+import { saveOrderId } from "@/lib/order-id-storage";
 
 interface StaticImage {
   url: string;
@@ -103,6 +104,9 @@ const HeroImage = () => {
       const data = await response.json();
 
       if (response.ok && data.success && data.paymentUrl) {
+        if (data.orderId) {
+          saveOrderId(data.orderId);
+        }
         window.location.href = data.paymentUrl;
         return;
       }

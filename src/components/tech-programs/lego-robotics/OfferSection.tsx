@@ -10,6 +10,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 
 const OfferSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -208,7 +209,9 @@ const OfferSection = () => {
               />
 
               {/* Image — replace src with your actual asset */}
-              <img
+              <Image
+                width={500}
+                height={300}
                 src="/assets/workshops/lego/image.png"
                 alt="Kids learning with LEGO"
                 className="w-full h-full object-cover"
@@ -379,11 +382,6 @@ const OfferSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.55, duration: 0.45 }}
               >
-                <button className="cta-btn inline-flex items-center gap-2 bg-[#A81B1E] text-white text-sm px-6 py-3 rounded-xl shadow-md">
-                  <Zap size={15} strokeWidth={2.2} />
-                  Book a Free Trial Class
-                  <ArrowRight size={14} className="arrow-icon" />
-                </button>
                 <p className="text-slate-400 text-xs font-light leading-snug">
                   Only ₹499 per session &middot; Age 9–16
                   <br />

@@ -19,6 +19,7 @@ import { readOrderId } from "@/lib/order-id-storage";
 
 type PaymentStatus = {
   orderId: string;
+  amount?: number;
   status: string;
   transactionReference?: string;
   invoiceNumber?: string;
@@ -298,9 +299,17 @@ export default function RegistrationSuccessClient() {
         {/* Payment Card */}
         <div className="bg-white rounded-xl shadow p-6 mb-6">
           <div className="space-y-2 text-sm">
+            <p className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 font-medium text-green-700">
+              Payment Successful
+            </p>
             <p>
               <b>Order:</b> {orderId}
             </p>
+            {payment.amount !== undefined && payment.amount !== null && (
+              <p className="text-lg font-semibold text-slate-900">
+                ₹{payment.amount.toLocaleString("en-IN")}
+              </p>
+            )}
             <p>
               <b>Txn:</b> {payment.transactionReference}
             </p>
