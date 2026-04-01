@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { enhancedCourseData } from "@/data/enhancedCourseData";
+import Image from "next/image";
+import { readOrderId } from "@/lib/order-id-storage";
 
 type PaymentStatus = {
   orderId: string;
@@ -25,15 +27,21 @@ type PaymentStatus = {
 
 export default function RegistrationSuccessClient() {
   const params = useSearchParams();
-  const orderId = params.get("orderId") || params.get("order_id") || "";
+  const [orderId, setOrderId] = useState("");
+  const [orderIdResolved, setOrderIdResolved] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [payment, setPayment] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [emailStatus, setEmailStatus] = useState<string | null>(null);
-  const [emailSending, setEmailSending] = useState(false);
 
-  // ✅ Recommended courses logic (exclude purchased course, match by category/age)
+  useEffect(() => {
+    const fromQuery = params.get("orderId") || params.get("order_id") || "";
+    setOrderId(fromQuery || readOrderId());
+    setOrderIdResolved(true);
+  }, [params]);
+
+  // ? Recommended courses logic (exclude purchased course, match by category/age)
   const recommendedCourses = (() => {
     const courseName = payment?.courseName?.trim();
     if (!courseName) return [];
@@ -68,10 +76,13 @@ export default function RegistrationSuccessClient() {
       })
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 7);
+      .slice(0, 4);
   })();
+
   // ✅ Fetch payment status
   useEffect(() => {
+    if (!orderIdResolved) return;
+
     if (!orderId) {
       setLoading(false);
       setError("Missing order ID.");
@@ -107,10 +118,12 @@ export default function RegistrationSuccessClient() {
     load();
 
     return () => controller.abort();
-  }, [orderId]);
+  }, [orderId, orderIdResolved]);
 
   // ✅ Generate invoice (only once)
   useEffect(() => {
+    if (!orderIdResolved) return;
+
     if (!orderId || payment?.status !== "SUCCESS" || payment?.invoiceNumber)
       return;
 
@@ -132,14 +145,13 @@ export default function RegistrationSuccessClient() {
     };
 
     generateInvoice();
-  }, [orderId, payment?.status, payment?.invoiceNumber]);
+  }, [orderId, orderIdResolved, payment?.status, payment?.invoiceNumber]);
 
   // ✅ Email receipt
   const handleEmailReceipt = async () => {
     if (!orderId) return;
 
     try {
-      setEmailSending(true);
       setEmailStatus(null);
 
       const res = await fetch(
@@ -157,13 +169,11 @@ export default function RegistrationSuccessClient() {
       setEmailStatus(
         err instanceof Error ? err.message : "Failed to send receipt",
       );
-    } finally {
-      setEmailSending(false);
     }
   };
 
   // ✅ Loading state
-  if (loading) {
+  if (loading || !orderIdResolved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-slate-600">Loading registration status...</div>
@@ -183,10 +193,10 @@ export default function RegistrationSuccessClient() {
           <p className="mt-2 text-gray-600">{error || "Missing order ID."}</p>
 
           <div className="flex gap-3 justify-center mt-6">
-            <Link href="/registration/new">
+            <Link href="/all-courses">
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                View Courses
               </Button>
             </Link>
           </div>
@@ -269,11 +279,12 @@ export default function RegistrationSuccessClient() {
   })();
   // ✅ WhatsApp info
   const whatsappInfo = (() => {
-    if (!purchasedEntry) return null;
-    const category = purchasedEntry[1].category;
-    const link = WHATSAPP_LINKS[category];
+    const activeCategory =
+      purchasedEntry?.[1]?.category || recommendedCourse?.course.category;
+    if (!activeCategory) return null;
+    const link = WHATSAPP_LINKS[activeCategory];
     if (!link) return null;
-    return { link, category };
+    return { link, category: activeCategory };
   })();
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
@@ -356,7 +367,9 @@ export default function RegistrationSuccessClient() {
                 <Link key={slug} href={`/all-courses/${slug}`}>
                   <div className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden group h-full flex flex-col">
                     <div className="relative overflow-hidden">
-                      <img
+                      <Image
+                        width={500}
+                        height={300}
                         src={course.imagePath}
                         alt={course.imageAlt}
                         className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"

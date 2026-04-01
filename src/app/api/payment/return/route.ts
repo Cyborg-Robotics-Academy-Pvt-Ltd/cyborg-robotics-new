@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
+import { isValidOrderId } from "@/lib/order-id-utils";
 import {
   collection,
   doc,
@@ -10,12 +11,6 @@ import {
   where,
 } from "firebase/firestore";
 import { finalizeRegistrationForPayment } from "@/lib/payment-finalize";
-
-// Validate orderId format
-function isValidOrderId(orderId: string | null | undefined): boolean {
-  if (!orderId) return false;
-  return /^ORDER_[a-f0-9\-]{36}$/.test(orderId);
-}
 
 // Update Firestore payment record status
 async function updatePaymentStatus(
@@ -36,9 +31,9 @@ async function updatePaymentStatus(
     const paymentDoc = snapshot.docs[0];
     const existing = paymentDoc.data();
 
-    // Idempotency — don't overwrite a SUCCESS record
+    // Idempotency - don't overwrite a SUCCESS record
     if (existing.status === "SUCCESS") {
-      console.warn(`Payment ${orderId} already marked SUCCESS — skipping update`);
+      console.warn(`Payment ${orderId} already marked SUCCESS - skipping update`);
       return true;
     }
 
@@ -122,7 +117,7 @@ async function verifyWithGateway(
     });
 
     if (!verifyResponse.ok) {
-      console.error("Juspay server verification failed — using webhook status");
+      console.error("Juspay server verification failed - using webhook status");
       return null;
     }
 
@@ -139,7 +134,7 @@ async function verifyWithGateway(
   }
 }
 
-// GET — browser redirect after payment
+// GET - browser redirect after payment
 export async function GET(req: Request) {
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const { searchParams } = new URL(req.url);
@@ -149,9 +144,9 @@ export async function GET(req: Request) {
   console.log("=== PAYMENT RETURN GET ===");
   console.log("orderId:", orderId);
 
-  // No orderId — return_url not configured in gateway
+  // No orderId - return_url not configured in gateway
   if (!isValidOrderId(orderId)) {
-    console.warn("No valid orderId in return — redirecting to status page");
+    console.warn("No valid orderId in return - redirecting to status page");
     return NextResponse.redirect(`${BASE_URL}/payment/status`, { status: 302 });
   }
 
@@ -175,7 +170,7 @@ export async function GET(req: Request) {
   );
 }
 
-// POST — Juspay webhook callback
+// POST - Juspay webhook callback
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get("content-type") || "";
@@ -304,3 +299,8 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+
+
+

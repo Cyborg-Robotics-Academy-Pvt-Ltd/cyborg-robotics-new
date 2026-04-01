@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, RefreshCw, Download, Eye } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface Payment {
   id: string;
@@ -239,8 +240,10 @@ export default function PaymentHistory() {
                         {payment.transactionReference || "-"}
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/admin-dashboard/payment-management/${payment.orderId}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
                         </Button>
                       </TableCell>
                     </TableRow>
