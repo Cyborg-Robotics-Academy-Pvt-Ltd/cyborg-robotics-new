@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
+import { isValidOrderId } from "@/lib/order-id-utils";
 import {
   collection,
   doc,
@@ -10,12 +11,6 @@ import {
   where,
 } from "firebase/firestore";
 import { finalizeRegistrationForPayment } from "@/lib/payment-finalize";
-
-// Validate orderId format
-function isValidOrderId(orderId: string | null | undefined): boolean {
-  if (!orderId) return false;
-  return /^ORDER_[a-f0-9\-]{36}$/.test(orderId);
-}
 
 // Update Firestore payment record status
 async function updatePaymentStatus(
@@ -36,9 +31,9 @@ async function updatePaymentStatus(
     const paymentDoc = snapshot.docs[0];
     const existing = paymentDoc.data();
 
-    // Idempotency — don't overwrite a SUCCESS record
+    // Idempotency - don't overwrite a SUCCESS record
     if (existing.status === "SUCCESS") {
-      console.warn(`Payment ${orderId} already marked SUCCESS — skipping update`);
+      console.warn(`Payment ${orderId} already marked SUCCESS - skipping update`);
       return true;
     }
 
@@ -56,7 +51,7 @@ async function updatePaymentStatus(
   }
 }
 
-// POST — Juspay webhook callback (server-to-server)
+// POST - Juspay webhook callback (server-to-server)
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get("content-type") || "";
@@ -141,3 +136,8 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+
+
+

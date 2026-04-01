@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { generateOrderId } from "@/lib/order-id-utils";
 
 const WORKSHOPS = {
   "lego-robotics-workshop": {
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const orderId = `ORDER_${randomUUID()}`;
+    const orderId = generateOrderId();
     const customerId = `WS_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
@@ -184,3 +184,5 @@ export async function POST(req: Request) {
     );
   }
 }
+
+

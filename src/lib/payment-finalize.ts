@@ -98,10 +98,13 @@ export async function finalizeRegistrationForPayment(
     await updateDoc(doc(db, "payments", paymentDoc.id), {
       registrationId: workshopDocRef.id,
       studentName: workshopDraft.childName ?? "",
+      currentAge: workshopDraft.age ?? "",
       courseName: workshop.name ?? "",
       courseKey: workshop.key ?? "",
       parentEmail: workshopDraft.email ?? "",
+      primaryParentEmail: workshopDraft.email ?? "",
       parentPhone: workshopDraft.contactNumber ?? "",
+      primaryParentContact: workshopDraft.contactNumber ?? "",
       registrationCreatedAt: serverTimestamp(),
     });
 

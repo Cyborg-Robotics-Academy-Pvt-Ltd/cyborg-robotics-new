@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { generateCustomerId } from "@/lib/customer-id-utils";
+import { generateOrderId } from "@/lib/order-id-utils";
 import { courseData } from "@/data/courseData";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // --- Server-side amount resolution — never trust client ---
+    // --- Server-side amount resolution - never trust client ---
     const course = courseData[courseKey as string];
     if (!course) {
       return NextResponse.json(
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
     }
 
     // --- Generate IDs server-side ---
-    const orderId = `ORDER_${randomUUID()}`; // not client-supplied, not predictable
+    const orderId = generateOrderId(); // not client-supplied, not predictable
     const customerId = await generateCustomerId();
 
     // --- Create Juspay order ---
@@ -270,3 +270,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

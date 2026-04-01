@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, Clock, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { readOrderId } from "@/lib/order-id-storage";
 
 interface PaymentData {
   orderId?: string;
@@ -18,8 +19,8 @@ interface PaymentData {
 
 export default function PaymentStatusClient() {
   const params = useSearchParams();
-
-  const orderId = params.get("order_id") || params.get("orderId") || "";
+  const [orderId, setOrderId] = useState("");
+  const [orderIdResolved, setOrderIdResolved] = useState(false);
 
   const status = params.get("status");
 
@@ -28,8 +29,16 @@ export default function PaymentStatusClient() {
   const [verifying, setVerifying] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
 
+  useEffect(() => {
+    const fromQuery = params.get("order_id") || params.get("orderId") || "";
+    setOrderId(fromQuery || readOrderId());
+    setOrderIdResolved(true);
+  }, [params]);
+
   // ✅ Fetch + polling
   useEffect(() => {
+    if (!orderIdResolved) return;
+
     if (!orderId) {
       setLoading(false);
       return;
@@ -83,7 +92,7 @@ export default function PaymentStatusClient() {
       controller.abort();
       clearInterval(interval);
     };
-  }, [orderId]);
+  }, [orderId, orderIdResolved]);
 
   // ✅ Manual verify
   const handleVerifyPayment = async () => {
@@ -133,6 +142,14 @@ export default function PaymentStatusClient() {
   const statusInfo = getText();
 
   // ❌ No orderId
+  if (!orderIdResolved) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading payment status...
+      </div>
+    );
+  }
+
   if (!orderId) {
     return (
       <div className="min-h-screen flex items-center justify-center">

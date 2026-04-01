@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import {
   generateInvoicePDF,
   generateInvoiceNumber,
+  renderInvoiceHtml,
   InvoiceData,
 } from "@/lib/invoice-generator";
 import { db } from "@/lib/firebase";
+import { isValidOrderId } from "@/lib/order-id-utils";
 import {
   collection,
   doc,
@@ -16,12 +18,6 @@ import {
   where,
 } from "firebase/firestore";
 import { sendPaymentConfirmation } from "@/lib/email-service";
-
-// Validate orderId format
-function isValidOrderId(orderId: string | null): boolean {
-  if (!orderId) return false;
-  return /^ORDER_[a-f0-9\-]{36}$/.test(orderId);
-}
 
 export async function GET(req: Request) {
   try {
@@ -117,35 +113,32 @@ export async function GET(req: Request) {
     };
 
     // --- Generate PDF ---
-    let pdfBuffer: Buffer;
-    try {
-      pdfBuffer = await generateInvoicePDF(invoiceData);
-    } catch (pdfError) {
-      console.error("PDF generation error:", pdfError);
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "PDF generation temporarily unavailable. Please contact support for your invoice.",
-          details: "Font loading issue - will be resolved in next deployment",
-        },
-        { status: 500 }
-      );
+    const invoiceHtml = renderInvoiceHtml(invoiceData);
+
+    let pdfBuffer: Buffer | undefined;
+    if (mode !== "html") {
+      try {
+        pdfBuffer = await generateInvoicePDF(invoiceData);
+      } catch (pdfError) {
+        console.error("PDF generation error:", pdfError);
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "PDF generation temporarily unavailable. Please contact support for your invoice.",
+            details: "Font loading issue - will be resolved in next deployment",
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // --- Send email on first generation or when explicitly requested ---
     const shouldEmailNow =
-      (shouldSendEmail || email) && invoiceData.parentEmail;
+      mode !== "html" && (shouldSendEmail || email) && invoiceData.parentEmail;
     if (shouldEmailNow) {
       try {
-        await sendPaymentConfirmation(
-          invoiceData.parentEmail,
-          invoiceData.studentName,
-          invoiceData.courseName,
-          invoiceData.amount,
-          invoiceData.orderId,
-          pdfBuffer
-        );
+        await sendPaymentConfirmation(invoiceData, pdfBuffer);
       } catch (emailError) {
         console.error("Failed to send invoice email:", emailError);
       }
@@ -174,6 +167,17 @@ export async function GET(req: Request) {
       });
     }
 
+    // --- Return HTML preview when mode=html ---
+    if (mode === "html") {
+      return new NextResponse(invoiceHtml, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+        status: 200,
+      });
+    }
+
     // --- Return JSON metadata instead of PDF when mode=json ---
     if (mode === "json") {
       return NextResponse.json(
@@ -183,7 +187,7 @@ export async function GET(req: Request) {
     }
 
     // --- Serve PDF ---
-    return new NextResponse(Buffer.from(pdfBuffer), {
+    return new NextResponse(Buffer.from(pdfBuffer || new Uint8Array()), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `${inline ? "inline" : "attachment"}; filename=invoice-${invoiceNumber}.pdf`,
@@ -203,3 +207,7 @@ export async function GET(req: Request) {
     );
   }
 }
+
+
+
+

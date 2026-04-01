@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
+import { isValidOrderId } from "@/lib/order-id-utils";
 import {
   collection,
   doc,
@@ -9,13 +10,7 @@ import {
   where,
 } from "firebase/firestore";
 
-// Validate orderId format
-function isValidOrderId(orderId: string | null): boolean {
-  if (!orderId) return false;
-  return /^ORDER_[a-f0-9\-]{36}$/.test(orderId);
-}
-
-// GET — fetch payment status from Firestore only
+// GET - fetch payment status from Firestore only
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -41,7 +36,7 @@ export async function GET(req: Request) {
 
     const paymentData = snapshot.docs[0].data();
 
-    // Return only what the UI needs — no extra PII
+    // Return only what the UI needs - no extra PII
     return NextResponse.json({
       success: true,
       payment: {
@@ -64,13 +59,13 @@ export async function GET(req: Request) {
   }
 }
 
-// PUT — verify payment status against Juspay server-to-server
+// PUT - verify payment status against Juspay server-to-server
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { orderId } = body;
 
-    // Only accept orderId from body — never accept amount or referenceId from client
+    // Only accept orderId from body - never accept amount or referenceId from client
     if (!isValidOrderId(orderId)) {
       return NextResponse.json(
         { success: false, message: "Invalid or missing order ID" },
@@ -95,7 +90,7 @@ export async function PUT(req: Request) {
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      // Never synthesize a payment record — if it doesn't exist, reject
+      // Never synthesize a payment record - if it doesn't exist, reject
       return NextResponse.json(
         { success: false, message: "Payment record not found" },
         { status: 404 }
@@ -105,7 +100,7 @@ export async function PUT(req: Request) {
     const paymentDoc = snapshot.docs[0];
     const existingData = paymentDoc.data();
 
-    // Idempotency — if already SUCCESS, return as-is without hitting Juspay again
+    // Idempotency - if already SUCCESS, return as-is without hitting Juspay again
     if (existingData.status === "SUCCESS") {
       return NextResponse.json({
         success: true,
@@ -142,7 +137,7 @@ export async function PUT(req: Request) {
 
     const juspayData = await juspayResponse.json();
 
-    // --- Amount verification — confirmed amount must match what we stored ---
+    // --- Amount verification - confirmed amount must match what we stored ---
     const confirmedAmount = juspayData.amount;
     const expectedAmount = existingData.amount;
 
@@ -199,3 +194,8 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+
+
+
+

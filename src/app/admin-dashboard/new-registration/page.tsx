@@ -130,6 +130,7 @@ const normalizeRegistration = (
   id: string,
 ): Registration => {
   const draft = record.registrationDraft || {};
+  const workshopDraft = record.workshopRegistrationDraft || {};
   const course = record.course || {};
   const studentData = record.studentData || {};
   const parentData = record.parentData || {};
@@ -140,11 +141,17 @@ const normalizeRegistration = (
     studentName:
       record.studentName ||
       draft.studentName ||
+      workshopDraft.childName ||
       studentData.studentName ||
       studentData.fullName ||
       "",
     dateOfBirth: record.dateOfBirth || draft.dateOfBirth || studentData.dateOfBirth || "",
-    currentAge: record.currentAge || draft.currentAge || studentData.currentAge || "",
+    currentAge:
+      record.currentAge ||
+      draft.currentAge ||
+      workshopDraft.age ||
+      studentData.currentAge ||
+      "",
     schoolName: record.schoolName || draft.schoolName || studentData.schoolName || "",
     class: record.class || draft.class || studentData.class || "",
     board: record.board || draft.board || studentData.board || "",
@@ -158,12 +165,14 @@ const normalizeRegistration = (
     primaryParentContact:
       record.primaryParentContact ||
       record.parentPhone ||
+      workshopDraft.contactNumber ||
       draft.primaryParentContact ||
       parentData.primaryParentContact ||
       "",
     primaryParentEmail:
       record.primaryParentEmail ||
       record.parentEmail ||
+      workshopDraft.email ||
       draft.primaryParentEmail ||
       parentData.primaryParentEmail ||
       "",

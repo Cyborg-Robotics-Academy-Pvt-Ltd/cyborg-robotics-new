@@ -3,18 +3,28 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Download, CheckCircle, Info } from "lucide-react";
+import { Download, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { readOrderId } from "@/lib/order-id-storage";
 
 export default function PaymentInvoiceClient() {
   const params = useSearchParams();
-  const orderId = params.get("orderId") || params.get("order_id") || "";
-
-  const [isDevelopment, setIsDevelopment] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [orderIdResolved, setOrderIdResolved] = useState(false);
 
   useEffect(() => {
-    setIsDevelopment(process.env.NODE_ENV === "development");
-  }, []);
+    const fromQuery = params.get("orderId") || params.get("order_id") || "";
+    setOrderId(fromQuery || readOrderId());
+    setOrderIdResolved(true);
+  }, [params]);
+
+  if (!orderIdResolved) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+        <div className="text-slate-600">Loading invoice...</div>
+      </div>
+    );
+  }
 
   if (!orderId) {
     return (
@@ -22,57 +32,51 @@ export default function PaymentInvoiceClient() {
         <div className="max-w-md text-center">
           <h1 className="text-2xl font-semibold">Invoice Not Available</h1>
           <p className="mt-2 text-gray-600">Missing order ID.</p>
-          <Link href="/payment/status" className="inline-block mt-6">
-            <Button variant="outline">Back</Button>
-          </Link>
+          <Button asChild variant="outline" className="mt-6">
+            <Link href="/payment/status">Back</Link>
+          </Button>
         </div>
       </div>
     );
   }
 
   const downloadUrl = `/api/payment/invoice?orderId=${orderId}`;
+  const previewUrl = `/api/payment/invoice?orderId=${orderId}&mode=html`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold">Payment Successful</h1>
-        </div>
-
-        {/* Order Card */}
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
-          <p>
-            <b>Order ID:</b> {orderId}
-          </p>
-          <p className="text-green-600 font-semibold">SUCCESS</p>
-        </div>
-
-        {/* Dev Notice */}
-        {isDevelopment && (
-          <div className="bg-amber-50 border p-4 rounded mb-6">
-            <div className="flex gap-2">
-              <Info className="w-5 h-5 text-amber-600" />
-              <p className="text-sm text-amber-700">
-                PDF may not render locally. Works in production.
-              </p>
-            </div>
+    <div className="min-h-screen bg-slate-100 px-4 py-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Invoice Preview</h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Shared preview for PDF, email, and admin views.
+            </p>
           </div>
-        )}
 
-        {/* Actions */}
-        <div className="flex gap-4 justify-center">
-          <a href={downloadUrl} target="_blank">
-            <Button>
-              <Download className="w-4 h-4 mr-2" />
-              Download Invoice
+          <div className="flex flex-wrap gap-3">
+            <a href={downloadUrl} target="_blank" rel="noreferrer">
+              <Button>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </a>
+
+            <Button asChild variant="outline">
+              <Link href={`/payment/status?orderId=${orderId}`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Status
+              </Link>
             </Button>
-          </a>
+          </div>
+        </div>
 
-          <Link href="/payment/status">
-            <Button variant="outline">Back</Button>
-          </Link>
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <iframe
+            src={previewUrl}
+            title="Invoice preview"
+            className="h-[calc(100vh-180px)] w-full bg-white"
+          />
         </div>
       </div>
     </div>

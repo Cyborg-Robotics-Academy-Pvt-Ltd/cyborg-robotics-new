@@ -2,6 +2,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { courseData } from "../../../data/courseData";
+import { saveOrderId } from "@/lib/order-id-storage";
 import {
   User,
   Calendar,
@@ -331,6 +332,9 @@ const RegisterPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.paymentUrl) {
+        if (data.orderId) {
+          saveOrderId(data.orderId);
+        }
         window.location.href = data.paymentUrl;
       } else {
         console.error("Payment initiation error:", data);
