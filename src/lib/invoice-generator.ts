@@ -25,8 +25,9 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
     await page.emulateMediaType("screen");
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
     const buffer = await page.pdf({
       format: "A4",

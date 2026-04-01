@@ -69,8 +69,6 @@ export function renderInvoiceHtml(data: InvoiceData): string {
 <title>Invoice ${escapeHtml(data.invoiceNumber)}</title>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
 @page {
   size: A4;
   margin: 24px;
@@ -94,7 +92,7 @@ export function renderInvoiceHtml(data: InvoiceData): string {
 }
 
 body {
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -152,7 +150,7 @@ body {
 .inv-num {
   font-size: 22px;
   font-weight: 600;
-  font-family: 'DM Mono', monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   margin-top: 3px;
   text-align: right;
 }
@@ -160,7 +158,7 @@ body {
 .inv-order {
   font-size: 12px;
   color: rgba(255,255,255,0.45);
-  font-family: 'DM Mono', monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   margin-top: 3px;
   text-align: right;
 }
@@ -200,7 +198,7 @@ body {
 .meta-val {
   font-size: 13px;
   font-weight: 500;
-  font-family: 'DM Mono', monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   color: var(--text);
 }
 

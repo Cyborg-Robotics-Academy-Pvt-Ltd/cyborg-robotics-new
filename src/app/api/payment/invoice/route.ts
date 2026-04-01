@@ -19,6 +19,8 @@ import {
 } from "firebase/firestore";
 import { sendPaymentConfirmation } from "@/lib/email-service";
 
+export const runtime = "nodejs";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
