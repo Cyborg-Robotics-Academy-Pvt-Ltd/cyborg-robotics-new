@@ -1,6 +1,13 @@
 ﻿import { NextResponse } from "next/server";
 import { generateCustomerId } from "@/lib/customer-id-utils";
 import { generateOrderId } from "@/lib/order-id-utils";
+import { buildTrustedPaymentUrl, requireTrustedBaseUrl } from "@/lib/payment-url-validation";
+import {
+  createPaymentSessionBinding,
+  createPaymentSessionCookieValue,
+  derivePaymentOwnerSeed,
+  PAYMENT_SESSION_COOKIE_NAME,
+} from "@/lib/payment-session-binding";
 import { courseData } from "@/data/courseData";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -27,6 +34,7 @@ export async function POST(req: Request) {
       primaryParentName,
       primaryParentContact,
       primaryParentEmail,
+      userId,
       currentAddress,
       permanentAddress,
       courseKey,
@@ -133,7 +141,7 @@ export async function POST(req: Request) {
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
     const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
     const API_KEY = process.env.HDFC_API_KEY;
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+    const BASE_URL = requireTrustedBaseUrl(process.env.NEXT_PUBLIC_BASE_URL);
 
     if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY || !BASE_URL) {
       return NextResponse.json(
@@ -144,7 +152,16 @@ export async function POST(req: Request) {
 
     // --- Generate IDs server-side ---
     const orderId = generateOrderId(); // not client-supplied, not predictable
-    const customerId = await generateCustomerId();
+    const customerSeed = userId || primaryParentEmail;
+    const customerId = generateCustomerId(customerSeed);
+    const paymentOwnerSeed = derivePaymentOwnerSeed(userId, primaryParentEmail);
+    const paymentSessionBinding = createPaymentSessionBinding(
+      orderId,
+      customerId,
+      paymentOwnerSeed
+    );
+
+    const returnUrl = buildTrustedPaymentUrl(BASE_URL, "/api/payment/return");
 
     // --- Create Juspay order ---
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
@@ -161,7 +178,7 @@ export async function POST(req: Request) {
         customer_id: customerId,
         customer_email: primaryParentEmail,
         customer_phone: primaryParentContact,
-        return_url: `${BASE_URL}/api/payment/return`,
+        return_url: returnUrl.toString(),
         metadata: {
           studentName,
           courseName: course.title,
@@ -197,6 +214,10 @@ export async function POST(req: Request) {
     await addDoc(collection(db, "payments"), {
       orderId,
       customerId,
+      ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+      sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+      sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+      sessionBindingSource: userId ? "userId" : "email",
       studentName,
       courseName: course.title,
       courseKey,
@@ -256,11 +277,24 @@ export async function POST(req: Request) {
       createdAt: serverTimestamp(),
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       paymentUrl,
       orderId,
     });
+
+    const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+    if (cookieValue) {
+      response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 8,
+      });
+    }
+
+    return response;
   } catch (error) {
     // Log internally, never expose stack trace to client
     console.error("Payment initiation error:", error);

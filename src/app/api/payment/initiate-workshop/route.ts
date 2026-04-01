@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { generateOrderId } from "@/lib/order-id-utils";
+import { generateCustomerId } from "@/lib/customer-id-utils";
+import { buildTrustedPaymentUrl, requireTrustedBaseUrl } from "@/lib/payment-url-validation";
+import {
+  createPaymentSessionBinding,
+  createPaymentSessionCookieValue,
+  derivePaymentOwnerSeed,
+  PAYMENT_SESSION_COOKIE_NAME,
+} from "@/lib/payment-session-binding";
 
 const WORKSHOPS = {
   "lego-robotics-workshop": {
@@ -23,6 +31,7 @@ export async function POST(req: Request) {
     const {
       workshopKey,
       email,
+      userId,
       contactNumber,
       childName,
       age,
@@ -84,7 +93,7 @@ export async function POST(req: Request) {
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
     const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
     const API_KEY = process.env.HDFC_API_KEY;
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+    const BASE_URL = requireTrustedBaseUrl(process.env.NEXT_PUBLIC_BASE_URL);
 
     if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY || !BASE_URL) {
       return NextResponse.json(
@@ -94,7 +103,11 @@ export async function POST(req: Request) {
     }
 
     const orderId = generateOrderId();
-    const customerId = `WS_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const customerSeed = userId || email;
+    const customerId = generateCustomerId(customerSeed);
+    const paymentOwnerSeed = derivePaymentOwnerSeed(userId, email);
+    const paymentSessionBinding = createPaymentSessionBinding(orderId, customerId, paymentOwnerSeed);
+    const returnUrl = buildTrustedPaymentUrl(BASE_URL, "/api/payment/return");
 
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
       method: "POST",
@@ -110,12 +123,13 @@ export async function POST(req: Request) {
         customer_id: customerId,
         customer_email: email,
         customer_phone: contactNumber,
-        return_url: `${BASE_URL}/api/payment/return`,
+        return_url: returnUrl.toString(),
         metadata: {
           flow: "workshop",
           workshopKey,
           workshopName: workshop.title,
           childName,
+          internalCustomerId: customerId,
         },
       }),
     });
@@ -136,7 +150,10 @@ export async function POST(req: Request) {
     const paymentUrl = juspayData?.payment_links?.web;
 
     if (!paymentUrl) {
-      console.error("Juspay did not return a payment URL for workshop:", juspayData);
+      console.error(
+        "Juspay did not return a payment URL for workshop:",
+        juspayData,
+      );
       return NextResponse.json(
         { success: false, message: "Payment URL not received. Please try again." },
         { status: 502 },
@@ -146,6 +163,10 @@ export async function POST(req: Request) {
     await addDoc(collection(db, "payments"), {
       orderId,
       customerId,
+      ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+      sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+      sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+      sessionBindingSource: userId ? "userId" : "email",
       amount: workshop.amount,
       currency: "INR",
       status: "PENDING",
@@ -171,11 +192,24 @@ export async function POST(req: Request) {
       createdAt: serverTimestamp(),
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       paymentUrl,
       orderId,
     });
+
+    const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+    if (cookieValue) {
+      response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 8,
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Workshop payment initiation error:", error);
     return NextResponse.json(
@@ -184,5 +218,4 @@ export async function POST(req: Request) {
     );
   }
 }
-
 

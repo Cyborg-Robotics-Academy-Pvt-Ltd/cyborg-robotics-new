@@ -7,14 +7,34 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
+import { saveOrderId } from "@/lib/order-id-storage";
 
 interface StaticImage {
   url: string;
   alt: string;
 }
 
+interface RegistrationFormData {
+  email: string;
+  contactNumber: string;
+  childName: string;
+  age: string;
+  city: string;
+  area: string;
+}
+
 const DroneHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formData, setFormData] = useState<RegistrationFormData>({
+    email: "",
+    contactNumber: "",
+    childName: "",
+    age: "",
+    city: "",
+    area: "",
+  });
   const cardRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -43,20 +63,61 @@ const DroneHero = () => {
     mouseY.set(0);
   };
 
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    setFormError("");
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isInitiatingPayment) return;
+
+    try {
+      setIsInitiatingPayment(true);
+      setFormError("");
+
+      const response = await fetch("/api/payment/initiate-workshop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workshopKey: "drone-workshop",
+          email: formData.email,
+          contactNumber: formData.contactNumber,
+          childName: formData.childName,
+          age: formData.age,
+          city: formData.city,
+          area: formData.area,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success && data.paymentUrl) {
+        if (data.orderId) {
+          saveOrderId(data.orderId);
+        }
+        window.location.href = data.paymentUrl;
+        return;
+      }
+
+      setFormError(
+        data.message || "Unable to start payment. Please try again.",
+      );
+    } catch (error) {
+      console.error("Workshop payment initiation failed:", error);
+      setFormError("Unable to start payment. Please try again.");
+    } finally {
+      setIsInitiatingPayment(false);
+    }
+  };
+
   // TODO: Replace with actual drone workshop images from Cloudinary
   const staticImages: StaticImage[] = [
-    {
-      url: "/assets/workshops/drone/Drone_1.jpeg",
-      alt: "Drone Workshop 1",
-    },
-    {
-      url: "/assets/workshops/drone/Drone_2.jpeg",
-      alt: "Drone Workshop 2",
-    },
-    {
-      url: "/assets/workshops/drone/Drone_3.jpeg",
-      alt: "Drone Workshop 3",
-    },
+    { url: "/assets/workshops/drone/Drone_1.jpeg", alt: "Drone Workshop 1" },
+    { url: "/assets/workshops/drone/Drone_2.jpeg", alt: "Drone Workshop 2" },
+    { url: "/assets/workshops/drone/Drone_3.jpeg", alt: "Drone Workshop 3" },
   ];
   const shouldLoopSlides = staticImages.length > 3;
 
@@ -77,240 +138,106 @@ const DroneHero = () => {
     },
   };
 
+  const courseHighlights = [
+    { icon: "🔧", text: "Hands-on drone assembly & components" },
+    { icon: "✈️", text: "Real drone flying practice sessions" },
+    { icon: "🏆", text: "Certificate of completion" },
+  ];
+
   return (
-    <div
-      style={{ fontFamily: "'DM Sans', sans-serif", overflow: "hidden" }}
-      className="mt-10"
-    >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+    <div className="font-['DM_Sans',sans-serif] overflow-hidden mt-10">
+      {/* Google Fonts — kept as minimal style tag; Tailwind cannot load external fonts */}
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap');`}</style>
 
-       
-        .hero-bg::before {
-          content: '';
-          position: absolute; inset: 0;
-          background:
-            radial-gradient(ellipse 55% 50% at 5% 60%, rgba(168,27,30,0.07) 0%, transparent 65%),
-            radial-gradient(ellipse 45% 55% at 95% 25%, rgba(168,27,30,0.06) 0%, transparent 65%);
-          pointer-events: none;
-        }
-
-        .blob {
-          position: absolute; border-radius: 50%;
-          filter: blur(80px); opacity: 0.1;
-          animation: blobFloat 9s ease-in-out infinite alternate;
-          pointer-events: none;
-        }
-        @keyframes blobFloat {
-          0% { transform: translateY(0px) scale(1); }
-          100% { transform: translateY(-18px) scale(1.04); }
-        }
-
-        .dot-grid {
-          position: absolute; inset: 0;
-          background-image: radial-gradient(circle, rgba(168,27,30,0.1) 1px, transparent 1px);
-          background-size: 28px 28px;
-          mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
-          opacity: 0.3; pointer-events: none;
-        }
-
-        .card-3d-wrapper { perspective: 900px; }
-        .card-3d-inner { transform-style: preserve-3d; will-change: transform; position: relative; }
-
-        .glare {
-          position: absolute; inset: 0; border-radius: 20px;
-          pointer-events: none; z-index: 10;
-          mix-blend-mode: overlay; opacity: 0.4;
-        }
-
-        .float-badge { animation: badgeFloat 3s ease-in-out infinite alternate; }
-        .float-badge-2 { animation: badgeFloat 3.5s ease-in-out infinite alternate-reverse; }
-        @keyframes badgeFloat {
-          0% { transform: translateY(0px) rotate(-1.5deg); }
-          100% { transform: translateY(-6px) rotate(1.5deg); }
-        }
-
-        .hero-swiper { width: 100% !important; height: 100% !important; }
-        .hero-swiper .swiper-slide { border-radius: 16px; overflow: hidden; }
-        .hero-swiper .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
-
-        .cta-btn {
-          background: linear-gradient(135deg, #A81B1E 0%, #C73E1D 100%);
-          color: white; border: none; border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px; font-weight: 700;
-          padding: 12px 28px; cursor: pointer;
-          position: relative; overflow: hidden;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          box-shadow: 0 6px 22px rgba(168,27,30,0.35);
-          white-space: nowrap;
-        }
-        .cta-btn::before {
-          content: ''; position: absolute; top: 0; left: -100%;
-          width: 60%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-          transition: left 0.5s ease;
-        }
-        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(168,27,30,0.42); }
-        .cta-btn:hover::before { left: 150%; }
-
-        .inclusion-card {
-          background: linear-gradient(135deg, #fff 0%, #fff8f8 100%);
-          border: 1px solid rgba(168,27,30,0.13);
-          border-radius: 14px;
-          box-shadow: 0 3px 16px rgba(168,27,30,0.06);
-        }
-
-        .card-shadow {
-          position: absolute; bottom: -16px; left: 50%;
-          transform: translateX(-50%);
-          width: 70%; height: 24px;
-          background: radial-gradient(ellipse, rgba(168,27,30,0.18) 0%, transparent 70%);
-          filter: blur(8px); pointer-events: none;
-        }
-
-        .tag-chip {
-          display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(168,27,30,0.07);
-          border: 1px solid rgba(168,27,30,0.16);
-          border-radius: 100px; padding: 4px 12px;
-          font-size: 10px; font-weight: 700;
-          letter-spacing: 0.08em; text-transform: uppercase; color: #A81B1E;
-        }
-
-        .divider-line {
-          width: 40px; height: 3px;
-          background: linear-gradient(90deg, #A81B1E, #C73E1D);
-          border-radius: 2px; margin: 8px 0 12px;
-        }
-
-        .trust-pill {
-          display: inline-flex; align-items: center; gap: 5px;
-          background: rgba(168,27,30,0.04);
-          border: 1px solid rgba(168,27,30,0.1);
-          border-radius: 100px; padding: 3px 10px;
-          font-size: 11px; color: #666; font-weight: 500;
-        }
-
-        .inclusion-icon {
-          width: 26px; height: 26px; border-radius: 7px;
-          background: rgba(168,27,30,0.08);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 13px; flex-shrink: 0;
-        }
-      `}</style>
-
+      {/* ── HERO SECTION ───────────────────────────────────────── */}
       <motion.section
-        className="hero-bg"
-        style={{ padding: "0 24px" }}
+        className="
+          relative min-h-screen flex items-center bg-white px-6
+          before:content-[''] before:absolute before:inset-0 before:pointer-events-none
+          before:[background:radial-gradient(ellipse_55%_50%_at_5%_60%,rgba(168,27,30,0.07)_0%,transparent_65%),radial-gradient(ellipse_45%_55%_at_95%_25%,rgba(168,27,30,0.06)_0%,transparent_65%)]
+        "
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        <div className="dot-grid" />
+        {/* Dot grid */}
         <div
-          className="blob"
-          style={{
-            width: 400,
-            height: 400,
-            background: "#A81B1E",
-            top: "-100px",
-            left: "-120px",
-          }}
-        />
-        <div
-          className="blob"
-          style={{
-            width: 300,
-            height: 300,
-            background: "#C73E1D",
-            bottom: "-80px",
-            right: "-60px",
-            animationDelay: "1.5s",
-          }}
+          className="
+            absolute inset-0 pointer-events-none opacity-30
+            [background-image:radial-gradient(circle,rgba(168,27,30,0.1)_1px,transparent_1px)]
+            [background-size:28px_28px]
+            [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_30%,transparent_100%)]
+          "
         />
 
+        {/* Blobs */}
         <div
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            width: "100%",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 40,
-              flexWrap: "wrap",
-            }}
-          >
-            {/* LEFT */}
+          className="
+            absolute w-[400px] h-[400px] rounded-full pointer-events-none opacity-10
+            bg-[#A81B1E] blur-[80px] -top-[100px] -left-[120px]
+            animate-[blobFloat_9s_ease-in-out_infinite_alternate]
+          "
+        />
+        <div
+          className="
+            absolute w-[300px] h-[300px] rounded-full pointer-events-none opacity-10
+            bg-[#C73E1D] blur-[80px] -bottom-[80px] -right-[60px]
+            animate-[blobFloat_9s_ease-in-out_infinite_alternate]
+            [animation-delay:1.5s]
+          "
+        />
+
+        {/* ── INNER WRAPPER ── */}
+        <div className="max-w-[1200px] mx-auto w-full relative z-10">
+          <div className="flex flex-row items-center gap-10 flex-wrap">
+            {/* ── LEFT COLUMN ── */}
             <motion.div
               variants={itemVariants}
-              style={{ flex: "1 1 340px", minWidth: 260 }}
+              className="flex-[1_1_340px] min-w-[260px]"
             >
-              <motion.div variants={itemVariants} style={{ marginBottom: 12 }}>
-                <span className="tag-chip">🚁 Ages 4–16 · Drone Course</span>
+              {/* Tag chip */}
+              <motion.div variants={itemVariants} className="mb-3">
+                <span className="inline-flex items-center gap-[6px] bg-[rgba(168,27,30,0.07)] border border-[rgba(168,27,30,0.16)] rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.08em] uppercase text-[#A81B1E]">
+                  🚁 Ages 4–16 · Drone Course
+                </span>
               </motion.div>
 
+              {/* H1 */}
               <motion.h1
                 variants={itemVariants}
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: "clamp(1.9rem, 4vw, 3.2rem)",
-                  fontWeight: 900,
-                  lineHeight: 1.06,
-                  letterSpacing: "-0.03em",
-                  color: "#1a1a1a",
-                  margin: 0,
-                }}
+                className="font-['Syne',sans-serif] text-[clamp(1.9rem,4vw,3.2rem)] font-black leading-[1.06] tracking-[-0.03em] text-[#1a1a1a] m-0"
               >
-                Build. Fly. <span className="gradient-text">Soar.</span>
+                Build. Fly.{" "}
+                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+                  Soar.
+                </span>
               </motion.h1>
 
-              <div className="divider-line" />
+              {/* Divider */}
+              <div className="w-10 h-[3px] bg-gradient-to-r from-[#A81B1E] to-[#C73E1D] rounded-sm my-2 mb-3" />
 
+              {/* H2 */}
               <motion.h2
                 variants={itemVariants}
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: "clamp(0.9rem, 1.6vw, 1.1rem)",
-                  fontWeight: 700,
-                  color: "#A81B1E",
-                  margin: "0 0 8px",
-                  lineHeight: 1.4,
-                }}
+                className="font-['Syne',sans-serif] text-[clamp(0.9rem,1.6vw,1.1rem)] font-bold text-[#A81B1E] m-0 mb-2 leading-[1.4]"
               >
                 Your Child's First Step into Drone Technology Starts Here…
               </motion.h2>
 
+              {/* Description */}
               <motion.p
                 variants={itemVariants}
-                style={{
-                  fontSize: 14,
-                  color: "#555",
-                  lineHeight: 1.6,
-                  margin: "0 0 4px",
-                }}
+                className="text-[14px] text-[#555] leading-[1.6] m-0 mb-1"
               >
                 A hands-on{" "}
-                <strong style={{ color: "#1a1a1a" }}>
+                <strong className="text-[#1a1a1a]">
                   Drone Building &amp; Flying Course
                 </strong>{" "}
                 for young minds (Ages 10–16).
               </motion.p>
               <motion.p
                 variants={itemVariants}
-                style={{
-                  fontSize: 14,
-                  color: "#555",
-                  lineHeight: 1.6,
-                  margin: "0 0 14px",
-                }}
+                className="text-[14px] text-[#555] leading-[1.6] m-0 mb-[14px]"
               >
                 Students learn how drones work, how to build them, and how to
                 fly them safely — exploring aerial robotics, aerodynamics, and
@@ -320,104 +247,71 @@ const DroneHero = () => {
               {/* Trust pills */}
               <motion.div
                 variants={itemVariants}
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 6,
-                  marginBottom: 16,
-                }}
+                className="flex flex-wrap gap-[6px] mb-4"
               >
                 {[
                   "👨‍🏫 Mentor Guided",
                   "🧠 STEM Learning",
                   "✈️ Real Drone Flying",
                 ].map((t) => (
-                  <span key={t} className="trust-pill">
+                  <span
+                    key={t}
+                    className="inline-flex items-center gap-[5px] bg-[rgba(168,27,30,0.04)] border border-[rgba(168,27,30,0.1)] rounded-full px-[10px] py-[3px] text-[11px] text-[#666] font-medium"
+                  >
                     {t}
                   </span>
                 ))}
               </motion.div>
 
               {/* CTA */}
-              <motion.div variants={itemVariants} style={{ marginBottom: 4 }}>
+              <motion.div variants={itemVariants} className="mb-1">
                 <button
-                  className="cta-btn"
                   onClick={() => setIsModalOpen(true)}
+                  className="
+                    relative overflow-hidden whitespace-nowrap
+                    bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] text-white border-0
+                    rounded-xl text-[15px] font-bold px-7 py-3 cursor-pointer
+                    shadow-[0_6px_22px_rgba(168,27,30,0.35)]
+                    transition-[transform,box-shadow] duration-200 ease-out
+                    hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(168,27,30,0.42)]
+                    before:content-[''] before:absolute before:top-0 before:-left-full before:w-[60%] before:h-full
+                    before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent
+                    before:transition-[left] before:duration-500 hover:before:left-[150%]
+                  "
                 >
                   🚁 Enroll in Drone Course
                 </button>
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "#bbb",
-                    marginTop: 6,
-                    marginBottom: 0,
-                  }}
-                >
+                <p className="text-[11px] text-[#bbb] mt-[6px] mb-0">
                   Small batch · Offline at Cyborg Robotics Lab
                 </p>
               </motion.div>
 
-              {/* Inclusions */}
+              {/* Course Highlights card */}
               <motion.div
                 variants={itemVariants}
-                className="inclusion-card"
-                style={{ padding: "13px 16px", marginTop: 14 }}
+                className="mt-[14px] p-[13px_16px] bg-gradient-to-br from-white to-[#fff8f8] border border-[rgba(168,27,30,0.13)] rounded-[14px] shadow-[0_3px_16px_rgba(168,27,30,0.06)]"
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 9,
-                    marginBottom: 11,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: "50%",
-                      background: "rgba(168,27,30,0.09)",
-                      border: "1px solid rgba(168,27,30,0.16)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 15,
-                    }}
-                  >
+                {/* Card header */}
+                <div className="flex items-center gap-[9px] mb-[11px]">
+                  <div className="w-[30px] h-[30px] rounded-full bg-[rgba(168,27,30,0.09)] border border-[rgba(168,27,30,0.16)] flex items-center justify-center text-[15px] shrink-0">
                     🎁
                   </div>
-                  <span
-                    style={{ fontWeight: 700, fontSize: 13, color: "#1a1a1a" }}
-                  >
+                  <span className="font-bold text-[13px] text-[#1a1a1a]">
                     Course Highlights
                   </span>
                 </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 7 }}
-                >
-                  {[
-                    {
-                      icon: "🔧",
-                      text: "Hands-on drone assembly & components",
-                    },
-                    {
-                      icon: "✈️",
-                      text: "Real drone flying practice sessions",
-                    },
-                    {
-                      icon: "🏆",
-                      text: "Certificate of completion",
-                    },
-                  ].map((item) => (
+
+                {/* Items */}
+                <div className="flex flex-col gap-[7px]">
+                  {courseHighlights.map((item) => (
                     <div
                       key={item.text}
-                      style={{ display: "flex", alignItems: "center", gap: 9 }}
+                      className="flex items-center gap-[9px]"
                     >
-                      <div className="inclusion-icon">{item.icon}</div>
-                      <span
-                        style={{ fontSize: 12, color: "#444", fontWeight: 500 }}
-                      >
+                      <div className="w-[26px] h-[26px] rounded-[7px] bg-[rgba(168,27,30,0.08)] flex items-center justify-center text-[13px] shrink-0">
+                        {item.icon}
+                      </div>
+                      <span className="text-[12px] text-[#444] font-medium">
                         {item.text}
                       </span>
                     </div>
@@ -426,75 +320,47 @@ const DroneHero = () => {
               </motion.div>
             </motion.div>
 
-            {/* RIGHT: 3D card */}
+            {/* ── RIGHT COLUMN: 3D tilt card ── */}
             <motion.div
               variants={itemVariants}
-              style={{
-                flex: "0 0 auto",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-              }}
+              className="flex-none flex justify-center items-center relative"
             >
+              {/* Floating badge */}
               <div
-                className="float-badge-2"
-                style={{
-                  position: "absolute",
-                  bottom: -10,
-                  right: -14,
-                  zIndex: 20,
-                  background: "linear-gradient(135deg, #A81B1E, #C73E1D)",
-                  borderRadius: 11,
-                  padding: "7px 12px",
-                  boxShadow: "0 6px 20px rgba(168,27,30,0.35)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
+                className="
+                  absolute -bottom-[10px] -right-[14px] z-20
+                  bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] rounded-xl px-3 py-[7px]
+                  shadow-[0_6px_20px_rgba(168,27,30,0.35)]
+                  flex items-center gap-[7px]
+                  animate-[badgeFloat_3.5s_ease-in-out_infinite_alternate-reverse]
+                "
               >
-                <span style={{ fontSize: 14 }}>⭐</span>
+                <span className="text-sm">⭐</span>
                 <div>
-                  <div
-                    style={{
-                      fontSize: 9,
-                      color: "rgba(255,255,255,0.6)",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
+                  <div className="text-[9px] text-white/60 font-semibold uppercase tracking-[0.06em]">
                     Ages
                   </div>
-                  <div style={{ fontSize: 12, color: "#fff", fontWeight: 700 }}>
+                  <div className="text-[12px] text-white font-bold">
                     10–16 · No Prior Exp
                   </div>
                 </div>
               </div>
 
+              {/* 3D tilt wrapper */}
               <div
                 ref={cardRef}
-                className="card-3d-wrapper"
+                className="[perspective:900px] relative"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                style={{ position: "relative" }}
               >
                 <motion.div
-                  className="card-3d-inner"
+                  className="[transform-style:preserve-3d] [will-change:transform]"
                   style={{ rotateX, rotateY }}
                 >
-                  <div
-                    style={{
-                      width: 260,
-                      height: 360,
-                      borderRadius: 20,
-                      overflow: "hidden",
-
-                      position: "relative",
-                    }}
-                  >
+                  <div className="w-[260px] h-[360px] rounded-[20px] overflow-hidden relative">
+                    {/* Glare overlay */}
                     <motion.div
-                      className="glare"
+                      className="absolute inset-0 rounded-[20px] pointer-events-none z-10 mix-blend-overlay opacity-40"
                       style={{
                         background: useTransform(
                           [glareX, glareY],
@@ -510,7 +376,7 @@ const DroneHero = () => {
                       modules={[EffectCards, Autoplay]}
                       autoplay={{ delay: 2800, disableOnInteraction: false }}
                       loop={shouldLoopSlides}
-                      className="hero-swiper"
+                      className="!w-full !h-full [&_.swiper-slide]:rounded-2xl [&_.swiper-slide]:overflow-hidden [&_.swiper-slide_img]:w-full [&_.swiper-slide_img]:h-full [&_.swiper-slide_img]:object-cover"
                     >
                       {staticImages.map((image, index) => (
                         <SwiperSlide key={index}>
@@ -519,48 +385,32 @@ const DroneHero = () => {
                             alt={image.alt}
                             width={260}
                             height={360}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
+                            className="w-full h-full object-cover"
                             unoptimized
                           />
                         </SwiperSlide>
                       ))}
                     </Swiper>
 
+                    {/* Bottom gradient overlay with progress bars */}
                     <div
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 70,
-                        background:
-                          "linear-gradient(to top, rgba(168,27,30,0.82), transparent)",
-                        zIndex: 5,
-                        display: "flex",
-                        alignItems: "flex-end",
-                        padding: "0 14px 12px",
-                        gap: 4,
-                      }}
+                      className="
+                        absolute bottom-0 left-0 right-0 h-[70px] z-[5]
+                        bg-gradient-to-t from-[rgba(168,27,30,0.82)] to-transparent
+                        flex items-end pb-3 px-[14px] gap-1
+                      "
                     >
                       {[...Array(5)].map((_, i) => (
                         <div
                           key={i}
-                          style={{
-                            flex: 1,
-                            height: 2.5,
-                            borderRadius: 2,
-                            background:
-                              i === 0 ? "#fff" : "rgba(255,255,255,0.3)",
-                          }}
+                          className={`flex-1 h-[2.5px] rounded-sm ${i === 0 ? "bg-white" : "bg-white/30"}`}
                         />
                       ))}
                     </div>
                   </div>
-                  <div className="card-shadow" />
+
+                  {/* Card shadow */}
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[70%] h-6 [background:radial-gradient(ellipse,rgba(168,27,30,0.18)_0%,transparent_70%)] blur-[8px] pointer-events-none" />
                 </motion.div>
               </div>
             </motion.div>
@@ -568,21 +418,191 @@ const DroneHero = () => {
         </div>
       </motion.section>
 
+      {/* ── MODAL ───────────────────────────────────────────────── */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Enroll in Drone Building & Flying Course"
       >
-        <div className="p-4">
-          <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSfJfYegfWy-YCE75jDcy3b37Q23a3ppS8uOZXf4YsBNPFItKQ/viewform"
-            width="100%"
-            height="600px"
-            frameBorder="0"
-            title="Drone Course Registration Form"
-          >
-            Loading Registration Form...
-          </iframe>
+        <div className="bg-gradient-to-b from-white to-[#fff7f7] p-4 sm:p-5">
+          <div className="border border-[rgba(168,27,30,0.12)] rounded-[18px] bg-white shadow-[0_12px_40px_rgba(168,27,30,0.08)] p-4 sm:p-6">
+            {/* Modal header */}
+            <div className="mb-5">
+              <h3 className="font-['Syne',sans-serif] text-2xl font-extrabold text-[#1a1a1a] m-0">
+                Drone Building &amp; Flying Course Registration
+              </h3>
+              <p className="text-[14px] text-[#5b5b5b] leading-[1.6] mt-[10px] mb-0">
+                Register your child for the Drone Building &amp; Flying Course.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {["Age Group: 4-16 Years", "Workshop Fee: Rs. 499"].map((t) => (
+                  <span
+                    key={t}
+                    className="inline-flex items-center gap-[5px] bg-[rgba(168,27,30,0.04)] border border-[rgba(168,27,30,0.1)] rounded-full px-[10px] py-[3px] text-[11px] text-[#666] font-medium"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Error banner */}
+            {formError && (
+              <div className="mb-5 rounded-xl border border-red-200/40 bg-red-50/60 px-[14px] py-3 text-[13px] font-semibold text-red-700">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleFormSubmit}>
+              {/* Grid */}
+              <div className="grid grid-cols-2 gap-[14px] max-sm:grid-cols-1">
+                {/* Email – full width */}
+                <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="email"
+                  >
+                    Email *
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="Enter your email address"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+
+                {/* Contact – full width */}
+                <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="contactNumber"
+                  >
+                    Contact Number (WhatsApp Preferred) *
+                  </label>
+                  <input
+                    id="contactNumber"
+                    name="contactNumber"
+                    type="tel"
+                    required
+                    placeholder="Enter contact number"
+                    value={formData.contactNumber}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+
+                {/* Child name – full width */}
+                <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="childName"
+                  >
+                    Name of the Child *
+                  </label>
+                  <input
+                    id="childName"
+                    name="childName"
+                    type="text"
+                    required
+                    placeholder="Enter child's full name"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+
+                {/* Age */}
+                <div className="flex flex-col gap-[6px]">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="age"
+                  >
+                    Age *
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="4"
+                    max="16"
+                    required
+                    placeholder="4-16"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+
+                {/* City */}
+                <div className="flex flex-col gap-[6px]">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="city"
+                  >
+                    City *
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                    placeholder="Enter city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+
+                {/* Area – full width */}
+                <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
+                  <label
+                    className="text-[13px] font-bold text-[#2a2a2a]"
+                    htmlFor="area"
+                  >
+                    Area / Location *
+                  </label>
+                  <input
+                    id="area"
+                    name="area"
+                    type="text"
+                    required
+                    placeholder="Enter area or location"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
+                  />
+                </div>
+              </div>
+
+              <p className="text-[12px] leading-[1.6] text-[#666] mt-4 mb-4">
+                Please fill in the details below and continue to the integrated
+                payment checkout. Contact form owner:{" "}
+                <strong>gshrikant199980@gmail.com</strong>
+              </p>
+
+              <button
+                type="submit"
+                disabled={isInitiatingPayment}
+                className="
+                  w-full bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] text-white border-0
+                  rounded-2xl py-[14px] px-[18px] text-[15px] font-bold cursor-pointer
+                  shadow-[0_10px_26px_rgba(168,27,30,0.26)]
+                  transition-[transform,box-shadow] duration-200
+                  hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(168,27,30,0.35)]
+                  disabled:opacity-70 disabled:cursor-not-allowed
+                "
+              >
+                {isInitiatingPayment
+                  ? "Connecting to Payment..."
+                  : "Enroll & Pay Rs. 499"}
+              </button>
+            </form>
+          </div>
         </div>
       </Modal>
     </div>

@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { isValidOrderId } from "@/lib/order-id-utils";
+import { extractBankRef, safeWritePaymentAuditLog } from "@/lib/payment-audit-log";
 import {
   collection,
   doc,
@@ -60,6 +61,8 @@ export async function POST(req: Request) {
     let body: Record<string, any> | null = null;
 
     // Parse JSON
+    const requestPath = new URL(req.url).pathname;
+
     if (contentType.includes("application/json")) {
       try {
         body = JSON.parse(rawText);
@@ -68,6 +71,15 @@ export async function POST(req: Request) {
         console.log("id:", body?.id);
       } catch (e) {
         console.error("Failed to parse JSON webhook body:", e);
+        await safeWritePaymentAuditLog({
+          eventType: "webhook_received",
+          source: "payment_webhook_post",
+          success: false,
+          reason: "Invalid JSON payload",
+          requestMethod: req.method,
+          requestPath,
+          rawRequest: rawText,
+        });
         return NextResponse.json(
           { success: false, message: "Invalid JSON payload" },
           { status: 400 }
@@ -75,6 +87,15 @@ export async function POST(req: Request) {
       }
     } else {
       console.error("Unsupported content type:", contentType);
+      await safeWritePaymentAuditLog({
+        eventType: "webhook_received",
+        source: "payment_webhook_post",
+        success: false,
+        reason: "Unsupported content type",
+        requestMethod: req.method,
+        requestPath,
+        rawRequest: rawText,
+      });
       return NextResponse.json(
         { success: false, message: "Unsupported content type" },
         { status: 400 }
@@ -86,6 +107,15 @@ export async function POST(req: Request) {
 
     if (!orderData?.order_id) {
       console.error("Could not extract order_id from webhook payload");
+      await safeWritePaymentAuditLog({
+        eventType: "webhook_received",
+        source: "payment_webhook_post",
+        success: false,
+        reason: "Missing order_id",
+        requestMethod: req.method,
+        requestPath,
+        rawRequest: rawText,
+      });
       return NextResponse.json(
         { success: false, message: "Missing order_id" },
         { status: 400 }
@@ -103,6 +133,16 @@ export async function POST(req: Request) {
 
     if (!isValidOrderId(orderId)) {
       console.error("Invalid or missing order_id:", orderId);
+      await safeWritePaymentAuditLog({
+        eventType: "webhook_received",
+        source: "payment_webhook_post",
+        orderId,
+        success: false,
+        reason: "Invalid order ID",
+        requestMethod: req.method,
+        requestPath,
+        rawRequest: rawText,
+      });
       return NextResponse.json(
         { success: false, message: "Invalid order ID" },
         { status: 400 }
@@ -120,7 +160,75 @@ export async function POST(req: Request) {
         : status;
 
     // --- Update Firestore ---
+    const paymentsRef = collection(db, "payments");
+    const q = query(paymentsRef, where("orderId", "==", orderId));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.error(`No payment record found for orderId: ${orderId}`);
+      await safeWritePaymentAuditLog({
+        eventType: "webhook_status_update",
+        source: "payment_webhook_post",
+        orderId,
+        status: confirmedStatus,
+        txnId,
+        bankRef: extractBankRef(orderData),
+        success: false,
+        reason: "Payment record not found",
+        requestMethod: req.method,
+        requestPath,
+        rawRequest: rawText,
+      });
+      return NextResponse.json(
+        { success: false, message: "Payment record not found" },
+        { status: 404 }
+      );
+    }
+
+    const paymentDoc = snapshot.docs[0];
+    const existing = paymentDoc.data();
+    if (existing.status === "SUCCESS") {
+      await safeWritePaymentAuditLog({
+        eventType: "webhook_finalized",
+        source: "payment_webhook_post",
+        orderId,
+        status: existing.status,
+        txnId: existing.transactionReference || txnId || null,
+        bankRef: extractBankRef(existing),
+        success: true,
+        requestMethod: req.method,
+        requestPath,
+        rawRequest: rawText,
+        metadata: { idempotent: true },
+      });
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    const isFailureStatus =
+      confirmedStatus === "FAILED" ||
+      confirmedStatus === "AUTHORIZATION_FAILED" ||
+      confirmedStatus === "AUTHENTICATION_FAILED" ||
+      confirmedStatus === "JUSPAY_DECLINED";
+
     await updatePaymentStatus(orderId, confirmedStatus, txnId);
+
+    await safeWritePaymentAuditLog({
+      eventType: isFailureStatus ? "webhook_status_update" : "webhook_finalized",
+      source: "payment_webhook_post",
+      orderId,
+      status: confirmedStatus,
+      txnId,
+      bankRef: extractBankRef(orderData),
+      success: !isFailureStatus,
+      reason: isFailureStatus ? "Gateway returned failed status" : null,
+      requestMethod: req.method,
+      requestPath,
+      rawRequest: rawText,
+      rawResponse: orderData,
+      metadata: {
+        failed: isFailureStatus,
+      },
+    });
 
     if (confirmedStatus === "SUCCESS") {
       await finalizeRegistrationForPayment(orderId, txnId);
