@@ -45,6 +45,30 @@ interface UserData {
   superAdmin?: boolean;
 }
 
+const getSafeCreatedAt = (value: unknown): Date => {
+  if (!value) return new Date();
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (value as { toDate?: unknown }).toDate === "function"
+  ) {
+    try {
+      return (value as { toDate: () => Date }).toDate();
+    } catch {
+      return new Date();
+    }
+  }
+
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+};
+
 const AccessControlPage = () => {
   const router = useRouter();
   const { user, userRole, loading: authLoading } = useAuth();
@@ -56,6 +80,7 @@ const AccessControlPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [fetchError, setFetchError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -104,30 +129,35 @@ const AccessControlPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setFetchError("");
 
       // Get users from all collections
       const collections = ["students", "trainers", "admins"];
       let allUsers: UserData[] = [];
 
       for (const collectionName of collections) {
-        const querySnapshot = await getDocs(collection(db, collectionName));
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          allUsers.push({
-            id: doc.id,
-            name: data.name || data.fullName || data.username || "",
-            email: data.email || "",
-            role: collectionName.slice(0, -1), // Remove 's' from end
-            status: data.status || "active",
-            createdAt: data.createdAt?.toDate() || new Date(),
-            profileimage:
-              data.profileimage ||
-              data.imageUrl ||
-              data.imageUrls?.[0] ||
-              undefined,
-            superAdmin: data.superAdmin || false,
+        try {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            allUsers.push({
+              id: doc.id,
+              name: data.name || data.fullName || data.username || "",
+              email: data.email || "",
+              role: collectionName.slice(0, -1), // Remove 's' from end
+              status: data.status || "active",
+              createdAt: getSafeCreatedAt(data.createdAt),
+              profileimage:
+                data.profileimage ||
+                data.imageUrl ||
+                data.imageUrls?.[0] ||
+                undefined,
+              superAdmin: data.superAdmin || false,
+            });
           });
-        });
+        } catch (collectionError) {
+          console.error(`Error fetching ${collectionName}:`, collectionError);
+        }
       }
 
       // Filter out the specific email to hide from display
@@ -139,6 +169,7 @@ const AccessControlPage = () => {
       setFilteredUsers(filteredUsersList);
     } catch (error) {
       console.error("Error fetching users:", error);
+      setFetchError("Unable to load access control users from Firestore.");
     } finally {
       setLoading(false);
     }
@@ -462,6 +493,12 @@ const AccessControlPage = () => {
         </div>
 
         {/* Filters */}
+        {fetchError && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            {fetchError}
+          </div>
+        )}
+
         <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
