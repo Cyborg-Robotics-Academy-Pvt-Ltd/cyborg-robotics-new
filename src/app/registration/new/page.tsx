@@ -15,7 +15,11 @@ import {
   Home,
   Map,
   ChevronDown,
+  Cpu,
+  Shield,
+  Zap,
 } from "lucide-react";
+import Image from "next/image";
 
 interface FormData {
   studentName: string;
@@ -24,7 +28,7 @@ interface FormData {
   schoolName: string;
   class: string;
   board: string;
-  primaryParentType: string; // 'parent'
+  primaryParentType: string;
   primaryParentName: string;
   primaryParentContact: string;
   primaryParentEmail: string;
@@ -52,7 +56,7 @@ const RegisterPage: React.FC = () => {
     schoolName: "",
     class: "",
     board: "",
-    primaryParentType: "", // 'parent'
+    primaryParentType: "",
     primaryParentName: "",
     primaryParentContact: "",
     primaryParentEmail: "",
@@ -98,10 +102,7 @@ const RegisterPage: React.FC = () => {
       ) {
         age--;
       }
-      setFormData((prev) => ({
-        ...prev,
-        currentAge: age.toString(),
-      }));
+      setFormData((prev) => ({ ...prev, currentAge: age.toString() }));
     }
   }, [formData.dateOfBirth]);
 
@@ -112,10 +113,7 @@ const RegisterPage: React.FC = () => {
         permanentAddress: formData.currentAddress,
       }));
     } else if (formData.permanentAddress === formData.currentAddress) {
-      setFormData((prev) => ({
-        ...prev,
-        permanentAddress: "",
-      }));
+      setFormData((prev) => ({ ...prev, permanentAddress: "" }));
     }
   }, [
     sameAsCurrentAddress,
@@ -127,105 +125,55 @@ const RegisterPage: React.FC = () => {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddressCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAddressCheckbox = (e: ChangeEvent<HTMLInputElement>) =>
     setSameAsCurrentAddress(e.target.checked);
-  };
-
-  const handleTermsCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleTermsCheckbox = (e: ChangeEvent<HTMLInputElement>) =>
     setTermsAccepted(e.target.checked);
-  };
 
-  // Validation helpers
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-  const validatePhone = (phone: string) => {
-    return /^\d{10}$/.test(phone);
-  };
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone: string) => /^\d{10}$/.test(phone);
 
   const validateStep = (stepToValidate = step): boolean => {
     const newErrors: { [key: string]: string } = {};
     if (stepToValidate === 1) {
-      if (!formData.studentName.trim()) {
+      if (!formData.studentName.trim())
         newErrors.studentName = "Student name is required.";
-        console.log("❌ Step 1 Error: Student name is empty");
-      }
-      if (!formData.dateOfBirth) {
+      if (!formData.dateOfBirth)
         newErrors.dateOfBirth = "Date of birth is required.";
-        console.log("❌ Step 1 Error: Date of birth is empty");
-      }
-      if (!formData.schoolName.trim()) {
+      if (!formData.schoolName.trim())
         newErrors.schoolName = "School name is required.";
-        console.log("❌ Step 1 Error: School name is empty");
-      }
-      if (!formData.class.trim()) {
-        newErrors.class = "Grade is required.";
-        console.log("❌ Step 1 Error: Class is empty");
-      }
-      if (!formData.board) {
-        newErrors.board = "Board is required.";
-        console.log("❌ Step 1 Error: Board is empty");
-      }
+      if (!formData.class.trim()) newErrors.class = "Grade is required.";
+      if (!formData.board) newErrors.board = "Board is required.";
     } else if (stepToValidate === 2) {
-      if (!formData.primaryParentType) {
+      if (!formData.primaryParentType)
         newErrors.primaryParentType = "Primary parent type is required.";
-        console.log("❌ Step 2 Error: Primary parent type is empty");
-      }
-      if (!formData.primaryParentName.trim()) {
+      if (!formData.primaryParentName.trim())
         newErrors.primaryParentName = "Primary parent name is required.";
-        console.log("❌ Step 2 Error: Primary parent name is empty");
-      }
-      if (!formData.primaryParentContact.trim()) {
+      if (!formData.primaryParentContact.trim())
         newErrors.primaryParentContact = "Primary parent contact is required.";
-        console.log("❌ Step 2 Error: Primary parent contact is empty");
-      } else if (!validatePhone(formData.primaryParentContact)) {
+      else if (!validatePhone(formData.primaryParentContact))
         newErrors.primaryParentContact = "Enter a valid 10-digit phone number.";
-        console.log(
-          "❌ Step 2 Error: Invalid phone number:",
-          formData.primaryParentContact,
-        );
-      }
-      if (!formData.primaryParentEmail.trim()) {
+      if (!formData.primaryParentEmail.trim())
         newErrors.primaryParentEmail = "Primary parent email is required.";
-        console.log("❌ Step 2 Error: Primary parent email is empty");
-      } else if (!validateEmail(formData.primaryParentEmail)) {
+      else if (!validateEmail(formData.primaryParentEmail))
         newErrors.primaryParentEmail = "Enter a valid email address.";
-        console.log(
-          "❌ Step 2 Error: Invalid email:",
-          formData.primaryParentEmail,
-        );
-      }
     } else if (stepToValidate === 3) {
-      if (!formData.currentAddress.trim()) {
+      if (!formData.currentAddress.trim())
         newErrors.currentAddress = "Current address is required.";
-        console.log("❌ Step 3 Error: Current address is empty");
-      }
-      if (!sameAsCurrentAddress && !formData.permanentAddress.trim()) {
+      if (!sameAsCurrentAddress && !formData.permanentAddress.trim())
         newErrors.permanentAddress = "Permanent address is required.";
-        console.log("❌ Step 3 Error: Permanent address is empty");
-      }
     } else if (stepToValidate === 4) {
-      if (!formData.selectedCourseKey) {
+      if (!formData.selectedCourseKey)
         newErrors.selectedCourseKey = "Please select a course.";
-        console.log("❌ Step 4 Error: No course selected");
-      }
       if (formData.paymentType === "installment") {
-        if (!formData.paidAmount.trim()) {
+        if (!formData.paidAmount.trim())
           newErrors.paidAmount = "Please enter amount to pay.";
-          console.log("❌ Step 4 Error: Installment amount is empty");
-        } else if (Number(formData.paidAmount) <= 0) {
+        else if (Number(formData.paidAmount) <= 0)
           newErrors.paidAmount = "Amount must be greater than 0.";
-          console.log(
-            "❌ Step 4 Error: Invalid installment amount:",
-            formData.paidAmount,
-          );
-        }
       }
     } else if (stepToValidate === 5) {
       if (!termsAccepted)
@@ -247,20 +195,15 @@ const RegisterPage: React.FC = () => {
       toast.error("Please fix the errors before proceeding.", {
         position: "top-center",
         duration: 4000,
-        style: {
-          background: "#EF4444",
-          color: "#FFFFFF",
-          fontWeight: "bold",
-        },
+        style: { background: "#EF4444", color: "#FFFFFF", fontWeight: "bold" },
       });
     }
   };
 
   const prevStep = () => {
-    if (step > 1) {
-      setStep((prev) => prev - 1);
-    }
+    if (step > 1) setStep((prev) => prev - 1);
   };
+
   const handleInitiatePayment = async () => {
     if (isInitiatingPayment) return;
 
@@ -270,7 +213,13 @@ const RegisterPage: React.FC = () => {
     const step4Valid = validateStep(4);
     const step5Valid = validateStep(5);
 
-    if (!step1Valid || !step2Valid || !step3Valid || !step4Valid || !step5Valid) {
+    if (
+      !step1Valid ||
+      !step2Valid ||
+      !step3Valid ||
+      !step4Valid ||
+      !step5Valid
+    ) {
       const issues: string[] = [];
       if (!step1Valid) {
         issues.push("Step 1: Student Information");
@@ -292,11 +241,7 @@ const RegisterPage: React.FC = () => {
       toast.error(`Please complete ${issues.join(", ")}.`, {
         position: "top-center",
         duration: 6000,
-        style: {
-          background: "#EF4444",
-          color: "#FFFFFF",
-          fontWeight: "bold",
-        },
+        style: { background: "#EF4444", color: "#FFFFFF", fontWeight: "bold" },
       });
       return;
     }
@@ -332,9 +277,7 @@ const RegisterPage: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.paymentUrl) {
-        if (data.orderId) {
-          saveOrderId(data.orderId);
-        }
+        if (data.orderId) saveOrderId(data.orderId);
         window.location.href = data.paymentUrl;
       } else {
         console.error("Payment initiation error:", data);
@@ -356,59 +299,337 @@ const RegisterPage: React.FC = () => {
       toast.error("Payment initiation failed. Please try again.", {
         position: "top-center",
         duration: 5000,
-        style: {
-          background: "#EF4444",
-          color: "#FFFFFF",
-          fontWeight: "bold",
-        },
+        style: { background: "#EF4444", color: "#FFFFFF", fontWeight: "bold" },
       });
     } finally {
       setIsInitiatingPayment(false);
     }
   };
 
+  const stepLabels = ["Student", "Parent", "Address", "Payment", "Terms"];
+
   return (
     <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+        .reg-page { font-family: 'DM Sans', sans-serif; }
+        .reg-heading { font-family: 'Rajdhani', sans-serif; }
+
+        .brand-header {
+          background: linear-gradient(135deg, #7f0000 0%, #a81b1e 40%, #c73e1d 100%);
+          position: relative;
+          overflow: hidden;
+        }
+        .brand-header::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image:
+            radial-gradient(circle at 15% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),
+            radial-gradient(circle at 85% 20%, rgba(255,255,255,0.04) 0%, transparent 40%);
+        }
+        .brand-header::after {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .circuit-pattern {
+          position: absolute;
+          inset: 0;
+          opacity: 0.04;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+          background-size: 32px 32px;
+        }
+
+        .logo-ring {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.1);
+          border: 2px solid rgba(255,255,255,0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          flex-shrink: 0;
+        }
+        .logo-ring::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          border: 1px dashed rgba(255,255,255,0.2);
+          animation: spin 12s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .logo-inner {
+          width: 42px;
+          height: 42px;
+          background: rgba(255,255,255,0.15);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .academy-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 20px;
+          padding: 3px 10px;
+          font-size: 11px;
+          color: rgba(255,255,255,0.85);
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
+        }
+
+        .step-bubble {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 13px;
+          transition: all 0.3s ease;
+          position: relative;
+          z-index: 1;
+          font-family: 'Rajdhani', sans-serif;
+        }
+        .step-bubble.done { background: #fff; color: #a81b1e; }
+        .step-bubble.active { background: #fff; color: #a81b1e; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+        .step-bubble.pending { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); border: 1.5px solid rgba(255,255,255,0.2); }
+
+        .step-connector { flex: 1; height: 2px; background: rgba(255,255,255,0.15); transition: background 0.3s; }
+        .step-connector.done { background: rgba(255,255,255,0.5); }
+
+        .step-label { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 4px; font-family: 'DM Sans', sans-serif; text-align: center; }
+        .step-label.active { color: #fff; font-weight: 600; }
+
+        .form-card {
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 60px -10px rgba(168,27,30,0.08);
+        }
+
+        .section-num {
+          width: 36px; height: 36px; border-radius: 10px;
+          background: linear-gradient(135deg, #a81b1e, #c73e1d);
+          display: flex; align-items: center; justify-content: center;
+          color: #fff; font-weight: 700; font-size: 15px;
+          font-family: 'Rajdhani', sans-serif;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(168,27,30,0.3);
+        }
+
+        .field-card {
+          background: #fafafa;
+          border-radius: 16px;
+          border: 1px solid #f0f0f0;
+          padding: 24px;
+        }
+
+        .input-wrapper input,
+        .input-wrapper textarea,
+        .input-wrapper select {
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper input:focus,
+        .input-wrapper textarea:focus,
+        .input-wrapper select:focus {
+          border-color: #a81b1e !important;
+          box-shadow: 0 0 0 3px rgba(168,27,30,0.1) !important;
+          outline: none !important;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #a81b1e 0%, #c73e1d 100%);
+          color: #fff;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 600;
+          padding: 11px 32px;
+          border-radius: 12px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 4px 14px rgba(168,27,30,0.35);
+          letter-spacing: 0.02em;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(168,27,30,0.4); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+          background: #f3f4f6;
+          color: #374151;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 600;
+          padding: 11px 28px;
+          border-radius: 12px;
+          border: 1.5px solid #e5e7eb;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: #e9eaec; }
+
+        .fee-card {
+          background: linear-gradient(135deg, #fff5f5, #fff);
+          border: 1.5px solid #fecaca;
+          border-radius: 14px;
+          padding: 18px 20px;
+        }
+
+        .terms-box {
+          background: #fff;
+          border: 1.5px solid #e5e7eb;
+          border-radius: 14px;
+          padding: 16px;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .terms-box:has(input:checked) { border-color: #a81b1e; background: #fff5f5; }
+
+        .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, #f0f0f0, transparent); }
+      `}</style>
+
       <main
         role="main"
         aria-label="New Student Registration"
-        className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 py-8 px-4 sm:px-6 lg:px-8"
+        className="reg-page min-h-screen py-8 px-4 sm:px-6 lg:px-8"
+        style={{
+          background:
+            "linear-gradient(160deg, #fdf2f2 0%, #f5f5f5 50%, #eff6ff 100%)",
+        }}
       >
         <Toaster />
-        <div className="max-w-5xl mx-auto mt-10">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all">
-            <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">
-                Student Registration Form
-              </h1>
-              <p className="text-xs sm:text-sm text-red-100 text-center mt-1 sm:mt-2 max-w-2xl mx-auto">
-                Welcome to Cyborg Robotics Academy!
-              </p>
+
+        <div className="max-w-3xl mx-auto mt-6">
+          {/* ─── BRAND HEADER ─── */}
+          <div
+            className="brand-header rounded-2xl overflow-hidden mb-0"
+            style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}
+          >
+            <div className="circuit-pattern" />
+            <div className="relative z-10 px-6 py-6 sm:px-8 sm:py-7">
+              {/* Logo row */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="logo-ring">
+                  <div className="logo-inner">
+                    {/* Replace this <img> src with your actual logo path */}
+                    <Image
+                      width={24}
+                      height={24}
+                      src="/cyborglogo.png"
+                      alt="Cyborg Robotics"
+                      className="w-8 h-8 object-contain"
+                    />
+                    {/* <Cpu className="w-6 h-6 text-white" strokeWidth={1.5} /> */}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="academy-badge mb-1.5">
+                    <Zap className="w-3 h-3" />
+                    Est. 2020 · Pune
+                  </div>
+                  <h1
+                    className="reg-heading text-white font-bold leading-tight"
+                    style={{
+                      fontSize: "clamp(20px, 4vw, 28px)",
+                      letterSpacing: "0.01em",
+                    }}
+                  >
+                    CYBORG ROBOTICS ACADEMY
+                  </h1>
+                  <p className="text-red-200 text-xs mt-0.5 font-medium tracking-wide">
+                    Empowering Young Innovators · Pvt Ltd
+                  </p>
+                </div>
+
+                {/* Right badge */}
+                <div className="ml-auto hidden sm:flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-xl px-3 py-2">
+                  <Shield className="w-4 h-4 text-white/70" />
+                  <span className="text-white/80 text-xs font-medium">
+                    Secure Registration
+                  </span>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="flex items-center gap-3">
+                <div className="divider-line" />
+                <h2 className="reg-heading text-white/90 text-sm font-semibold tracking-widest uppercase whitespace-nowrap px-2">
+                  Student Registration Form
+                </h2>
+                <div className="divider-line" />
+              </div>
             </div>
 
-            <div className="bg-gradient-to-r from-red-800 to-red-600 px-3 py-2 sm:px-4 sm:py-3">
-              <div className="flex items-center justify-between">
-                <span className="text-white font-medium text-xs sm:text-sm">
-                  Progress
-                </span>
-                <span className="text-white font-medium text-xs sm:text-sm">
-                  {step}/{totalSteps}
-                </span>
-              </div>
-              <div className="w-full bg-red-900 rounded-full h-1.5 mt-1.5 sm:h-2 sm:mt-2">
-                <div
-                  className="bg-white h-1.5 rounded-full transition-all duration-300 sm:h-2"
-                  style={{ width: `${(step / totalSteps) * 100}%` }}
-                ></div>
+            {/* ─── STEP PROGRESS ─── */}
+            <div className="relative z-10 px-6 pb-5 sm:px-8">
+              <div className="flex items-start gap-0">
+                {stepLabels.map((label, i) => {
+                  const s = i + 1;
+                  const isDone = step > s;
+                  const isActive = step === s;
+                  return (
+                    <React.Fragment key={s}>
+                      <div
+                        className="flex flex-col items-center"
+                        style={{ minWidth: 44 }}
+                      >
+                        <div
+                          className={`step-bubble ${isDone ? "done" : isActive ? "active" : "pending"}`}
+                        >
+                          {isDone ? "✓" : s}
+                        </div>
+                        <span
+                          className={`step-label ${isActive ? "active" : ""}`}
+                        >
+                          {label}
+                        </span>
+                      </div>
+                      {i < stepLabels.length - 1 && (
+                        <div
+                          className={`step-connector mt-[18px] ${isDone ? "done" : ""}`}
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="p-3 md:p-6">
+          {/* ─── FORM CARD ─── */}
+          <div
+            className="form-card"
+            style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
+          >
+            <form onSubmit={handleSubmit} className="p-5 md:p-8">
               {step === 1 && (
                 <div>
                   <SectionTitle number="1" title="Student Information" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
+                  <div className="field-card">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <FormField
                         id="studentName"
                         label="STUDENT NAME"
@@ -475,51 +696,42 @@ const RegisterPage: React.FC = () => {
                   </div>
                 </div>
               )}
+
               {step === 2 && (
                 <div>
                   <SectionTitle number="2" title="Primary Parent Information" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
+                  <div className="field-card">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="md:col-span-2">
-                        <label className="block text-gray-700 text-sm font-semibold mb-2">
+                        <label className="block text-gray-700 text-xs font-semibold mb-2 tracking-wider">
                           PRIMARY PARENT TYPE{" "}
                           <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex space-x-4">
-                          <label className="inline-flex items-center">
-                            <input
-                              type="radio"
-                              name="primaryParentType"
-                              value="father"
-                              checked={formData.primaryParentType === "father"}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  primaryParentType: e.target.value,
-                                })
-                              }
-                              className="w-4 h-4 text-red-800 border-gray-300 focus:ring-red-700"
-                              required
-                            />
-                            <span className="ml-2 text-gray-700">Father</span>
-                          </label>
-                          <label className="inline-flex items-center">
-                            <input
-                              type="radio"
-                              name="primaryParentType"
-                              value="mother"
-                              checked={formData.primaryParentType === "mother"}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  primaryParentType: e.target.value,
-                                })
-                              }
-                              className="w-4 h-4 text-red-800 border-gray-300 focus:ring-red-700"
-                              required
-                            />
-                            <span className="ml-2 text-gray-700">Mother</span>
-                          </label>
+                        <div className="flex gap-4">
+                          {["father", "mother"].map((type) => (
+                            <label
+                              key={type}
+                              className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${formData.primaryParentType === type ? "border-red-700 bg-red-50" : "border-gray-200 hover:border-gray-300"}`}
+                            >
+                              <input
+                                type="radio"
+                                name="primaryParentType"
+                                value={type}
+                                checked={formData.primaryParentType === type}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    primaryParentType: e.target.value,
+                                  })
+                                }
+                                className="w-4 h-4 text-red-800 border-gray-300 focus:ring-red-700"
+                                required
+                              />
+                              <span className="text-sm font-medium text-gray-700 capitalize">
+                                {type}
+                              </span>
+                            </label>
+                          ))}
                         </div>
                         {errors.primaryParentType && (
                           <p className="text-red-600 text-xs mt-1">
@@ -575,8 +787,8 @@ const RegisterPage: React.FC = () => {
               {step === 3 && (
                 <div>
                   <SectionTitle number="3" title="Address Information" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <div className="grid grid-cols-1 gap-5 md:gap-8">
+                  <div className="field-card">
+                    <div className="grid grid-cols-1 gap-5">
                       <TextareaField
                         id="currentAddress"
                         label="CURRENT ADDRESS"
@@ -587,23 +799,18 @@ const RegisterPage: React.FC = () => {
                         icon="home"
                         error={errors.currentAddress}
                       />
-
-                      <div className="flex items-center px-1 py-2">
+                      <label className="flex items-center gap-3 cursor-pointer group">
                         <input
                           id="sameAddress"
                           type="checkbox"
-                          className="w-5 h-5 text-red-800 border-gray-300 rounded focus:outline-none    focus:ring-red-700 transition-all cursor-pointer"
+                          className="w-4 h-4 text-red-800 border-gray-300 rounded focus:ring-red-700 transition-all"
                           checked={sameAsCurrentAddress}
                           onChange={handleAddressCheckbox}
                         />
-                        <label
-                          htmlFor="sameAddress"
-                          className="ml-3 text-sm font-medium text-gray-700 cursor-pointer"
-                        >
+                        <span className="text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">
                           Permanent address is same as current address
-                        </label>
-                      </div>
-
+                        </span>
+                      </label>
                       <TextareaField
                         id="permanentAddress"
                         label="PERMANENT ADDRESS"
@@ -619,21 +826,34 @@ const RegisterPage: React.FC = () => {
                   </div>
                 </div>
               )}
+
               {step === 4 && (
                 <div>
                   <SectionTitle number="4" title="Payment Details" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
-                      <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-4">
-                        <p className="text-sm text-gray-600">Course Fee</p>
-                        <p className="text-2xl font-bold text-gray-900 mt-1">
-                          {selectedCourse?.price
-                            ? `Rs. ${selectedCourse.price.toLocaleString("en-IN")}`
-                            : "Select a course to view fee"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Click Pay Now to continue on the bank checkout page.
-                        </p>
+                  <div className="field-card">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="md:col-span-2">
+                        <div className="fee-card">
+                          <p className="text-xs text-gray-500 font-semibold tracking-wider uppercase mb-1">
+                            Course Fee
+                          </p>
+                          <p
+                            className="text-3xl font-bold text-gray-900"
+                            style={{ fontFamily: "'Rajdhani', sans-serif" }}
+                          >
+                            {selectedCourse?.price
+                              ? `₹ ${selectedCourse.price.toLocaleString("en-IN")}`
+                              : "—"}
+                          </p>
+                          {!selectedCourse && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              Select a course below to view fee
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-400 mt-2">
+                            You'll be redirected to bank checkout after Step 5.
+                          </p>
+                        </div>
                       </div>
 
                       <DropdownField
@@ -648,29 +868,34 @@ const RegisterPage: React.FC = () => {
 
                       <div className="md:col-span-2">
                         <label
-                          className="block text-gray-700 text-sm font-semibold mb-2"
+                          className="block text-gray-700 text-xs font-semibold mb-2 tracking-wider"
                           htmlFor="selectedCourseKey"
                         >
                           COURSE <span className="text-red-500">*</span>
                         </label>
-                        <select
-                          id="selectedCourseKey"
-                          name="selectedCourseKey"
-                          value={formData.selectedCourseKey}
-                          onChange={handleChange}
-                          className={`w-full py-3 px-4 border ${errors.selectedCourseKey ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-500 transition-all appearance-none bg-white`}
-                          required
-                        >
-                          <option value="">Select Course</option>
-                          {courseOptions.map((course) => (
-                            <option key={course.key} value={course.key}>
-                              {course.title}
-                              {course.price
-                                ? ` (Rs. ${course.price.toLocaleString("en-IN")})`
-                                : ""}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="input-wrapper relative">
+                          <select
+                            id="selectedCourseKey"
+                            name="selectedCourseKey"
+                            value={formData.selectedCourseKey}
+                            onChange={handleChange}
+                            className={`w-full py-3 px-4 border ${errors.selectedCourseKey ? "border-red-500" : "border-gray-200"} rounded-xl transition-all appearance-none bg-white text-gray-800 text-sm font-medium focus:outline-none`}
+                            required
+                          >
+                            <option value="">Select Course</option>
+                            {courseOptions.map((course) => (
+                              <option key={course.key} value={course.key}>
+                                {course.title}
+                                {course.price
+                                  ? ` (₹ ${course.price.toLocaleString("en-IN")})`
+                                  : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </div>
                         {errors.selectedCourseKey && (
                           <p className="text-red-600 text-xs mt-1">
                             {errors.selectedCourseKey}
@@ -682,7 +907,7 @@ const RegisterPage: React.FC = () => {
                         <>
                           <FormField
                             id="paidAmount"
-                            label="AMOUNT / PRICE TO PAY"
+                            label="AMOUNT TO PAY"
                             type="number"
                             value={formData.paidAmount}
                             onChange={handleChange}
@@ -691,7 +916,6 @@ const RegisterPage: React.FC = () => {
                             icon="file"
                             error={errors.paidAmount}
                           />
-
                           <div className="md:col-span-2">
                             <TextareaField
                               id="paymentRemark"
@@ -703,11 +927,6 @@ const RegisterPage: React.FC = () => {
                           </div>
                         </>
                       )}
-                      <div className="md:col-span-2">
-                        <p className="text-xs text-gray-500 mt-2">
-                          Payment will be initiated after you accept the terms on the next step.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -716,95 +935,101 @@ const RegisterPage: React.FC = () => {
               {step === 5 && (
                 <div>
                   <SectionTitle number="5" title="Terms & Conditions" />
-                  <div className="bg-gray-50 rounded-2xl p-5 md:p-8 border border-gray-200 shadow-inner">
-                    <ul className="list-disc pl-5 text-sm text-gray-700 space-y-3">
-                      <li className="pl-1">
-                        Rescheduling must be done at least 24 hours in advance.
-                        Last-minute requests will not be accepted.
-                      </li>
-                      <li className="pl-1">
-                        Cover up class will not be provided for uninformed
-                        leaves. One day prior intimation is mandatory.
-                      </li>
-                      <li className="pl-1">
-                        Taxes and other applicable charges, if any, will be
-                        charged extra.
-                      </li>
-                      <li className="pl-1">
-                        Fees and other charges paid are not refundable.
-                      </li>
-                      <li className="pl-1">Fees to be paid in advance.</li>
-                      <li className="pl-1">
-                        I hereby grant permission to Cyborg Robotics Academy Pvt
-                        Ltd to use my child photograph and other media such as
-                        film and quotations, on Cyborg promotional material,
-                        publications, social and electronic media for which it
-                        may be suitable.
-                      </li>
+                  <div className="field-card">
+                    <ul className="space-y-3">
+                      {[
+                        "Rescheduling must be done at least 24 hours in advance. Last-minute requests will not be accepted.",
+                        "Cover up class will not be provided for uninformed leaves. One day prior intimation is mandatory.",
+                        "Taxes and other applicable charges, if any, will be charged extra.",
+                        "Fees and other charges paid are not refundable.",
+                        "Fees to be paid in advance.",
+                        "I hereby grant permission to Cyborg Robotics Academy Pvt Ltd to use my child photograph and other media such as film and quotations, on Cyborg promotional material, publications, social and electronic media for which it may be suitable.",
+                      ].map((term, i) => (
+                        <li
+                          key={i}
+                          className="flex gap-3 text-sm text-gray-600 leading-relaxed"
+                        >
+                          <span className="mt-0.5 w-5 h-5 flex-shrink-0 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-700 text-xs font-bold">
+                            {i + 1}
+                          </span>
+                          {term}
+                        </li>
+                      ))}
                     </ul>
 
-                    <div className="flex items-center mt-6 bg-white p-4 rounded-xl border border-gray-200">
-                      <input
-                        id="termsAccepted"
-                        type="checkbox"
-                        className="w-5 h-5 text-red-800 border-gray-300 rounded focus:ring-red-700 transition-all cursor-pointer"
-                        checked={termsAccepted}
-                        onChange={handleTermsCheckbox}
-                        required
-                      />
-                      <label
-                        htmlFor="termsAccepted"
-                        className="ml-3 text-sm font-medium text-gray-700 cursor-pointer"
-                      >
-                        I have read and agree to the terms and conditions
+                    <div className="mt-6">
+                      <label className="terms-box">
+                        <input
+                          id="termsAccepted"
+                          type="checkbox"
+                          className="w-5 h-5 text-red-800 border-gray-300 rounded focus:ring-red-700 transition-all mt-0.5 flex-shrink-0"
+                          checked={termsAccepted}
+                          onChange={handleTermsCheckbox}
+                          required
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          I have read and agree to all the terms and conditions
+                          above.
+                        </span>
                       </label>
+                      {errors.termsAccepted && (
+                        <p className="text-red-600 text-xs mt-2">
+                          {errors.termsAccepted}
+                        </p>
+                      )}
                     </div>
-                    {errors.termsAccepted && (
-                      <p className="text-red-600 text-xs mt-2">
-                        {errors.termsAccepted}
-                      </p>
-                    )}
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-end mt-8">
-                {step > 1 && (
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="bg-gray-200 text-gray-800 font-medium py-2.5 px-8 rounded-xl hover:bg-gray-300 transition-all duration-300 mr-4"
-                  >
-                    Previous
-                  </button>
-                )}
-                {step < totalSteps ? (
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300"
-                  >
-                    Next Step
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={isInitiatingPayment}
-                    className="bg-gradient-to-r from-red-700 to-red-600 text-white font-medium py-2.5 px-8 rounded-xl shadow hover:shadow-lg transition-all duration-300 disabled:opacity-60"
-                  >
-                    {isInitiatingPayment ? "Connecting to Bank..." : "Submit & Pay"}
-                  </button>
-                )}
+              {/* ─── NAV BUTTONS ─── */}
+              <div className="flex justify-between items-center mt-8 pt-5 border-t border-gray-100">
+                <div>
+                  {step > 1 && (
+                    <button
+                      type="button"
+                      onClick={prevStep}
+                      className="btn-secondary"
+                    >
+                      ← Previous
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400 hidden sm:block">
+                    Step {step} of {totalSteps}
+                  </span>
+                  {step < totalSteps ? (
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      className="btn-primary"
+                    >
+                      Next Step →
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isInitiatingPayment}
+                      className="btn-primary"
+                    >
+                      {isInitiatingPayment
+                        ? "Connecting to Bank..."
+                        : "Submit & Pay →"}
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-gray-600 text-sm">
-            Your information will be kept confidential and used only for
-            registration purposes.
-          </p>
-            <p className="text-gray-500 text-xs mt-2">
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-500 text-xs">
+              Your information is kept confidential and used only for
+              registration purposes.
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
               &copy; {new Date().getFullYear()} Cyborg Robotics Academy Pvt Ltd.
               All rights reserved.
             </p>
@@ -815,20 +1040,19 @@ const RegisterPage: React.FC = () => {
   );
 };
 
+// ─── Sub-components (unchanged props/logic) ───
+
 interface SectionTitleProps {
   number: string;
   title: string;
 }
-
 const SectionTitle: React.FC<SectionTitleProps> = ({ number, title }) => (
-  <div className="flex items-center mb-6 mt-12 first:mt-6">
-    <div className="bg-gradient-to-r from-red-800 to-red-700 h-10 w-10 rounded-full flex items-center justify-center mr-3 shadow-md">
-      <span className="text-white font-bold">{number}</span>
-    </div>
-    <h2 className="text-xl md:text-2xl font-bold text-gray-800">{title}</h2>
-    <div className="ml-auto hidden md:block">
-      <div className="h-0.5 w-32 bg-gray-200"></div>
-    </div>
+  <div className="flex items-center gap-3 mb-5 mt-2">
+    <div className="section-num">{number}</div>
+    <h2 className="reg-heading text-xl font-bold text-gray-800 tracking-wide">
+      {title}
+    </h2>
+    <div className="flex-1 h-px bg-gray-100 hidden md:block ml-2" />
   </div>
 );
 
@@ -845,7 +1069,6 @@ interface FormFieldProps {
   icon?: string;
   error?: string;
 }
-
 const FormField: React.FC<FormFieldProps> = ({
   id,
   label,
@@ -861,32 +1084,30 @@ const FormField: React.FC<FormFieldProps> = ({
 }) => (
   <div className={fullWidth ? "md:col-span-2" : ""}>
     <label
-      className="block text-gray-700 text-sm font-semibold mb-2"
+      className="block text-gray-600 text-xs font-semibold mb-1.5 tracking-wider"
       htmlFor={id}
     >
       {label} {required && <span className="text-red-500">*</span>}
     </label>
-    <div className="relative">
+    <div className="input-wrapper relative">
       {icon && (
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          {icon === "user" && <User className="h-5 w-5 text-gray-400" />}
+          {icon === "user" && <User className="h-4 w-4 text-gray-400" />}
           {icon === "calendar" && (
-            <Calendar className="h-5 w-5 text-gray-400" />
+            <Calendar className="h-4 w-4 text-gray-400" />
           )}
-          {icon === "clock" && <Clock className="h-5 w-5 text-gray-400" />}
+          {icon === "clock" && <Clock className="h-4 w-4 text-gray-400" />}
           {icon === "building" && (
-            <Building className="h-5 w-5 text-gray-400" />
+            <Building className="h-4 w-4 text-gray-400" />
           )}
-          {icon === "book" && <Book className="h-5 w-5 text-gray-400" />}
-          {icon === "file" && <File className="h-5 w-5 text-gray-400" />}
-          {icon === "phone" && <Phone className="h-5 w-5 text-gray-400" />}
-          {icon === "mail" && <Mail className="h-5 w-5 text-gray-400" />}
+          {icon === "book" && <Book className="h-4 w-4 text-gray-400" />}
+          {icon === "file" && <File className="h-4 w-4 text-gray-400" />}
+          {icon === "phone" && <Phone className="h-4 w-4 text-gray-400" />}
+          {icon === "mail" && <Mail className="h-4 w-4 text-gray-400" />}
         </div>
       )}
       <input
-        className={`w-full ${icon ? "pl-10" : "pl-4"} py-3 border ${error ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:outline-none focus:ring-red-700 focus:border-red-500 transition-all ${
-          readOnly ? "bg-gray-100 text-gray-500" : "bg-white"
-        }`}
+        className={`w-full ${icon ? "pl-10" : "pl-4"} pr-4 py-2.5 border ${error ? "border-red-400 bg-red-50" : "border-gray-200"} rounded-xl text-sm text-gray-800 transition-all focus:outline-none ${readOnly ? "bg-gray-50 text-gray-400 cursor-not-allowed" : "bg-white"}`}
         id={id}
         name={id}
         type={type}
@@ -900,7 +1121,7 @@ const FormField: React.FC<FormFieldProps> = ({
       />
     </div>
     {error && (
-      <p className="text-red-600 text-xs mt-1" id={`${id}-error`}>
+      <p className="text-red-500 text-xs mt-1" id={`${id}-error`}>
         {error}
       </p>
     )}
@@ -918,7 +1139,6 @@ interface TextareaFieldProps {
   icon?: string;
   error?: string;
 }
-
 const TextareaField: React.FC<TextareaFieldProps> = ({
   id,
   label,
@@ -932,22 +1152,20 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
 }) => (
   <div>
     <label
-      className="block text-gray-700 text-sm font-semibold mb-2"
+      className="block text-gray-600 text-xs font-semibold mb-1.5 tracking-wider"
       htmlFor={id}
     >
       {label} {required && <span className="text-red-500">*</span>}
     </label>
-    <div className="relative">
+    <div className="input-wrapper relative">
       {icon && (
         <div className="absolute top-3 left-3 flex items-center pointer-events-none">
-          {icon === "home" && <Home className="h-5 w-5 text-gray-400" />}
-          {icon === "map" && <Map className="h-5 w-5 text-gray-400" />}
+          {icon === "home" && <Home className="h-4 w-4 text-gray-400" />}
+          {icon === "map" && <Map className="h-4 w-4 text-gray-400" />}
         </div>
       )}
       <textarea
-        className={`w-full ${icon ? "pl-10" : "pl-4"} py-3 border ${error ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-500 transition-all ${
-          disabled ? "bg-gray-100 text-gray-500" : "bg-white"
-        }`}
+        className={`w-full ${icon ? "pl-10" : "pl-4"} pr-4 py-2.5 border ${error ? "border-red-400 bg-red-50" : "border-gray-200"} rounded-xl text-sm text-gray-800 transition-all focus:outline-none ${disabled ? "bg-gray-50 text-gray-400 cursor-not-allowed" : "bg-white"}`}
         id={id}
         name={id}
         rows={3}
@@ -961,7 +1179,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
       />
     </div>
     {error && (
-      <p className="text-red-600 text-xs mt-1" id={`${id}-error`}>
+      <p className="text-red-500 text-xs mt-1" id={`${id}-error`}>
         {error}
       </p>
     )}
@@ -978,7 +1196,6 @@ interface DropdownFieldProps {
   icon?: string;
   error?: string;
 }
-
 const DropdownField: React.FC<DropdownFieldProps> = ({
   id,
   label,
@@ -991,19 +1208,19 @@ const DropdownField: React.FC<DropdownFieldProps> = ({
 }) => (
   <div>
     <label
-      className="block text-gray-700 text-sm font-semibold mb-2"
+      className="block text-gray-600 text-xs font-semibold mb-1.5 tracking-wider"
       htmlFor={id}
     >
       {label} {required && <span className="text-red-500">*</span>}
     </label>
-    <div className="relative">
+    <div className="input-wrapper relative">
       {icon && (
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          {icon === "file" && <File className="h-5 w-5 text-gray-400" />}
+          {icon === "file" && <File className="h-4 w-4 text-gray-400" />}
         </div>
       )}
       <select
-        className={`w-full ${icon ? "pl-10" : "pl-4"} py-3 border ${error ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-500 transition-all appearance-none bg-white pr-10`}
+        className={`w-full ${icon ? "pl-10" : "pl-4"} pr-10 py-2.5 border ${error ? "border-red-400 bg-red-50" : "border-gray-200"} rounded-xl text-sm text-gray-800 transition-all appearance-none bg-white focus:outline-none`}
         id={id}
         name={id}
         value={value}
@@ -1019,12 +1236,12 @@ const DropdownField: React.FC<DropdownFieldProps> = ({
           </option>
         ))}
       </select>
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
         <ChevronDown className="h-4 w-4" />
       </div>
     </div>
     {error && (
-      <p className="text-red-600 text-xs mt-1" id={`${id}-error`}>
+      <p className="text-red-500 text-xs mt-1" id={`${id}-error`}>
         {error}
       </p>
     )}
@@ -1032,7 +1249,3 @@ const DropdownField: React.FC<DropdownFieldProps> = ({
 );
 
 export default RegisterPage;
-
-
-
-
