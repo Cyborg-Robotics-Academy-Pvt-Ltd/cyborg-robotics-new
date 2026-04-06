@@ -3,7 +3,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { generateOrderId } from "@/lib/order-id-utils";
 import { generateCustomerId } from "@/lib/customer-id-utils";
-import { buildTrustedPaymentUrl, requireTrustedBaseUrl } from "@/lib/payment-url-validation";
+import { buildPaymentUrlFromRequest } from "@/lib/payment-url-validation";
 import {
   createPaymentSessionBinding,
   createPaymentSessionCookieValue,
@@ -93,9 +93,8 @@ export async function POST(req: Request) {
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
     const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
     const API_KEY = process.env.HDFC_API_KEY;
-    const BASE_URL = requireTrustedBaseUrl(process.env.NEXT_PUBLIC_BASE_URL);
 
-    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY || !BASE_URL) {
+    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
       return NextResponse.json(
         { success: false, message: "Server configuration error" },
         { status: 500 },
@@ -107,7 +106,7 @@ export async function POST(req: Request) {
     const customerId = generateCustomerId(customerSeed);
     const paymentOwnerSeed = derivePaymentOwnerSeed(userId, email);
     const paymentSessionBinding = createPaymentSessionBinding(orderId, customerId, paymentOwnerSeed);
-    const returnUrl = buildTrustedPaymentUrl(BASE_URL, "/api/payment/return");
+    const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
 
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
       method: "POST",
@@ -218,4 +217,8 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+
+
 
