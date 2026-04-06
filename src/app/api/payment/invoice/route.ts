@@ -117,8 +117,10 @@ export async function GET(req: Request) {
     // --- Generate PDF ---
     const invoiceHtml = renderInvoiceHtml(invoiceData);
 
+    const shouldGeneratePdf = mode === "pdf" || email;
+
     let pdfBuffer: Buffer | undefined;
-    if (mode !== "html") {
+    if (shouldGeneratePdf) {
       try {
         pdfBuffer = await generateInvoicePDF(invoiceData);
       } catch (pdfError) {
@@ -126,9 +128,8 @@ export async function GET(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "PDF generation temporarily unavailable. Please contact support for your invoice.",
-            details: "Font loading issue - will be resolved in next deployment",
+            message: "PDF generation temporarily unavailable. Please contact support for your invoice.",
+            details: "Server-side PDF rendering failed",
           },
           { status: 500 }
         );
@@ -136,8 +137,7 @@ export async function GET(req: Request) {
     }
 
     // --- Send email on first generation or when explicitly requested ---
-    const shouldEmailNow =
-      mode !== "html" && (shouldSendEmail || email) && invoiceData.parentEmail;
+    const shouldEmailNow = shouldGeneratePdf && (shouldSendEmail || email) && invoiceData.parentEmail;
     if (shouldEmailNow) {
       try {
         await sendPaymentConfirmation(invoiceData, pdfBuffer);
