@@ -560,7 +560,7 @@ const RegisterPage: React.FC = () => {
                     CYBORG ROBOTICS ACADEMY
                   </h1>
                   <p className="text-red-200 text-xs mt-0.5 font-medium tracking-wide">
-                    Empowering Young Innovators · Pvt Ltd
+                    Empowering Young Innovators
                   </p>
                 </div>
 
