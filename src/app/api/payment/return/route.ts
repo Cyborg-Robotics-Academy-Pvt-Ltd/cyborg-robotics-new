@@ -11,10 +11,7 @@ import {
   getCookieValue,
   verifyPaymentSessionCookieValue,
 } from "@/lib/payment-session-binding";
-import {
-  buildTrustedPaymentUrl,
-  requireTrustedBaseUrl,
-} from "@/lib/payment-url-validation";
+
 import {
   collection,
   doc,
@@ -58,7 +55,7 @@ function toSearchParamsFromBody(body: Record<string, any> | null): URLSearchPara
 }
 
 function buildRedirectUrl(baseUrl: URL, path: string, params: Record<string, string>) {
-  const url = buildTrustedPaymentUrl(baseUrl, path);
+  const url = new URL(path, baseUrl);
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
@@ -208,8 +205,9 @@ async function verifyWithGateway(
   }
 }
 
-function getTrustedBaseUrl(): URL | null {
-  return requireTrustedBaseUrl(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000");
+function getTrustedBaseUrl(req: Request): URL {
+  const requestUrl = new URL(req.url);
+  return new URL(requestUrl.origin);
 }
 
 function verifyPaymentOwnership(
@@ -244,7 +242,7 @@ function verifyPaymentOwnership(
 
 // GET - browser redirect after payment
 export async function GET(req: Request) {
-  const trustedBaseUrl = getTrustedBaseUrl();
+  const trustedBaseUrl = getTrustedBaseUrl(req);
   if (!trustedBaseUrl) {
     return NextResponse.json(
       { success: false, message: "Server redirect URL is not trusted" },
@@ -561,7 +559,7 @@ export async function POST(req: Request) {
 
     const acceptHeader = req.headers.get("accept") || "";
     const signedParams = params ?? toSearchParamsFromBody(body);
-    const trustedBaseUrl = getTrustedBaseUrl();
+    const trustedBaseUrl = getTrustedBaseUrl(req);
     if (!trustedBaseUrl) {
       return NextResponse.json(
         { success: false, message: "Server redirect URL is not trusted" },
@@ -783,3 +781,6 @@ export async function POST(req: Request) {
     );
   }
 }
+
+
+

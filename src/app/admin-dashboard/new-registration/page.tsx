@@ -130,7 +130,6 @@ const normalizeRegistration = (
   id: string,
 ): Registration => {
   const draft = record.registrationDraft || {};
-  const workshopDraft = record.workshopRegistrationDraft || {};
   const course = record.course || {};
   const studentData = record.studentData || {};
   const parentData = record.parentData || {};
@@ -141,7 +140,6 @@ const normalizeRegistration = (
     studentName:
       record.studentName ||
       draft.studentName ||
-      workshopDraft.childName ||
       studentData.studentName ||
       studentData.fullName ||
       "",
@@ -149,7 +147,6 @@ const normalizeRegistration = (
     currentAge:
       record.currentAge ||
       draft.currentAge ||
-      workshopDraft.age ||
       studentData.currentAge ||
       "",
     schoolName: record.schoolName || draft.schoolName || studentData.schoolName || "",
@@ -165,14 +162,12 @@ const normalizeRegistration = (
     primaryParentContact:
       record.primaryParentContact ||
       record.parentPhone ||
-      workshopDraft.contactNumber ||
       draft.primaryParentContact ||
       parentData.primaryParentContact ||
       "",
     primaryParentEmail:
       record.primaryParentEmail ||
       record.parentEmail ||
-      workshopDraft.email ||
       draft.primaryParentEmail ||
       parentData.primaryParentEmail ||
       "",
@@ -232,12 +227,18 @@ const Page = () => {
         normalizeRegistration(doc.data() as FirestoreRecord, doc.id),
       );
 
-      const paymentFallbackData = paymentsSnapshot.docs.map((doc) => {
-        const payment = doc.data() as FirestoreRecord;
-        return normalizeRegistration(payment, `payment-${doc.id}`);
-      });
+      const paymentFallbackData = paymentsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          data: doc.data() as FirestoreRecord,
+        }))
+        .filter(({ data }) => data.paymentFlow !== "workshop")
+        .map(({ id, data }) => normalizeRegistration(data, `payment-${id}`));
 
-      const merged = [...registrationData, ...paymentFallbackData].filter(
+      const merged = [
+        ...registrationData,
+        ...paymentFallbackData,
+      ].filter(
         (item, index, array) => {
           const itemKey = item.orderId || item.id;
           return (
