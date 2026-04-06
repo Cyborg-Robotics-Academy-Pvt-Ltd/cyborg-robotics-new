@@ -1195,6 +1195,21 @@ const AdminDashboard = () => {
       action: "Assign Trainers",
       delay: 0.4,
     },
+    {
+      title: "Workshop Registration",
+      description: "Review workshop leads and payment status in one place",
+      href: "/admin-dashboard/workshop-registration",
+      icon: BookOpen,
+      color: "red",
+      gradient: "from-[#AB2F30] to-[#7F1D1D]",
+      bgColor: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
+      textColor: "text-red-700",
+      hoverColor: "group-hover:text-red-700",
+      borderColor: "border-red-200",
+      action: "Open Workshop Tab",
+      delay: 0.5,
+    },
   ];
 
   const theme = themes[currentTheme];

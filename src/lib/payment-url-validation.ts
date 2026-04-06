@@ -68,3 +68,11 @@ export function buildTrustedPaymentUrl(
   return target;
 }
 
+export function getRequestBaseUrl(req: Request): URL {
+  const requestUrl = new URL(req.url);
+  return new URL(requestUrl.origin);
+}
+
+export function buildPaymentUrlFromRequest(req: Request, path: string): URL {
+  return new URL(path, getRequestBaseUrl(req));
+}

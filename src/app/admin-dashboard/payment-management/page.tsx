@@ -45,20 +45,20 @@ export default function PaymentManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-8">
+    <div className="min-h-screen bg-slate-50 p-6 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <Link href="/admin-dashboard">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-slate-900">
             Payment Management
           </h1>
-          <p className="text-muted-foreground mt-1">
-            View and manage all payment transactions
+          <p className="mt-1 text-sm text-slate-600">
+            Clean bank-ready payment records with exact timestamps, grouped order counts, and structured product details.
           </p>
         </div>
 

@@ -64,7 +64,27 @@ export async function finalizeRegistrationForPayment(
     const existingWorkshopSnapshot = await getDocs(existingWorkshopQuery);
 
     if (!existingWorkshopSnapshot.empty) {
-      const existingId = existingWorkshopSnapshot.docs[0].id;
+      const existingWorkshopDoc = existingWorkshopSnapshot.docs[0];
+      const existingId = existingWorkshopDoc.id;
+
+      await updateDoc(doc(db, "workshopRegistrations", existingId), {
+        childName: workshopDraft.childName ?? "",
+        email: workshopDraft.email ?? "",
+        contactNumber: workshopDraft.contactNumber ?? "",
+        age: workshopDraft.age ?? "",
+        city: workshopDraft.city ?? "",
+        area: workshopDraft.area ?? "",
+        workshopKey: workshop.key ?? "",
+        workshopName: workshop.name ?? "",
+        workshopFee: workshop.fee ?? payment.amount ?? null,
+        paymentType: payment.paymentType ?? "full",
+        paidAmount: payment.amount ?? workshop.fee ?? null,
+        paymentStatus: payment.status ?? "SUCCESS",
+        status: "confirmed",
+        paymentId: payment.transactionReference || txnId || "",
+        updatedAt: serverTimestamp(),
+      });
+
       await updateDoc(doc(db, "payments", paymentDoc.id), {
         registrationId: existingId,
         registrationCreatedAt: serverTimestamp(),
@@ -84,10 +104,13 @@ export async function finalizeRegistrationForPayment(
       workshopFee: workshop.fee ?? payment.amount ?? null,
       paymentType: payment.paymentType ?? "full",
       paidAmount: payment.amount ?? workshop.fee ?? null,
+      paymentStatus: payment.status ?? "SUCCESS",
+      status: "confirmed",
       orderId,
       paymentId: payment.transactionReference || txnId || "",
       dateOfRegistration: new Date().toISOString().split("T")[0],
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
     const workshopDocRef = await addDoc(

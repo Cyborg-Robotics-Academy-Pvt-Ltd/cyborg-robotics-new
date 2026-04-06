@@ -10,7 +10,6 @@ import {
 import React, {
   useEffect,
   useState,
-  ChangeEvent,
   useRef,
   useMemo,
   useCallback,
@@ -95,6 +94,8 @@ interface Student {
   nextCourse?: string;
   trainerId?: string;
   trainerName?: string;
+  remark?: string;
+  remarkUpdatedAt?: string | null;
   status?: string;
 }
 interface Trainer {
@@ -107,6 +108,58 @@ interface StudentData {
   PrnNumber: string;
   username: string;
   tasks?: Task[];
+  remark?: string;
+  remarkUpdatedAt?: string | null;
+}
+
+type ActivityStatus = "active" | "inactive" | "incomplete";
+
+const TWO_WEEKS_MS = 5 * 60 * 1000;
+const ONE_MONTH_MS = 10 * 60 * 1000;
+
+const ACTIVITY_STATUS_CONFIG: Record<
+  ActivityStatus,
+  { label: string; cls: string }
+> = {
+  active: {
+    label: "Active",
+    cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  inactive: {
+    label: "Inactive",
+    cls: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  incomplete: {
+    label: "Incomplete",
+    cls: "bg-rose-50 text-rose-700 border-rose-200",
+  },
+};
+
+function parseDateValue(value?: string | null) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getLatestClassDate(student: Student) {
+  const taskDates = (student.tasks || [])
+    .map((task) => parseDateValue(task.dateTime))
+    .filter((date): date is Date => date !== null);
+
+  if (taskDates.length > 0) {
+    return new Date(Math.max(...taskDates.map((date) => date.getTime())));
+  }
+  return null;
+}
+
+function getActivityStatus(student: Student): ActivityStatus {
+  const latestClassDate = getLatestClassDate(student);
+  if (!latestClassDate) return "active";
+
+  const elapsed = Date.now() - latestClassDate.getTime();
+  if (elapsed >= ONE_MONTH_MS) return "incomplete";
+  if (elapsed >= TWO_WEEKS_MS) return "inactive";
+  return "active";
 }
 
 // ─── DERIVED STATUS LOGIC ─────────────────────────────────────────────────────
@@ -274,7 +327,7 @@ const Page = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [trainerFilter, setTrainerFilter] = useState("");
   const [centerFilter, setCenterFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<DerivedStatus | "">("");
+  const [activityFilter, setActivityFilter] = useState<ActivityStatus | "">("");
   const [activeTab, setActiveTab] = useState("all");
 
   // Sort
@@ -311,6 +364,10 @@ const Page = () => {
   const [status, setStatus] = useState<"ongoing" | "complete">("complete");
   const [course, setCourse] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [remarkStudent, setRemarkStudent] = useState<Student | null>(null);
+  const [remarkDraft, setRemarkDraft] = useState("");
+  const [remarkModalOpen, setRemarkModalOpen] = useState(false);
+  const [savingRemark, setSavingRemark] = useState(false);
 
   // Course forms
   const [courseStudent, setCourseStudent] = useState<Student | null>(null);
@@ -349,8 +406,10 @@ const Page = () => {
     try {
       const db = getFirestore(app);
       const snap = await getDocs(collection(db, "students"));
+
       const list = snap.docs.map((doc) => {
         const d = doc.data();
+        console.log("Student data:", d);
         const tasks: Task[] = d.tasks || [];
         let completed = 0,
           ongoing = 0;
@@ -378,6 +437,8 @@ const Page = () => {
           nextCourse: d.nextCourse,
           trainerId: d.trainerId,
           trainerName: d.trainerName,
+          remark: d.remark || "",
+          remarkUpdatedAt: d.remarkUpdatedAt || null,
           status: d.status || "active",
         } as Student;
       });
@@ -432,7 +493,7 @@ const Page = () => {
     searchTerm,
     trainerFilter,
     centerFilter,
-    statusFilter,
+    activityFilter,
     activeTab,
     sortColumn,
     sortDirection,
@@ -499,8 +560,9 @@ const Page = () => {
         return true;
       })
       .filter((s) => {
-        if (!statusFilter) return true;
-        return getDerivedStatus(s) === statusFilter;
+        if (!activityFilter) return true;
+        if (!getLatestClassDate(s)) return false;
+        return getActivityStatus(s) === activityFilter;
       })
       .sort((a, b) => {
         if (activeTab === "ongoing") {
@@ -530,7 +592,7 @@ const Page = () => {
     searchTerm,
     trainerFilter,
     centerFilter,
-    statusFilter,
+    activityFilter,
     sortColumn,
     sortDirection,
   ]);
@@ -749,6 +811,8 @@ const Page = () => {
       "Completed Classes",
       "Ongoing Classes",
       "Completed Classes List",
+      "Remark",
+      "Remark Updated At",
     ];
     const buildRows = (list: Student[]) =>
       list.flatMap((s) =>
@@ -790,6 +854,10 @@ const Page = () => {
                 )
                 .map((t) => t.task)
                 .join(", "),
+              Remark: s.remark || "",
+              "Remark Updated At": s.remarkUpdatedAt
+                ? format(new Date(s.remarkUpdatedAt), "dd MMM yyyy hh:mm a")
+                : "",
             }) as Record<string, string | number>,
         ),
       );
@@ -865,6 +933,8 @@ const Page = () => {
         where("PrnNumber", "==", selectedStudent.PrnNumber),
       );
       const snap = await getDocs(q);
+      console.log(snap);
+
       if (!snap.empty) {
         const ref = doc(db, "students", snap.docs[0].id);
         const d = snap.docs[0].data() as StudentData;
@@ -880,6 +950,45 @@ const Page = () => {
       }
     } catch (e) {
       toast.error("Error adding class");
+    }
+  };
+
+  const openRemarkModal = (student: Student) => {
+    setRemarkStudent(student);
+    setRemarkDraft(student.remark || "");
+    setRemarkModalOpen(true);
+    setShowDropdown(null);
+  };
+
+  const handleSaveRemark = async () => {
+    if (!remarkStudent) return;
+
+    setSavingRemark(true);
+    try {
+      const trimmedRemark = remarkDraft.trim();
+      const remarkUpdatedAt = new Date().toISOString();
+      const db = getFirestore(app);
+      await updateDoc(doc(db, "students", remarkStudent.id), {
+        remark: trimmedRemark,
+        remarkUpdatedAt,
+      });
+
+      setStudents((prev) =>
+        prev.map((student) =>
+          student.id === remarkStudent.id
+            ? { ...student, remark: trimmedRemark, remarkUpdatedAt }
+            : student,
+        ),
+      );
+
+      toast.success("Remark saved!");
+      setRemarkModalOpen(false);
+      setRemarkStudent(null);
+      setRemarkDraft("");
+    } catch (e) {
+      toast.error("Failed to save remark");
+    } finally {
+      setSavingRemark(false);
     }
   };
 
@@ -1126,7 +1235,6 @@ const Page = () => {
               color: "text-gray-700",
               bg: "bg-white",
             },
-
             {
               label: "Needs Trainer",
               value: statCounts.needsTrainer,
@@ -1198,12 +1306,23 @@ const Page = () => {
                 </option>
               ))}
             </select>
+            <select
+              value={activityFilter}
+              onChange={(e) =>
+                setActivityFilter(e.target.value as ActivityStatus | "")
+              }
+              className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#9F0712] min-w-[140px]"
+            >
+              <option value="">All Activity</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="incomplete">Incomplete</option>
+            </select>
           </div>
 
-          {/* Row 2: Tabs + quick filters + refresh */}
+          {/* Row 2: Tabs + refresh */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1 flex-wrap">
-              {/* Enrollment tabs */}
               <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
                 {TABS.map((t) => (
                   <button
@@ -1214,29 +1333,6 @@ const Page = () => {
                     {t.label}
                   </button>
                 ))}
-              </div>
-
-              {/* Status quick filters */}
-              <div className="flex gap-1 ml-1 flex-wrap">
-                {(
-                  Object.entries(STATUS_CONFIG) as [
-                    DerivedStatus,
-                    (typeof STATUS_CONFIG)[DerivedStatus],
-                  ][]
-                )
-                  .filter(([key]) => key !== "active" && key !== "no_course")
-                  .map(([key, cfg]) => (
-                    <button
-                      key={key}
-                      onClick={() =>
-                        setStatusFilter(statusFilter === key ? "" : key)
-                      }
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${statusFilter === key ? cfg.cls + " shadow-sm" : "bg-white text-gray-500 border-gray-200 hover:border-[#9F0712]/20 hover:text-[#9F0712]"}`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                      {cfg.label}
-                    </button>
-                  ))}
               </div>
             </div>
 
@@ -1377,6 +1473,9 @@ const Page = () => {
                         Last Class <SortIcon col="completedTasks" />
                       </button>
                     </th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-white uppercase tracking-wider hidden xl:table-cell">
+                      Remark
+                    </th>
                     <th className="px-3 py-2.5 text-right text-[11px] font-semibold  uppercase tracking-wider sticky right-0 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d]  text-white ">
                       Actions
                     </th>
@@ -1385,6 +1484,10 @@ const Page = () => {
                 <tbody className="divide-y divide-gray-100">
                   {paginatedStudents.map((student) => {
                     const derivedStatus = getDerivedStatus(student);
+                    const latestClassDate = getLatestClassDate(student);
+                    const activityStatus = getActivityStatus(student);
+                    const activityStatusConfig =
+                      ACTIVITY_STATUS_CONFIG[activityStatus];
                     const lastTask = student.tasks
                       .filter((t) => t.status.toLowerCase() === "complete")
                       .sort(
@@ -1564,12 +1667,54 @@ const Page = () => {
                                   "dd MMM yyyy",
                                 )}
                               </p>
+                              {latestClassDate && (
+                                <span
+                                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold mt-1 ${activityStatusConfig.cls}`}
+                                >
+                                  {activityStatusConfig.label}
+                                </span>
+                              )}
                             </div>
                           ) : (
                             <span className="text-xs text-gray-300 italic">
                               No activity
                             </span>
                           )}
+                        </td>
+
+                        {/* Remark */}
+                        <td
+                          className="px-3 py-3 hidden xl:table-cell max-w-[240px]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="space-y-1">
+                            {student.remark ? (
+                            <p
+                              className="text-xs text-gray-700 line-clamp-2"
+                              title={student.remark}
+                            >
+                              {student.remark}
+                            </p>
+                          ) : (
+                            <span className="text-xs text-gray-300 italic">
+                              —
+                            </span>
+                            )}
+                            <button
+                              onClick={() => openRemarkModal(student)}
+                              className="text-[11px] font-semibold text-[#9F0712] hover:underline"
+                            >
+                              {student.remark ? "Edit" : "Add Remark"}
+                            </button>
+                            {student.remarkUpdatedAt && (
+                              <p className="text-[10px] text-gray-400">
+                                {format(
+                                  new Date(student.remarkUpdatedAt),
+                                  "dd MMM yyyy hh:mm a",
+                                )}
+                              </p>
+                            )}
+                          </div>
                         </td>
 
                         {/* Actions */}
@@ -1668,6 +1813,12 @@ const Page = () => {
                                               handleAddClass(student);
                                               setShowDropdown(null);
                                             },
+                                          },
+                                          {
+                                            label: "Remark",
+                                            icon: BookOpen,
+                                            onClick: () =>
+                                              openRemarkModal(student),
                                           },
                                           {
                                             label: "Edit Profile",
@@ -1917,6 +2068,62 @@ const Page = () => {
               onChange={(e) => setTask(e.target.value)}
               placeholder="Describe the task"
               className={inputCls}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={remarkModalOpen && !!remarkStudent}
+        onClose={() => {
+          setRemarkModalOpen(false);
+          setRemarkStudent(null);
+          setRemarkDraft("");
+        }}
+        title={`Remark - ${remarkStudent?.username || ""}`}
+        footer={
+          <>
+            <Btn
+              variant="ghost"
+              onClick={() => {
+                setRemarkModalOpen(false);
+                setRemarkStudent(null);
+                setRemarkDraft("");
+              }}
+            >
+              Cancel
+            </Btn>
+            <Btn onClick={handleSaveRemark} disabled={savingRemark}>
+              {savingRemark ? "Saving..." : "Save Remark"}
+            </Btn>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={labelCls}>PRN</label>
+            <input
+              className={inputCls + " bg-gray-50 cursor-not-allowed"}
+              readOnly
+              value={remarkStudent?.PrnNumber || ""}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Current Date & Time</label>
+            <input
+              className={inputCls + " bg-gray-50 cursor-not-allowed"}
+              readOnly
+              value={format(new Date(), "dd MMM yyyy hh:mm a")}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Remark</label>
+            <textarea
+              value={remarkDraft}
+              onChange={(e) => setRemarkDraft(e.target.value)}
+              placeholder="Why absent or not joined new"
+              rows={4}
+              className={inputCls + " resize-none"}
             />
           </div>
         </div>
