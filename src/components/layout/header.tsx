@@ -366,7 +366,7 @@ export default function Header() {
       href: "/about-us",
     },
     { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
-    { id: "workshops", label: "Summer Camp", href: "/workshops" },
+    { id: "workshops", label: "Summer Camp", href: "/summer-camp-2026" },
   ];
 
   // Fetch user profile data
