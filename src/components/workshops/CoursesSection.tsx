@@ -2,25 +2,12 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { createStaggerContainer, fadeUpVariants } from "./motion";
 import type { Course } from "./types";
 
 interface Props {
   courses: Course[];
 }
-
-const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: "easeOut" },
-  },
-};
 
 const CheckIcon = ({ color }: { color: string }) => (
   <svg
@@ -104,10 +91,10 @@ const CoursesSection = ({ courses }: Props) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.08 }}
-      variants={staggerContainer}
+      variants={createStaggerContainer(0.12)}
     >
       <div className="mx-auto max-w-[1160px]">
-        <motion.div variants={fadeUp} className="mb-10 text-center">
+        <motion.div variants={fadeUpVariants} className="mb-10 text-center">
           <span className="mb-3 inline-block rounded-full border border-[rgba(141,15,17,0.15)] bg-[rgba(141,15,17,0.07)] px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#8D0F11]">
             What They&apos;ll Learn
           </span>
@@ -128,7 +115,7 @@ const CoursesSection = ({ courses }: Props) => {
           {courses.map((course) => (
             <motion.div
               key={course.id}
-              variants={fadeUp}
+              variants={fadeUpVariants}
               className={[
                 "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
                 "transition-all duration-300 hover:-translate-y-[6px] hover:shadow-[0_24px_64px_rgba(0,0,0,0.09)]",
