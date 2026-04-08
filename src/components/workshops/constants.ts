@@ -45,7 +45,7 @@ export const LOCATIONS: CampLocation[] = [
     id: "magarpatta",
     name: "Magarpatta",
     emoji: "🏙️",
-    days: "Every Tuesday",
+    days: "Every Day",
     totalHours: "36 Hrs",
     packageDates: "20 Apr - 31 May",
     slides: [
@@ -157,7 +157,7 @@ export const LOCATIONS: CampLocation[] = [
     id: "kharadi",
     name: "Kharadi",
     emoji: "🚀",
-    days: "Every Tuesday",
+    days: "Every Day",
     totalHours: "24 Hrs",
     packageDates: "4 May - 31 May",
     slides: [
