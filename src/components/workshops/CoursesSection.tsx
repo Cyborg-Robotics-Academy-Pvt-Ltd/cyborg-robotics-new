@@ -1,73 +1,124 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
-import { createStaggerContainer, fadeUpVariants } from "./motion";
-import type { Course } from "./types";
 import Image from "next/image";
+import type { Course } from "./types";
 
 interface Props {
   courses: Course[];
 }
 
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
+};
+
+const CheckIcon = ({ color }: { color: string }) => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 13 13"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="mt-px shrink-0"
+    aria-hidden="true"
+  >
+    <circle cx="6.5" cy="6.5" r="6.5" fill={color} fillOpacity={0.12} />
+    <path
+      d="M3.5 6.5l2 2 4-4"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg
+    width="11"
+    height="11"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
 const CourseImage = ({
   image,
   name,
-  accentColor,
   bg,
+  highlight,
 }: {
   image?: string;
   name: string;
-  accentColor: string;
   bg: string;
+  highlight?: boolean;
 }) => (
   <div
-    className="group relative h-[190px] w-full overflow-hidden"
+    className="relative h-[185px] w-full overflow-hidden"
     style={{ background: image ? undefined : bg }}
   >
     {image ? (
       <Image
         src={image}
-        width={500}
-        height={800}
+        width={600}
+        height={370}
         alt={name}
+        loading="lazy"
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
     ) : (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${bg} 0%, ${accentColor}22 100%)`,
-        }}
-      />
+      <div className="absolute inset-0" style={{ background: bg }} />
     )}
 
-    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+
+    {highlight && (
+      <span className="absolute right-3 top-3 z-10 rounded-full bg-gradient-to-br from-[#8D0F11] to-[#B92423] px-3 py-1 text-[9px] font-semibold uppercase tracking-wider text-white shadow-md">
+        Most Popular
+      </span>
+    )}
   </div>
 );
 
 const CoursesSection = ({ courses }: Props) => {
   return (
     <motion.section
-      className="bg-[#FAFAFA] px-4 py-16 sm:px-6"
+      className="bg-[#F7F7F7] px-4 py-16 sm:px-6"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={createStaggerContainer(0.12)}
+      viewport={{ once: true, amount: 0.08 }}
+      variants={staggerContainer}
     >
-      <div className="mx-auto max-w-[1200px]">
-        <motion.div variants={fadeUpVariants} className="mb-10 text-center">
-          <span className="mb-3 inline-block rounded-full border border-[rgba(141,15,17,0.15)] bg-[rgba(141,15,17,0.07)] px-4 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#8D0F11]">
+      <div className="mx-auto max-w-[1160px]">
+        <motion.div variants={fadeUp} className="mb-10 text-center">
+          <span className="mb-3 inline-block rounded-full border border-[rgba(141,15,17,0.15)] bg-[rgba(141,15,17,0.07)] px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#8D0F11]">
             What They&apos;ll Learn
           </span>
-          <h2 className="text-[clamp(1.8rem,3.5vw,2.6rem)] font-bold leading-tight text-[#1a1a1a]">
+          <h2 className="text-[clamp(1.75rem,3.5vw,2.4rem)] font-bold leading-tight text-[#1a1a1a]">
             3 Courses. Real Skills.
             <br />
-            <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-600 to-red-900 bg-clip-text text-transparent">
               Infinite Curiosity.
             </span>
           </h2>
-          <p className="mx-auto mt-3 max-w-[480px] text-[13px] font-normal leading-[1.65] text-[#777]">
+          <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.7] text-[#888]">
             Each module is hands-on, project-driven, and designed to spark
             real-world thinking in kids aged 6-16.
           </p>
@@ -77,77 +128,74 @@ const CoursesSection = ({ courses }: Props) => {
           {courses.map((course) => (
             <motion.div
               key={course.id}
-              variants={fadeUpVariants}
-              className={`relative overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] ${
+              variants={fadeUp}
+              className={[
+                "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
+                "transition-all duration-300 hover:-translate-y-[6px] hover:shadow-[0_24px_64px_rgba(0,0,0,0.09)]",
                 course.highlight
-                  ? "border-[rgba(141,15,17,0.25)] shadow-[0_8px_32px_rgba(141,15,17,0.08)]"
-                  : "border-[rgba(0,0,0,0.07)] shadow-[0_2px_16px_rgba(0,0,0,0.04)]"
-              }`}
+                  ? "border border-[rgba(141,15,17,0.22)] shadow-[0_6px_28px_rgba(141,15,17,0.07)]"
+                  : "border border-[rgba(0,0,0,0.06)] shadow-[0_2px_12px_rgba(0,0,0,0.04)]",
+              ].join(" ")}
             >
-              {course.highlight && (
-                <div className="absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r from-[#8D0F11] to-[#B92423]" />
-              )}
-
-              {course.highlight && (
-                <div className="absolute right-3 top-4 z-10 rounded-full bg-gradient-to-br from-[#8D0F11] to-[#B92423] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-white shadow-[0_4px_12px_rgba(141,15,17,0.35)]">
-                  Most Popular
-                </div>
-              )}
+              <div
+                className="h-[3px] w-full shrink-0"
+                style={{
+                  background: `linear-gradient(90deg, ${course.border}, ${course.color})`,
+                }}
+              />
 
               <CourseImage
                 image={course.image}
                 name={course.name}
-                accentColor={course.color}
                 bg={course.bg}
+                highlight={course.highlight}
               />
 
-              <div className="p-4 sm:p-5">
+              <div className="flex flex-1 flex-col p-5">
                 <div className="mb-3 flex items-center gap-3">
                   <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg leading-none"
                     style={{ background: course.bg }}
+                    aria-hidden="true"
                   >
                     {course.icon}
                   </div>
                   <div>
-                    <div className="text-[15px] font-semibold leading-tight text-[#1a1a1a]">
+                    <p className="text-[15px] font-semibold leading-tight text-[#1a1a1a]">
                       {course.name}
-                    </div>
-                    <div
-                      className="text-[11px] font-medium"
+                    </p>
+                    <p
+                      className="mt-0.5 text-[11px] font-medium"
                       style={{ color: course.color }}
                     >
                       {course.subtitle}
-                    </div>
+                    </p>
                   </div>
                 </div>
 
-                <p className="mb-4 text-[12px] font-normal leading-[1.65] text-[#777]">
+                <p className="mb-4 text-[12px] leading-[1.7] text-[#888]">
                   {course.description}
                 </p>
 
-                <div className="mb-4 space-y-[5px]">
+                <ul className="mb-5 space-y-[6px]">
                   {course.outcomes.map((outcome) => (
-                    <div
+                    <li
                       key={outcome}
-                      className="flex items-start gap-2 text-[12px] font-normal text-[#555]"
+                      className="flex items-start gap-2 text-[12px] font-medium leading-[1.6] text-[#555]"
                     >
-                      <CheckCircle2
-                        size={12}
-                        style={{ color: course.color }}
-                        className="mt-px shrink-0"
-                      />
+                      <CheckIcon color={course.color} />
                       {outcome}
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
 
-                <div className="flex items-center justify-between border-t border-[rgba(0,0,0,0.05)] pt-3">
-                  <span className="text-[11px] font-normal text-[#aaa]">
-                    {String.fromCharCode(0x23f1)} {course.duration}
+                <div className="mt-auto flex items-center justify-between border-t border-[rgba(0,0,0,0.05)] pt-3">
+                  <span className="flex items-center gap-1.5 text-[11px] text-[#bbb]">
+                    <ClockIcon />
+                    {course.duration}
                   </span>
                   <span
-                    className="rounded-lg px-2.5 py-1 text-[11px] font-medium"
+                    className="rounded-full px-3 py-1 text-[11px] font-medium"
                     style={{ background: course.bg, color: course.color }}
                   >
                     {course.ageGroup}

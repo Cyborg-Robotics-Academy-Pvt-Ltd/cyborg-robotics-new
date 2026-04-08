@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { Sparkles } from "lucide-react";
 import BookingSidebar from "@/components/workshops/BookingSidebar";
 import CTASection from "@/components/workshops/CTASection";
 import CoursesSection from "@/components/workshops/CoursesSection";
 import FAQSection from "@/components/workshops/FAQSection";
 import HeroSection from "@/components/workshops/HeroSection";
 import PricingSection from "@/components/workshops/PricingSection";
-import ScheduleSection from "@/components/workshops/ScheduleSection";
 import StickyBottomBar from "@/components/workshops/StickyBottomBar";
 import WhySection from "@/components/workshops/WhySection";
 import Header from "@/components/layout/header";
@@ -25,6 +23,8 @@ import type {
   RegistrationFormData,
 } from "@/components/workshops/types";
 import Testimonials from "@/components/home/Testimonials/Testimonials";
+import OfferSection from "@/components/workshops/OfferSection";
+import Features from "@/components/home/Features";
 
 type RegistrationFieldId = keyof RegistrationFormData;
 
@@ -162,10 +162,12 @@ const SummerCampPage = () => {
       <div className="lg:mx-auto lg:max-w-[1440px] ">
         <HeroSection
           activeLocation={activeLocation}
-          locations={LOCATIONS}
-          activeLocationId={activeLocationId}
-          onLocationChange={setActiveLocationId}
+          onRegister={scrollToBookingForm}
         />
+        <div className="mb-18">
+          <Features />
+        </div>
+        <OfferSection />
         <Testimonials />
         <CoursesSection courses={COURSES} />
         <WhySection items={WHY_ITEMS} />
@@ -198,11 +200,15 @@ const SummerCampPage = () => {
                 Book Your Summer Camp Seat
               </h2>
               <p className="mx-auto mt-2 max-w-[320px] text-[12px] font-normal leading-[1.6] text-white/75">
-                Choose your location and fill the form to reserve your child&apos;s spot.
+                Choose your location and fill the form to reserve your
+                child&apos;s spot.
               </p>
             </div>
 
             <BookingSidebar
+              locations={LOCATIONS}
+              activeLocationId={activeLocationId}
+              onLocationChange={setActiveLocationId}
               formId="workshop-booking-form-mobile"
               showCloseButton
               onClose={() => setIsMobileBookingVisible(false)}
@@ -227,30 +233,12 @@ const SummerCampPage = () => {
         />
       )}
 
-      {!isDesktopFormVisible && (
-        <button
-          type="button"
-          onClick={() => setIsDesktopFormVisible(true)}
-          className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 items-center gap-2 rounded-l-2xl rounded-r-md border border-[rgba(141,15,17,0.14)] bg-gradient-to-br from-[#8D0F11] to-[#B92423] px-3 py-3 text-left text-white shadow-[0_12px_34px_rgba(141,15,17,0.28)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1/2 hover:translate-x-[-4px] hover:shadow-[0_18px_42px_rgba(141,15,17,0.34)] active:scale-[0.98] lg:inline-flex"
-        >
-          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/12">
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#ffd4ca] animate-pulse" />
-            <Sparkles size={14} />
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/70">
-              Open
-            </span>
-            <span className="mt-1 text-[12px] font-black uppercase tracking-[0.12em]">
-              Book Now
-            </span>
-          </span>
-        </button>
-      )}
-
       {isDesktopFormVisible && (
         <div className="fixed top-24 right-[max(1.5rem,calc((100vw-1440px)/2+1.5rem))] z-40 hidden w-[260px] lg:block">
           <BookingSidebar
+            locations={LOCATIONS}
+            activeLocationId={activeLocationId}
+            onLocationChange={setActiveLocationId}
             formId="workshop-booking-form-desktop"
             showCloseButton
             onClose={() => setIsDesktopFormVisible(false)}

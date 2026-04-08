@@ -1,17 +1,22 @@
 "use client";
 
-import type { ChangeEventHandler, FormEventHandler } from "react";
+import type { ChangeEvent, ChangeEventHandler, FormEventHandler } from "react";
 import { useEffect, useState } from "react";
 import {
   CheckCircle2,
+  MapPin,
   Sparkles,
   X,
   ShieldCheck,
-  Clock3,
   Users,
 } from "lucide-react";
 import { REGISTRATION_FIELDS } from "./constants";
-import type { AgeGroup, CampLocation, RegistrationFormData } from "./types";
+import type {
+  AgeGroup,
+  CampLocation,
+  LocationId,
+  RegistrationFormData,
+} from "./types";
 
 type RegistrationFieldId = keyof RegistrationFormData;
 
@@ -19,7 +24,10 @@ interface Props {
   formId?: string;
   showCloseButton?: boolean;
   onClose?: () => void;
+  locations: CampLocation[];
   activeLocation: CampLocation;
+  activeLocationId: LocationId;
+  onLocationChange: (id: LocationId) => void;
   selectedAge: AgeGroup;
   formData: RegistrationFormData;
   formError: string;
@@ -52,7 +60,10 @@ const BookingSidebar = ({
   formId,
   showCloseButton = false,
   onClose,
+  locations,
   activeLocation,
+  activeLocationId,
+  onLocationChange,
   selectedAge,
   formData,
   formError,
@@ -98,6 +109,10 @@ const BookingSidebar = ({
         [fieldId]: validateField(fieldId, e.target.value),
       }));
     }
+  };
+
+  const handleLocationChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    onLocationChange(event.target.value as LocationId);
   };
 
   const filledCount = REGISTRATION_FIELDS.filter(
@@ -151,13 +166,13 @@ const BookingSidebar = ({
             ]
               .filter((item) => !item.includes("Age:"))
               .map((item) => (
-              <span
-                key={item}
-                className="inline-flex items-center rounded-full border border-gray-200/10 bg-white/8 px-[7px] py-[2px] text-[9px] font-normal text-white/90"
-              >
-                {item}
-              </span>
-            ))}
+                <span
+                  key={item}
+                  className="inline-flex items-center rounded-full border border-gray-200/10 bg-white/8 px-[7px] py-[2px] text-[9px] font-normal text-white/90"
+                >
+                  {item}
+                </span>
+              ))}
           </div>
 
           {/* Social proof — only shown when recentBookings is passed */}
@@ -245,6 +260,33 @@ const BookingSidebar = ({
           </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-1.5">
+            <div className="rounded-[16px] border border-[rgba(141,15,17,0.08)] bg-[rgba(141,15,17,0.03)] p-2">
+              <div className="mb-1 flex items-center gap-1.5">
+                <MapPin size={11} className="text-[#8D0F11]" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#5d3131]">
+                  Choose Location
+                </p>
+              </div>
+              <select
+                aria-label="Choose workshop location"
+                value={activeLocationId}
+                onChange={handleLocationChange}
+                className={`${inputOk} py-1.5 pr-8 text-[11px]`}
+              >
+                {locations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.name} - {location.packageDates} -{" "}
+                    {location.totalHours}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[9px] leading-[1.35] text-[#8a7777]">
+                Selected:{" "}
+                <span className="font-semibold">{activeLocation.name}</span> ·{" "}
+                {activeLocation.days}
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1">
               {REGISTRATION_FIELDS.map((field) => {
                 const err = touched[field.id] ? fieldErrors[field.id] : "";

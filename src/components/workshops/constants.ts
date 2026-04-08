@@ -3,6 +3,7 @@ import type {
   CampLocation,
   Course,
   FAQItem,
+  HeroImageSlide,
   RegistrationField,
   RegistrationFormData,
   WhyItem,
@@ -93,8 +94,8 @@ export const LOCATIONS: CampLocation[] = [
       },
     ],
     fullPackage: {
-      prices: { "4+": 28000, "7+": 28000, "10+": 30000 },
-      earlyBird: { "4+": 24999, "7+": 24999, "10+": 26999 },
+      prices: { "4+": 6000, "7+": 6000, "10+": 6000 },
+      earlyBird: { "4+": 3500, "7+": 3500, "10+": 3500 },
     },
   },
   {
@@ -149,8 +150,8 @@ export const LOCATIONS: CampLocation[] = [
       },
     ],
     fullPackage: {
-      prices: { "4+": 28000, "7+": 28000, "10+": 30000 },
-      earlyBird: { "4+": 24999, "7+": 24999, "10+": 26999 },
+      prices: { "4+": 6000, "7+": 6000, "10+": 6000 },
+      earlyBird: { "4+": 3500, "7+": 3500, "10+": 3500 },
     },
   },
   {
@@ -196,10 +197,33 @@ export const LOCATIONS: CampLocation[] = [
       },
     ],
     fullPackage: {
-      prices: { "4+": 19000, "7+": 19000, "10+": 21000 },
-      earlyBird: { "4+": 16999, "7+": 16999, "10+": 18999 },
+      prices: { "4+": 6000, "7+": 6000, "10+": 6000 },
+      earlyBird: { "4+": 3500, "7+": 3500, "10+": 3500 },
     },
   },
+];
+
+export const WORKSHOP_HERO_IMAGES: HeroImageSlide[] = [
+   {
+      src: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1766397913/iuq8qsrh6qjl8yyw1rim.jpg",
+      alt: "LEGO Robotics Workshop 1",
+    },
+    {
+      src: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/cyguz9zagyyhkiwi2wmx.jpg",
+      alt: "LEGO Robotics Workshop 2",
+    },
+    {
+      src: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652660/ovp3syigyxkvw0q4gxyt.jpg",
+      alt: "LEGO Robotics Workshop 3",
+    },
+    {
+      src: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768652659/vo7lj3pjmseccvf20sgx.jpg",
+      alt: "LEGO Robotics Workshop 4",
+    },
+    {
+      src: "https://res.cloudinary.com/dgbbkclfa/image/upload/v1768651632/fh1qaoyeqztmwytqrqr1.jpg",
+      alt: "LEGO Robotics Workshop 5",
+    },
 ];
 
 export const COURSES: Course[] = [

@@ -30,6 +30,11 @@ export interface CampSlide {
   sublabel: string;
 }
 
+export interface HeroImageSlide {
+  src: string;
+  alt: string;
+}
+
 export interface CampLocation {
   id: LocationId;
   name: string;
