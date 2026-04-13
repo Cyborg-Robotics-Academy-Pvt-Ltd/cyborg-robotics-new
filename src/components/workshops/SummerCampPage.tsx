@@ -76,18 +76,6 @@ const SummerCampPage = () => {
     };
   }, [isMobileBookingVisible]);
 
-  useEffect(() => {
-    if (!formSuccess) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setFormSuccess("");
-    }, 2400);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [formSuccess]);
-
   const activeLocation = LOCATIONS.find((location) => {
     return location.id === activeLocationId;
   })!;
@@ -146,6 +134,11 @@ const SummerCampPage = () => {
     }
   };
 
+  const handleFormReset = () => {
+    setFormSuccess("");
+    setFormData(DEFAULT_REGISTRATION_FORM_DATA);
+  };
+
   return (
     <div className="font-body overflow-x-hidden bg-white">
       <style>{`
@@ -159,7 +152,7 @@ const SummerCampPage = () => {
         <Header />
       </div>
 
-      <div className="lg:mx-auto lg:max-w-[1440px] ">
+      <div className=" ">
         <HeroSection
           activeLocation={activeLocation}
           onRegister={scrollToBookingForm}
@@ -220,6 +213,7 @@ const SummerCampPage = () => {
               isSubmitting={isSubmitting}
               onInputChange={handleInputChange}
               onSubmit={handleFormSubmit}
+              onReset={handleFormReset}
             />
           </div>
         </div>
@@ -250,6 +244,7 @@ const SummerCampPage = () => {
             isSubmitting={isSubmitting}
             onInputChange={handleInputChange}
             onSubmit={handleFormSubmit}
+            onReset={handleFormReset}
           />
         </div>
       )}
