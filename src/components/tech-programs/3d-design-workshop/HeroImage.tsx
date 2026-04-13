@@ -169,9 +169,9 @@ const ThreeDDesignHero = () => {
   };
 
   const stats = [
-    { label: "Duration", value: "2 Hours", icon: "â±" },
-    { label: "Age Group", value: "9â€“15 Years", icon: "ðŸŽ¯" },
-    { label: "Mode", value: "Live Online", icon: "ðŸ’»" },
+    { label: "Duration", value: "2 Hours", icon: "⏱" },
+    { label: "Age Group", value: "9-15 Years", icon: "🎯" },
+    { label: "Mode", value: "Live Online", icon: "💻" },
   ];
 
   const highlights = [
@@ -182,10 +182,10 @@ const ThreeDDesignHero = () => {
 
   return (
     <div className="font-['DM_Sans',sans-serif] overflow-hidden">
-      {/* Google Fonts import â€” kept as a minimal style tag since Tailwind cannot load external fonts */}
+      {/* Google Fonts import kept as a minimal style tag since Tailwind cannot load external fonts */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap');`}</style>
 
-      {/* â”€â”€ HERO SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* HERO SECTION */}
       <motion.section
         className="
           relative min-h-screen flex items-center bg-white px-6
@@ -223,10 +223,10 @@ const ThreeDDesignHero = () => {
           "
         />
 
-        {/* â”€â”€ INNER WRAPPER â”€â”€ */}
+        {/* INNER WRAPPER */}
         <div className="max-w-[1200px] mx-auto w-full relative z-10">
           <div className="flex flex-row items-center gap-10 flex-wrap">
-            {/* â”€â”€ LEFT COLUMN â”€â”€ */}
+            {/* LEFT COLUMN */}
             <motion.div
               variants={itemVariants}
               className="flex-[1_1_340px] min-w-[260px]"
@@ -273,7 +273,7 @@ const ThreeDDesignHero = () => {
                 className="text-[13px] text-[#555] leading-[1.6] m-0 mb-3 max-w-[420px]"
               >
                 Kids learn 3D modeling and digital design through a hands-on
-                live workshop â€” guided step by step in a 2-hour session.
+                live workshop — guided step by step in a 2-hour session.
               </motion.p>
 
               {/* Trust pills */}
@@ -282,9 +282,9 @@ const ThreeDDesignHero = () => {
                 className="flex flex-wrap gap-[6px] mb-[14px]"
               >
                 {[
-                  "ðŸ‘¨â€ðŸ« Expert Mentors",
-                  "ðŸ§  STEM Learning",
-                  "ðŸ§© Project Based",
+                  "👨‍🏫 Expert Mentors",
+                  "🧠 STEM Learning",
+                  "🧩 Project Based",
                 ].map((t) => (
                   <span
                     key={t}
@@ -316,7 +316,7 @@ const ThreeDDesignHero = () => {
                   "
                 >
                   <Sparkles size={13} />
-                  Register for â‚¹99
+                  Register for ₹99
                   <ArrowRight size={13} />
                 </button>
               </motion.div>
@@ -370,7 +370,7 @@ const ThreeDDesignHero = () => {
               </motion.div>
             </motion.div>
 
-            {/* â”€â”€ RIGHT COLUMN: 3D tilt card â”€â”€ */}
+            {/* RIGHT COLUMN: 3D tilt card */}
             <motion.div
               variants={itemVariants}
               className="flex-none flex justify-center items-center relative"
@@ -385,13 +385,13 @@ const ThreeDDesignHero = () => {
                   animate-[badgeFloat_3.5s_ease-in-out_infinite_alternate-reverse]
                 "
               >
-                <span className="text-sm">â­</span>
+                <span className="text-sm">⭐</span>
                 <div>
                   <div className="text-[9px] text-white/60 font-semibold uppercase tracking-[0.06em]">
                     Workshop Fee
                   </div>
                   <div className="text-[12px] text-white font-bold">
-                    â‚¹99 Â· 3 May 2026
+                    ₹99 · 3 May 2026
                   </div>
                 </div>
               </div>
@@ -479,7 +479,7 @@ const ThreeDDesignHero = () => {
         </div>
       </motion.section>
 
-      {/* â”€â”€ MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* MODAL */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -517,7 +517,7 @@ const ThreeDDesignHero = () => {
             <form onSubmit={handleFormSubmit}>
               {/* Grid */}
               <div className="grid grid-cols-2 gap-[14px] max-sm:grid-cols-1">
-                {/* Email â€“ full width */}
+                {/* Email - full width */}
                 <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
                   <label
                     className="text-[13px] font-bold text-[#2a2a2a]"
@@ -542,7 +542,7 @@ const ThreeDDesignHero = () => {
                   />
                 </div>
 
-                {/* Contact â€“ full width */}
+                {/* Contact - full width */}
                 <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
                   <label
                     className="text-[13px] font-bold text-[#2a2a2a]"
@@ -567,7 +567,7 @@ const ThreeDDesignHero = () => {
                   />
                 </div>
 
-                {/* Child name â€“ full width */}
+                {/* Child name - full width */}
                 <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
                   <label
                     className="text-[13px] font-bold text-[#2a2a2a]"
@@ -644,7 +644,7 @@ const ThreeDDesignHero = () => {
                   />
                 </div>
 
-                {/* Area â€“ full width */}
+                {/* Area - full width */}
                 <div className="flex flex-col gap-[6px] col-span-2 max-sm:col-span-1">
                   <label
                     className="text-[13px] font-bold text-[#2a2a2a]"

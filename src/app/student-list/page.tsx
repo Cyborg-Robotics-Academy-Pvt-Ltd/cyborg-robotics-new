@@ -58,6 +58,14 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import AssignPrnModal from "@/components/AssignPrnModal";
 import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface Task {
@@ -361,6 +369,7 @@ const Page = () => {
   const [dateTime, setDateTime] = useState(
     format(new Date(), "yyyy-MM-dd'T'HH:mm"),
   );
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [status, setStatus] = useState<"ongoing" | "complete">("complete");
   const [course, setCourse] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -399,6 +408,36 @@ const Page = () => {
     useState<Course | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState("");
   const [bulkSelectedTrainer, setBulkSelectedTrainer] = useState("");
+
+  const selectedDateTime = dateTime ? new Date(dateTime) : undefined;
+  const parsedDateTime =
+    selectedDateTime && !Number.isNaN(selectedDateTime.getTime())
+      ? selectedDateTime
+      : undefined;
+  const selectedTime = dateTime.slice(11, 16);
+  const selectedDateLabel = parsedDateTime
+    ? format(parsedDateTime, "dd MMM yyyy")
+    : "Select date";
+
+  const handleDateSelect = (selected?: Date) => {
+    if (!selected) return;
+
+    const baseDate = parsedDateTime ?? new Date();
+    const nextDate = new Date(selected);
+
+    nextDate.setHours(baseDate.getHours(), baseDate.getMinutes(), 0, 0);
+    setDateTime(format(nextDate, "yyyy-MM-dd'T'HH:mm"));
+    setDatePickerOpen(false);
+  };
+
+  const handleTimeChange = (value: string) => {
+    const [hours, minutes] = value.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
+
+    const nextDate = parsedDateTime ? new Date(parsedDateTime) : new Date();
+    nextDate.setHours(hours, minutes, 0, 0);
+    setDateTime(format(nextDate, "yyyy-MM-dd'T'HH:mm"));
+  };
 
   // ── Data functions (ALL PRESERVED) ──────────────────────────────────────────
   const fetchStudents = useCallback(async () => {
@@ -1689,16 +1728,16 @@ const Page = () => {
                         >
                           <div className="space-y-1">
                             {student.remark ? (
-                            <p
-                              className="text-xs text-gray-700 line-clamp-2"
-                              title={student.remark}
-                            >
-                              {student.remark}
-                            </p>
-                          ) : (
-                            <span className="text-xs text-gray-300 italic">
-                              —
-                            </span>
+                              <p
+                                className="text-xs text-gray-700 line-clamp-2"
+                                title={student.remark}
+                              >
+                                {student.remark}
+                              </p>
+                            ) : (
+                              <span className="text-xs text-gray-300 italic">
+                                —
+                              </span>
                             )}
                             <button
                               onClick={() => openRemarkModal(student)}
@@ -2011,15 +2050,37 @@ const Page = () => {
               value={selectedStudent?.PrnNumber || ""}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-1">
             <div>
               <label className={labelCls}>Date & Time</label>
-              <input
-                type="datetime-local"
-                value={dateTime}
-                onChange={(e) => setDateTime(e.target.value)}
-                className={inputCls}
-              />
+              <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+                <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={`${inputCls} h-10 justify-start border-none font-normal text-gray-900 hover:bg-white`}
+                    >
+                      {selectedDateLabel}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 -mt-14" align="start">
+                    <Calendar
+                      className="[--cell-size:1.55rem] bg-white rounded-2xl"
+                      mode="single"
+                      selected={parsedDateTime}
+                      onSelect={handleDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  className={`${inputCls} h-10 border border-gray-200 px-1 py-3`}
+                />
+              </div>
             </div>
             <div>
               <label className={labelCls}>Status</label>

@@ -35,6 +35,7 @@ interface Props {
   isSubmitting: boolean;
   onInputChange: ChangeEventHandler<HTMLInputElement>;
   onSubmit: FormEventHandler<HTMLFormElement>;
+  onReset?: () => void;
   slotsLeft?: number;
   recentBookings?: number;
 }
@@ -71,6 +72,7 @@ const BookingSidebar = ({
   isSubmitting,
   onInputChange,
   onSubmit,
+  onReset,
   slotsLeft,
   recentBookings,
 }: Props) => {
@@ -219,45 +221,72 @@ const BookingSidebar = ({
         )}
 
         {formSuccess ? (
-          <div className="rounded-[18px] border border-emerald-200/70 bg-emerald-50/90 px-4 py-5 text-center">
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <CheckCircle2 size={22} />
-            </div>
-            <h4 className="mt-3 text-[15px] font-semibold text-[#18351f]">
-              You&apos;re on the list! 🎉
-            </h4>
-            <p className="mt-1 text-[12px] font-normal leading-[1.5] text-emerald-800">
-              {formSuccess}
-            </p>
-
-            {/* What happens next — reduces post-submit anxiety */}
-            <div className="mt-3 rounded-xl border border-emerald-200/50 bg-white/60 px-3 py-2.5 text-left">
-              <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-emerald-700/70">
-                What happens next
-              </p>
-              {[
-                "Our team reviews your request",
-                "You'll get a WhatsApp / call within 24 hrs",
-                "Payment & final confirmation follows",
-              ].map((step, i) => (
-                <div
-                  key={step}
-                  className="mb-1 flex items-start gap-2 last:mb-0"
+          <>
+            {/* Full-page thank you overlay */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3">
+              <div className="relative w-full max-w-sm rounded-[20px] border border-emerald-200/70 bg-white p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.3)] max-h-[90vh] overflow-y-auto">
+                {/* Close button */}
+                <button
+                  type="button"
+                  onClick={onReset}
+                  aria-label="Close thank you message"
+                  className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
                 >
-                  <span className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[8px] font-semibold text-emerald-700">
-                    {i + 1}
-                  </span>
-                  <span className="text-[10px] font-normal leading-[1.4] text-emerald-800">
-                    {step}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  <X size={14} />
+                </button>
 
-            <p className="mt-2.5 text-[9px] font-medium uppercase tracking-[0.1em] text-emerald-700/60">
-              Form resets shortly
-            </p>
-          </div>
+                {/* Success icon */}
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600">
+                  <CheckCircle2 size={32} />
+                </div>
+
+                {/* Thank you message */}
+                <h2 className="mt-4 text-xl font-bold text-[#18351f]">
+                  Thank You! 🎉
+                </h2>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-emerald-800">
+                  {formSuccess}
+                </p>
+
+                {/* What happens next */}
+                <div className="mt-4 rounded-xl border border-emerald-200/50 bg-emerald-50/50 px-4 py-3 text-left">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-emerald-700/70">
+                    What happens next
+                  </p>
+                  {[
+                    "Our team reviews your request",
+                    "You'll get a WhatsApp / call within 24 hrs",
+                    "Payment & final confirmation follows",
+                  ].map((step, i) => (
+                    <div
+                      key={step}
+                      className="mb-1.5 flex items-start gap-2.5 last:mb-0"
+                    >
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-semibold text-emerald-700">
+                        {i + 1}
+                      </span>
+                      <span className="text-xs font-normal leading-relaxed text-emerald-800">
+                        {step}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Fill Form Again button */}
+                <button
+                  type="button"
+                  onClick={onReset}
+                  className="mt-4 w-full rounded-xl border-0 bg-gradient-to-br from-[#8D0F11] to-[#B92423] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(141,15,17,0.26)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(141,15,17,0.35)] active:translate-y-0"
+                >
+                  Fill Form Again
+                </button>
+
+                <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-700/60">
+                  Your details are safe with us
+                </p>
+              </div>
+            </div>
+          </>
         ) : (
           <form onSubmit={onSubmit} className="space-y-1.5">
             <div className="rounded-[16px] border border-[rgba(141,15,17,0.08)] bg-[rgba(141,15,17,0.03)] p-2">

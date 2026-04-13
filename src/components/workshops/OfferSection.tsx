@@ -165,7 +165,7 @@ const locations: WorkshopLocation[] = [
     ageGroups: ["Age 4+", "Age 7+", "Age 10+"],
     images: [
       "/assets/workshops/lego/image.png",
-      "/assets/workshops/drone/Image.png",
+      "/assets/workshops/drone/image.png",
       "/assets/online-course/innovation.png",
     ],
     weeks: [
@@ -342,7 +342,7 @@ const OfferSection = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              SUMMER CAMP 2025
+              SUMMER CAMP 2026
             </motion.div>
 
             <h2 className="offer-heading text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-[#062341] mb-4 leading-[1.1] tracking-tight">

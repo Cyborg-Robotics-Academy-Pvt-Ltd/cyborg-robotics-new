@@ -206,7 +206,7 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
               ].map(({ label, value, icon }) => (
                 <div
                   key={label}
-                  className="rounded-xl border border-[rgba(141,15,17,0.1)] bg-white/90 px-3 py-[10px] shadow-[0_2px_10px_rgba(141,15,17,0.05)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(141,15,17,0.1)]"
+                  className="rounded-xl border border-[rgba(141,15,17,0.1)] px-3 py-[10px] shadow-[0_2px_10px_rgba(141,15,17,0.05)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(141,15,17,0.1)]"
                 >
                   <p className="m-0 mb-[2px] flex items-center gap-[3px] text-[10px] font-normal text-[#aaa]">
                     {icon} {label}
@@ -233,7 +233,7 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
                 style={{ rotateX, rotateY }}
                 className="relative [transform-style:preserve-3d] will-change-transform"
               >
-                <div className="relative h-[360px] w-[260px] overflow-hidden rounded-[22px] border border-[rgba(141,15,17,0.12)] bg-white shadow-[0_18px_50px_rgba(141,15,17,0.16)]">
+                <div className="relative h-[360px] w-[260px] overflow-hidden rounded-[22px] border border-[rgba(141,15,17,0.12)] shadow-[0_18px_50px_rgba(141,15,17,0.16)]">
                   <motion.div
                     className="pointer-events-none absolute inset-0 z-10 rounded-[22px] mix-blend-overlay opacity-40"
                     style={{ background: glareBackground }}
@@ -263,7 +263,7 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
                   </Swiper>
 
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-gradient-to-t from-[rgba(141,15,17,0.78)] via-[rgba(141,15,17,0.26)] to-transparent px-4 pb-4 pt-12">
-                    <div className="inline-flex rounded-full border border-white/70 bg-white/92 px-3 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+                    <div className="inline-flex rounded-full border border-white/70  px-3 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-sm">
                       <p className="m-0 text-[12px] font-medium uppercase tracking-[0.1em] text-[#555]">
                         Robotics Summer Camp
                       </p>
