@@ -155,6 +155,7 @@ export const RoboticsWithQuarkyCurriculum = [
 ];
 
 
+
   export const AnimationAndCodingCurriculum = [
 
   {
@@ -406,6 +407,52 @@ export const RoboticsWithQuarkyCurriculum = [
     },
   ];
 
+export const MiniElectronicsCurriculum = [
+  {
+    id: "1",
+    title: "MINI ELECTRONICS LEVEL-01",
+    subtitle: [
+      "DAY-01-Introduction to Electronics & Components",
+      "DAY-02-LED, Resistor & Basic Circuit Output",
+      "DAY-03-Switch Control & Motor Basics",
+      "DAY-04-Series & Parallel Circuits",
+      "DAY-05-Traffic Light Control System",
+      "DAY-06-Potentiometer Basics (Variable Control)",
+      "DAY-07-Brightness & Sound Adjustment",
+      "DAY-08-RGB LED & Color Mixing",
+      "DAY-09-RGB Control using Potentiometer",
+      "DAY-10-Light Detection using LDR",
+      "DAY-11-Seven Segment Display Basics",
+      "DAY-12-Advanced Number Display System",
+      "DAY-13-Project: LED Flower Pot",
+      "DAY-14-Project: Adjustable Study Lamp",
+      "DAY-15-Project: Wind Energy Model",
+      "DAY-16-Challenge Day & Revision",
+    ],
+  },
+  {
+    id: "2",
+    title: "MINI ELECTRONICS LEVEL-02",
+    subtitle: [
+      "DAY-01-Transistor Basics (Switch & Amplifier)",
+      "DAY-02-Types of Transistors & Working",
+      "DAY-03-Transistor Projects (RGB Touch & Motor Control)",
+      "DAY-04-Smart Door Alarm System",
+      "DAY-05-Automatic Street Light (LDR Based)",
+      "DAY-06-Capacitor & Power Storage Basics",
+      "DAY-07-IR Sensor & Object Detection",
+      "DAY-08-Relay Basics & High Power Control",
+      "DAY-09-Smart Dustbin (AutoSense System)",
+      "DAY-10-PIR Motion Detection System",
+      "DAY-11-IC 555 Timer (Delay & Blinking Circuits)",
+      "DAY-12-Digital Logic Gates Basics",
+      "DAY-13-Temperature Sensor (Heat Sense)",
+      "DAY-14-Project: Automatic Fire Extinguisher - Part 1",
+      "DAY-15-Project: Automatic Fire Extinguisher - Part 2",
+      "DAY-16-Challenge Day & Revision",
+    ],
+  },
+];
  export const ArduinoCurriculum = {
   meta: {
     title: "ARDUINO COURSE",

@@ -72,7 +72,7 @@ const teamMembers: TeamMember[] = [
   {
     id: "Shrikant",
     name: "Mr. Shrikant Gaikwad",
-    title: "Full Stack Developer",
+    title: "Full Stack Developer & App Developer",
     image: "assets/team/shrikant.png",
     linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
   },

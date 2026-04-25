@@ -73,6 +73,7 @@ import {
   SpikePrimePythonCurriculum,
   SpikeEssentialCurriculum,
   kuboCurriculum,
+  MiniElectronicsCurriculum,
 } from "../../../../utils/curriculum";
 import Header from "@/components/layout/header";
 // Define the type for key features
@@ -1085,6 +1086,45 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "mini-electronics": {
+    id: "miniElectronics",
+    title: "MINI ELECTRONICS",
+    subtitle: "Learn electronics and coding with mini electronics projects",
+    badge: "Electronics Course",
+    description: "Learn electronics and coding with mini electronics projects",
+    mode: "Offline",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/Mini Electronics.pdf",
+    syllabusFileName: "MINI ELECTRONICS.pdf",
+    imagePath: "/assets/classroom-course/mini-electronics.jpg",
+    imageAlt: "Mini Electronics Course",
+    price: 8999,
+    originalPrice: 13999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Electronics Fundamentals",
+        description: "Understand core electronics concepts and components",
+        iconName: "Spark",
+      },
+      {
+        title: "Circuit Building",
+        description: "Learn to build and design electronic circuits",
+        iconName: "CircuitBoard",
+      },
+      {
+        title: "Programming Electronics",
+        description: "Program electronics using microcontrollers and sensors",
+        iconName: "Code",
+      },
+      {
+        title: "Real-world Applications",
+        description: "Apply electronics concepts to solve everyday problems",
+        iconName: "Rocket",
+      },
+    ],
+  },
   "spike-prime-python": {
     id: "spikePrimePython",
     title: "SPIKE PRIME WITH PYTHON",
@@ -1204,6 +1244,7 @@ export default async function SlugPage({
             ),
           ],
         }));
+
       case "web-designing":
         return WebDesignCurriculum;
       case "java":
@@ -1276,6 +1317,8 @@ export default async function SlugPage({
         return AppDevelopmentData;
       case "early-simple-machines":
         return EarlySimplemachineCurriculum;
+      case "mini-electronics":
+        return MiniElectronicsCurriculum;
       // case "iot":
       //   return IotCurriculum;
       case "simple-powered-machines":
