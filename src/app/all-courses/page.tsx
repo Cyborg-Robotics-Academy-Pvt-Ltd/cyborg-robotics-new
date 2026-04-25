@@ -596,7 +596,7 @@ const AllCoursesPageContent = () => {
 
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-blue-800">4+</span>
+                  <span className="text-2xl font-bold text-blue-800">14+</span>
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">
                   Years Experience
@@ -618,12 +618,11 @@ const AllCoursesPageContent = () => {
 
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-purple-800">4+</span>
+                  <span className="text-2xl font-bold text-purple-800">
+                    20+
+                  </span>
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">Competitions</h3>
-                <p className="text-gray-600 text-sm">
-                  Our students participate in
-                </p>
+                <h3 className="font-bold text-gray-900 mb-2">Awards</h3>
               </div>
             </div>
           </div>

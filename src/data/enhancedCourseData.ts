@@ -390,7 +390,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "LEGO Mindstorms EV3 is a robotics kit that allows students to build and program robots. Our comprehensive robotics course combines mechanical engineering, programming and problem-solving skills. Students will learn to design, build and program robots that can navigate mazes, pick up objects and compete in various challenges.",
     ageRange: "11-16",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
   "robotics-with-quarky": {
     id: "roboticsWithQuarky",
@@ -441,7 +441,40 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
       "Robotics with Quarky is a comprehensive hands-on learning program that introduces students to robotics, automation, and artificial intelligence using the Quarky robot and PictoBlox platform. The course blends coding, electronics, sensors, and mechanical logic to help learners move from screen-based programming to real-world robotic applications. Structured across two progressive levels, students begin with foundational robotics concepts such as sensors, motion, and control logic, and advance to AI-based systems like object tracking, self-driving robots, and automated pick-and-place mechanisms. Each session emphasizes concept clarity, applied learning, and problem-solving, culminating in capstone projects that demonstrate complete robotics workflows.",
 
     ageRange: "6-9",
-    category: "Lego-Robotics",
+    category: "Robotics",
+  },
+  "mini-electronics": {
+    id: "miniElectronics",
+    title: "Mini Electronics",
+    subtitle: "Learn electronics and coding with mini electronics projects",
+    badge: "Electronics Course",
+    description: "Learn electronics and coding with mini electronics projects",
+    mode: "Offline",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/Mini Electronics.pdf",
+    syllabusFileName: "MINI ELECTRONICS.pdf",
+    imagePath: "/assets/classroom-course/mini-electronics.jpg",
+    imageAlt: "Mini Electronics Course",
+    price: 7999,
+    originalPrice: 12999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Basic Electronics",
+        description: "Learn fundamental electronics concepts and components",
+        iconName: "Spark",
+      },
+      {
+        title: "Coding with Electronics",
+        description: "Combine electronics and coding to build interactive projects",
+        iconName: "Code",
+      },
+    ],
+    courseOverview:
+      "Mini Electronics is a hands-on learning program that introduces students to the basics of electronics and coding through mini projects. The course covers fundamental electronics concepts, components, and hands-on projects that combine electronics and coding. Students will learn how to build interactive projects using basic electronics and programming skills. The course is designed for students who are new to electronics and coding, and it provides a solid foundation for further learning in electronics and robotics.",
+    ageRange: "6-9",
+    category: "Electronics",
   },
   "spike-essential": {
     id: "spikeEssential",
@@ -488,7 +521,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "LEGO Education SPIKE Essential is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Essential course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
     ageRange: "6-9",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
   "spike-prime": {
     id: "spikePrime",
@@ -534,7 +567,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
     ageRange: "11-16",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
 
   "spike-prime-python": {
@@ -582,7 +615,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "LEGO Education SPIKE Prime is a STEAM learning solution that combines colorful LEGO building elements, easy-to-use hardware and an intuitive drag-and-drop coding language based on Scratch. Our comprehensive SPIKE Prime course helps students develop critical thinking and problem-solving skills through engaging robotics projects.",
     ageRange: "11-16",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
   "3d-printing": {
     id: "3dPrinting",
@@ -811,7 +844,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "Early Simple Machines introduces students to fundamental mechanical principles through hands-on building and experimentation. Students learn about levers, pulleys, gears and other simple machines while constructing working models. This course builds a strong foundation in mechanical engineering concepts and develops problem-solving skills through practical projects.",
     ageRange: "4-6",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
 
   // "3d-printing-arduino": {
@@ -951,7 +984,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     courseOverview:
       "Simple Powered Machines focuses on mechanical systems that use motors and power sources. Students learn about electric motors, power transmission systems, gears and control mechanisms. This course teaches the principles of powered mechanical systems and how to design and build motor-driven devices.",
     ageRange: "6-9",
-    category: "Lego-Robotics",
+    category: "Robotics",
   },
 
   "early-electronics": {
