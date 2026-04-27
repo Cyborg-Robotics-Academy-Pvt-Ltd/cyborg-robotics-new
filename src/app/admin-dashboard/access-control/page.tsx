@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
@@ -23,14 +23,19 @@ import {
   Shield,
   Edit,
   Trash2,
-  Plus,
   Save,
   X,
-  Eye,
   EyeOff,
   Users,
   UserCog,
   UserCheck,
+  Camera,
+  Loader2,
+  RefreshCw,
+  ChevronUp,
+  ChevronDown,
+  Search,
+  ArrowLeft,
 } from "lucide-react";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
@@ -45,13 +50,12 @@ interface UserData {
   superAdmin?: boolean;
 }
 
+const CROP_PREVIEW_SIZE = 256;
+const CROPPED_IMAGE_SIZE = 512;
+
 const getSafeCreatedAt = (value: unknown): Date => {
   if (!value) return new Date();
-
-  if (value instanceof Date) {
-    return value;
-  }
-
+  if (value instanceof Date) return value;
   if (
     typeof value === "object" &&
     value !== null &&
@@ -64,10 +68,122 @@ const getSafeCreatedAt = (value: unknown): Date => {
       return new Date();
     }
   }
-
   const parsed = new Date(String(value));
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 };
+
+const RoleBadge = ({
+  role,
+  superAdmin,
+}: {
+  role: string;
+  superAdmin?: boolean;
+}) => {
+  const config = superAdmin
+    ? {
+        bg: "bg-amber-50 border-amber-200 text-amber-700",
+        dot: "bg-amber-400",
+        label: "Super Admin",
+      }
+    : role === "admin"
+      ? {
+          bg: "bg-violet-50 border-violet-200 text-violet-700",
+          dot: "bg-violet-400",
+          label: "Admin",
+        }
+      : role === "trainer"
+        ? {
+            bg: "bg-emerald-50 border-emerald-200 text-emerald-700",
+            dot: "bg-emerald-400",
+            label: "Trainer",
+          }
+        : {
+            bg: "bg-sky-50 border-sky-200 text-sky-700",
+            dot: "bg-sky-400",
+            label: "Student",
+          };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${config.bg}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      {config.label}
+    </span>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const config =
+    status === "active"
+      ? {
+          bg: "bg-green-50 border-green-200 text-green-700",
+          dot: "bg-green-400",
+        }
+      : status === "inactive"
+        ? { bg: "bg-red-50 border-red-200 text-red-700", dot: "bg-red-400" }
+        : {
+            bg: "bg-yellow-50 border-yellow-200 text-yellow-700",
+            dot: "bg-yellow-400",
+          };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${config.bg}`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full animate-pulse ${config.dot}`}
+      />
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
+};
+
+const Avatar = ({
+  src,
+  name,
+  size = 10,
+}: {
+  src?: string;
+  name: string;
+  size?: number;
+}) => (
+  <div
+    className={`flex-shrink-0 w-${size} h-${size} rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center`}
+  >
+    {src ? (
+      <Image
+        src={src}
+        alt={name}
+        width={40}
+        height={40}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "/assets/logo1.png";
+        }}
+      />
+    ) : (
+      <User className="w-5 h-5 text-red-700" />
+    )}
+  </div>
+);
+
+const SortIcon = ({
+  active,
+  direction,
+}: {
+  active: boolean;
+  direction: "asc" | "desc";
+}) =>
+  active ? (
+    direction === "desc" ? (
+      <ChevronDown className="w-3.5 h-3.5 text-red-600" />
+    ) : (
+      <ChevronUp className="w-3.5 h-3.5 text-red-600" />
+    )
+  ) : (
+    <ChevronDown className="w-3.5 h-3.5 text-gray-300" />
+  );
 
 const AccessControlPage = () => {
   const router = useRouter();
@@ -82,26 +198,56 @@ const AccessControlPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [fetchError, setFetchError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [uploadingPhotoForUserId, setUploadingPhotoForUserId] = useState<
+    string | null
+  >(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const [photoSourceMenuUserId, setPhotoSourceMenuUserId] = useState<
+    string | null
+  >(null);
+  const [pendingPhotoUserId, setPendingPhotoUserId] = useState<string | null>(
+    null,
+  );
+  const [cameraError, setCameraError] = useState("");
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+  const [cropScale, setCropScale] = useState(1);
+  const [cropX, setCropX] = useState(0);
+  const [cropY, setCropY] = useState(0);
+  const [sourceImageSize, setSourceImageSize] = useState({
+    width: CROP_PREVIEW_SIZE,
+    height: CROP_PREVIEW_SIZE,
+  });
+  const cropDragRef = useRef<{
+    startX: number;
+    startY: number;
+    initialCropX: number;
+    initialCropY: number;
+    dragging: boolean;
+  }>({
+    startX: 0,
+    startY: 0,
+    initialCropX: 0,
+    initialCropY: 0,
+    dragging: false,
+  });
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
   }>({ key: "createdAt", direction: "desc" });
 
-  // Check if user is admin
   useEffect(() => {
     if (authLoading) return;
-
     if (!user || userRole !== "admin") {
       router.push("/login");
       return;
     }
-
-    // Check if admin document exists
     const checkAdminDocument = async () => {
       try {
         const adminData = await getAdminUserData(user.uid);
         if (!adminData) {
-          // Redirect to user creation page if admin document doesn't exist
           router.push("/create-user");
           return;
         }
@@ -111,30 +257,22 @@ const AccessControlPage = () => {
         router.push("/login");
       }
     };
-
     checkAdminDocument();
   }, [user, userRole, authLoading, router]);
 
-  // Check if current user is a super admin
   useEffect(() => {
     if (user && users.length > 0) {
       const currentUser = users.find((u) => u.email === user.email);
-      if (currentUser && currentUser.superAdmin) {
-        setIsSuperAdmin(true);
-      }
+      if (currentUser?.superAdmin) setIsSuperAdmin(true);
     }
   }, [user, users]);
 
-  // Fetch all users from different collections
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setFetchError("");
-
-      // Get users from all collections
       const collections = ["students", "trainers", "admins"];
       let allUsers: UserData[] = [];
-
       for (const collectionName of collections) {
         try {
           const querySnapshot = await getDocs(collection(db, collectionName));
@@ -144,7 +282,7 @@ const AccessControlPage = () => {
               id: doc.id,
               name: data.name || data.fullName || data.username || "",
               email: data.email || "",
-              role: collectionName.slice(0, -1), // Remove 's' from end
+              role: collectionName.slice(0, -1),
               status: data.status || "active",
               createdAt: getSafeCreatedAt(data.createdAt),
               profileimage:
@@ -159,12 +297,9 @@ const AccessControlPage = () => {
           console.error(`Error fetching ${collectionName}:`, collectionError);
         }
       }
-
-      // Filter out the specific email to hide from display
       const filteredUsersList = allUsers.filter(
-        (user) => user.email !== "shrikantg199@gmail.com"
+        (user) => user.email !== "shrikantg199@gmail.com",
       );
-
       setUsers(filteredUsersList);
       setFilteredUsers(filteredUsersList);
     } catch (error) {
@@ -175,31 +310,20 @@ const AccessControlPage = () => {
     }
   };
 
-  // Filter and sort users
   useEffect(() => {
     let result = [...users];
-
-    // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (user) =>
           (user.name && user.name.toLowerCase().includes(term)) ||
-          (user.email && user.email.toLowerCase().includes(term))
+          (user.email && user.email.toLowerCase().includes(term)),
       );
     }
-
-    // Apply role filter
-    if (roleFilter !== "all") {
+    if (roleFilter !== "all")
       result = result.filter((user) => user.role === roleFilter);
-    }
-
-    // Apply status filter
-    if (statusFilter !== "all") {
+    if (statusFilter !== "all")
       result = result.filter((user) => user.status === statusFilter);
-    }
-
-    // Apply sorting
     result.sort((a, b) => {
       if (sortConfig.key === "createdAt") {
         const dateA = a.createdAt.getTime();
@@ -232,13 +356,10 @@ const AccessControlPage = () => {
       }
       return 0;
     });
-
     setFilteredUsers(result);
   }, [searchTerm, roleFilter, statusFilter, users, sortConfig]);
 
-  // Handle edit button click
   const handleEditClick = (user: UserData) => {
-    // Prevent editing super admin users if current user is not super admin
     if (user.superAdmin && !isSuperAdmin) {
       alert("You cannot edit super admin users.");
       return;
@@ -247,93 +368,62 @@ const AccessControlPage = () => {
     setEditFormData({ ...user });
   };
 
-  // Handle cancel edit
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setEditFormData({});
   };
 
-  // Handle save changes
   const handleSaveChanges = async () => {
     if (!editingUserId) return;
-
-    // Check if we're trying to edit a super admin user
     const userBeingEdited = users.find((user) => user.id === editingUserId);
     if (userBeingEdited?.superAdmin && !isSuperAdmin) {
       alert("You cannot edit super admin users.");
       return;
     }
-
     try {
-      // If role has changed, we need to move the user document between collections
       const originalUser = users.find((user) => user.id === editingUserId);
       if (!originalUser) {
         alert(
-          "Original user not found. Please refresh the page and try again."
+          "Original user not found. Please refresh the page and try again.",
         );
         return;
       }
-
       if (editFormData.role && originalUser.role !== editFormData.role) {
-        // Role has changed - move document between collections
         const originalCollectionName = `${originalUser.role}s`;
-        const newCollectionName = `${editFormData.role}s`; // Use editFormData.role directly since we already checked it exists
-
-        // Get the original document data
+        const newCollectionName = `${editFormData.role}s`;
         const originalDocRef = doc(db, originalCollectionName, editingUserId);
         const originalDocSnapshot = await getDoc(originalDocRef);
-
         if (originalDocSnapshot.exists()) {
           const originalData = originalDocSnapshot.data() as DocumentData;
-
-          // Create new document in the new collection
           const newDocRef = doc(db, newCollectionName, editingUserId);
-
-          // Prepare data for the new document, avoiding undefined values
           const newDocData: any = {
             ...originalData,
             name: editFormData.name || originalData.name,
             status: editFormData.status || originalData.status,
-            role: editFormData.role, // Use the new role
+            role: editFormData.role,
             updatedAt: new Date(),
           };
-
-          // Only add profileimage if it exists to avoid Firestore errors
           const profileImageValue =
             editFormData.profileimage || originalData.profileimage;
-          if (profileImageValue !== undefined) {
+          if (profileImageValue !== undefined)
             newDocData.profileimage = profileImageValue;
-          }
-
           await setDoc(newDocRef, newDocData);
-
-          // Delete the original document
           await deleteDoc(originalDocRef);
         }
       } else {
-        // Role hasn't changed - just update the document
-        const collectionName = `${originalUser.role}s`; // Use originalUser.role to ensure we update the correct collection
+        const collectionName = `${originalUser.role}s`;
         const userDocRef = doc(db, collectionName, editingUserId);
-
-        // Prepare update data, only update fields that are defined
-        const updateData: any = {
-          updatedAt: new Date(),
-        };
-
+        const updateData: any = { updatedAt: new Date() };
         if (editFormData.name !== undefined)
           updateData.name = editFormData.name;
         if (editFormData.status !== undefined) {
           updateData.status = editFormData.status;
-
-          // Check if status is changing from pending to active for students
           if (
             editFormData.status === "active" &&
             originalUser.status === "pending" &&
             originalUser.role === "student"
-          ) {
-            // Add flag to indicate PRN should be generated
+          )
             updateData.needsPrnGeneration = true;
-          }
         }
         if (editFormData.profileimage !== undefined)
           updateData.profileimage = editFormData.profileimage;
@@ -341,40 +431,26 @@ const AccessControlPage = () => {
           editFormData.profileimage === undefined &&
           originalUser.profileimage !== undefined
         )
-          // If profileimage is undefined in editFormData but existed in original data, remove it
           updateData.profileimage = originalUser.profileimage;
         if (editFormData.role !== undefined)
-          updateData.role = editFormData.role; // Update role even if it didn't change collections
-
+          updateData.role = editFormData.role;
         await updateDoc(userDocRef, updateData);
-
-        // Generate PRN if needed
         if (updateData.needsPrnGeneration) {
           try {
-            // Get the student document to find center information
             const studentDoc = await getDoc(userDocRef);
             if (studentDoc.exists()) {
               const studentData = studentDoc.data();
-              const location = studentData.center || "KALYANI NAGAR"; // Default to Kalyani Nagar
-
-              // Generate and assign PRN
+              const location = studentData.center || "KALYANI NAGAR";
               await autoGenerateAndAssignPrn(editingUserId, location);
-
-              // Remove the flag from the document
               await updateDoc(userDocRef, {
                 needsPrnGeneration: deleteField(),
               });
             }
           } catch (prnError) {
             console.error("Error generating PRN:", prnError);
-            // Don't fail the whole operation if PRN generation fails
           }
         }
       }
-
-      // Removed email notification when status changes to active
-
-      // Update local state
       setUsers(
         users.map((user) =>
           user.id === editingUserId
@@ -388,49 +464,303 @@ const AccessControlPage = () => {
                     ? editFormData.profileimage
                     : user.profileimage,
               } as UserData)
-            : user
-        )
+            : user,
+        ),
       );
-
       setEditingUserId(null);
       setEditFormData({});
     } catch (error) {
       console.error("Error updating user:", error);
       alert(
         "Error updating user. Please try again. Details: " +
-          (error as Error).message
+          (error as Error).message,
       );
     }
   };
 
-  // Handle delete user
   const handleDeleteUser = async (userId: string, role: string) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-
     try {
       const collectionName = `${role}s`;
-      const userDocRef = doc(db, collectionName, userId);
-
-      await deleteDoc(userDocRef);
-
-      // Update local state
+      await deleteDoc(doc(db, collectionName, userId));
       setUsers(users.filter((user) => user.id !== userId));
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
 
-  // Handle role change
-  const handleRoleChange = (role: string) => {
+  const handleRoleChange = (role: string) =>
     setEditFormData({ ...editFormData, role });
-  };
-
-  // Handle status change
-  const handleStatusChange = (status: string) => {
+  const handleStatusChange = (status: string) =>
     setEditFormData({ ...editFormData, status });
+
+  const stopCameraStream = () => {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = null;
+    }
+    if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null;
   };
 
-  // Handle sorting
+  const resetCropState = () => {
+    setCropModalOpen(false);
+    setPhotoSourceMenuUserId(null);
+    setPendingPhotoUserId(null);
+    setSelectedImageSrc(null);
+    setCropScale(1);
+    setCropX(0);
+    setCropY(0);
+    setSourceImageSize({ width: CROP_PREVIEW_SIZE, height: CROP_PREVIEW_SIZE });
+  };
+
+  const openCropModalForImage = (imageSrc: string, userId: string) => {
+    const image = new window.Image();
+    image.onload = () => {
+      setPhotoSourceMenuUserId(null);
+      setCameraModalOpen(false);
+      setCameraError("");
+      setPendingPhotoUserId(userId);
+      setSelectedImageSrc(imageSrc);
+      setSourceImageSize({
+        width: image.naturalWidth || CROP_PREVIEW_SIZE,
+        height: image.naturalHeight || CROP_PREVIEW_SIZE,
+      });
+      setCropScale(1);
+      setCropX(0);
+      setCropY(0);
+      setCropModalOpen(true);
+    };
+    image.onerror = () => alert("Selected file is not a valid image.");
+    image.src = imageSrc;
+  };
+
+  const handlePhotoSelection = async (
+    event: ChangeEvent<HTMLInputElement>,
+    userId: string,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result !== "string") {
+          alert("Failed to read selected photo.");
+          return;
+        }
+        openCropModalForImage(result, userId);
+      };
+      reader.onerror = () => alert("Failed to read selected photo.");
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error preparing student photo:", error);
+      alert(
+        "Failed to prepare photo. Please try again. Details: " +
+          (error as Error).message,
+      );
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleOpenCamera = async (userId: string) => {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      alert("Camera is not supported in this browser.");
+      return;
+    }
+    try {
+      stopCameraStream();
+      setPhotoSourceMenuUserId(null);
+      setCameraError("");
+      setPendingPhotoUserId(userId);
+      setCameraModalOpen(true);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      cameraStreamRef.current = stream;
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+        await cameraVideoRef.current.play();
+      }
+    } catch (error) {
+      console.error("Error opening camera:", error);
+      stopCameraStream();
+      setCameraError(
+        "Unable to access the laptop camera. Please allow browser camera permission and try again.",
+      );
+    }
+  };
+
+  const handleCaptureFromCamera = () => {
+    if (!cameraVideoRef.current || !pendingPhotoUserId) return;
+    const video = cameraVideoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || CROPPED_IMAGE_SIZE;
+    canvas.height = video.videoHeight || CROPPED_IMAGE_SIZE;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      alert("Failed to capture photo from camera.");
+      return;
+    }
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageSrc = canvas.toDataURL("image/jpeg", 0.92);
+    stopCameraStream();
+    openCropModalForImage(imageSrc, pendingPhotoUserId);
+  };
+
+  const handleCropAndUpload = async () => {
+    if (!selectedImageSrc || !pendingPhotoUserId) return;
+    try {
+      setUploadingPhotoForUserId(pendingPhotoUserId);
+      const image = new window.Image();
+      image.onload = async () => {
+        try {
+          const baseScale = Math.max(
+            CROP_PREVIEW_SIZE / sourceImageSize.width,
+            CROP_PREVIEW_SIZE / sourceImageSize.height,
+          );
+          const finalScale = baseScale * cropScale;
+          const drawWidth = sourceImageSize.width * finalScale;
+          const drawHeight = sourceImageSize.height * finalScale;
+          const drawX = cropX + (CROP_PREVIEW_SIZE - drawWidth) / 2;
+          const drawY = cropY + (CROP_PREVIEW_SIZE - drawHeight) / 2;
+          const canvas = document.createElement("canvas");
+          canvas.width = CROPPED_IMAGE_SIZE;
+          canvas.height = CROPPED_IMAGE_SIZE;
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("Unable to initialize image cropper");
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          const exportScale = CROPPED_IMAGE_SIZE / CROP_PREVIEW_SIZE;
+          context.drawImage(
+            image,
+            drawX * exportScale,
+            drawY * exportScale,
+            drawWidth * exportScale,
+            drawHeight * exportScale,
+          );
+          const croppedBlob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+              (blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error("Failed to generate cropped photo"));
+              },
+              "image/jpeg",
+              0.92,
+            );
+          });
+          const formData = new FormData();
+          formData.append("file", croppedBlob, "student-profile.jpg");
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (!response.ok || !data.imageUrl)
+            throw new Error(data.error || "Failed to upload photo");
+          setEditFormData((prev) => ({ ...prev, profileimage: data.imageUrl }));
+          resetCropState();
+        } catch (error) {
+          console.error("Error cropping student photo:", error);
+          alert(
+            "Failed to crop and upload photo. Please try again. Details: " +
+              (error as Error).message,
+          );
+        } finally {
+          setUploadingPhotoForUserId(null);
+        }
+      };
+      image.onerror = () => {
+        setUploadingPhotoForUserId(null);
+        alert("Failed to load image for cropping.");
+      };
+      image.src = selectedImageSrc;
+    } catch (error) {
+      console.error("Error uploading cropped student photo:", error);
+      setUploadingPhotoForUserId(null);
+      alert(
+        "Failed to upload cropped photo. Please try again. Details: " +
+          (error as Error).message,
+      );
+    }
+  };
+
+  const clampCropPosition = (
+    nextX: number,
+    nextY: number,
+    scale = cropScale,
+  ) => {
+    const scaledWidth = sourceImageSize.width * baseScale * scale;
+    const scaledHeight = sourceImageSize.height * baseScale * scale;
+    const maxOffsetX = Math.max((scaledWidth - CROP_PREVIEW_SIZE) / 2, 0);
+    const maxOffsetY = Math.max((scaledHeight - CROP_PREVIEW_SIZE) / 2, 0);
+    return {
+      x: Math.min(Math.max(nextX, -maxOffsetX), maxOffsetX),
+      y: Math.min(Math.max(nextY, -maxOffsetY), maxOffsetY),
+    };
+  };
+
+  const baseScale = Math.max(
+    CROP_PREVIEW_SIZE / sourceImageSize.width,
+    CROP_PREVIEW_SIZE / sourceImageSize.height,
+  );
+  const previewScale = baseScale * cropScale;
+  const previewWidth = sourceImageSize.width * previewScale;
+  const previewHeight = sourceImageSize.height * previewScale;
+  const previewLeft = cropX + (CROP_PREVIEW_SIZE - previewWidth) / 2;
+  const previewTop = cropY + (CROP_PREVIEW_SIZE - previewHeight) / 2;
+
+  useEffect(() => {
+    const clamped = clampCropPosition(cropX, cropY);
+    if (clamped.x !== cropX) setCropX(clamped.x);
+    if (clamped.y !== cropY) setCropY(clamped.y);
+  }, [cropScale, selectedImageSrc, sourceImageSize, cropX, cropY]);
+
+  useEffect(() => {
+    if (!cameraModalOpen) stopCameraStream();
+    return () => {
+      stopCameraStream();
+    };
+  }, [cameraModalOpen]);
+
+  const handleCropPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    cropDragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      initialCropX: cropX,
+      initialCropY: cropY,
+      dragging: true,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const handleCropPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!cropDragRef.current.dragging) return;
+    const deltaX = event.clientX - cropDragRef.current.startX;
+    const deltaY = event.clientY - cropDragRef.current.startY;
+    const clamped = clampCropPosition(
+      cropDragRef.current.initialCropX + deltaX,
+      cropDragRef.current.initialCropY + deltaY,
+    );
+    setCropX(clamped.x);
+    setCropY(clamped.y);
+  };
+  const handleCropPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    cropDragRef.current.dragging = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
+  const handleOpenPhotoSourceMenu = (user: UserData) => {
+    if (user.superAdmin && !isSuperAdmin) return;
+    if (uploadingPhotoForUserId === user.id) return;
+    setPhotoSourceMenuUserId(user.id);
+  };
+
   const handleSort = (key: string) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -441,271 +771,222 @@ const AccessControlPage = () => {
     }));
   };
 
-  if (authLoading || loading) {
-    return <AuthLoadingSpinner />;
-  }
+  if (authLoading || loading) return <AuthLoadingSpinner />;
+
+  const statsData = [
+    {
+      label: "Total Users",
+      value: users.length,
+      icon: Users,
+      color: "text-red-700",
+      bg: "bg-red-50",
+      border: "border-red-100",
+    },
+    {
+      label: "Active",
+      value: users.filter((u) => u.status === "active").length,
+      icon: UserCheck,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+      border: "border-emerald-100",
+    },
+    {
+      label: "Inactive",
+      value: users.filter((u) => u.status === "inactive").length,
+      icon: EyeOff,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      border: "border-amber-100",
+    },
+    {
+      label: "Admins",
+      value: users.filter((u) => u.role === "admin").length,
+      icon: Shield,
+      color: "text-violet-600",
+      bg: "bg-violet-50",
+      border: "border-violet-100",
+    },
+  ];
+
+  const thClass =
+    "px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="min-h-screen bg-gray-50/80">
+      {/* Top bar */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm rounded-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-700 to-red-500 flex items-center justify-center shadow-sm">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-red-800 to-red-600 text-white">
-                  <Shield className="w-6 h-6" />
-                </div>
-                Access Control Management
+              <h1 className="text-base font-semibold text-gray-900 leading-tight">
+                Access Control
               </h1>
-              <p className="mt-2 text-gray-600">
-                Manage user roles, permissions and access levels
+              <p className="text-xs text-gray-500 leading-tight">
+                Manage roles & permissions
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap justify-end">
-              <button
-                onClick={fetchUsers}
-                className="px-4 py-2 bg-gradient-to-r from-red-800 to-red-600 text-white rounded-lg hover:from-red-900 hover:to-red-700 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Refresh
-              </button>
-              <button
-                onClick={() => router.push("/admin-dashboard")}
-                className="px-4 py-2 bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-lg hover:from-blue-900 hover:to-blue-700 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <UserCog className="w-4 h-4" />
-                Back to Dashboard
-              </button>
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchUsers}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refresh
+            </button>
+            <button
+              onClick={() => router.push("/admin-dashboard")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-700 to-red-600 rounded-lg hover:from-red-800 hover:to-red-700 transition-all shadow-sm"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Dashboard
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Filters */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {statsData.map(({ label, value, icon: Icon, color, bg, border }) => (
+            <div
+              key={label}
+              className={`bg-white rounded-xl border ${border} p-4 flex items-center gap-3 hover:shadow-md transition-shadow`}
+            >
+              <div
+                className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
+              >
+                <Icon className={`w-5 h-5 ${color}`} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">{label}</p>
+                <p className="text-2xl font-bold text-gray-900 leading-tight">
+                  {value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Error */}
         {fetchError && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+            <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
             {fetchError}
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 ">
-                Search Users
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search by name or email..."
-                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
+        {/* Filters */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 ">
-                Filter by Role
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
-                <option value="all">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="trainer">Trainer</option>
-                <option value="student">Student</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm  text-gray-700 mb-2 font-semibold">
-                Filter by Status
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
-              </select>
-            </div>
+            <select
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all text-gray-700"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+            >
+              <option value="all">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="trainer">Trainer</option>
+              <option value="student">Student</option>
+            </select>
+            <select
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all text-gray-700"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="pending">Pending</option>
+            </select>
           </div>
         </div>
 
-        {/* Stats Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 flex items-center border border-gray-200 transition-transform duration-300 hover:scale-[1.02]">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-red-100 to-red-200 mr-4">
-              <Users className="text-red-800 w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-            </div>
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              {filteredUsers.length}{" "}
+              <span className="text-gray-400 font-normal">
+                user{filteredUsers.length !== 1 ? "s" : ""} found
+              </span>
+            </p>
           </div>
-
-          <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 flex items-center border border-gray-200 transition-transform duration-300 hover:scale-[1.02]">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-green-100 to-green-200 mr-4">
-              <UserCheck className="text-green-600 w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Active</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter((u) => u.status === "active").length}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 flex items-center border border-gray-200 transition-transform duration-300 hover:scale-[1.02]">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-yellow-100 to-yellow-200 mr-4">
-              <EyeOff className="text-yellow-600 w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Inactive</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter((u) => u.status === "inactive").length}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg p-6 flex items-center border border-gray-200 transition-transform duration-300 hover:scale-[1.02]">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-purple-100 to-purple-200 mr-4">
-              <Shield className="text-purple-600 w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Admins</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter((u) => u.role === "admin").length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Users Table */}
-        <div className="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-200"
-                    onClick={() => handleSort("name")}
-                  >
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className={thClass} onClick={() => handleSort("name")}>
                     <div className="flex items-center gap-1">
-                      User
-                      {sortConfig.key === "name" && (
-                        <span>
-                          {sortConfig.direction === "desc" ? "↓" : "↑"}
-                        </span>
-                      )}
+                      User{" "}
+                      <SortIcon
+                        active={sortConfig.key === "name"}
+                        direction={sortConfig.direction}
+                      />
+                    </div>
+                  </th>
+                  <th className={thClass} onClick={() => handleSort("role")}>
+                    <div className="flex items-center gap-1">
+                      Role{" "}
+                      <SortIcon
+                        active={sortConfig.key === "role"}
+                        direction={sortConfig.direction}
+                      />
+                    </div>
+                  </th>
+                  <th className={thClass} onClick={() => handleSort("status")}>
+                    <div className="flex items-center gap-1">
+                      Status{" "}
+                      <SortIcon
+                        active={sortConfig.key === "status"}
+                        direction={sortConfig.direction}
+                      />
                     </div>
                   </th>
                   <th
-                    scope="col"
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-200"
-                    onClick={() => handleSort("role")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Role
-                      {sortConfig.key === "role" && (
-                        <span>
-                          {sortConfig.direction === "desc" ? "↓" : "↑"}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-200"
-                    onClick={() => handleSort("status")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Status
-                      {sortConfig.key === "status" && (
-                        <span>
-                          {sortConfig.direction === "desc" ? "↓" : "↑"}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                    className={thClass}
                     onClick={() => handleSort("createdAt")}
                   >
                     <div className="flex items-center gap-1">
-                      Created
-                      {sortConfig.key === "createdAt" && (
-                        <span>
-                          {sortConfig.direction === "desc" ? "↓" : "↑"}
-                        </span>
-                      )}
+                      Created{" "}
+                      <SortIcon
+                        active={sortConfig.key === "createdAt"}
+                        direction={sortConfig.direction}
+                      />
                     </div>
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                  >
+                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-50">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-gray-500 text-lg"
-                    >
-                      <div className="flex flex-col items-center justify-center">
-                        <svg
-                          className="w-16 h-16 text-gray-300 mb-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        No users found
+                    <td colSpan={5} className="px-5 py-16 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                          <Users className="w-6 h-6 text-gray-300" />
+                        </div>
+                        <p className="text-sm text-gray-500 font-medium">
+                          No users found
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Try adjusting your filters
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -713,41 +994,61 @@ const AccessControlPage = () => {
                   filteredUsers.map((user) => (
                     <tr
                       key={user.id}
-                      className="hover:bg-gray-50 transition-colors duration-200"
+                      className={`hover:bg-gray-50/80 transition-colors group ${editingUserId === user.id ? "bg-blue-50/30" : ""}`}
                     >
                       {editingUserId === user.id ? (
-                        // Edit row
                         <>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center overflow-hidden border-2 border-white shadow">
-                                {user.profileimage ? (
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="relative flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center">
+                                {editFormData.profileimage ||
+                                user.profileimage ? (
                                   <Image
-                                    src={user.profileimage}
+                                    src={
+                                      editFormData.profileimage ||
+                                      user.profileimage ||
+                                      ""
+                                    }
                                     alt={user.name}
-                                    width={48}
-                                    height={48}
+                                    width={40}
+                                    height={40}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.onerror = null;
-                                      target.src = "/assets/logo1.png"; // fallback image
+                                      (e.target as HTMLImageElement).src =
+                                        "/assets/logo1.png";
                                     }}
                                   />
                                 ) : (
-                                  <User className="h-6 w-6 text-red-800" />
+                                  <User className="w-4 h-4 text-red-700" />
+                                )}
+                                {user.role === "student" && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenPhotoSourceMenu(user)
+                                    }
+                                    disabled={
+                                      uploadingPhotoForUserId === user.id ||
+                                      (user.superAdmin && !isSuperAdmin)
+                                    }
+                                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
+                                  >
+                                    {uploadingPhotoForUserId === user.id ? (
+                                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                    ) : (
+                                      <Camera className="w-4 h-4 text-white" />
+                                    )}
+                                  </button>
                                 )}
                               </div>
-                              <div className="ml-4">
+                              <div className="min-w-0">
                                 {user.superAdmin && !isSuperAdmin ? (
-                                  <div className="text-sm text-yellow-700 italic font-medium">
+                                  <p className="text-xs text-amber-600 italic font-medium">
                                     Unchangeable
-                                  </div>
+                                  </p>
                                 ) : (
                                   <input
                                     type="text"
-                                    className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
                                     value={editFormData.name || ""}
                                     placeholder="Enter name"
                                     onChange={(e) =>
@@ -756,28 +1057,58 @@ const AccessControlPage = () => {
                                         name: e.target.value,
                                       })
                                     }
+                                    className="block w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
                                   />
                                 )}
-                                <div className="text-sm text-gray-500 mt-1">
-                                  <div className="text-sm text-gray-900 font-medium">
-                                    {user.email}
-                                  </div>
-                                </div>
+                                <p className="text-xs text-gray-400 mt-0.5 truncate">
+                                  {user.email}
+                                </p>
+                                {user.role === "student" && (
+                                  <>
+                                    <input
+                                      id={`student-photo-${user.id}`}
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      disabled={
+                                        uploadingPhotoForUserId === user.id ||
+                                        (user.superAdmin && !isSuperAdmin)
+                                      }
+                                      onChange={(e) =>
+                                        void handlePhotoSelection(e, user.id)
+                                      }
+                                    />
+                                    {editFormData.profileimage && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setEditFormData((prev) => ({
+                                            ...prev,
+                                            profileimage: "",
+                                          }))
+                                        }
+                                        className="text-xs text-red-500 hover:text-red-700 mt-1"
+                                      >
+                                        Remove photo
+                                      </button>
+                                    )}
+                                  </>
+                                )}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-5 py-3">
                             {user.superAdmin && !isSuperAdmin ? (
-                              <div className="text-sm text-yellow-700 italic font-medium">
+                              <span className="text-xs text-amber-600 italic font-medium">
                                 Super Admin (restricted)
-                              </div>
+                              </span>
                             ) : (
                               <select
-                                className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
                                 value={editFormData.role || ""}
                                 onChange={(e) =>
                                   handleRoleChange(e.target.value)
                                 }
+                                className="px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
                               >
                                 <option value="admin">Admin</option>
                                 <option value="trainer">Trainer</option>
@@ -785,18 +1116,18 @@ const AccessControlPage = () => {
                               </select>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-5 py-3">
                             {user.superAdmin && !isSuperAdmin ? (
-                              <div className="text-sm text-yellow-700 italic font-medium">
+                              <span className="text-xs text-amber-600 italic font-medium">
                                 Unchangeable
-                              </div>
+                              </span>
                             ) : (
                               <select
-                                className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-all duration-300 shadow-sm"
                                 value={editFormData.status || ""}
                                 onChange={(e) =>
                                   handleStatusChange(e.target.value)
                                 }
+                                className="px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
                               >
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
@@ -804,124 +1135,78 @@ const AccessControlPage = () => {
                               </select>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                          <td className="px-5 py-3 text-sm text-gray-500">
                             {user.createdAt.toLocaleDateString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center justify-end gap-1">
                               <button
                                 onClick={handleSaveChanges}
-                                className={`${user.superAdmin && !isSuperAdmin ? "text-gray-400 cursor-not-allowed" : "text-green-600 hover:text-green-800"} p-2 rounded-lg hover:bg-green-100 transition-colors duration-200`}
-                                title="Save"
                                 disabled={user.superAdmin && !isSuperAdmin}
+                                className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                title="Save"
                               >
-                                <Save className="w-5 h-5" />
+                                <Save className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={handleCancelEdit}
-                                className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                                 title="Cancel"
                               >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
                         </>
                       ) : (
-                        // View row
                         <>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center overflow-hidden border-2 border-white shadow">
-                                {user.profileimage ? (
-                                  <Image
-                                    src={user.profileimage}
-                                    alt={user.name}
-                                    width={48}
-                                    height={48}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.onerror = null;
-                                      target.src = "/assets/logo1.png"; // fallback image
-                                    }}
-                                  />
-                                ) : (
-                                  <User className="h-6 w-6 text-red-800" />
-                                )}
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              <Avatar
+                                src={user.profileimage}
+                                name={user.name}
+                              />
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
                                   {user.name}
-                                </div>
-                                <div className="text-sm text-gray-500">
+                                </p>
+                                <p className="text-xs text-gray-400 truncate">
                                   {user.email}
-                                </div>
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                user.superAdmin
-                                  ? "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800"
-                                  : user.role === "admin"
-                                    ? "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800"
-                                    : user.role === "trainer"
-                                      ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800"
-                                      : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800"
-                              }`}
-                              title={
-                                user.superAdmin
-                                  ? "Super Admin cannot be modified by regular admins"
-                                  : ""
-                              }
-                            >
-                              {user.superAdmin
-                                ? "Super Admin"
-                                : user.role.charAt(0).toUpperCase() +
-                                  user.role.slice(1)}
-                            </span>
+                          <td className="px-5 py-3.5">
+                            <RoleBadge
+                              role={user.role}
+                              superAdmin={user.superAdmin}
+                            />
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                user.status === "active"
-                                  ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800"
-                                  : user.status === "inactive"
-                                    ? "bg-gradient-to-r from-red-100 to-red-200 text-red-800"
-                                    : "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800"
-                              }`}
-                            >
-                              {user.status.charAt(0).toUpperCase() +
-                                user.status.slice(1)}
-                            </span>
+                          <td className="px-5 py-3.5">
+                            <StatusBadge status={user.status} />
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                          <td className="px-5 py-3.5 text-sm text-gray-500">
                             {user.createdAt.toLocaleDateString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => handleEditClick(user)}
-                                className={`text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-100 transition-colors duration-200 ${user.superAdmin && !isSuperAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
-                                title="Edit"
                                 disabled={user.superAdmin && !isSuperAdmin}
+                                className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                title="Edit"
                               >
-                                <Edit className="w-5 h-5" />
+                                <Edit className="w-4 h-4" />
                               </button>
-                              {/* {isSuperAdmin && !user.superAdmin && ( */}
                               <button
                                 onClick={() =>
                                   handleDeleteUser(user.id, user.role)
                                 }
-                                className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-100 transition-colors duration-200"
+                                className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
                                 title="Delete"
                               >
-                                <Trash2 className="w-5 h-5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
-                              {/* )} */}
                             </div>
                           </td>
                         </>
@@ -934,6 +1219,215 @@ const AccessControlPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Crop Modal */}
+      {cropModalOpen && selectedImageSrc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Crop Photo
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Drag to position, scroll to zoom
+                </p>
+              </div>
+              <button
+                onClick={resetCropState}
+                disabled={!!uploadingPhotoForUserId}
+                className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <div className="flex justify-center">
+                <div
+                  className="relative overflow-hidden rounded-2xl bg-gray-900 shadow-inner cursor-move"
+                  style={{
+                    width: `${CROP_PREVIEW_SIZE}px`,
+                    height: `${CROP_PREVIEW_SIZE}px`,
+                  }}
+                  onPointerDown={handleCropPointerDown}
+                  onPointerMove={handleCropPointerMove}
+                  onPointerUp={handleCropPointerUp}
+                  onPointerCancel={handleCropPointerUp}
+                  onPointerLeave={handleCropPointerUp}
+                >
+                  <img
+                    src={selectedImageSrc}
+                    alt="Crop preview"
+                    className="absolute max-w-none select-none pointer-events-none"
+                    draggable={false}
+                    style={{
+                      width: `${previewWidth}px`,
+                      height: `${previewHeight}px`,
+                      left: `${previewLeft}px`,
+                      top: `${previewTop}px`,
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 border-2 border-white/60 shadow-[inset_0_0_0_9999px_rgba(0,0,0,0.2)] rounded-2xl" />
+                </div>
+              </div>
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-medium text-gray-600">
+                    Zoom
+                  </label>
+                  <span className="text-xs text-gray-400">
+                    {Math.round(cropScale * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.05"
+                  value={cropScale}
+                  onChange={(e) => setCropScale(Number(e.target.value))}
+                  className="w-full accent-red-600"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+              <button
+                onClick={resetCropState}
+                disabled={!!uploadingPhotoForUserId}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleCropAndUpload()}
+                disabled={!!uploadingPhotoForUserId}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-700 to-red-600 rounded-lg hover:from-red-800 hover:to-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                {uploadingPhotoForUserId ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+                Crop & Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Modal */}
+      {cameraModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Camera
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Capture photo, then crop before upload
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setCameraModalOpen(false);
+                  setPendingPhotoUserId(null);
+                  setCameraError("");
+                }}
+                className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <div className="rounded-xl overflow-hidden bg-black aspect-square">
+                <video
+                  ref={cameraVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {cameraError && (
+                <p className="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 border border-red-100">
+                  {cameraError}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+              <button
+                onClick={() => {
+                  setCameraModalOpen(false);
+                  setPendingPhotoUserId(null);
+                  setCameraError("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCaptureFromCamera}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-700 to-red-600 rounded-lg hover:from-red-800 hover:to-red-700 transition-all shadow-sm"
+              >
+                <Camera className="w-4 h-4" />
+                Capture
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Source Menu */}
+      {photoSourceMenuUserId && !cropModalOpen && !cameraModalOpen && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setPhotoSourceMenuUserId(null)}
+        >
+          <div
+            className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-900">
+                Update Photo
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Choose source, then crop before upload
+              </p>
+            </div>
+            <div className="px-5 py-4 space-y-2">
+              <button
+                type="button"
+                onClick={() => void handleOpenCamera(photoSourceMenuUserId)}
+                className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                  <Camera className="w-4 h-4 text-red-600" />
+                </div>
+                Open Camera
+              </button>
+              <label
+                htmlFor={`student-photo-${photoSourceMenuUserId}`}
+                className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-blue-600" />
+                </div>
+                Choose from Gallery
+              </label>
+            </div>
+            <div className="px-5 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+              <button
+                onClick={() => setPhotoSourceMenuUserId(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

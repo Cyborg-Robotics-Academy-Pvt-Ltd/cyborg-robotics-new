@@ -104,6 +104,12 @@ interface Student {
   trainerName?: string;
   remark?: string;
   remarkUpdatedAt?: string | null;
+  followUpDate?: string | null;
+  followUpStage?: "first" | "second" | "not_interested" | "joined" | null;
+  followUpHistory?: Array<{
+    stage: "first" | "second" | "not_interested" | "joined";
+    date?: string | null;
+  }>;
   status?: string;
 }
 interface Trainer {
@@ -121,6 +127,7 @@ interface StudentData {
 }
 
 type ActivityStatus = "active" | "inactive" | "incomplete";
+type FollowUpFilter = "" | "first" | "second" | "not_interested" | "joined";
 
 const TWO_WEEKS_MS = 5 * 60 * 1000;
 const ONE_MONTH_MS = 10 * 60 * 1000;
@@ -139,7 +146,7 @@ const ACTIVITY_STATUS_CONFIG: Record<
   },
   incomplete: {
     label: "Incomplete",
-    cls: "bg-rose-50 text-rose-700 border-rose-200",
+    cls: "bg-red-50 text-red-700 border-red-200",
   },
 };
 
@@ -147,6 +154,13 @@ function parseDateValue(value?: string | null) {
   if (!value) return null;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeTrainerValue(value?: string | null) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }
 
 function getLatestClassDate(student: Student) {
@@ -170,6 +184,80 @@ function getActivityStatus(student: Student): ActivityStatus {
   return "active";
 }
 
+function shouldUseFollowUp(student: Student) {
+  const activityStatus = getActivityStatus(student);
+  return (
+    activityStatus === "inactive" ||
+    activityStatus === "incomplete" ||
+    getDerivedStatus(student) === "completed"
+  );
+}
+
+function getRemarkActionLabel(student: Student) {
+  if (!shouldUseFollowUp(student)) {
+    return student.remark ? "Edit" : "Add Remark";
+  }
+
+  return student.remark ? "Continue Follow-up" : "Start Follow-up";
+}
+
+function getRemarkModalCopy(student: Student | null) {
+  if (!student || !shouldUseFollowUp(student)) {
+    return {
+      title: "Remark",
+      fieldLabel: "Remark",
+      saveLabel: "Save Remark",
+      placeholder: "Why absent or not joined new",
+    };
+  }
+
+  return {
+    title: "Follow-up",
+    fieldLabel: "Follow-up Note",
+    saveLabel: "Save Follow-up",
+    placeholder:
+      "Add follow-up note like: Follow up on Monday - parent requested callback",
+  };
+}
+
+function getFollowUpDayLabel(value?: string | null) {
+  const followUpDate = parseDateValue(value);
+  if (!followUpDate) return null;
+  return `Next Follow Up on ${format(followUpDate, "EEEE, dd MMM yyyy")}`;
+}
+
+function getFollowUpStageLabel(stage?: Student["followUpStage"]) {
+  if (stage === "first") return "First follow-up";
+  if (stage === "second") return "Second follow-up";
+  if (stage === "not_interested") return "Not interested";
+  if (stage === "joined") return "Joined";
+  return null;
+}
+
+function getFollowUpDisplayLabel(student: Student) {
+  const stageLabel = getFollowUpStageLabel(student.followUpStage);
+  const dayLabel = getFollowUpDayLabel(student.followUpDate);
+
+  if (stageLabel === "Not interested" || stageLabel === "Joined")
+    return stageLabel;
+  if (stageLabel && dayLabel) return `${stageLabel} - ${dayLabel}`;
+  return stageLabel || dayLabel || null;
+}
+
+function getFollowUpHistoryLabels(student: Student) {
+  const history = student.followUpHistory || [];
+
+  return history.map((entry) => {
+    const stageLabel = getFollowUpStageLabel(entry.stage);
+    const dayLabel = getFollowUpDayLabel(entry.date);
+
+    if (stageLabel === "Not interested" || stageLabel === "Joined")
+      return stageLabel;
+    if (stageLabel && dayLabel) return `${stageLabel} - ${dayLabel}`;
+    return stageLabel || dayLabel || null;
+  }).filter((label): label is string => Boolean(label));
+}
+
 // ─── DERIVED STATUS LOGIC ─────────────────────────────────────────────────────
 type DerivedStatus = "active" | "pending_trainer" | "no_course" | "completed";
 
@@ -186,6 +274,54 @@ function getDerivedStatus(student: Student): DerivedStatus {
   );
   if (hasUnassignedTrainer) return "pending_trainer";
   return "active";
+}
+
+function toCourseSlug(courseName?: string, level?: string) {
+  if (typeof courseName !== "string" || !courseName) return "";
+
+  let slug = courseName
+    .toLowerCase()
+    .replace(/ & /g, "-and-")
+    .replace(/ \+ /g, "-plus-")
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, "");
+
+  if (level) {
+    let levelText = level;
+    if (level === "1") levelText = "beginner";
+    else if (level === "2") levelText = "intermediate";
+    else if (level === "3") levelText = "advanced";
+    else if (level === "4") levelText = "expert";
+
+    slug += `-level-${levelText}`;
+  }
+
+  return slug;
+}
+
+function getStudentCourseDetailUrl(student: Student) {
+  if (!student.PrnNumber) return null;
+
+  const primaryCourse =
+    (student.courses || []).find(
+      (c) =>
+        c.completed !== true &&
+        (!c.status || c.status.toLowerCase() !== "complete"),
+    ) || (student.courses || [])[0];
+
+  if (!primaryCourse?.name) return `/${student.PrnNumber}`;
+
+  const courseSlug = toCourseSlug(primaryCourse.name, primaryCourse.level);
+  return courseSlug ? `/${student.PrnNumber}/${courseSlug}` : `/${student.PrnNumber}`;
+}
+
+function getTrainerDisplayName(trainer?: Trainer | null) {
+  return (
+    trainer?.name?.trim() ||
+    trainer?.username?.trim() ||
+    trainer?.email?.trim() ||
+    ""
+  );
 }
 
 // ─── STATUS BADGE ─────────────────────────────────────────────────────────────
@@ -318,6 +454,7 @@ function Btn({
 
 // ─── PAGE SIZES ───────────────────────────────────────────────────────────────
 const PAGE_SIZES = [20, 50, 100];
+const STUDENT_LIST_FILTERS_KEY = "student-list-filters";
 
 // ══════════════════════════════════════════════════════════════════════════════
 const Page = () => {
@@ -336,6 +473,8 @@ const Page = () => {
   const [trainerFilter, setTrainerFilter] = useState("");
   const [centerFilter, setCenterFilter] = useState("");
   const [activityFilter, setActivityFilter] = useState<ActivityStatus | "">("");
+  const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>("");
+  const [nextFollowUpDateFilter, setNextFollowUpDateFilter] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
   // Sort
@@ -377,6 +516,12 @@ const Page = () => {
   const [remarkDraft, setRemarkDraft] = useState("");
   const [remarkModalOpen, setRemarkModalOpen] = useState(false);
   const [savingRemark, setSavingRemark] = useState(false);
+  const [followUpDetailStudent, setFollowUpDetailStudent] =
+    useState<Student | null>(null);
+  const [followUpDateDraft, setFollowUpDateDraft] = useState("");
+  const [followUpStageDraft, setFollowUpStageDraft] = useState<
+    "first" | "second" | "not_interested" | "joined"
+  >("first");
 
   // Course forms
   const [courseStudent, setCourseStudent] = useState<Student | null>(null);
@@ -478,6 +623,9 @@ const Page = () => {
           trainerName: d.trainerName,
           remark: d.remark || "",
           remarkUpdatedAt: d.remarkUpdatedAt || null,
+          followUpDate: d.followUpDate || null,
+          followUpStage: d.followUpStage || null,
+          followUpHistory: d.followUpHistory || [],
           status: d.status || "active",
         } as Student;
       });
@@ -511,6 +659,41 @@ const Page = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedFilters = window.sessionStorage.getItem(
+      STUDENT_LIST_FILTERS_KEY,
+    );
+    if (!savedFilters) return;
+
+    try {
+      const parsed = JSON.parse(savedFilters) as {
+        searchTerm?: string;
+        trainerFilter?: string;
+        centerFilter?: string;
+        activityFilter?: ActivityStatus | "";
+        followUpFilter?: FollowUpFilter;
+        nextFollowUpDateFilter?: string;
+        activeTab?: string;
+        page?: number;
+        pageSize?: number;
+      };
+
+      setSearchTerm(parsed.searchTerm || "");
+      setTrainerFilter(parsed.trainerFilter || "");
+      setCenterFilter(parsed.centerFilter || "");
+      setActivityFilter(parsed.activityFilter || "");
+      setFollowUpFilter(parsed.followUpFilter || "");
+      setNextFollowUpDateFilter(parsed.nextFollowUpDateFilter || "");
+      setActiveTab(parsed.activeTab || "all");
+      setPage(parsed.page || 1);
+      setPageSize(parsed.pageSize || 20);
+    } catch (error) {
+      console.error("Failed to restore student list filters:", error);
+    }
+  }, []);
+
+  useEffect(() => {
     fetchStudents();
     fetchTrainers();
   }, [fetchStudents, fetchTrainers]);
@@ -525,6 +708,35 @@ const Page = () => {
     return () => document.removeEventListener("click", handler);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    window.sessionStorage.setItem(
+      STUDENT_LIST_FILTERS_KEY,
+      JSON.stringify({
+        searchTerm,
+        trainerFilter,
+        centerFilter,
+        activityFilter,
+        followUpFilter,
+        nextFollowUpDateFilter,
+        activeTab,
+        page,
+        pageSize,
+      }),
+    );
+  }, [
+    searchTerm,
+    trainerFilter,
+    centerFilter,
+    activityFilter,
+    followUpFilter,
+    nextFollowUpDateFilter,
+    activeTab,
+    page,
+    pageSize,
+  ]);
+
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1);
@@ -533,13 +745,110 @@ const Page = () => {
     trainerFilter,
     centerFilter,
     activityFilter,
+    followUpFilter,
+    nextFollowUpDateFilter,
     activeTab,
     sortColumn,
     sortDirection,
   ]);
 
   // ── Filtering + sorting (PRESERVED logic, extended) ───────────────────────
+  const trainerFilterOptions = useMemo(() => {
+    const options = new Map<
+      string,
+      { label: string; normalizedLabel: string; trainerId?: string }
+    >();
+
+    trainers.forEach((trainer) => {
+      const label = getTrainerDisplayName(trainer);
+      if (!trainer.id || !label) return;
+
+      options.set(`id:${trainer.id}`, {
+        label,
+        normalizedLabel: normalizeTrainerValue(label),
+        trainerId: trainer.id,
+      });
+    });
+
+    students.forEach((student) => {
+      student.courses.forEach((course) => {
+        if (
+          typeof course === "string" ||
+          course.completed === true ||
+          (course.status && course.status.toLowerCase() === "complete")
+        ) {
+          return;
+        }
+
+        const trainerId = String(course.trainerId || "").trim();
+        const trainerName = String(course.trainerName || "").trim();
+        const normalizedTrainerName = normalizeTrainerValue(trainerName);
+
+        if (trainerId) {
+          const optionKey = `id:${trainerId}`;
+          const existing = options.get(optionKey);
+
+          if (!existing) {
+            options.set(optionKey, {
+              label: trainerName || trainerId,
+              normalizedLabel: normalizeTrainerValue(trainerName || trainerId),
+              trainerId,
+            });
+          } else if (!existing.label && trainerName) {
+            options.set(optionKey, {
+              ...existing,
+              label: trainerName,
+              normalizedLabel: normalizedTrainerName,
+            });
+          }
+
+          return;
+        }
+
+        if (!normalizedTrainerName) return;
+
+        const optionKey = `name:${normalizedTrainerName}`;
+        if (!options.has(optionKey)) {
+          options.set(optionKey, {
+            label: trainerName,
+            normalizedLabel: normalizedTrainerName,
+          });
+        }
+      });
+    });
+
+    return Array.from(options.entries())
+      .map(([value, option]) => ({ value, ...option }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [students, trainers]);
+
+  useEffect(() => {
+    if (
+      !trainerFilter ||
+      trainerFilter === "None Assigned" ||
+      trainerFilter.startsWith("id:") ||
+      trainerFilter.startsWith("name:")
+    ) {
+      return;
+    }
+
+    const normalizedTrainerFilter = normalizeTrainerValue(trainerFilter);
+    const matchingOption = trainerFilterOptions.find(
+      (option) => option.normalizedLabel === normalizedTrainerFilter,
+    );
+
+    if (matchingOption) {
+      setTrainerFilter(matchingOption.value);
+    }
+  }, [trainerFilter, trainerFilterOptions]);
+
   const filteredStudents = useMemo(() => {
+    const selectedTrainerOption = trainerFilterOptions.find(
+      (option) => option.value === trainerFilter,
+    );
+    const selectedTrainerId = selectedTrainerOption?.trainerId || "";
+    const selectedTrainerLabel = selectedTrainerOption?.normalizedLabel || "";
+
     return students
       .filter((s) => s.status !== "pending")
       .filter((s) => {
@@ -583,11 +892,36 @@ const Page = () => {
               (!c.status || c.status.toLowerCase() !== "complete"),
           );
         return s.courses.some(
-          (c) =>
-            typeof c !== "string" &&
-            c.trainerName === trainerFilter &&
-            c.completed !== true &&
-            (!c.status || c.status.toLowerCase() !== "complete"),
+          (c) => {
+            if (
+              typeof c === "string" ||
+              c.completed === true ||
+              (c.status && c.status.toLowerCase() === "complete")
+            ) {
+              return false;
+            }
+
+            const courseTrainerId = String(c.trainerId || "").trim();
+            const courseTrainerName = normalizeTrainerValue(c.trainerName);
+
+            if (trainerFilter.startsWith("id:")) {
+              if (selectedTrainerId && courseTrainerId === selectedTrainerId) {
+                return true;
+              }
+
+              return Boolean(
+                selectedTrainerLabel &&
+                  courseTrainerName &&
+                  courseTrainerName === selectedTrainerLabel,
+              );
+            }
+
+            if (trainerFilter.startsWith("name:")) {
+              return courseTrainerName === selectedTrainerLabel;
+            }
+
+            return c.trainerName === trainerFilter;
+          },
         );
       })
       .filter((s) => {
@@ -596,12 +930,29 @@ const Page = () => {
           return s.PrnNumber.startsWith("CRAKN");
         if (centerFilter === "Viman Nagar")
           return s.PrnNumber.startsWith("CRAVN");
+        if (centerFilter === "Magarpatta")
+          return s.PrnNumber.startsWith("CRAMG");
+        if (centerFilter === "Kharadi")
+          return s.PrnNumber.startsWith("CRAKH");
         return true;
       })
       .filter((s) => {
         if (!activityFilter) return true;
         if (!getLatestClassDate(s)) return false;
         return getActivityStatus(s) === activityFilter;
+      })
+      .filter((s) => {
+        if (!followUpFilter) return true;
+        return s.followUpStage === followUpFilter;
+      })
+      .filter((s) => {
+        if (!nextFollowUpDateFilter) return true;
+        if (!s.followUpDate) return false;
+
+        const followUpDate = parseDateValue(s.followUpDate);
+        if (!followUpDate) return false;
+
+        return format(followUpDate, "yyyy-MM-dd") === nextFollowUpDateFilter;
       })
       .sort((a, b) => {
         if (activeTab === "ongoing") {
@@ -630,8 +981,11 @@ const Page = () => {
     activeTab,
     searchTerm,
     trainerFilter,
+    trainerFilterOptions,
     centerFilter,
     activityFilter,
+    followUpFilter,
+    nextFollowUpDateFilter,
     sortColumn,
     sortDirection,
   ]);
@@ -993,8 +1347,23 @@ const Page = () => {
   };
 
   const openRemarkModal = (student: Student) => {
+    const usesFollowUp = shouldUseFollowUp(student);
     setRemarkStudent(student);
     setRemarkDraft(student.remark || "");
+    setFollowUpDateDraft(
+      student.followUpDate
+        ? format(new Date(student.followUpDate), "yyyy-MM-dd")
+        : format(new Date(), "yyyy-MM-dd"),
+    );
+    setFollowUpStageDraft(
+      student.followUpStage === "second" ||
+        student.followUpStage === "not_interested" ||
+        student.followUpStage === "joined"
+        ? student.followUpStage
+        : usesFollowUp && student.remark
+          ? "second"
+          : "first",
+    );
     setRemarkModalOpen(true);
     setShowDropdown(null);
   };
@@ -1006,16 +1375,61 @@ const Page = () => {
     try {
       const trimmedRemark = remarkDraft.trim();
       const remarkUpdatedAt = new Date().toISOString();
+      const usesFollowUp = shouldUseFollowUp(remarkStudent);
+      if (usesFollowUp && trimmedRemark === "") {
+        toast.error("Follow-up note is required");
+        return;
+      }
+      const nextFollowUpDate =
+        followUpStageDraft === "not_interested" ||
+        followUpStageDraft === "joined"
+          ? null
+          : new Date(`${followUpDateDraft}T00:00:00`).toISOString();
+      const nextFollowUpStage = followUpStageDraft;
+      if (
+        usesFollowUp &&
+        followUpStageDraft !== "not_interested" &&
+        followUpStageDraft !== "joined" &&
+        !followUpDateDraft
+      ) {
+        toast.error("Follow-up date is required");
+        return;
+      }
+      const followUpPayload = usesFollowUp
+        ? {
+            followUpDate: nextFollowUpDate,
+            followUpStage: nextFollowUpStage,
+            followUpHistory: [
+              ...((remarkStudent.followUpHistory || []).filter(
+                (entry) => entry.stage !== followUpStageDraft,
+              )),
+              {
+                stage: followUpStageDraft,
+                date: nextFollowUpDate,
+              },
+            ],
+          }
+        : {
+            followUpDate: remarkStudent.followUpDate || null,
+            followUpStage: remarkStudent.followUpStage || null,
+            followUpHistory: remarkStudent.followUpHistory || [],
+          };
       const db = getFirestore(app);
       await updateDoc(doc(db, "students", remarkStudent.id), {
         remark: trimmedRemark,
         remarkUpdatedAt,
+        ...followUpPayload,
       });
 
       setStudents((prev) =>
         prev.map((student) =>
           student.id === remarkStudent.id
-            ? { ...student, remark: trimmedRemark, remarkUpdatedAt }
+            ? {
+                ...student,
+                remark: trimmedRemark,
+                remarkUpdatedAt,
+                ...followUpPayload,
+              }
             : student,
         ),
       );
@@ -1024,6 +1438,8 @@ const Page = () => {
       setRemarkModalOpen(false);
       setRemarkStudent(null);
       setRemarkDraft("");
+      setFollowUpDateDraft("");
+      setFollowUpStageDraft("first");
     } catch (e) {
       toast.error("Failed to save remark");
     } finally {
@@ -1177,27 +1593,6 @@ const Page = () => {
   }, [students]);
 
   // ── Trainer list for filter dropdown ──────────────────────────────────────
-  const trainerNames = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          students.flatMap((s) =>
-            s.courses
-              .filter(
-                (c) =>
-                  typeof c !== "string" &&
-                  c.trainerName &&
-                  c.completed !== true &&
-                  (!c.status || c.status.toLowerCase() !== "complete"),
-              )
-              .map((c) => c.trainerName)
-              .filter(Boolean),
-          ),
-        ),
-      ).sort(),
-    [students],
-  );
-
   const getActiveTrainerAllocations = useCallback((student: Student) => {
     return (student.courses || [])
       .filter(
@@ -1211,6 +1606,20 @@ const Page = () => {
         trainerLabel: c.trainerName?.trim() || "",
       }));
   }, []);
+
+  const getTrainerColumnEntries = useCallback((student: Student) => {
+    const allocations = getActiveTrainerAllocations(student);
+    const hasMultipleCourses = allocations.length > 1;
+
+    return allocations.map((allocation) => ({
+      ...allocation,
+      title: hasMultipleCourses
+        ? allocation.trainerLabel
+          ? `${allocation.courseLabel} - ${allocation.trainerLabel}`
+          : allocation.courseLabel
+        : allocation.trainerLabel || "Unassigned",
+    }));
+  }, [getActiveTrainerAllocations]);
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
   const TABS = [
@@ -1331,6 +1740,8 @@ const Page = () => {
               <option value="">All Centers</option>
               <option value="Kalyani Nagar">Kalyani Nagar</option>
               <option value="Viman Nagar">Viman Nagar</option>
+              <option value="Magarpatta">Magarpatta</option>
+              <option value="Kharadi">Kharadi</option>
             </select>
             <select
               value={trainerFilter}
@@ -1339,9 +1750,9 @@ const Page = () => {
             >
               <option value="">All Trainers</option>
               <option value="None Assigned">None Assigned</option>
-              {trainerNames.map((n, i) => (
-                <option key={i} value={n || ""}>
-                  {n}
+              {trainerFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -1357,6 +1768,26 @@ const Page = () => {
               <option value="inactive">Inactive</option>
               <option value="incomplete">Incomplete</option>
             </select>
+            <select
+              value={followUpFilter}
+              onChange={(e) =>
+                setFollowUpFilter(e.target.value as FollowUpFilter)
+              }
+              className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#9F0712] min-w-[160px]"
+            >
+              <option value="">All Follow-ups</option>
+              <option value="first">First follow-up</option>
+              <option value="second">Second follow-up</option>
+              <option value="not_interested">Not interested</option>
+              <option value="joined">Joined</option>
+            </select>
+            <input
+              type="date"
+              value={nextFollowUpDateFilter}
+              onChange={(e) => setNextFollowUpDateFilter(e.target.value)}
+              className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#9F0712] min-w-[160px]"
+              title="Filter by Next Follow Up date"
+            />
           </div>
 
           {/* Row 2: Tabs + refresh */}
@@ -1527,6 +1958,14 @@ const Page = () => {
                     const activityStatus = getActivityStatus(student);
                     const activityStatusConfig =
                       ACTIVITY_STATUS_CONFIG[activityStatus];
+                    const usesFollowUp = shouldUseFollowUp(student);
+                    const followUpDisplayLabel = usesFollowUp
+                      ? getFollowUpDisplayLabel(student)
+                      : null;
+                    const followUpHistoryLabels = usesFollowUp
+                      ? getFollowUpHistoryLabels(student)
+                      : [];
+                    const remarkActionLabel = getRemarkActionLabel(student);
                     const lastTask = student.tasks
                       .filter((t) => t.status.toLowerCase() === "complete")
                       .sort(
@@ -1637,35 +2076,41 @@ const Page = () => {
 
                         {/* Trainer */}
                         <td className="px-3 py-3 hidden lg:table-cell">
-                          {getActiveTrainerAllocations(student).some(
+                          {getTrainerColumnEntries(student).some(
                             (item) => item.trainerLabel,
                           ) ? (
                             <div className="space-y-0.5">
-                              {getActiveTrainerAllocations(student)
+                              {getTrainerColumnEntries(student)
                                 .slice(0, 2)
                                 .map((c, i) => (
                                   <p
                                     key={i}
                                     className="text-xs text-gray-700 font-medium"
-                                    title={
-                                      c.trainerLabel
-                                        ? `${c.courseLabel} - ${c.trainerLabel}`
-                                        : c.courseLabel
-                                    }
+                                    title={c.title}
                                   >
-                                    <span className="font-semibold text-gray-900">
-                                      {c.courseLabel}
-                                    </span>
-                                    {" - "}
-                                    {c.trainerLabel || "Unassigned"}
+                                    {getTrainerColumnEntries(student).length > 1 ? (
+                                      c.trainerLabel ? (
+                                        <>
+                                          <span>{c.courseLabel}</span>
+                                          {" - "}
+                                          <span className="font-semibold text-gray-900">
+                                            {c.trainerLabel}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span>{c.courseLabel}</span>
+                                      )
+                                    ) : (
+                                      <span className="font-semibold text-gray-900">
+                                        {c.trainerLabel || "Unassigned"}
+                                      </span>
+                                    )}
                                   </p>
                                 ))}
-                              {getActiveTrainerAllocations(student).length >
-                                2 && (
+                              {getTrainerColumnEntries(student).length > 2 && (
                                 <p className="text-[11px] text-gray-400 font-medium">
                                   +
-                                  {getActiveTrainerAllocations(student).length -
-                                    2}{" "}
+                                  {getTrainerColumnEntries(student).length - 2}{" "}
                                   more
                                 </p>
                               )}
@@ -1695,9 +2140,6 @@ const Page = () => {
                           {lastTask ? (
                             <div>
                               <p className="text-xs text-gray-700 truncate">
-                                <span className="font-medium">
-                                  {lastTask.course}:
-                                </span>{" "}
                                 {lastTask.task}
                               </p>
                               <p className="text-[11px] text-gray-400 mt-0.5">
@@ -1707,12 +2149,25 @@ const Page = () => {
                                 )}
                               </p>
                               {latestClassDate && (
+                                <>
                                 <span
                                   className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold mt-1 ${activityStatusConfig.cls}`}
                                 >
                                   {activityStatusConfig.label}
                                 </span>
-                              )}
+                                {usesFollowUp && followUpDisplayLabel && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFollowUpDetailStudent(student);
+                                    }}
+                                    className="block text-[10px] text-amber-700 mt-1 font-semibold hover:underline"
+                                  >
+                                    See follow-up detail
+                                  </button>
+                                )}
+                              </>
+                            )}
                             </div>
                           ) : (
                             <span className="text-xs text-gray-300 italic">
@@ -1735,7 +2190,7 @@ const Page = () => {
                                 {student.remark}
                               </p>
                             ) : (
-                              <span className="text-xs text-gray-300 italic">
+                              <span className="text-xs italic text-gray-300">
                                 —
                               </span>
                             )}
@@ -1743,7 +2198,7 @@ const Page = () => {
                               onClick={() => openRemarkModal(student)}
                               className="text-[11px] font-semibold text-[#9F0712] hover:underline"
                             >
-                              {student.remark ? "Edit" : "Add Remark"}
+                              {remarkActionLabel}
                             </button>
                             {student.remarkUpdatedAt && (
                               <p className="text-[10px] text-gray-400">
@@ -1752,6 +2207,14 @@ const Page = () => {
                                   "dd MMM yyyy hh:mm a",
                                 )}
                               </p>
+                            )}
+                            {usesFollowUp && followUpDisplayLabel && (
+                              <button
+                                onClick={() => setFollowUpDetailStudent(student)}
+                                className="text-[11px] font-semibold text-amber-700 hover:underline"
+                              >
+                                See follow-up detail
+                              </button>
                             )}
                           </div>
                         </td>
@@ -1788,13 +2251,15 @@ const Page = () => {
                               )}
                             <button
                               onClick={() => {
-                                if (!student.PrnNumber) {
+                                const courseDetailUrl =
+                                  getStudentCourseDetailUrl(student);
+                                if (!courseDetailUrl) {
                                   toast.error("Contact admin for PRN");
                                   return;
                                 }
-                                router.push(`/${student.PrnNumber}`);
+                                router.push(courseDetailUrl);
                               }}
-                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                              className="p-1.5 text-[#9F0712] bg-[#9F0712]/10 hover:bg-[#9F0712]/15 hover:text-[#9F0712] rounded-md transition-colors"
                             >
                               <Eye className="h-3.5 w-3.5" />
                             </button>
@@ -1854,7 +2319,9 @@ const Page = () => {
                                             },
                                           },
                                           {
-                                            label: "Remark",
+                                            label: usesFollowUp
+                                              ? "Follow-up"
+                                              : "Remark",
                                             icon: BookOpen,
                                             onClick: () =>
                                               openRemarkModal(student),
@@ -1901,10 +2368,12 @@ const Page = () => {
                                             label: "View Details",
                                             icon: Eye,
                                             onClick: () => {
-                                              if (!student.PrnNumber) return;
-                                              router.push(
-                                                `/${student.PrnNumber}`,
-                                              );
+                                              const courseDetailUrl =
+                                                getStudentCourseDetailUrl(
+                                                  student,
+                                                );
+                                              if (!courseDetailUrl) return;
+                                              router.push(courseDetailUrl);
                                             },
                                           },
                                         ].map(
@@ -2135,13 +2604,71 @@ const Page = () => {
       </Modal>
 
       <Modal
+        open={!!followUpDetailStudent}
+        onClose={() => setFollowUpDetailStudent(null)}
+        title={`Follow-up Details - ${followUpDetailStudent?.username || ""}`}
+        footer={
+          <Btn variant="ghost" onClick={() => setFollowUpDetailStudent(null)}>
+            Close
+          </Btn>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={labelCls}>PRN</label>
+            <input
+              className={inputCls + " bg-gray-50 cursor-not-allowed"}
+              readOnly
+              value={followUpDetailStudent?.PrnNumber || ""}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Follow-up Timeline</label>
+            <div className="space-y-2">
+              {(followUpDetailStudent
+                ? getFollowUpHistoryLabels(followUpDetailStudent)
+                : []
+              ).length > 0 ? (
+                (followUpDetailStudent
+                  ? getFollowUpHistoryLabels(followUpDetailStudent)
+                  : []
+                ).map((label, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+                  >
+                    {label}
+                  </div>
+                ))
+              ) : followUpDetailStudent ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                  {getFollowUpDisplayLabel(followUpDetailStudent)}
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Remark</label>
+            <textarea
+              className={inputCls + " resize-none bg-gray-50 cursor-not-allowed"}
+              readOnly
+              rows={4}
+              value={followUpDetailStudent?.remark || ""}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={remarkModalOpen && !!remarkStudent}
         onClose={() => {
           setRemarkModalOpen(false);
           setRemarkStudent(null);
           setRemarkDraft("");
+          setFollowUpDateDraft("");
+          setFollowUpStageDraft("first");
         }}
-        title={`Remark - ${remarkStudent?.username || ""}`}
+        title={`${getRemarkModalCopy(remarkStudent).title} - ${remarkStudent?.username || ""}`}
         footer={
           <>
             <Btn
@@ -2150,12 +2677,16 @@ const Page = () => {
                 setRemarkModalOpen(false);
                 setRemarkStudent(null);
                 setRemarkDraft("");
+                setFollowUpDateDraft("");
+                setFollowUpStageDraft("first");
               }}
             >
               Cancel
             </Btn>
             <Btn onClick={handleSaveRemark} disabled={savingRemark}>
-              {savingRemark ? "Saving..." : "Save Remark"}
+              {savingRemark
+                ? "Saving..."
+                : getRemarkModalCopy(remarkStudent).saveLabel}
             </Btn>
           </>
         }
@@ -2177,12 +2708,51 @@ const Page = () => {
               value={format(new Date(), "dd MMM yyyy hh:mm a")}
             />
           </div>
+          {remarkStudent && shouldUseFollowUp(remarkStudent) && (
+            <>
+              <div>
+                <label className={labelCls}>Follow-up Stage</label>
+                <select
+                  value={followUpStageDraft}
+                  onChange={(e) =>
+                    setFollowUpStageDraft(
+                      e.target.value as
+                        | "first"
+                        | "second"
+                        | "not_interested"
+                        | "joined",
+                    )
+                  }
+                  className={inputCls}
+                >
+                  <option value="first">First follow-up</option>
+                  <option value="second">Second follow-up</option>
+                  <option value="not_interested">Not interested</option>
+                  <option value="joined">Joined</option>
+                </select>
+              </div>
+              {followUpStageDraft !== "not_interested" &&
+                followUpStageDraft !== "joined" && (
+                <div>
+                  <label className={labelCls}>Next Follow Up</label>
+                  <input
+                    type="date"
+                    value={followUpDateDraft}
+                    onChange={(e) => setFollowUpDateDraft(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              )}
+            </>
+          )}
           <div>
-            <label className={labelCls}>Remark</label>
+            <label className={labelCls}>
+              {getRemarkModalCopy(remarkStudent).fieldLabel}
+            </label>
             <textarea
               value={remarkDraft}
               onChange={(e) => setRemarkDraft(e.target.value)}
-              placeholder="Why absent or not joined new"
+              placeholder={getRemarkModalCopy(remarkStudent).placeholder}
               rows={4}
               className={inputCls + " resize-none"}
             />

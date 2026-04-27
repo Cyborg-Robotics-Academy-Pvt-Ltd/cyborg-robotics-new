@@ -335,6 +335,8 @@ const CreateMultipleUsersPage = () => {
                             Kalyani Nagar (KN)
                           </option>
                           <option value="VIMAN NAGAR">Viman Nagar (VN)</option>
+                          <option value="MAGARPATTA">Magarpatta (MG)</option>
+                          <option value="KHARADI">Kharadi (KH)</option>
                         </select>
                       </div>
                     )}

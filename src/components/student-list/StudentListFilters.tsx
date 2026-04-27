@@ -73,6 +73,8 @@ export function StudentListFilters({
             <option value="">All Centers</option>
             <option value="Kalyani Nagar">Kalyani Nagar</option>
             <option value="Viman Nagar">Viman Nagar</option>
+            <option value="Magarpatta">Magarpatta</option>
+            <option value="Kharadi">Kharadi</option>
           </select>
         </div>
         <div className="flex-1 max-w-xs">

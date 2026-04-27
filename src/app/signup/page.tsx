@@ -1244,7 +1244,7 @@ const SignUpPage = () => {
                         <Label className="text-gray-600 text-sm font-medium">
                           Select Center <span className="text-red-500">*</span>
                         </Label>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {[
                             {
                               value: "KALYANI NAGAR",
@@ -1256,6 +1256,18 @@ const SignUpPage = () => {
                               value: "VIMAN NAGAR",
                               label: "Viman Nagar",
                               code: "VN",
+                              icon: MapPin,
+                            },
+                            {
+                              value: "MAGARPATTA",
+                              label: "Magarpatta",
+                              code: "MG",
+                              icon: MapPin,
+                            },
+                            {
+                              value: "KHARADI",
+                              label: "Kharadi",
+                              code: "KH",
                               icon: MapPin,
                             },
                           ].map((center) => (
