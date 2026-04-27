@@ -27,6 +27,7 @@ import {
   XCircle,
   Eye,
   EyeOff,
+  Sparkles,
 } from "lucide-react";
 import Dropdown, { DropdownOption } from "../../components/ui/dropdown";
 import courses from "../../../utils/courses";
@@ -38,6 +39,34 @@ import {
   getCenterPrefix,
   type CenterLocation,
 } from "../../lib/prn-utils";
+
+const SectionCard = ({
+  icon,
+  title,
+  subtitle,
+  badge,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+}) => (
+  <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
+    <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white rounded-t-2xl">
+      <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#AB2F30] shadow-sm shadow-[#AB2F30]/30">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
+        <p className="text-xs text-gray-400">{subtitle}</p>
+      </div>
+      {badge}
+    </div>
+    <div className="p-6 overflow-visible">{children}</div>
+  </div>
+);
 
 const CreateUser = () => {
   const router = useRouter();
@@ -70,7 +99,6 @@ const CreateUser = () => {
   const [filteredCourses, setFilteredCourses] = useState<string[]>(courses);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Role options for dropdown
   const roleOptions: DropdownOption[] = [
     {
       value: "student",
@@ -100,7 +128,26 @@ const CreateUser = () => {
       label: "Viman Nagar",
       icon: <Building className="h-4 w-4" />,
     },
+    {
+      value: "MAGARPATTA",
+      label: "Magarpatta",
+      icon: <Building className="h-4 w-4" />,
+    },
+    {
+      value: "KHARADI",
+      label: "Kharadi",
+      icon: <Building className="h-4 w-4" />,
+    },
   ];
+
+  const getCenterLocationFromPrefix = (
+    prefix: ReturnType<typeof getCenterPrefix>,
+  ): CenterLocation => {
+    if (prefix === "VN") return "VIMAN NAGAR";
+    if (prefix === "MG") return "MAGARPATTA";
+    if (prefix === "KH") return "KHARADI";
+    return "KALYANI NAGAR";
+  };
 
   const handleCenterChange = async (center: string) => {
     setSelectedCenter(center);
@@ -111,8 +158,7 @@ const CreateUser = () => {
     setPrnAutoGenerating(true);
     try {
       const prefix = getCenterPrefix(center || "");
-      const centerLocation: CenterLocation =
-        prefix === "VN" ? "VIMAN NAGAR" : "KALYANI NAGAR";
+      const centerLocation = getCenterLocationFromPrefix(prefix);
       const nextPrn = await generatePrnNumber(centerLocation);
       setPrnNumber(nextPrn);
       setPrnExists(false);
@@ -125,7 +171,7 @@ const CreateUser = () => {
 
   const populateStudentContext = async (
     student: { id: string; name: string; email: string },
-    options?: { skipPrnGeneration?: boolean }
+    options?: { skipPrnGeneration?: boolean },
   ) => {
     setStudentName(student.name);
     setEmail(student.email);
@@ -133,31 +179,24 @@ const CreateUser = () => {
     setStudentId(student.id);
     setEmailExists(true);
     setShowSuggestions(false);
-
-    if (options?.skipPrnGeneration) {
-      return;
-    }
-
+    if (options?.skipPrnGeneration) return;
     try {
       const studentDoc = await getDoc(doc(db, "students", student.id));
       if (!studentDoc.exists()) {
         await generateNextPrnForCenter();
         return;
       }
-
       const studentData = studentDoc.data();
       const studentCenter = studentData?.center || studentData?.location;
       if (studentCenter) {
         const prefix = getCenterPrefix(studentCenter);
-        setSelectedCenter(prefix === "VN" ? "VIMAN NAGAR" : "KALYANI NAGAR");
+        setSelectedCenter(getCenterLocationFromPrefix(prefix));
       }
-
       if (studentData?.PrnNumber) {
         setPrnNumber(studentData.PrnNumber);
         setPrnExists(false);
         return;
       }
-
       await generateNextPrnForCenter(studentCenter);
     } catch (error) {
       console.error("Error loading student context:", error);
@@ -171,17 +210,11 @@ const CreateUser = () => {
       setShowSuggestions(false);
       return;
     }
-
     setSearchingStudents(true);
     try {
-      // Query students collection to find students by name
       const studentsRef = collection(db, "students");
       const nameTrimmed = name.trim().toLowerCase();
-
-      // Get all students and filter manually since Firestore doesn't support
-      // case-insensitive substring matching well
       const querySnapshot = await getDocs(studentsRef);
-
       const suggestions: Array<{ id: string; name: string; email: string }> =
         [];
       querySnapshot.forEach((doc) => {
@@ -190,20 +223,10 @@ const CreateUser = () => {
         const username = data.username || "";
         const email = data.email || "";
         const nameToCheck = (fullName || username).toLowerCase();
-
-        // Check if the name matches
-        if (nameToCheck.includes(nameTrimmed)) {
-          suggestions.push({
-            id: doc.id,
-            name: fullName || username,
-            email: email,
-          });
-        }
+        if (nameToCheck.includes(nameTrimmed))
+          suggestions.push({ id: doc.id, name: fullName || username, email });
       });
-
-      // Limit to 10 suggestions
       const limitedSuggestions = suggestions.slice(0, 10);
-
       setStudentSuggestions(limitedSuggestions);
       setShowSuggestions(limitedSuggestions.length > 0);
     } catch (error) {
@@ -221,7 +244,6 @@ const CreateUser = () => {
       setEmailChecking(false);
       return;
     }
-
     setEmailChecking(true);
     try {
       const studentsRef = collection(db, "students");
@@ -229,9 +251,7 @@ const CreateUser = () => {
       const q = query(studentsRef, where("email", "==", emailTrimmed));
       const querySnapshot = await getDocs(q);
       const exists = !querySnapshot.empty;
-
       setEmailExists(exists);
-
       if (exists) {
         const existingStudent = querySnapshot.docs[0];
         setStudentId(existingStudent.id);
@@ -257,30 +277,24 @@ const CreateUser = () => {
       setPrnChecking(false);
       return;
     }
-
     setPrnChecking(true);
     try {
-      // Query students collection to check if PRN already exists (case-insensitive)
       const studentsRef = collection(db, "students");
       const prnTrimmed = prn.trim();
-
-      // Check for both uppercase and lowercase versions
       const q1 = query(studentsRef, where("PrnNumber", "==", prnTrimmed));
       const q2 = query(
         studentsRef,
-        where("PrnNumber", "==", prnTrimmed.toUpperCase())
+        where("PrnNumber", "==", prnTrimmed.toUpperCase()),
       );
       const q3 = query(
         studentsRef,
-        where("PrnNumber", "==", prnTrimmed.toLowerCase())
+        where("PrnNumber", "==", prnTrimmed.toLowerCase()),
       );
-
       const [querySnapshot1, querySnapshot2, querySnapshot3] =
         await Promise.all([getDocs(q1), getDocs(q2), getDocs(q3)]);
-
-      const exists =
-        !querySnapshot1.empty || !querySnapshot2.empty || !querySnapshot3.empty;
-      setPrnExists(exists);
+      setPrnExists(
+        !querySnapshot1.empty || !querySnapshot2.empty || !querySnapshot3.empty,
+      );
     } catch (error) {
       console.error("Error checking PRN:", error);
       setPrnExists(false);
@@ -296,22 +310,15 @@ const CreateUser = () => {
         router.push("/login");
         return;
       }
-
       const adminDoc = await getDoc(doc(db, "admins", user.uid));
       const trainerDoc = await getDoc(doc(db, "trainers", user.uid));
-
       if (!adminDoc.exists() && !trainerDoc.exists()) {
         router.push("/login");
         return;
       }
-
-      if (adminDoc.exists()) {
-        setUserRole("admin");
-      } else {
-        setUserRole("trainer");
-      }
+      if (adminDoc.exists()) setUserRole("admin");
+      else setUserRole("trainer");
     };
-
     checkAuth();
   }, [router]);
 
@@ -323,17 +330,14 @@ const CreateUser = () => {
     const timeoutId = setTimeout(() => {
       void checkEmailExists(email);
     }, 400);
-
     return () => clearTimeout(timeoutId);
   }, [email]);
 
-  // Debounced student name searching
   useEffect(() => {
     if (studentName) {
       const timeoutId = setTimeout(() => {
         searchStudentsByName(studentName);
-      }, 300); // Wait 300ms after user stops typing
-
+      }, 300);
       return () => clearTimeout(timeoutId);
     } else {
       setStudentSuggestions([]);
@@ -341,13 +345,11 @@ const CreateUser = () => {
     }
   }, [studentName]);
 
-  // Debounced PRN checking
   useEffect(() => {
     if (PrnNumber) {
       const timeoutId = setTimeout(() => {
         checkPrnExists(PrnNumber);
-      }, 500); // Wait 500ms after user stops typing
-
+      }, 500);
       return () => clearTimeout(timeoutId);
     } else {
       setPrnExists(false);
@@ -355,24 +357,16 @@ const CreateUser = () => {
     }
   }, [PrnNumber]);
 
-  // Filter courses based on search query
   useEffect(() => {
     if (!courseSearchQuery.trim()) {
       setFilteredCourses(courses);
     } else {
-      const query = courseSearchQuery.toLowerCase();
+      const q = courseSearchQuery.toLowerCase();
       const filtered = courses.filter((courseName) => {
-        // Check if course name matches
-        if (courseName.toLowerCase().includes(query)) {
-          return true;
-        }
-
-        // Create a mapping from course titles to their keys in enhancedCourseData
-        // We need to find the enhanced course data that corresponds to this course name
+        if (courseName.toLowerCase().includes(q)) return true;
         const matchingCourseKey = Object.keys(enhancedCourseData).find(
           (key) => {
             const courseData = enhancedCourseData[key];
-            // Match based on title or common variations
             return (
               courseData.title.toLowerCase() === courseName.toLowerCase() ||
               courseData.title.toLowerCase() + " course" ===
@@ -382,19 +376,17 @@ const CreateUser = () => {
                 .includes(courseData.title.toLowerCase()) ||
               courseData.title.toLowerCase().includes(courseName.toLowerCase())
             );
-          }
+          },
         );
-
         if (matchingCourseKey) {
           const courseData = enhancedCourseData[matchingCourseKey];
           return (
-            courseData.title.toLowerCase().includes(query) ||
-            courseData.description.toLowerCase().includes(query) ||
-            courseData.category.toLowerCase().includes(query) ||
-            courseData.ageRange.toLowerCase().includes(query)
+            courseData.title.toLowerCase().includes(q) ||
+            courseData.description.toLowerCase().includes(q) ||
+            courseData.category.toLowerCase().includes(q) ||
+            courseData.ageRange.toLowerCase().includes(q)
           );
         }
-
         return false;
       });
       setFilteredCourses(filtered);
@@ -412,44 +404,39 @@ const CreateUser = () => {
       setEnrolling(false);
       return;
     }
-
     if (!studentName) {
       setError("Student name is required");
       setEnrolling(false);
       return;
     }
-
     if (!password) {
       setError("Password is required");
       setEnrolling(false);
       return;
     }
-
     if (password.length < 6) {
       setError("Password must be at least 6 characters long");
       setEnrolling(false);
       return;
     }
-
     if (emailExists) {
-      setError("This email already has an account. You can't create another one.");
+      setError(
+        "This email already has an account. You can't create another one.",
+      );
       setEnrolling(false);
       return;
     }
-
     if (!PrnNumber) {
       setError("PRN Number is required");
       setEnrolling(false);
       return;
     }
-
     if (selectedCourses.length === 0) {
       setError("Please select at least one course");
       setEnrolling(false);
       return;
     }
 
-    // Validate class numbers - must be between 1 and 30
     for (const courseName of selectedCourses) {
       const classNumberStr = courseDetails[courseName]?.classNumber || "";
       if (classNumberStr.trim() !== "") {
@@ -462,25 +449,20 @@ const CreateUser = () => {
       }
     }
 
-    // Check if PRN already exists for another student
     try {
       const studentsRef = collection(db, "students");
       const prnTrimmed = PrnNumber.trim();
-
-      // Check for both uppercase and lowercase versions
       const q1 = query(studentsRef, where("PrnNumber", "==", prnTrimmed));
       const q2 = query(
         studentsRef,
-        where("PrnNumber", "==", prnTrimmed.toUpperCase())
+        where("PrnNumber", "==", prnTrimmed.toUpperCase()),
       );
       const q3 = query(
         studentsRef,
-        where("PrnNumber", "==", prnTrimmed.toLowerCase())
+        where("PrnNumber", "==", prnTrimmed.toLowerCase()),
       );
-
       const [querySnapshot1, querySnapshot2, querySnapshot3] =
         await Promise.all([getDocs(q1), getDocs(q2), getDocs(q3)]);
-
       if (
         !querySnapshot1.empty ||
         !querySnapshot2.empty ||
@@ -498,7 +480,6 @@ const CreateUser = () => {
     }
 
     try {
-      // Prepare course data for enrollment
       const coursesToEnroll = selectedCourses.map((courseName) => ({
         name: courseName,
         level: courseDetails[courseName]?.level || "1",
@@ -515,9 +496,7 @@ const CreateUser = () => {
 
       const createResponse = await fetch("/api/create-users", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           users: [
             {
@@ -533,16 +512,13 @@ const CreateUser = () => {
       });
 
       const createResult = await createResponse.json();
-      if (!createResponse.ok) {
+      if (!createResponse.ok)
         throw new Error(createResult.error || "Failed to create account");
-      }
 
       const createdStudentUid = createResult?.createdUsers?.[0]?.uid;
-      if (!createdStudentUid) {
+      if (!createdStudentUid)
         throw new Error("Student account was created without a valid UID");
-      }
 
-      // Update student document with PRN number and courses
       await setDoc(
         doc(db, "students", createdStudentUid),
         {
@@ -555,13 +531,12 @@ const CreateUser = () => {
           status: "active",
           updatedAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
 
       setEnrollmentSuccess(true);
       toast.success("PRN assigned and courses enrolled successfully!");
 
-      // Reset form
       setSelectedCourses([]);
       setCourseDetails({});
       setEmail("");
@@ -579,363 +554,371 @@ const CreateUser = () => {
     }
   };
 
+  /* ─── Shared input helpers ─────────────────── */
+  const inputBase =
+    "block w-full py-3 px-4 text-sm text-gray-900 placeholder-gray-400 bg-gray-50/80 border rounded-xl transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2";
+
+  const inputState = (state: "error" | "warn" | "ok" | "default") => {
+    if (state === "error")
+      return "border-red-400 focus:ring-red-200 focus:border-red-500";
+    if (state === "warn")
+      return "border-amber-400 focus:ring-amber-200 focus:border-amber-500";
+    if (state === "ok")
+      return "border-emerald-400 focus:ring-emerald-200 focus:border-emerald-500";
+    return "border-gray-200 hover:border-[#AB2F30]/40 focus:ring-[#AB2F30]/15 focus:border-[#AB2F30]";
+  };
+
+  /* ─── Section card wrapper ─────────────────── */
   return (
     <>
       <main
         role="main"
         aria-label="Assign PRN & Enroll Courses Page"
-        className="min-h-screen bg-white mt-8"
+        className="min-h-screen bg-[#f8f8f8]"
       >
-        <div className="min-h-screen py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
-          <Toaster
-            position="top-center"
-            reverseOrder={false}
-            toastOptions={{
-              duration: 5000,
-              style: {
-                background: "#FFF",
-                color: "#333",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-                borderRadius: "16px",
-                padding: "20px",
-                border: "1px solid rgba(255,255,255,0.2)",
-              },
-              success: {
-                iconTheme: {
-                  primary: "#10B981",
-                  secondary: "#FFF",
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: "#EF4444",
-                  secondary: "#FFF",
-                },
-              },
-            }}
-          />
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          toastOptions={{
+            duration: 5000,
+            style: {
+              background: "#fff",
+              color: "#1f2937",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              borderRadius: "14px",
+              padding: "14px 18px",
+              fontSize: "13.5px",
+              fontWeight: 500,
+              border: "1px solid #f0f0f0",
+            },
+            success: { iconTheme: { primary: "#10B981", secondary: "#fff" } },
+            error: { iconTheme: { primary: "#EF4444", secondary: "#fff" } },
+          }}
+        />
 
-          {/* Header Section */}
-          <div className="max-w-7xl mx-auto mb-6 sm:mb-8 md:mb-12 md:mt-4">
-            <div className="text-center transform transition-all duration-500">
-              {/* Main Icon */}
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight gradient-text mb-3 sm:mb-4">
-                Assign PRN & Enroll Courses
-              </h2>
-            </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-4">
+          {/* ── Page Header ─────────────────── */}
+          <div className="mb-10 text-center">
+            <span className="inline-flex items-center gap-1.5 bg-[#AB2F30]/8 text-[#AB2F30] text-[11px] font-bold tracking-widest uppercase px-3.5 py-1.5 rounded-full border border-[#AB2F30]/15 mb-5">
+              <Sparkles className="h-3 w-3" />
+              Admin Portal
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3 leading-tight">
+              Assign PRN &amp;{" "}
+              <span className="text-[#AB2F30]">Enroll Courses</span>
+            </h1>
+            <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
+              Create a student account, assign a unique PRN, and select courses
+              — all in one step.
+            </p>
           </div>
 
-          {/* Form Container */}
-          <div className="max-w-6xl mx-auto">
-            <form
-              className="space-y-8 sm:space-y-10 md:space-y-12"
-              onSubmit={handleEnrollCourses}
+          <form className="space-y-5" onSubmit={handleEnrollCourses}>
+            {/* ── Student Information ──────── */}
+            <SectionCard
+              icon={<UserIcon className="h-4 w-4 text-white" />}
+              title="Student Information"
+              subtitle="Basic account and identity details"
             >
-              {/* Student Information Section */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-3 sm:p-4 md:p-6 lg:p-8">
-                <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 mb-4 sm:mb-6 md:mb-8">
-                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl">
-                    <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Student Name */}
+                <div className="relative">
+                  <label
+                    htmlFor="student-name"
+                    className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    Student Name <span className="text-[#AB2F30]">*</span>
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <input
+                      id="student-name"
+                      name="studentName"
+                      type="text"
+                      autoComplete="name"
+                      required
+                      className={`${inputBase} pl-10 pr-10 ${
+                        searchingStudents
+                          ? inputState("warn")
+                          : studentSuggestions.length > 0
+                            ? inputState("ok")
+                            : inputState("default")
+                      }`}
+                      placeholder="Search or enter name"
+                      value={studentName}
+                      onChange={(e) => setStudentName(e.target.value)}
+                      onFocus={() =>
+                        studentSuggestions.length > 0 &&
+                        setShowSuggestions(true)
+                      }
+                      onBlur={() =>
+                        setTimeout(() => setShowSuggestions(false), 200)
+                      }
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      {searchingStudents ? (
+                        <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                      ) : studentSuggestions.length > 0 ? (
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                      ) : null}
+                    </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800">
-                    Student Information
-                  </h3>
+                  {searchingStudents && (
+                    <p className="mt-1.5 text-[11px] text-amber-600 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Searching…
+                    </p>
+                  )}
+
+                  {/* Autocomplete suggestions */}
+                  {showSuggestions && studentSuggestions.length > 0 && (
+                    <div className="absolute z-30 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-52 overflow-y-auto divide-y divide-gray-50">
+                      {studentSuggestions.map((student) => (
+                        <div
+                          key={student.id}
+                          className="flex items-center justify-between px-4 py-3 hover:bg-[#AB2F30]/4 cursor-pointer transition-colors duration-100"
+                          onMouseDown={() =>
+                            void populateStudentContext(student)
+                          }
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {student.name}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {student.email}
+                            </p>
+                          </div>
+                          <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-                  <div className="group relative">
-                    <label
-                      htmlFor="student-name"
-                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
-                    >
-                      Student Name *
-                    </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
-                      <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
-                        <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
-                      </div>
-                      <input
-                        id="student-name"
-                        name="studentName"
-                        type="text"
-                        autoComplete="name"
-                        required
-                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
-                          searchingStudents
-                            ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
-                            : studentName && studentSuggestions.length > 0
-                              ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
-                              : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
-                        }`}
-                        placeholder="Enter student name to search"
-                        value={studentName}
-                        onChange={(e) => setStudentName(e.target.value)}
-                        onFocus={() =>
-                          studentSuggestions.length > 0 &&
-                          setShowSuggestions(true)
-                        }
-                        onBlur={() =>
-                          setTimeout(() => setShowSuggestions(false), 200)
-                        }
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
-                        {searchingStudents ? (
-                          <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                        ) : studentName && studentSuggestions.length > 0 ? (
-                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-                        ) : null}
-                      </div>
-                    </div>
-                    {searchingStudents && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-yellow-600 flex items-center space-x-1.5 sm:space-x-2">
-                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Searching students...</span>
-                      </p>
-                    )}
-                    {showSuggestions && studentSuggestions.length > 0 && (
-                      <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                        {studentSuggestions.map((student) => (
-                          <div
-                            key={student.id}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
-                            onMouseDown={() => {
-                              void populateStudentContext(student);
-                            }}
-                          >
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {student.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {student.email}
-                              </div>
-                            </div>
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="group">
-                    <label
-                      htmlFor="email-address"
-                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
-                    >
-                      Email Address
-                    </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
-                      <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
-                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
-                      </div>
-                      <input
-                        id="email-address"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        className={`block w-full pl-8 sm:pl-10 md:pl-12 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
-                          emailExists
-                            ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
-                            : emailChecking
-                              ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
-                              : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
-                        }`}
-                        placeholder="Enter student email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
-                        {emailChecking ? (
-                          <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                        ) : emailExists ? (
-                          <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#AB2F30]" />
-                        ) : null}
-                      </div>
-                    </div>
-                    {emailChecking && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-yellow-600 flex items-center space-x-1.5 sm:space-x-2">
-                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Checking email...</span>
-                      </p>
-                    )}
-                    {emailExists && !emailChecking && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-[#AB2F30] flex items-center space-x-1.5 sm:space-x-2">
-                        <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>Already have an account. You can't create another one.</span>
-                      </p>
-                    )}
-                  </div>
-                  <div className="group">
-                    <label
-                      htmlFor="password"
-                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
-                    >
-                      Password *
-                    </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
-                      <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
-                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-[#AB2F30] transition-colors duration-200" />
-                      </div>
-                      <input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        className="block w-full pl-8 sm:pl-10 md:pl-12 pr-16 sm:pr-16 md:pr-16 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
-                        placeholder="Create password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
-                        ) : (
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-                        )}
-                      </button>
-                    </div>
-                    <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">
-                      Minimum 6 characters. Student will use this to log in.
-                    </p>
-                  </div>
-                  <div className="group">
-                    <label
-                      htmlFor="prn-number"
-                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-red-600 transition-colors duration-200"
-                    >
-                      PRN Number *
-                    </label>
-                    <div className="relative transform transition-all duration-300 hover:scale-[1.02]">
-                      <input
-                        id="prn-number"
-                        name="prn"
-                        type="text"
-                        required
-                        className={`block w-full pl-3 sm:pl-4 pr-8 sm:pr-10 md:pr-12 py-2.5 sm:py-3 md:py-4 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white ${
-                          prnExists
-                            ? "border-[#AB2F30] focus:ring-[#AB2F30]/20 focus:border-[#AB2F30]"
-                            : prnChecking || prnAutoGenerating
-                              ? "border-yellow-500 focus:ring-yellow-500/20 focus:border-yellow-500"
-                              : PrnNumber && !prnExists
-                                ? "border-green-500 focus:ring-green-500/20 focus:border-green-500"
-                                : "border-gray-200 focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
-                        }`}
-                        placeholder="PRN will be generated automatically"
-                        value={PrnNumber}
-                        onChange={(e) => setPrnNumber(e.target.value)}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
-                        {prnChecking || prnAutoGenerating ? (
-                          <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                        ) : prnExists ? (
-                          <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#AB2F30]" />
-                        ) : PrnNumber && !prnExists ? (
-                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-                        ) : null}
-                      </div>
-                    </div>
-                    {(prnChecking || prnAutoGenerating) && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-yellow-600 flex items-center space-x-1.5 sm:space-x-2">
-                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                        <span>
-                          {prnAutoGenerating
-                            ? "Generating next PRN number..."
-                            : "Checking PRN availability..."}
-                        </span>
-                      </p>
-                    )}
-                    {prnExists && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-[#AB2F30] flex items-center space-x-1.5 sm:space-x-2">
-                        <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>This PRN number is already assigned</span>
-                      </p>
-                    )}
-                    {PrnNumber && !prnExists && !prnChecking && !prnAutoGenerating && (
-                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-green-600 flex items-center space-x-1.5 sm:space-x-2">
-                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span>PRN number is ready. You can still edit it manually.</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="group">
-                    <label
-                      className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 group-hover:text-[#AB2F30] transition-colors duration-200"
-                    >
-                      Center *
-                    </label>
-                    <Dropdown
-                      options={centerOptions}
-                      value={selectedCenter}
-                      onChange={(value) => {
-                        void handleCenterChange(value);
-                      }}
-                      placeholder="Select center"
-                      size="md"
-                      className="w-full"
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email-address"
+                    className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    Email Address <span className="text-[#AB2F30]">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <input
+                      id="email-address"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      className={`${inputBase} pl-10 pr-10 ${
+                        emailExists
+                          ? inputState("error")
+                          : emailChecking
+                            ? inputState("warn")
+                            : inputState("default")
+                      }`}
+                      placeholder="student@gmail.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
-                    <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">
-                      PRN generation uses the selected center prefix.
-                    </p>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      {emailChecking ? (
+                        <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                      ) : emailExists ? (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      ) : null}
+                    </span>
                   </div>
+                  {emailChecking && (
+                    <p className="mt-1.5 text-[11px] text-amber-600 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Checking
+                      availability…
+                    </p>
+                  )}
+                  {emailExists && !emailChecking && (
+                    <p className="mt-1.5 text-[11px] text-red-500 flex items-center gap-1">
+                      <XCircle className="h-3 w-3" /> Account already exists
+                      with this email.
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    Password <span className="text-[#AB2F30]">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className={`${inputBase} pl-10 pr-10 ${inputState("default")}`}
+                      placeholder="Min. 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-gray-400">
+                    Student will use this password to log in.
+                  </p>
+                </div>
+
+                {/* PRN Number */}
+                <div>
+                  <label
+                    htmlFor="prn-number"
+                    className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    PRN Number <span className="text-[#AB2F30]">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="prn-number"
+                      name="prn"
+                      type="text"
+                      required
+                      className={`${inputBase} pl-4 pr-10 font-mono tracking-wide ${
+                        prnExists
+                          ? inputState("error")
+                          : prnChecking || prnAutoGenerating
+                            ? inputState("warn")
+                            : PrnNumber && !prnExists
+                              ? inputState("ok")
+                              : inputState("default")
+                      }`}
+                      placeholder="Auto-generated…"
+                      value={PrnNumber}
+                      onChange={(e) => setPrnNumber(e.target.value)}
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      {prnChecking || prnAutoGenerating ? (
+                        <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                      ) : prnExists ? (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      ) : PrnNumber && !prnExists ? (
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                      ) : null}
+                    </span>
+                  </div>
+                  {(prnChecking || prnAutoGenerating) && (
+                    <p className="mt-1.5 text-[11px] text-amber-600 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      {prnAutoGenerating
+                        ? "Generating PRN…"
+                        : "Checking availability…"}
+                    </p>
+                  )}
+                  {prnExists && (
+                    <p className="mt-1.5 text-[11px] text-red-500 flex items-center gap-1">
+                      <XCircle className="h-3 w-3" /> Already assigned to
+                      another student.
+                    </p>
+                  )}
+                  {PrnNumber &&
+                    !prnExists &&
+                    !prnChecking &&
+                    !prnAutoGenerating && (
+                      <p className="mt-1.5 text-[11px] text-emerald-600 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" /> Available — editable
+                        if needed.
+                      </p>
+                    )}
+                </div>
+
+                {/* Center */}
+                <div className="md:col-span-2 sm:max-w-xs">
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Center <span className="text-[#AB2F30]">*</span>
+                  </label>
+                  <Dropdown
+                    options={centerOptions}
+                    value={selectedCenter}
+                    onChange={(value) => void handleCenterChange(value)}
+                    placeholder="Select center"
+                    size="md"
+                    className="w-full"
+                  />
+                  <p className="mt-1.5 text-[11px] text-gray-400">
+                    PRN prefix is determined by the selected center.
+                  </p>
                 </div>
               </div>
+            </SectionCard>
 
-              {/* Course Selection Section */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-3 sm:p-4 md:p-6 lg:p-8">
-                <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 mb-4 sm:mb-6 md:mb-8">
-                  <div className="bg-gradient-to-r from-[#AB2F30] to-[#8B1A1B] p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl">
-                    <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
-                  </div>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800">
-                    Course Enrollment
-                  </h3>
+            {/* ── Course Enrollment ────────── */}
+            <SectionCard
+              icon={<BookOpen className="h-4 w-4 text-white" />}
+              title="Course Enrollment"
+              subtitle="Select one or more courses to enroll"
+              badge={
+                selectedCourses.length > 0 ? (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#AB2F30]/10 text-[#AB2F30] text-[11px] font-bold">
+                    {selectedCourses.length} selected
+                  </span>
+                ) : undefined
+              }
+            >
+              <div className="space-y-4">
+                {/* Search */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search courses by name or category…"
+                    value={courseSearchQuery}
+                    onChange={(e) => setCourseSearchQuery(e.target.value)}
+                    className={`${inputBase} pl-4 pr-10 ${inputState("default")}`}
+                  />
+                  {courseSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCourseSearchQuery("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
 
-                {/* Course Selection */}
-                <div className="group">
-                  <label
-                    htmlFor="course"
-                    className="block text-xs sm:text-sm md:text-base font-semibold text-gray-700 mb-2 sm:mb-3 md:mb-4 group-hover:text-[#AB2F30] transition-colors duration-200"
-                  >
-                    Select Courses *
-                  </label>
-                  <div className="relative transform transition-all duration-300 mb-3">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Search courses..."
-                        value={courseSearchQuery}
-                        onChange={(e) => setCourseSearchQuery(e.target.value)}
-                        className="w-full pl-4 pr-10 py-2.5 border-2 border-gray-200 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-300 bg-white focus:ring-[#AB2F30]/20 focus:border-[#AB2F30] hover:border-[#AB2F30]/50"
-                      />
-                      {courseSearchQuery && (
-                        <button
-                          type="button"
-                          onClick={() => setCourseSearchQuery("")}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <XCircle className="h-5 w-5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="relative transform transition-all duration-300">
-                    <div className="max-h-48 sm:max-h-56 md:max-h-64 overflow-y-auto border-2 border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 bg-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                        {filteredCourses.map((courseName) => (
-                          <div
+                {/* Course checklist */}
+                <div className="border border-gray-100 rounded-xl max-h-56 overflow-y-auto bg-gray-50/40 p-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                  {filteredCourses.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-8">
+                      No courses match your search.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
+                      {filteredCourses.map((courseName) => {
+                        const checked = selectedCourses.includes(courseName);
+                        return (
+                          <label
                             key={courseName}
-                            className="flex items-center space-x-2 sm:space-x-3 p-1.5 sm:p-2 hover:bg-gray-50 rounded-lg sm:rounded-xl transition-colors duration-200"
+                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer select-none text-xs leading-tight transition-all duration-150 border ${
+                              checked
+                                ? "bg-[#AB2F30]/6 border-[#AB2F30]/25 text-[#AB2F30] font-semibold"
+                                : "bg-white border-gray-100 text-gray-600 hover:border-[#AB2F30]/25 hover:bg-[#AB2F30]/3"
+                            } ${!email.trim() ? "opacity-40 cursor-not-allowed" : ""}`}
                           >
                             <input
                               type="checkbox"
                               id={`course-${courseName}`}
-                              checked={selectedCourses.includes(courseName)}
+                              checked={checked}
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   setSelectedCourses((prev) => [
@@ -952,7 +935,7 @@ const CreateUser = () => {
                                   }));
                                 } else {
                                   setSelectedCourses((prev) =>
-                                    prev.filter((c) => c !== courseName)
+                                    prev.filter((c) => c !== courseName),
                                   );
                                   setCourseDetails((prev) => {
                                     const newState = { ...prev };
@@ -961,193 +944,188 @@ const CreateUser = () => {
                                   });
                                 }
                               }}
-                              className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#AB2F30] focus:ring-[#AB2F30] border-gray-300 rounded transition-all duration-200"
                               disabled={!email.trim()}
+                              className="h-3.5 w-3.5 rounded accent-[#AB2F30] shrink-0"
                             />
-                            <label
-                              htmlFor={`course-${courseName}`}
-                              className="text-xs sm:text-sm text-gray-700 cursor-pointer select-none flex-grow hover:text-[#AB2F30] transition-colors duration-200"
-                            >
-                              {courseName}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Selected Courses Details */}
-                  {selectedCourses.length > 0 && (
-                    <div className="mt-4 sm:mt-6 md:mt-8 space-y-3 sm:space-y-4 md:space-y-6">
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold text-gray-700 flex items-center space-x-2 sm:space-x-3">
-                        <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-                        <span>
-                          Course Details ({selectedCourses.length} selected)
-                        </span>
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-                        {selectedCourses.map((courseName) => (
-                          <div
-                            key={courseName}
-                            className="p-3 sm:p-4 md:p-6 border-2 border-gray-200 rounded-xl sm:rounded-2xl bg-gradient-to-br from-gray-50 to-white shadow-sm hover:shadow-md transition-all duration-300"
-                          >
-                            <div className="flex justify-between items-start mb-2 sm:mb-3 md:mb-4">
-                              <h5 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">
-                                {courseName}
-                              </h5>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedCourses((prev) =>
-                                    prev.filter((c) => c !== courseName)
-                                  );
-                                  setCourseDetails((prev) => {
-                                    const newState = { ...prev };
-                                    delete newState[courseName];
-                                    return newState;
-                                  });
-                                }}
-                                className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full hover:bg-[#AB2F30]/10 focus:outline-none transition-colors duration-200"
-                              >
-                                <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-gray-500 hover:text-[#AB2F30]" />
-                              </button>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 w-full">
-                              <Dropdown
-                                options={[
-                                  { value: "1", label: "Level 1" },
-                                  { value: "2", label: "Level 2" },
-                                  { value: "3", label: "Level 3" },
-                                  { value: "4", label: "Level 4" },
-                                  { value: "5", label: "Level 5" },
-                                  { value: "6", label: "Level 6" },
-                                  { value: "7", label: "Level 7" },
-                                  { value: "8", label: "Level 8" },
-                                  { value: "9", label: "Level 9" },
-                                  { value: "10", label: "Level 10" },
-                                ]}
-                                value={courseDetails[courseName]?.level || "1"}
-                                onChange={(value) =>
-                                  setCourseDetails((prev) => ({
-                                    ...prev,
-                                    [courseName]: {
-                                      ...prev[courseName],
-                                      level: value,
-                                    },
-                                  }))
-                                }
-                                size="sm"
-                                className="w-full"
-                              />
-                              <input
-                                type="number"
-                                min="1"
-                                max="30"
-                                value={
-                                  courseDetails[courseName]?.classNumber || ""
-                                }
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  // Ensure the value is between 1 and 30
-                                  if (
-                                    value === "" ||
-                                    (parseInt(value) >= 1 &&
-                                      parseInt(value) <= 30)
-                                  ) {
-                                    setCourseDetails((prev) => ({
-                                      ...prev,
-                                      [courseName]: {
-                                        ...prev[courseName],
-                                        classNumber: value,
-                                      },
-                                    }));
-                                  }
-                                }}
-                                placeholder="classes (1-30)"
-                                className="w-full px-2 py-1.5 sm:px-2.5 sm:py-2 md:px-1 md:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
-                              />
-                              <Dropdown
-                                options={[
-                                  { value: "ongoing", label: "Ongoing" },
-                                  { value: "complete", label: "Complete" },
-                                ]}
-                                value={
-                                  courseDetails[courseName]?.status || "ongoing"
-                                }
-                                onChange={(value) =>
-                                  setCourseDetails((prev) => ({
-                                    ...prev,
-                                    [courseName]: {
-                                      ...prev[courseName],
-                                      status: value,
-                                    },
-                                  }))
-                                }
-                                size="sm"
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                            {courseName}
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
+
+                {!email.trim() && (
+                  <p className="text-[11px] text-amber-600 flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3" /> Enter an email address first
+                    to enable course selection.
+                  </p>
+                )}
+
+                {/* Course detail cards */}
+                {selectedCourses.length > 0 && (
+                  <div className="pt-1 space-y-3">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <BookOpen className="h-3 w-3" /> Configure enrolled
+                      courses
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedCourses.map((courseName) => (
+                        <div
+                          key={courseName}
+                          className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 hover:border-[#AB2F30]/15 transition-colors duration-200"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <p className="text-sm font-semibold text-gray-800 leading-snug pr-2">
+                              {courseName}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedCourses((prev) =>
+                                  prev.filter((c) => c !== courseName),
+                                );
+                                setCourseDetails((prev) => {
+                                  const newState = { ...prev };
+                                  delete newState[courseName];
+                                  return newState;
+                                });
+                              }}
+                              className="shrink-0 p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors duration-150"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <Dropdown
+                              options={[
+                                { value: "1", label: "Level 1" },
+                                { value: "2", label: "Level 2" },
+                                { value: "3", label: "Level 3" },
+                                { value: "4", label: "Level 4" },
+                                { value: "5", label: "Level 5" },
+                                { value: "6", label: "Level 6" },
+                                { value: "7", label: "Level 7" },
+                                { value: "8", label: "Level 8" },
+                                { value: "9", label: "Level 9" },
+                                { value: "10", label: "Level 10" },
+                              ]}
+                              value={courseDetails[courseName]?.level || "1"}
+                              onChange={(value) =>
+                                setCourseDetails((prev) => ({
+                                  ...prev,
+                                  [courseName]: {
+                                    ...prev[courseName],
+                                    level: value,
+                                  },
+                                }))
+                              }
+                              size="sm"
+                              className="w-full"
+                            />
+                            <input
+                              type="number"
+                              min="1"
+                              max="30"
+                              value={
+                                courseDetails[courseName]?.classNumber || ""
+                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (
+                                  value === "" ||
+                                  (parseInt(value) >= 1 &&
+                                    parseInt(value) <= 30)
+                                ) {
+                                  setCourseDetails((prev) => ({
+                                    ...prev,
+                                    [courseName]: {
+                                      ...prev[courseName],
+                                      classNumber: value,
+                                    },
+                                  }));
+                                }
+                              }}
+                              placeholder="Classes"
+                              className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#AB2F30]/15 focus:border-[#AB2F30] placeholder-gray-400 transition-all duration-150"
+                            />
+                            <Dropdown
+                              options={[
+                                { value: "ongoing", label: "Ongoing" },
+                                { value: "complete", label: "Complete" },
+                              ]}
+                              value={
+                                courseDetails[courseName]?.status || "ongoing"
+                              }
+                              onChange={(value) =>
+                                setCourseDetails((prev) => ({
+                                  ...prev,
+                                  [courseName]: {
+                                    ...prev[courseName],
+                                    status: value,
+                                  },
+                                }))
+                              }
+                              size="sm"
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+            </SectionCard>
 
-              {/* Success Message */}
-              {enrollmentSuccess && (
-                <div className="text-green-600 text-xs sm:text-sm md:text-base bg-gradient-to-r from-green-500/10 to-green-600/10 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-green-500/20 flex items-start space-x-3 sm:space-x-4">
-                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="font-medium">
-                    PRN assigned and courses enrolled successfully! Student has
-                    been updated with the PRN number and selected courses.
-                  </span>
-                </div>
-              )}
-
-              {/* Error Display */}
-              {error && (
-                <div className="text-[#AB2F30] text-xs sm:text-sm md:text-base bg-gradient-to-r from-[#AB2F30]/10 to-[#8B1A1B]/10 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-[#AB2F30]/20 flex items-start space-x-3 sm:space-x-4 animate-pulse">
-                  <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-[#AB2F30] mt-0.5 flex-shrink-0" />
-                  <span className="font-medium">{error}</span>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <div className="pt-4 sm:pt-6 md:pt-8 text-center">
-                <button
-                  type="submit"
-                  disabled={
-                    enrolling ||
-                    !email ||
-                    !password ||
-                    !studentName ||
-                    !PrnNumber ||
-                    selectedCourses.length === 0 ||
-                    emailExists ||
-                    emailChecking ||
-                    prnExists ||
-                    prnAutoGenerating
-                  }
-                  className="group relative w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto flex justify-center py-2.5 sm:py-3.5 md:py-4 px-4 sm:px-6 md:px-8 border border-transparent rounded-xl sm:rounded-2xl text-white bg-gradient-to-r from-red-700 via-red-800 to-[#6B1516] hover:from-[#8B1A1B] hover:via-[#6B1516] hover:to-[#4B0F10] focus:outline-none focus:ring-4 focus:ring-[#AB2F30]/30 transition-all duration-300 font-semibold text-sm sm:text-base md:text-lg shadow-lg disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
-                >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-4 sm:pl-6 md:pl-8">
-                    {enrolling ? (
-                      <Loader2 className="animate-spin h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white/80" />
-                    ) : (
-                      <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white/80 group-hover:text-white transition-colors duration-200" />
-                    )}
-                  </span>
-                  <span className="pl-6 sm:pl-8 md:pl-10">
-                    {enrolling
-                      ? "Processing..."
-                      : "Assign PRN & Enroll Courses"}
-                  </span>
-                </button>
+            {/* ── Feedback ─────────────────── */}
+            {enrollmentSuccess && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+                <CheckCircle className="h-5 w-5 shrink-0 mt-0.5 text-emerald-500" />
+                PRN assigned and courses enrolled successfully! Student account
+                is now active.
               </div>
-            </form>
-          </div>
+            )}
+
+            {error && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+                <XCircle className="h-5 w-5 shrink-0 mt-0.5 text-red-500" />
+                {error}
+              </div>
+            )}
+
+            {/* ── Submit ───────────────────── */}
+            <div className="flex justify-center pt-2 pb-6">
+              <button
+                type="submit"
+                disabled={
+                  enrolling ||
+                  !email ||
+                  !password ||
+                  !studentName ||
+                  !PrnNumber ||
+                  selectedCourses.length === 0 ||
+                  emailExists ||
+                  emailChecking ||
+                  prnExists ||
+                  prnAutoGenerating
+                }
+                className="inline-flex items-center justify-center gap-2.5 px-10 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#AB2F30] hover:bg-[#8B1A1B] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#AB2F30]/20 hover:shadow-lg hover:shadow-[#AB2F30]/25 transition-all duration-200 min-w-[200px]"
+              >
+                {enrolling ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing…
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="h-4 w-4" />
+                    Create Account
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </main>
     </>

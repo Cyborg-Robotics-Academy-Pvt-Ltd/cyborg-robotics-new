@@ -1,5 +1,12 @@
 "use client";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useDeferredValue,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -11,36 +18,32 @@ import {
   GraduationCap,
   ClipboardCheck,
   UserRoundPlus,
-  RotateCw,
   ArrowRight,
   Sparkles,
   RefreshCw,
   User,
   Shield,
+  Search,
   BookOpen,
-  Gamepad2,
-  Settings,
   TrendingUp,
   Users,
   DollarSign,
-  ShoppingCart,
   ArrowUpRight,
   ArrowDownRight,
-  MoreVertical,
   Activity,
   CreditCard,
   Download,
-  AlertTriangle,
   Clock3,
   CheckCircle2,
+  CalendarRange,
+  Filter as FilterIcon,
+  ChevronDown,
+  X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import Head from "next/head";
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -58,8 +61,8 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ChartContainer,
   ChartTooltip,
@@ -74,6 +77,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Theme configurations
 const themes: Record<
@@ -169,16 +180,6 @@ const enrollmentData = [
   { month: "Jul", enrollments: 84, courses: 25 },
 ];
 
-const visitData = [
-  { day: "Mon", visits: 240 },
-  { day: "Tue", visits: 140 },
-  { day: "Wed", visits: 320 },
-  { day: "Thu", visits: 280 },
-  { day: "Fri", visits: 350 },
-  { day: "Sat", visits: 190 },
-  { day: "Sun", visits: 220 },
-];
-
 const chartConfig = {
   enrollments: {
     label: "Enrollments",
@@ -187,10 +188,6 @@ const chartConfig = {
   courses: {
     label: "Courses",
     color: "#8B1A1B",
-  },
-  visits: {
-    label: "Visits",
-    color: "#AB2F30",
   },
 };
 
@@ -233,42 +230,177 @@ const getRelativeTime = (date: Date) => {
   return `${minutesAgo} min${minutesAgo !== 1 ? "s" : ""} ago`;
 };
 
-  const extractAmount = (value: unknown) => {
-    if (typeof value === "number") return value;
-    if (typeof value === "string") {
-      const cleaned = Number(value.replace(/[^0-9.-]+/g, ""));
-      return Number.isFinite(cleaned) ? cleaned : 0;
-    }
-    return 0;
-  };
+const extractAmount = (value: unknown) => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const cleaned = Number(value.replace(/[^0-9.-]+/g, ""));
+    return Number.isFinite(cleaned) ? cleaned : 0;
+  }
+  return 0;
+};
 
-  const hasTrainerAssignment = (student: Record<string, any>) => {
-    const hasValue = (value: unknown) =>
-      typeof value === "string" ? value.trim().length > 0 : Boolean(value);
+const hasTrainerAssignment = (student: Record<string, any>) => {
+  const hasValue = (value: unknown) =>
+    typeof value === "string" ? value.trim().length > 0 : Boolean(value);
 
-    if (hasValue(student.trainerId) || hasValue(student.trainerName)) {
-      return true;
-    }
+  if (hasValue(student.trainerId) || hasValue(student.trainerName)) {
+    return true;
+  }
 
-    const courseTrainers = Array.isArray(student.courseTrainers)
-      ? student.courseTrainers
-      : [];
-    if (
-      courseTrainers.some(
-        (courseTrainer: Record<string, any>) =>
-          hasValue(courseTrainer?.trainerId) ||
-          hasValue(courseTrainer?.trainerName),
-      )
-    ) {
-      return true;
-    }
+  const courseTrainers = Array.isArray(student.courseTrainers)
+    ? student.courseTrainers
+    : [];
+  if (
+    courseTrainers.some(
+      (courseTrainer: Record<string, any>) =>
+        hasValue(courseTrainer?.trainerId) ||
+        hasValue(courseTrainer?.trainerName),
+    )
+  ) {
+    return true;
+  }
 
-    const courses = Array.isArray(student.courses) ? student.courses : [];
-    return courses.some(
+  const courses = Array.isArray(student.courses) ? student.courses : [];
+  return courses.some(
+    (course: Record<string, any>) =>
+      hasValue(course?.trainerId) || hasValue(course?.trainerName),
+  );
+};
+
+const getStudentCreatedDate = (student: Record<string, any>) => {
+  const createdAt = student.createdAt;
+  if (!createdAt) return null;
+
+  const createdDate = createdAt.toDate
+    ? createdAt.toDate()
+    : new Date(createdAt);
+  return Number.isNaN(createdDate.getTime()) ? null : createdDate;
+};
+
+const getStudentCenter = (student: Record<string, any>) =>
+  String(student.center || student.location || "").trim();
+
+const getStudentCourses = (student: Record<string, any>) => {
+  const courses = Array.isArray(student.courses) ? student.courses : [];
+  return courses
+    .map((course: any) =>
+      typeof course === "string"
+        ? course.trim()
+        : String(course?.name || "").trim(),
+    )
+    .filter(Boolean);
+};
+
+const getStudentTrainer = (student: Record<string, any>) => {
+  const directTrainer = String(student.trainerName || "").trim();
+  if (directTrainer) return directTrainer;
+
+  const courses = Array.isArray(student.courses) ? student.courses : [];
+  const courseTrainer = courses.find((course: Record<string, any>) =>
+    Boolean(String(course?.trainerName || "").trim()),
+  );
+
+  return String(courseTrainer?.trainerName || "").trim();
+};
+
+const toCourseSlug = (courseName?: string, level?: string) => {
+  if (typeof courseName !== "string" || !courseName) return "";
+
+  let slug = courseName
+    .toLowerCase()
+    .replace(/ & /g, "-and-")
+    .replace(/ \+ /g, "-plus-")
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, "");
+
+  if (level) {
+    let levelText = level;
+    if (level === "1") levelText = "beginner";
+    else if (level === "2") levelText = "intermediate";
+    else if (level === "3") levelText = "advanced";
+    else if (level === "4") levelText = "expert";
+
+    slug += `-level-${levelText}`;
+  }
+
+  return slug;
+};
+
+const getStudentCourseDetailUrl = (student: Record<string, any>) => {
+  const prnNumber = String(student.PrnNumber || student.prnNumber || "").trim();
+  if (!prnNumber) return null;
+
+  const courses = Array.isArray(student.courses) ? student.courses : [];
+  const primaryCourse =
+    courses.find(
       (course: Record<string, any>) =>
-        hasValue(course?.trainerId) || hasValue(course?.trainerName),
-    );
-  };
+        course?.completed !== true &&
+        (!course?.status || String(course.status).toLowerCase() !== "complete"),
+    ) || courses[0];
+
+  const courseName = String(
+    primaryCourse?.name || primaryCourse?.courseName || "",
+  ).trim();
+
+  if (!courseName) return `/${prnNumber}`;
+
+  const courseSlug = toCourseSlug(
+    courseName,
+    String(primaryCourse?.level || "").trim() || undefined,
+  );
+
+  return courseSlug ? `/${prnNumber}/${courseSlug}` : `/${prnNumber}`;
+};
+
+const getRangeMonths = (range: string) =>
+  range === "3_months" ? 3 : range === "6_months" ? 6 : 12;
+
+const getQuarterStart = (date: Date) =>
+  new Date(date.getFullYear(), Math.floor(date.getMonth() / 3) * 3, 1);
+
+const getTimestampDate = (value: unknown) => {
+  if (!value) return null;
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toDate" in value &&
+    typeof (value as { toDate: () => Date }).toDate === "function"
+  ) {
+    const date = (value as { toDate: () => Date }).toDate();
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  if (typeof value === "string" || value instanceof Date) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  return null;
+};
+
+const getRegistrationCreatedDate = (registration: Record<string, any>) =>
+  getTimestampDate(
+    registration.createdAt ||
+      registration.dateOfRegistration ||
+      registration.registrationDate ||
+      registration.dateOfJoining,
+  );
+
+const getPaymentCreatedDate = (payment: Record<string, any>) =>
+  getTimestampDate(payment.registrationCreatedAt || payment.createdAt);
+
+const formatDateLabel = (value?: string | null) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -308,22 +440,554 @@ const AdminDashboard = () => {
     monthlyGrowth: 0,
   });
   const [loadingOverview, setLoadingOverview] = useState(true);
+  const [registrationRecords, setRegistrationRecords] = useState<any[]>([]);
+  const [paymentRecords, setPaymentRecords] = useState<any[]>([]);
 
   // State for recent activity data
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
 
   // State for enrollment trends
+  const [enrollmentTrendStudents, setEnrollmentTrendStudents] = useState<any[]>(
+    [],
+  );
   const [enrollmentTrends, setEnrollmentTrends] = useState<any[]>([]);
   const [loadingTrends, setLoadingTrends] = useState(true);
+  const [enrollmentRangeFilter, setEnrollmentRangeFilter] =
+    useState("12_months");
+  const [enrollmentGranularityFilter, setEnrollmentGranularityFilter] =
+    useState("monthly");
+  const [enrollmentCenterFilter, setEnrollmentCenterFilter] = useState("");
+  const [enrollmentCourseFilter, setEnrollmentCourseFilter] = useState("");
+  const [enrollmentTrainerFilter, setEnrollmentTrainerFilter] = useState("");
 
   // State for course category data
   const [courseCategoryData, setCourseCategoryData] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [isGlobalSearchFocused, setIsGlobalSearchFocused] = useState(false);
+  const deferredGlobalSearchQuery = useDeferredValue(globalSearchQuery);
+  const globalSearchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // State for weekly activity
-  const [weeklyActivity, setWeeklyActivity] = useState<any[]>([]);
-  const [loadingWeeklyActivity, setLoadingWeeklyActivity] = useState(true);
+  const [drilldownOpen, setDrilldownOpen] = useState(false);
+  const [selectedDrilldownPoint, setSelectedDrilldownPoint] = useState<{
+    label: string;
+    periodStart: string;
+    periodEnd: string;
+  } | null>(null);
+
+  const openEnrollmentDrilldown = useCallback(
+    (payload?: Record<string, any>) => {
+      if (!payload?.periodStart || !payload?.periodEnd) return;
+
+      setSelectedDrilldownPoint({
+        label: String(payload.month || "Selected period"),
+        periodStart: String(payload.periodStart),
+        periodEnd: String(payload.periodEnd),
+      });
+      setDrilldownOpen(true);
+    },
+    [],
+  );
+
+  const enrollmentCenterOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        enrollmentTrendStudents
+          .map((student) => getStudentCenter(student))
+          .filter(Boolean),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [enrollmentTrendStudents]);
+
+  const enrollmentCourseOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        enrollmentTrendStudents.flatMap((student) =>
+          getStudentCourses(student),
+        ),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [enrollmentTrendStudents]);
+
+  const enrollmentTrainerOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        enrollmentTrendStudents
+          .map((student) => getStudentTrainer(student))
+          .filter(Boolean),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [enrollmentTrendStudents]);
+
+  const globalSearchResults = useMemo(() => {
+    const query = deferredGlobalSearchQuery.trim().toLowerCase();
+    if (!query) {
+      return { students: [], courses: [] };
+    }
+
+    const students = enrollmentTrendStudents
+      .filter((student) => {
+        const searchableText = [
+          student.fullName,
+          student.username,
+          student.studentName,
+          student.PrnNumber,
+          getStudentCenter(student),
+          getStudentTrainer(student),
+          ...getStudentCourses(student),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(query);
+      })
+      .slice(0, 5)
+      .map((student) => ({
+        id:
+          student.id ||
+          student.PrnNumber ||
+          student.username ||
+          student.fullName,
+        href: getStudentCourseDetailUrl(student),
+        label:
+          student.fullName ||
+          student.username ||
+          student.studentName ||
+          "Unnamed student",
+        meta: [
+          student.PrnNumber ? `PRN ${student.PrnNumber}` : null,
+          getStudentCourses(student)[0] || null,
+          getStudentCenter(student) || null,
+        ]
+          .filter(Boolean)
+          .join(" • "),
+      }));
+
+    const courses = enrollmentCourseOptions
+      .filter((course) => course.toLowerCase().includes(query))
+      .slice(0, 5)
+      .map((course) => ({
+        id: course,
+        label: course,
+        meta: "Filter enrollment overview by this course",
+      }));
+
+    return { students, courses };
+  }, [
+    deferredGlobalSearchQuery,
+    enrollmentCourseOptions,
+    enrollmentTrendStudents,
+  ]);
+
+  const hasGlobalSearchResults =
+    globalSearchResults.students.length > 0 ||
+    globalSearchResults.courses.length > 0;
+
+  const handleStudentSearchSelect = useCallback(
+    (href?: string | null) => {
+      setIsGlobalSearchFocused(false);
+      if (!href) {
+        router.push("/student-list");
+        return;
+      }
+      router.push(href);
+    },
+    [router],
+  );
+
+  const handleCourseSearchSelect = useCallback((course: string) => {
+    setGlobalSearchQuery(course);
+    setEnrollmentCourseFilter(course);
+    setIsGlobalSearchFocused(false);
+    document.getElementById("enrollment-overview")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!drilldownOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, [drilldownOpen]);
+
+  useEffect(() => {
+    const handleSearchShortcut = (event: KeyboardEvent) => {
+      if (
+        !(event.ctrlKey || event.metaKey) ||
+        event.key.toLowerCase() !== "k"
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      globalSearchInputRef.current?.focus();
+      setIsGlobalSearchFocused(true);
+    };
+
+    window.addEventListener("keydown", handleSearchShortcut);
+    return () => window.removeEventListener("keydown", handleSearchShortcut);
+  }, []);
+
+  const filteredEnrollmentTrends = useMemo(() => {
+    if (enrollmentTrendStudents.length === 0) {
+      return enrollmentTrends;
+    }
+
+    const now = new Date();
+    const rangeMonths = getRangeMonths(enrollmentRangeFilter);
+    const eligibleStudents = enrollmentTrendStudents.filter((student) => {
+      const createdDate = getStudentCreatedDate(student);
+      if (!createdDate) return false;
+
+      if (
+        enrollmentCenterFilter &&
+        getStudentCenter(student) !== enrollmentCenterFilter
+      ) {
+        return false;
+      }
+
+      if (
+        enrollmentCourseFilter &&
+        !getStudentCourses(student).includes(enrollmentCourseFilter)
+      ) {
+        return false;
+      }
+
+      if (
+        enrollmentTrainerFilter &&
+        getStudentTrainer(student) !== enrollmentTrainerFilter
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const trends: any[] = [];
+
+    if (enrollmentGranularityFilter === "daily") {
+      const totalDays = rangeMonths * 30;
+
+      for (let i = totalDays - 1; i >= 0; i--) {
+        const dayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - i,
+        );
+        dayStart.setHours(0, 0, 0, 0);
+
+        const dayEnd = new Date(dayStart);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        const enrollments = eligibleStudents.filter((student) => {
+          const createdDate = getStudentCreatedDate(student);
+          return (
+            createdDate && createdDate >= dayStart && createdDate <= dayEnd
+          );
+        }).length;
+
+        trends.push({
+          month: dayStart.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          enrollments,
+          courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          periodStart: dayStart.toISOString(),
+          periodEnd: dayEnd.toISOString(),
+        });
+      }
+
+      return trends;
+    }
+
+    if (enrollmentGranularityFilter === "weekly") {
+      const totalWeeks = Math.ceil((rangeMonths * 30) / 7);
+      const currentWeekStart = new Date(now);
+      currentWeekStart.setHours(0, 0, 0, 0);
+      currentWeekStart.setDate(
+        currentWeekStart.getDate() - currentWeekStart.getDay(),
+      );
+
+      for (let i = totalWeeks - 1; i >= 0; i--) {
+        const weekStart = new Date(currentWeekStart);
+        weekStart.setDate(currentWeekStart.getDate() - i * 7);
+        weekStart.setHours(0, 0, 0, 0);
+
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        const enrollments = eligibleStudents.filter((student) => {
+          const createdDate = getStudentCreatedDate(student);
+          return (
+            createdDate && createdDate >= weekStart && createdDate <= weekEnd
+          );
+        }).length;
+
+        trends.push({
+          month: `Wk ${weekStart.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}`,
+          enrollments,
+          courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          periodStart: weekStart.toISOString(),
+          periodEnd: weekEnd.toISOString(),
+        });
+      }
+
+      return trends;
+    }
+
+    if (enrollmentGranularityFilter === "quarterly") {
+      const totalQuarters = Math.ceil(rangeMonths / 3);
+      const currentQuarterStart = getQuarterStart(now);
+
+      for (let i = totalQuarters - 1; i >= 0; i--) {
+        const quarterStart = new Date(
+          currentQuarterStart.getFullYear(),
+          currentQuarterStart.getMonth() - i * 3,
+          1,
+        );
+        const quarterEnd = new Date(
+          quarterStart.getFullYear(),
+          quarterStart.getMonth() + 3,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
+
+        const enrollments = eligibleStudents.filter((student) => {
+          const createdDate = getStudentCreatedDate(student);
+          return (
+            createdDate &&
+            createdDate >= quarterStart &&
+            createdDate <= quarterEnd
+          );
+        }).length;
+
+        trends.push({
+          month: `Q${Math.floor(quarterStart.getMonth() / 3) + 1} ${quarterStart.getFullYear()}`,
+          enrollments,
+          courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          periodStart: quarterStart.toISOString(),
+          periodEnd: quarterEnd.toISOString(),
+        });
+      }
+
+      return trends;
+    }
+
+    for (let i = rangeMonths - 1; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+
+      const enrollments = eligibleStudents.filter((student) => {
+        const createdDate = getStudentCreatedDate(student);
+        return (
+          createdDate && createdDate >= monthStart && createdDate <= monthEnd
+        );
+      }).length;
+
+      trends.push({
+        month: date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+        }),
+        enrollments,
+        courses: Math.max(10, Math.floor(enrollments * 0.3)),
+        periodStart: monthStart.toISOString(),
+        periodEnd: monthEnd.toISOString(),
+      });
+    }
+
+    return trends;
+  }, [
+    enrollmentCenterFilter,
+    enrollmentCourseFilter,
+    enrollmentGranularityFilter,
+    enrollmentRangeFilter,
+    enrollmentTrainerFilter,
+    enrollmentTrendStudents,
+    enrollmentTrends,
+  ]);
+
+  const drilldownDetails = useMemo(() => {
+    if (!selectedDrilldownPoint) {
+      return {
+        students: [],
+        registrations: [],
+        pendingPayments: [],
+        unassignedStudents: [],
+      };
+    }
+
+    const periodStart = new Date(selectedDrilldownPoint.periodStart);
+    const periodEnd = new Date(selectedDrilldownPoint.periodEnd);
+
+    const matchesEnrollmentFilters = (student: Record<string, any>) => {
+      if (
+        enrollmentCenterFilter &&
+        getStudentCenter(student) !== enrollmentCenterFilter
+      ) {
+        return false;
+      }
+
+      if (
+        enrollmentCourseFilter &&
+        !getStudentCourses(student).includes(enrollmentCourseFilter)
+      ) {
+        return false;
+      }
+
+      if (
+        enrollmentTrainerFilter &&
+        getStudentTrainer(student) !== enrollmentTrainerFilter
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+
+    const students = enrollmentTrendStudents.filter((student) => {
+      const createdDate = getStudentCreatedDate(student);
+      return (
+        createdDate &&
+        createdDate >= periodStart &&
+        createdDate <= periodEnd &&
+        matchesEnrollmentFilters(student)
+      );
+    });
+
+    const registrations = registrationRecords.filter((registration) => {
+      const createdDate = getRegistrationCreatedDate(registration);
+      if (
+        !createdDate ||
+        createdDate < periodStart ||
+        createdDate > periodEnd
+      ) {
+        return false;
+      }
+
+      if (!enrollmentCourseFilter) return true;
+
+      const courseName = String(
+        registration.selectedCourseName ||
+          registration.courseName ||
+          registration.course ||
+          "",
+      ).trim();
+
+      return courseName === enrollmentCourseFilter;
+    });
+
+    const pendingPayments = paymentRecords.filter((payment) => {
+      const createdDate = getPaymentCreatedDate(payment);
+      if (
+        !createdDate ||
+        createdDate < periodStart ||
+        createdDate > periodEnd
+      ) {
+        return false;
+      }
+
+      if (
+        !PENDING_PAYMENT_STATUSES.has(
+          String(payment.status || "").toUpperCase(),
+        )
+      ) {
+        return false;
+      }
+
+      if (!enrollmentCourseFilter) return true;
+
+      const courseName = String(
+        payment.courseName || payment.course?.name || "",
+      ).trim();
+
+      return courseName === enrollmentCourseFilter;
+    });
+
+    const unassignedStudents = students.filter(
+      (student) => !hasTrainerAssignment(student),
+    );
+
+    return {
+      students,
+      registrations,
+      pendingPayments,
+      unassignedStudents,
+    };
+  }, [
+    enrollmentCenterFilter,
+    enrollmentCourseFilter,
+    enrollmentTrainerFilter,
+    enrollmentTrendStudents,
+    paymentRecords,
+    registrationRecords,
+    selectedDrilldownPoint,
+  ]);
+
+  const drilldownContext = useMemo(() => {
+    if (!selectedDrilldownPoint) return null;
+
+    const activeFilters = [
+      enrollmentCenterFilter
+        ? `Center: ${enrollmentCenterFilter}`
+        : "Center: All",
+      enrollmentCourseFilter
+        ? `Course: ${enrollmentCourseFilter}`
+        : "Course: All",
+      enrollmentTrainerFilter
+        ? `Trainer: ${enrollmentTrainerFilter}`
+        : "Trainer: All",
+      `Range: ${enrollmentRangeFilter.replaceAll("_", " ")}`,
+      `Granularity: ${enrollmentGranularityFilter}`,
+    ];
+
+    return {
+      title: selectedDrilldownPoint.label,
+      period:
+        `${formatDateLabel(selectedDrilldownPoint.periodStart)} to ${formatDateLabel(selectedDrilldownPoint.periodEnd)}`.trim(),
+      activeFilters,
+    };
+  }, [
+    enrollmentCenterFilter,
+    enrollmentCourseFilter,
+    enrollmentGranularityFilter,
+    enrollmentRangeFilter,
+    enrollmentTrainerFilter,
+    selectedDrilldownPoint,
+  ]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -479,6 +1143,9 @@ const AdminDashboard = () => {
       const studentsSnapshot = await getDocs(collection(db, "students"));
       const trainersSnapshot = await getDocs(collection(db, "trainers"));
       const paymentsSnapshot = await getDocs(collection(db, "payments"));
+      const registrationsSnapshot = await getDocs(
+        collection(db, "registrations"),
+      );
 
       // Get courses from the static courses.ts file
       const coursesModule = await import("../../../utils/courses");
@@ -531,6 +1198,19 @@ const AdminDashboard = () => {
         SUCCESS_PAYMENT_STATUSES.has(
           String(doc.data().status || "").toUpperCase(),
         ),
+      );
+
+      setPaymentRecords(
+        paymentsSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })),
+      );
+      setRegistrationRecords(
+        registrationsSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })),
       );
 
       const pendingPaymentsCount = paymentsSnapshot.docs.filter((doc) =>
@@ -594,6 +1274,8 @@ const AdminDashboard = () => {
         atRiskStudents: 0,
         monthlyGrowth: 0,
       });
+      setPaymentRecords([]);
+      setRegistrationRecords([]);
     } finally {
       setLoadingOverview(false);
     }
@@ -717,6 +1399,7 @@ const AdminDashboard = () => {
         ...doc.data(),
         id: doc.id,
       }));
+      setEnrollmentTrendStudents(students);
 
       // Group by month for the last 12 months
       const trends: any[] = [];
@@ -764,63 +1447,6 @@ const AdminDashboard = () => {
       ]);
     } finally {
       setLoadingTrends(false);
-    }
-  }, []);
-
-  // Function to fetch weekly activity
-  const fetchWeeklyActivity = useCallback(async () => {
-    try {
-      setLoadingWeeklyActivity(true);
-
-      // Get students and count by day for the last 7 days
-      const studentsSnapshot = await getDocs(collection(db, "students"));
-      const students: any[] = studentsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
-
-      const activityData: any[] = [];
-      const now = new Date();
-
-      // Days of week mapping
-      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(now.getDate() - i);
-        const dayStart = new Date(date.setHours(0, 0, 0, 0));
-        const dayEnd = new Date(date.setHours(23, 59, 59, 999));
-
-        const registrations = students.filter((student) => {
-          const createdAt = student.createdAt;
-          if (!createdAt) return false;
-          const createdDate = createdAt.toDate
-            ? createdAt.toDate()
-            : new Date(createdAt);
-          return createdDate >= dayStart && createdDate <= dayEnd;
-        }).length;
-
-        activityData.push({
-          day: days[date.getDay()],
-          visits: registrations,
-        });
-      }
-
-      setWeeklyActivity(activityData);
-    } catch (error) {
-      console.error("Error fetching weekly activity:", error);
-      // Fallback to static data
-      setWeeklyActivity([
-        { day: "Mon", visits: 240 },
-        { day: "Tue", visits: 140 },
-        { day: "Wed", visits: 320 },
-        { day: "Thu", visits: 280 },
-        { day: "Fri", visits: 350 },
-        { day: "Sat", visits: 190 },
-        { day: "Sun", visits: 220 },
-      ]);
-    } finally {
-      setLoadingWeeklyActivity(false);
     }
   }, []);
 
@@ -959,7 +1585,6 @@ const AdminDashboard = () => {
       fetchOverviewData();
       fetchRecentActivities();
       fetchEnrollmentTrends();
-      fetchWeeklyActivity();
       fetchCourseCategories();
     }
   }, [
@@ -968,7 +1593,6 @@ const AdminDashboard = () => {
     fetchOverviewData,
     fetchRecentActivities,
     fetchEnrollmentTrends,
-    fetchWeeklyActivity,
     fetchCourseCategories,
   ]);
 
@@ -1019,34 +1643,6 @@ const AdminDashboard = () => {
       helper: "New accounts blocked from activation",
     },
     {
-      title: "New Enrollments",
-      value: overviewData.weeklyEnrollments,
-      change: "Last 7 days",
-      icon: ShoppingCart,
-      color: "red",
-      gradient: "from-[#AB2F30] to-[#6B1516]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      delay: 0.4,
-      trend: "up",
-      helper: "Fresh registrations this week",
-    },
-    {
-      title: "Conversion Rate",
-      value: `${overviewData.conversionRate}%`,
-      change: `${overviewData.totalUsers} total students`,
-      icon: TrendingUp,
-      color: "red",
-      gradient: "from-[#AB2F30] to-[#8B1A1B]",
-      bgColor: "bg-orange-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      delay: 0.5,
-      trend: "up",
-      helper: "Registered to active ratio",
-    },
-    {
       title: "Pending Payments",
       value: overviewData.pendingPayments,
       change:
@@ -1060,37 +1656,6 @@ const AdminDashboard = () => {
       delay: 0.6,
       trend: overviewData.pendingPayments > 0 ? "down" : "up",
       helper: "Open payment transactions",
-    },
-    {
-      title: "Total Instructors",
-      value: overviewData.totalInstructors,
-      change: `${overviewData.totalCourses} active courses`,
-      icon: UserCog,
-      color: "slate",
-      gradient: "from-slate-500 to-slate-700",
-      bgColor: "bg-slate-50",
-      iconBg: "bg-gradient-to-br from-slate-100 to-slate-200",
-      textColor: "text-slate-600",
-      delay: 0.7,
-      trend: "up",
-      helper: "Teaching capacity snapshot",
-    },
-    {
-      title: "Unassigned Trainer Students",
-      value: overviewData.unassignedTrainerStudents,
-      change:
-        overviewData.unassignedTrainerStudents > 0
-          ? "Need assignment"
-          : "All assigned",
-      icon: UserRoundPlus,
-      color: "amber",
-      gradient: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50",
-      iconBg: "bg-gradient-to-br from-amber-100 to-orange-200",
-      textColor: "text-amber-700",
-      delay: 0.8,
-      trend: overviewData.unassignedTrainerStudents > 0 ? "down" : "up",
-      helper: "Students without a trainer linked yet",
     },
   ];
 
@@ -1134,81 +1699,26 @@ const AdminDashboard = () => {
     ],
   );
 
-  const dashboardCards = [
+  const quickLinks = [
     {
       title: "Student Record",
-      description: "View and manage the list of students and trainers",
       href: "/student-list",
-      icon: GraduationCap,
-      color: "red",
-      gradient: "from-[#AB2F30] to-[#8B1A1B]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      hoverColor: "group-hover:text-red-700",
-      borderColor: "border-emerald-200",
-      action: "Manage Students",
-      delay: 0.1,
     },
     {
       title: "Access Control",
-      description: "Manage user permissions and access levels",
       href: "/admin-dashboard/access-control",
-      icon: Shield,
-      color: "red",
-      gradient: "from-[#991B1B] to-[#7F1D1D]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      hoverColor: "group-hover:text-red-700",
-      borderColor: "border-red-200",
-      action: "Manage Access",
-      delay: 0.2,
     },
     {
       title: "Create Multiple Accounts",
-      description: "Create multiple user accounts without email verification",
       href: "/admin-dashboard/create-user",
-      icon: UserRoundPlus,
-      color: "red",
-      gradient: "from-[#B91C1C] to-[#991B1B]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      hoverColor: "group-hover:text-red-700",
-      borderColor: "border-violet-200",
-      action: "Create Accounts",
-      delay: 0.3,
     },
     {
       title: "Assign Trainers",
-      description: "Assign trainers to students and courses",
       href: "/admin-dashboard/assign-trainer",
-      icon: UserCog,
-      color: "red",
-      gradient: "from-[#AB2F30] to-[#6B1516]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      hoverColor: "group-hover:text-red-700",
-      borderColor: "border-purple-200",
-      action: "Assign Trainers",
-      delay: 0.4,
     },
     {
       title: "Workshop Registration",
-      description: "Review workshop leads and payment status in one place",
       href: "/admin-dashboard/workshop-registration",
-      icon: BookOpen,
-      color: "red",
-      gradient: "from-[#AB2F30] to-[#7F1D1D]",
-      bgColor: "bg-red-50",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      textColor: "text-red-700",
-      hoverColor: "group-hover:text-red-700",
-      borderColor: "border-red-200",
-      action: "Open Workshop Tab",
-      delay: 0.5,
     },
   ];
 
@@ -1242,14 +1752,121 @@ const AdminDashboard = () => {
                   Welcome back, {adminName}! Here's what's happening today.
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+                <div className="relative w-full md:w-[320px]">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    ref={globalSearchInputRef}
+                    value={globalSearchQuery}
+                    onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                    onFocus={() => setIsGlobalSearchFocused(true)}
+                    onBlur={() => {
+                      window.setTimeout(
+                        () => setIsGlobalSearchFocused(false),
+                        120,
+                      );
+                    }}
+                    placeholder="Search students, courses, trainers..."
+                    className="h-10 rounded-full border-red-100 bg-white/85 pl-10 pr-28 shadow-sm placeholder:text-gray-400 focus-visible:ring-red-100"
+                    aria-label="Global search"
+                  />
+                  <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5 text-gray-400">
+                    <div className="hidden items-center gap-1 rounded-full border border-red-100 bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-500 shadow-sm sm:flex">
+                      <span>Ctrl + K</span>
+                    </div>
+                  </div>
+                  {globalSearchQuery ? (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setGlobalSearchQuery("");
+                        setIsGlobalSearchFocused(false);
+                      }}
+                      className="absolute right-24 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600 sm:right-[7.5rem]"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  ) : null}
+
+                  {isGlobalSearchFocused && deferredGlobalSearchQuery.trim() ? (
+                    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-3xl border border-red-100 bg-white/95 shadow-xl backdrop-blur-sm">
+                      {hasGlobalSearchResults ? (
+                        <div className="p-2">
+                          {globalSearchResults.students.length > 0 ? (
+                            <div className="mb-2">
+                              <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                Students
+                              </p>
+                              {globalSearchResults.students.map((student) => (
+                                <button
+                                  key={student.id}
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() =>
+                                    handleStudentSearchSelect(student.href)
+                                  }
+                                  className="flex w-full items-start justify-between rounded-2xl px-3 py-2 text-left transition hover:bg-red-50"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {student.label}
+                                    </p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      {student.meta || "Open course details"}
+                                    </p>
+                                  </div>
+                                  <span className="text-xs font-medium text-red-700">
+                                    Open
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {globalSearchResults.courses.length > 0 ? (
+                            <div>
+                              <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                Courses
+                              </p>
+                              {globalSearchResults.courses.map((course) => (
+                                <button
+                                  key={course.id}
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() =>
+                                    handleCourseSearchSelect(course.label)
+                                  }
+                                  className="flex w-full items-start justify-between rounded-2xl px-3 py-2 text-left transition hover:bg-red-50"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {course.label}
+                                    </p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      {course.meta}
+                                    </p>
+                                  </div>
+                                  <span className="text-xs font-medium text-red-700">
+                                    Filter
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-4 text-sm text-gray-500">
+                          No matching students or courses found.
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hidden sm:flex"
-                    >
+                    <Button size="sm" className="hidden sm:flex">
                       <Download className="mr-2 h-4 w-4" /> Export Data
                     </Button>
                   </DropdownMenuTrigger>
@@ -1276,7 +1893,6 @@ const AdminDashboard = () => {
                         fetchOverviewData(),
                         fetchRecentActivities(),
                         fetchEnrollmentTrends(),
-                        fetchWeeklyActivity(),
                         fetchCourseCategories(),
                       ]);
                     } finally {
@@ -1326,7 +1942,38 @@ const AdminDashboard = () => {
                   Welcome, <span className="font-bold">{adminName}</span>
                 </span>
               </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                <span className="rounded-full border border-red-100 bg-white/80 px-3 py-1.5 shadow-sm">
+                  {currentDateTime.toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+                <span className="rounded-full border border-red-100 bg-white/80 px-3 py-1.5 shadow-sm">
+                  {currentDateTime.toLocaleTimeString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
             </motion.div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                Quick Links
+              </span>
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.title}
+                  href={link.href}
+                  className="inline-flex items-center gap-2 rounded-full border border-red-100 bg-white/80 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                >
+                  <span>{link.title}</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              ))}
+            </div>
           </motion.div>
 
           {/* Quick Stats Grid */}
@@ -1386,39 +2033,186 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Main Enrollment Chart */}
-            <Card className="xl:col-span-2 bg-white/50 backdrop-blur-sm shadow-lg">
+            <Card
+              id="enrollment-overview"
+              className="xl:col-span-2 bg-white/50 backdrop-blur-sm shadow-lg"
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
                   <CardTitle className="text-xl font-semibold">
                     Enrollment Overview
                   </CardTitle>
                   <CardDescription>
-                    Rolling 12-month enrollment trend with live student
-                    registrations
+                    Live student registrations with flexible time filters and
+                    drill-down insights
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className="bg-red-500/10 text-red-700"
-                  >
-                    <TrendingUp className="mr-1 h-3 w-3" /> Growth:{" "}
-                    {overviewData.monthlyGrowth}%
-                  </Badge>
-                  <Badge variant="outline">
+                  <span className="text-sm font-medium text-gray-500">
+                    Growth: {overviewData.monthlyGrowth}% and{" "}
                     {overviewData.weeklyEnrollments} this week
-                  </Badge>
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
+                <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                  <div className="rounded-2xl border border-red-100 bg-gradient-to-br from-red-50/80 to-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                        <CalendarRange className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Time Controls
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Adjust the time window and aggregation view
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="font-medium text-gray-600">Range</span>
+                        <div className="relative">
+                          <select
+                            value={enrollmentRangeFilter}
+                            onChange={(e) =>
+                              setEnrollmentRangeFilter(e.target.value)
+                            }
+                            className="h-8 w-full appearance-none rounded-md border border-red-200 bg-white px-2 pr-7 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition hover:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                            aria-label="Filter enrollment chart by time range"
+                            title="Time range"
+                          >
+                            <option value="3_months">Last 3 months</option>
+                            <option value="6_months">Last 6 months</option>
+                            <option value="12_months">Last 12 months</option>
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                        </div>
+                      </label>
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="font-medium text-gray-600">
+                          Granularity
+                        </span>
+                        <div className="relative">
+                          <select
+                            value={enrollmentGranularityFilter}
+                            onChange={(e) =>
+                              setEnrollmentGranularityFilter(e.target.value)
+                            }
+                            className="h-8 w-full appearance-none rounded-md border border-red-200 bg-white px-2 pr-7 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition hover:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                            aria-label="Filter enrollment chart by granularity"
+                            title="Granularity"
+                          >
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 text-gray-700">
+                        <FilterIcon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Filters
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Narrow enrollments by center, course, or trainer
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="font-medium text-gray-600">
+                          Center
+                        </span>
+                        <div className="relative">
+                          <select
+                            value={enrollmentCenterFilter}
+                            onChange={(e) =>
+                              setEnrollmentCenterFilter(e.target.value)
+                            }
+                            className="h-8 w-full appearance-none rounded-md border border-gray-200 bg-white px-2 pr-7 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition hover:border-gray-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                            aria-label="Filter enrollment chart by center"
+                            title={enrollmentCenterFilter || "All centers"}
+                          >
+                            <option value="">All centers</option>
+                            {enrollmentCenterOptions.map((center) => (
+                              <option key={center} value={center}>
+                                {center}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                        </div>
+                      </label>
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="font-medium text-gray-600">
+                          Course
+                        </span>
+                        <div className="relative">
+                          <select
+                            value={enrollmentCourseFilter}
+                            onChange={(e) =>
+                              setEnrollmentCourseFilter(e.target.value)
+                            }
+                            className="h-8 w-full appearance-none rounded-md border border-gray-200 bg-white px-2 pr-7 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition hover:border-gray-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                            aria-label="Filter enrollment chart by course"
+                            title={enrollmentCourseFilter || "All courses"}
+                          >
+                            <option value="">All courses</option>
+                            {enrollmentCourseOptions.map((course) => (
+                              <option key={course} value={course}>
+                                {course}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                        </div>
+                      </label>
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="font-medium text-gray-600">
+                          Trainer
+                        </span>
+                        <div className="relative">
+                          <select
+                            value={enrollmentTrainerFilter}
+                            onChange={(e) =>
+                              setEnrollmentTrainerFilter(e.target.value)
+                            }
+                            className="h-8 w-full appearance-none rounded-md border border-gray-200 bg-white px-2 pr-7 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition hover:border-gray-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                            aria-label="Filter enrollment chart by trainer"
+                            title={enrollmentTrainerFilter || "All trainers"}
+                          >
+                            <option value="">All trainers</option>
+                            {enrollmentTrainerOptions.map((trainer) => (
+                              <option key={trainer} value={trainer}>
+                                {trainer}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
                 <ChartContainer
                   config={chartConfig}
                   className="h-[350px] w-full"
                 >
                   <AreaChart
                     data={
-                      enrollmentTrends.length > 0
-                        ? enrollmentTrends
+                      filteredEnrollmentTrends.length > 0
+                        ? filteredEnrollmentTrends
                         : enrollmentData
                     }
                   >
@@ -1487,6 +2281,30 @@ const AdminDashboard = () => {
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorEnrollments)"
+                      activeDot={(props: any) => (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={6}
+                          fill="#AB2F30"
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => openEnrollmentDrilldown(props.payload)}
+                        />
+                      )}
+                      dot={(props: any) => (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={4}
+                          fill="#AB2F30"
+                          stroke="#ffffff"
+                          strokeWidth={1.5}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => openEnrollmentDrilldown(props.payload)}
+                        />
+                      )}
                     />
                   </AreaChart>
                 </ChartContainer>
@@ -1497,8 +2315,19 @@ const AdminDashboard = () => {
                   <TrendingUp className="h-4 w-4" />
                 </div>
                 <div className="leading-none text-muted-foreground">
-                  Showing total enrollments for the last{" "}
-                  {enrollmentTrends.length || 7} months
+                  Click any point to open matching students, registrations,
+                  pending payments, and unassigned students.
+                </div>
+                <div className="leading-none text-muted-foreground">
+                  Showing total enrollments across{" "}
+                  {filteredEnrollmentTrends.length || 7}{" "}
+                  {enrollmentGranularityFilter === "daily"
+                    ? "days"
+                    : enrollmentGranularityFilter === "weekly"
+                      ? "weeks"
+                      : enrollmentGranularityFilter === "quarterly"
+                        ? "quarters"
+                        : "months"}
                 </div>
               </CardFooter>
             </Card>
@@ -1648,70 +2477,7 @@ const AdminDashboard = () => {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Weekly Activity */}
-            <Card className="bg-white/50 backdrop-blur-sm shadow-lg">
-              <CardHeader>
-                <CardTitle>Weekly Activity</CardTitle>
-                <CardDescription>
-                  Daily student registrations across the last 7 days
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[300px] w-full"
-                >
-                  <BarChart
-                    data={
-                      weeklyActivity.length > 0 ? weeklyActivity : visitData
-                    }
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      className="stroke-muted/30"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="day"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fill: "currentColor",
-                        opacity: 0.5,
-                        fontSize: 12,
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fill: "currentColor",
-                        opacity: 0.5,
-                        fontSize: 12,
-                      }}
-                    />
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent
-                          formatter={(value) => [
-                            `${value} registrations`,
-                            "Registrations",
-                          ]}
-                        />
-                      }
-                    />
-                    <Bar
-                      dataKey="visits"
-                      fill="#AB2F30"
-                      radius={[4, 4, 0, 0]}
-                      barSize={30}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 gap-6">
             {/* Recent Actions */}
             <Card className="bg-white/50 backdrop-blur-sm shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -1759,109 +2525,272 @@ const AdminDashboard = () => {
             </Card>
           </div>
 
-          {/* Dashboard Cards Grid */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Quick Access
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
-                {dashboardCards.map((card) => (
-                  <Link key={card.title} href={card.href} className="group">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 100,
-                        damping: 15,
-                        delay: card.delay,
-                      }}
-                      whileHover={{
-                        scale: 1.02,
-                        y: -4,
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`relative ${theme.cardBg} backdrop-blur-sm rounded-3xl ${theme.shadow} ${theme.hoverShadow} transition-all duration-200 h-full overflow-hidden group`}
-                    >
-                      {/* Gradient Background */}
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-200`}
-                      />
-
-                      {/* Content */}
-                      <div className="relative p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div
-                            className={`p-4 rounded-2xl ${card.iconBg} shadow-sm group-hover:shadow-md transition-all duration-200`}
-                          >
-                            <card.icon
-                              className={`h-7 w-7 ${card.textColor}`}
-                            />
-                          </div>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <div
-                              className={`w-2 h-2 rounded-full bg-${card.color}-400 animate-pulse`}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <h3
-                            className={`text-xl font-bold ${theme.textPrimary} ${card.hoverColor} transition-colors duration-200`}
-                          >
-                            {card.title}
-                          </h3>
-                          <p
-                            className={`text-sm ${theme.textSecondary} leading-relaxed`}
-                          >
-                            {card.description}
-                          </p>
-                        </div>
-
-                        <div className="mt-6 flex items-center justify-between">
-                          <span
-                            className={`text-sm font-semibold ${card.textColor}`}
-                          >
-                            {card.action}
-                          </span>
-                          <div
-                            className={`p-2 rounded-full ${card.bgColor} group-hover:bg-white group-hover:shadow-md transition-all duration-200`}
-                          >
-                            <ArrowRight
-                              className={`w-4 h-4 ${card.textColor} group-hover:translate-x-1 transition-transform duration-200`}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Hover Effect Shadow */}
-                        <div
-                          className={`absolute inset-0 rounded-3xl shadow-inner opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
-                        />
-                      </div>
-                    </motion.div>
-                  </Link>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-
           {/* Footer */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.4 }}
-            className="mt-16 text-center"
+            className="mt-14 border-t border-red-100/80 pt-6"
           >
-            <p className={`text-sm ${theme.textMuted}`}>
-              © {currentDateTime.getFullYear()} Cyborg Robotics Academy. Built
-              with ❤️ for the future of education.
-            </p>
-            <p className={`text-xs ${theme.textMuted} mt-1`}>
-              Current Date & Time: {currentDateTime.toLocaleString()}
-            </p>
+            <div className="flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+              <p>© {currentDateTime.getFullYear()} Cyborg Robotics Academy</p>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.14em] text-gray-400">
+                <span>System Status: All systems operational</span>
+              </div>
+            </div>
           </motion.div>
         </div>
+
+        <Dialog open={drilldownOpen} onOpenChange={setDrilldownOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="inset-0 h-dvh w-dvw max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-none border-0 bg-white p-0 shadow-2xl sm:max-w-none"
+            overlayClassName="bg-black/72 backdrop-blur-[3px]"
+          >
+            <div className="flex h-full min-h-0 flex-col">
+              <DialogHeader className="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1 pr-4">
+                    <DialogTitle>Enrollment Drill-down</DialogTitle>
+                    <DialogDescription className="mt-1">
+                      {drilldownContext
+                        ? `You clicked ${drilldownContext.title}. Reviewing all linked records in that period.`
+                        : "Matching records for the selected chart point"}
+                    </DialogDescription>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    {drilldownContext ? (
+                      <div className="rounded-2xl border border-red-100 bg-red-50/80 px-4 py-3 text-left">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-red-700">
+                          Click Context
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-gray-900">
+                          {drilldownContext.title}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-600">
+                          {drilldownContext.period}
+                        </p>
+                      </div>
+                    ) : null}
+                    <DialogClose asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-200"
+                        aria-label="Close drill-down"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </DialogClose>
+                  </div>
+                </div>
+
+                {drilldownContext ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {drilldownContext.activeFilters.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[11px] font-medium text-gray-600"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </DialogHeader>
+
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+                <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+                  {[
+                    {
+                      label: "Student records",
+                      value: drilldownDetails.students.length,
+                      helper: "Enrollment entries in the selected period",
+                      tone: "border-red-200 bg-gradient-to-br from-red-50 to-white text-red-700",
+                    },
+                    {
+                      label: "Registration records",
+                      value: drilldownDetails.registrations.length,
+                      helper: "Registrations created during this period",
+                      tone: "border-orange-200 bg-gradient-to-br from-orange-50 to-white text-orange-700",
+                    },
+                    {
+                      label: "Pending payments",
+                      value: drilldownDetails.pendingPayments.length,
+                      helper: "Payments still awaiting confirmation",
+                      tone: "border-amber-200 bg-gradient-to-br from-amber-50 to-white text-amber-700",
+                    },
+                    {
+                      label: "Needs trainer assignment",
+                      value: drilldownDetails.unassignedStudents.length,
+                      helper: "Students still missing a trainer",
+                      tone: "border-slate-200 bg-gradient-to-br from-slate-50 to-white text-slate-700",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className={`rounded-2xl border px-4 py-4 shadow-sm ${item.tone}`}
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-gray-900">
+                        {item.value}
+                      </p>
+                      <p className="mt-2 text-xs text-gray-500">
+                        {item.helper}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid min-h-0 grid-cols-1 gap-5 xl:grid-cols-2">
+                  {[
+                    {
+                      title: "Students",
+                      subtitle: "Who enrolled during the clicked period",
+                      items: drilldownDetails.students.map((student: any) => ({
+                        primary:
+                          student.fullName ||
+                          student.username ||
+                          student.studentName ||
+                          "Unnamed student",
+                        metaA: student.PrnNumber
+                          ? `PRN ${student.PrnNumber}`
+                          : "-",
+                        metaB: getStudentCenter(student) || "-",
+                        metaC: getStudentTrainer(student) || "No trainer",
+                      })),
+                      columns: ["Student", "PRN", "Center", "Trainer"],
+                    },
+                    {
+                      title: "Registrations",
+                      subtitle: "Registration records captured in this period",
+                      items: drilldownDetails.registrations.map(
+                        (registration: any) => ({
+                          primary:
+                            registration.studentName ||
+                            registration.fullName ||
+                            "Unnamed registration",
+                          metaA:
+                            registration.selectedCourseName ||
+                            registration.courseName ||
+                            registration.course ||
+                            "-",
+                          metaB:
+                            registration.primaryParentContact ||
+                            registration.parentPhone ||
+                            "-",
+                          metaC:
+                            formatDateLabel(
+                              getRegistrationCreatedDate(
+                                registration,
+                              )?.toISOString() || "",
+                            ) || "-",
+                        }),
+                      ),
+                      columns: ["Student", "Course", "Contact", "Date"],
+                    },
+                    {
+                      title: "Pending Payments",
+                      subtitle: "Open payment records tied to the period",
+                      items: drilldownDetails.pendingPayments.map(
+                        (payment: any) => ({
+                          primary:
+                            payment.studentName ||
+                            payment.registrationDraft?.studentName ||
+                            "Unnamed payment",
+                          metaA:
+                            payment.courseName || payment.course?.name || "-",
+                          metaB: payment.orderId || "-",
+                          metaC:
+                            String(payment.status || "").toUpperCase() || "-",
+                        }),
+                      ),
+                      columns: ["Student", "Course", "Order ID", "Status"],
+                    },
+                    {
+                      title: "Unassigned Students",
+                      subtitle: "Operational follow-up needed after enrollment",
+                      items: drilldownDetails.unassignedStudents.map(
+                        (student: any) => ({
+                          primary:
+                            student.fullName ||
+                            student.username ||
+                            student.studentName ||
+                            "Unnamed student",
+                          metaA: student.PrnNumber
+                            ? `PRN ${student.PrnNumber}`
+                            : "-",
+                          metaB: getStudentCenter(student) || "-",
+                          metaC: "Trainer not assigned",
+                        }),
+                      ),
+                      columns: ["Student", "PRN", "Center", "Action"],
+                    },
+                  ].map((section) => (
+                    <div
+                      key={section.title}
+                      className="rounded-2xl border border-gray-200 bg-white shadow-sm"
+                    >
+                      <div className="border-b border-gray-100 px-4 py-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-900">
+                              {section.title}
+                            </h3>
+                            <p className="mt-1 text-xs text-gray-500">
+                              {section.subtitle}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                            {section.items.length}
+                          </span>
+                        </div>
+                      </div>
+
+                      {section.items.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-xs text-gray-500">
+                          No matching records in this period.
+                        </div>
+                      ) : (
+                        <div className="max-h-[calc(94vh-360px)] overflow-y-auto">
+                          <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-3 border-b border-gray-100 bg-gray-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+                            {section.columns.map((column) => (
+                              <span key={column}>{column}</span>
+                            ))}
+                          </div>
+                          <div className="divide-y divide-gray-100">
+                            {section.items.map((item, index) => (
+                              <div
+                                key={`${section.title}-${index}`}
+                                className="grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-3 px-4 py-3 text-sm"
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-gray-900">
+                                    {item.primary}
+                                  </p>
+                                </div>
+                                <p className="truncate text-gray-600">
+                                  {item.metaA}
+                                </p>
+                                <p className="truncate text-gray-600">
+                                  {item.metaB}
+                                </p>
+                                <p className="truncate text-gray-600">
+                                  {item.metaC}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </>
   );
@@ -1887,7 +2816,7 @@ const StatCard = ({
           ? "border-0 bg-gradient-to-br from-[#6B1516] via-[#8B1A1B] to-[#AB2F30] text-white shadow-red-900/20"
           : emphasis === "primary"
             ? "border-0 bg-slate-950 text-white"
-          : "bg-white/50 backdrop-blur-sm"
+            : "bg-white/50 backdrop-blur-sm"
       }`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

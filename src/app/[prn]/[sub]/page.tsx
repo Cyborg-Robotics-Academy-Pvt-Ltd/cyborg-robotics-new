@@ -22,6 +22,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  PieLabel,
 } from "recharts";
 import {
   ClipboardCheck,
@@ -277,12 +278,6 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "#6366F1",
 };
 
-// Props for Recharts Pie label callback
-type PieLabelProps = {
-  name?: string;
-  percent?: number;
-};
-
 const Page = ({
   params,
 }: {
@@ -301,6 +296,9 @@ const Page = ({
   >([]);
   const [barData, setBarData] = useState<
     { date: string; complete: number; ongoing: number }[]
+  >([]);
+  const [assignedClassesData, setAssignedClassesData] = useState<
+    { name: string; value: number }[]
   >([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [assignedClasses, setAssignedClasses] = useState<string | number>(
@@ -696,6 +694,31 @@ const Page = ({
           }
 
           setAssignedClasses(assigned || "N/A");
+
+          // Assigned classes pie chart data (completed vs remaining)
+          const assignedClassesNum = Number(assigned) || 0;
+          const completedCount = completedTasksForCourse.length;
+          const remainingCount = Math.max(
+            0,
+            assignedClassesNum - completedCount,
+          );
+
+          const assignedClassesPieData = [];
+          if (assignedClassesNum > 0) {
+            if (completedCount > 0) {
+              assignedClassesPieData.push({
+                name: "Completed",
+                value: completedCount,
+              });
+            }
+            if (remainingCount > 0) {
+              assignedClassesPieData.push({
+                name: "Remaining",
+                value: remainingCount,
+              });
+            }
+          }
+          setAssignedClassesData(assignedClassesPieData);
         } else {
           // Print the raw slug and extracted values
 
@@ -717,8 +740,34 @@ const Page = ({
 
           if (courseFromArray?.classNumber) {
             setAssignedClasses(courseFromArray.classNumber);
+
+            // Assigned classes pie chart data (completed vs remaining)
+            const assignedClassesNum = Number(courseFromArray.classNumber) || 0;
+            const completedCount = completedTasksForCourse.length;
+            const remainingCount = Math.max(
+              0,
+              assignedClassesNum - completedCount,
+            );
+
+            const assignedClassesPieData = [];
+            if (assignedClassesNum > 0) {
+              if (completedCount > 0) {
+                assignedClassesPieData.push({
+                  name: "Completed",
+                  value: completedCount,
+                });
+              }
+              if (remainingCount > 0) {
+                assignedClassesPieData.push({
+                  name: "Remaining",
+                  value: remainingCount,
+                });
+              }
+            }
+            setAssignedClassesData(assignedClassesPieData);
           } else {
             setAssignedClasses("N/A");
+            setAssignedClassesData([]);
           }
         }
 
@@ -1722,18 +1771,18 @@ const Page = ({
 
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Pie Chart */}
+                {/* Pie Chart - Assigned Classes */}
                 <div className="bg-white rounded-2xl shadow-md p-5">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
                     <div className="w-1.5 h-5 bg-red-700 rounded-full"></div>
-                    Status Distribution
+                    Assigned Classes Status
                   </h2>
-                  {statusData.length > 0 ? (
+                  {assignedClassesData.length > 0 ? (
                     <div className="h-72">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
-                            data={statusData}
+                            data={assignedClassesData}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -1741,15 +1790,19 @@ const Page = ({
                             innerRadius={60}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }: PieLabelProps) =>
-                              `${name}: ${percent ? (Number(percent) * 100).toFixed(0) : 0}%`
+                            label={({ name, value }: any) =>
+                              `${name}: ${value || 0}`
                             }
                             paddingAngle={5}
                           >
-                            {statusData.map((entry, index) => (
+                            {assignedClassesData.map((entry, index) => (
                               <Cell
                                 key={`cell-${index}`}
-                                fill={STATUS_COLORS[entry.name] || "#b91c1c"}
+                                fill={
+                                  entry.name === "Completed"
+                                    ? "#10B981"
+                                    : "#EF4444"
+                                }
                                 stroke="none"
                               />
                             ))}
@@ -1769,7 +1822,7 @@ const Page = ({
                   ) : (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-500">
                       <ClipboardCheck className="h-12 w-12 mb-3" />
-                      <p>No status data available</p>
+                      <p>No assigned classes data available</p>
                     </div>
                   )}
                 </div>

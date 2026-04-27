@@ -5,8 +5,12 @@ import { db } from "@/lib/firebase";
 const CENTER_PREFIXES = {
   "KALYANI NAGAR": "KN",
   "VIMAN NAGAR": "VN",
+  "MAGARPATTA": "MG",
+  "KHARADI": "KH",
   "kalyani nagar": "KN",
   "viman nagar": "VN",
+  "magarpatta": "MG",
+  "kharadi": "KH",
 } as const;
 
 export type CenterLocation = keyof typeof CENTER_PREFIXES;
@@ -14,14 +18,14 @@ export type CenterPrefix = typeof CENTER_PREFIXES[CenterLocation];
 
 /**
  * Generate a unique PRN number with center prefix
- * @param center - The center location (Kalyani Nagar or Viman Nagar)
- * @returns Promise<string> - The generated PRN number (e.g., "CRAKN1001" or "CRAVN1001")
- * Note: Both centers start from 1001
+ * @param center - The center location (Kalyani Nagar, Viman Nagar, Magarpatta, or Kharadi)
+ * @returns Promise<string> - The generated PRN number (e.g., "CRAKN1001", "CRAVN1001", "CRAMG1001", or "CRAKH1001")
+ * Note: Each center starts from 1001
  */
 export async function generatePrnNumber(center: CenterLocation): Promise<string> {
   const prefix = CENTER_PREFIXES[center];
   if (!prefix) {
-    throw new Error(`Invalid center location: ${center}. Valid options are: Kalyani Nagar, Viman Nagar`);
+    throw new Error(`Invalid center location: ${center}. Valid options are: Kalyani Nagar, Viman Nagar, Magarpatta, Kharadi`);
   }
 
   try {
@@ -118,6 +122,14 @@ export function getCenterPrefix(location: string): CenterPrefix | null {
   if (normalizedLocation.includes("VIMAN") || normalizedLocation.includes("VN")) {
     return "VN";
   }
+
+  if (normalizedLocation.includes("MAGARPATTA") || normalizedLocation.includes("MG")) {
+    return "MG";
+  }
+
+  if (normalizedLocation.includes("KHARADI") || normalizedLocation.includes("KH")) {
+    return "KH";
+  }
   
   return null;
 }
@@ -157,6 +169,10 @@ export async function autoGenerateAndAssignPrn(studentId: string, location: stri
     let centerLocation: CenterLocation = "KALYANI NAGAR";
     if (centerPrefix === "VN") {
       centerLocation = "VIMAN NAGAR";
+    } else if (centerPrefix === "MG") {
+      centerLocation = "MAGARPATTA";
+    } else if (centerPrefix === "KH") {
+      centerLocation = "KHARADI";
     }
     
     // Generate PRN
