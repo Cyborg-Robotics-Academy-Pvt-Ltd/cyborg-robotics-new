@@ -155,7 +155,7 @@ const GoogleSitesHero = () => {
   };
 
   const eventMeta = [
-    { icon: "📅", label: "2 May 2026" },
+    { icon: "📅", label: "16 May 2026" },
     { icon: "🕙", label: "11:00 AM – 1:00 PM" },
     { icon: "💻", label: "Live on Zoom" },
   ];
@@ -398,7 +398,7 @@ const GoogleSitesHero = () => {
                     Only
                   </div>
                   <div className="text-[12px] text-white font-bold">
-                    ₹99 · 2 May 2026
+                    ₹99 · 16 May 2026
                   </div>
                 </div>
               </div>
