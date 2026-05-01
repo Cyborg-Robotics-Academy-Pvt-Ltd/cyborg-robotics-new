@@ -16,6 +16,10 @@ const WORKSHOPS = {
     title: "LEGO Robotics Workshop",
     amount: 499,
   },
+  "google-site-workshop": {
+    title: "Google Sites Portfolio Workshop",
+    amount: 99,
+  },
 } as const;
 
 function requireString(value: unknown, fieldName: string): string | null {
