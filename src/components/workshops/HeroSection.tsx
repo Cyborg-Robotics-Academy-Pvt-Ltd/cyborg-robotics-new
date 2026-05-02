@@ -17,6 +17,13 @@ import { Autoplay, EffectCards } from "swiper/modules";
 import { WORKSHOP_HERO_IMAGES } from "./constants";
 import { heroContainerVariants, heroItemVariants } from "./motion";
 import type { CampLocation } from "./types";
+import {
+  ctaArrowAnimation,
+  ctaArrowTransition,
+  heroFloatAnimation,
+  heroFloatTransition,
+} from "@/lib/motion";
+import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 interface Props {
   activeLocation: CampLocation;
@@ -24,6 +31,7 @@ interface Props {
 }
 
 const HeroSection = ({ activeLocation, onRegister }: Props) => {
+  const { reduceMotion } = useMotionPreferences();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const mouseX = useMotionValue(0);
@@ -44,6 +52,10 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
   });
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    if (reduceMotion) {
+      return;
+    }
+
     const rect = cardRef.current?.getBoundingClientRect();
 
     if (!rect) {
@@ -55,6 +67,10 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
   };
 
   const handleMouseLeave = () => {
+    if (reduceMotion) {
+      return;
+    }
+
     mouseX.set(0);
     mouseY.set(0);
   };
@@ -139,9 +155,13 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
                     </span>
                   </span>
                 </span>
-                <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/18 bg-white/12 transition-transform duration-300 group-hover:translate-x-1">
+                <motion.span
+                  className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/18 bg-white/12 transition-transform duration-300 group-hover:translate-x-1"
+                  animate={reduceMotion ? undefined : ctaArrowAnimation}
+                  transition={reduceMotion ? undefined : ctaArrowTransition}
+                >
                   <ArrowRight size={16} />
-                </span>
+                </motion.span>
               </button>
               <span className="text-[11px] font-medium text-[#8D0F11]/75">
                 Limited seats available
@@ -222,6 +242,8 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
           <motion.div
             variants={heroItemVariants}
             className="relative mx-auto flex w-full max-w-[320px] justify-center lg:mx-0 lg:mr-10 lg:w-auto lg:flex-none"
+            animate={reduceMotion ? undefined : heroFloatAnimation}
+            transition={reduceMotion ? undefined : heroFloatTransition}
           >
             <div
               ref={cardRef}
@@ -230,7 +252,7 @@ const HeroSection = ({ activeLocation, onRegister }: Props) => {
               className="relative [perspective:900px]"
             >
               <motion.div
-                style={{ rotateX, rotateY }}
+                style={reduceMotion ? undefined : { rotateX, rotateY }}
                 className="relative [transform-style:preserve-3d] will-change-transform"
               >
                 <div className="relative h-[360px] w-[260px] overflow-hidden rounded-[22px] border border-[rgba(141,15,17,0.12)] shadow-[0_18px_50px_rgba(141,15,17,0.16)]">
