@@ -1,31 +1,33 @@
-import { cubicBezier, type Variants } from "framer-motion";
-
-const springEase = cubicBezier(0.22, 1, 0.36, 1);
+import { type Variants } from "framer-motion";
+import { marketingEase } from "@/lib/motion";
 
 export const heroContainerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.04 },
+  },
 };
 
 export const heroItemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { y: 18, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.5, ease: springEase },
+    transition: { duration: 0.5, ease: marketingEase },
   },
 };
 
 export const fadeUpVariants: Variants = {
-  hidden: { y: 30, opacity: 0 },
+  hidden: { y: 24, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.6, ease: springEase },
+    transition: { duration: 0.55, ease: marketingEase },
   },
 };
 
 export const createStaggerContainer = (staggerChildren: number): Variants => ({
   hidden: {},
-  visible: { transition: { staggerChildren } },
+  visible: { transition: { staggerChildren, delayChildren: 0.04 } },
 });

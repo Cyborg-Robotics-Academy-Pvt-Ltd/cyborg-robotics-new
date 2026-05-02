@@ -1,8 +1,11 @@
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { sectionItemVariants } from "@/lib/motion";
+import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 const Parents = () => {
+  const { reduceMotion } = useMotionPreferences();
   const parentTestimonials = [
     {
       quote:
@@ -103,10 +106,8 @@ const Parents = () => {
   return (
     <motion.div
       className="w-full flex flex-col items-center"
-      initial={{ opacity: 0, x: -60 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ type: "tween", duration: 1.2, ease: "easeOut" }}
+      variants={sectionItemVariants}
+      initial={reduceMotion ? false : undefined}
     >
       <h2 className="mb-3">
         <span className="text-2xl font-bold gradient-text">Parent</span>

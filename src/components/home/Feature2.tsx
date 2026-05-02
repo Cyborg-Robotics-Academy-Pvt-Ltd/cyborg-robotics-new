@@ -3,8 +3,16 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Brain, Lightbulb, BookOpen, Cpu, Eye } from "lucide-react";
 import { GlowingCards, GlowingCard } from "../lightswind/glowing-cards";
+import {
+  cardHoverProps,
+  sectionContainerVariants,
+  sectionItemVariants,
+} from "@/lib/motion";
+import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 const Feature2: React.FC = React.memo(() => {
+  const { reduceMotion } = useMotionPreferences();
+
   const features = useMemo(
     () => [
       {
@@ -40,7 +48,13 @@ const Feature2: React.FC = React.memo(() => {
   );
 
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 text-black py-2 md:py-2 relative overflow-hidden">
+    <motion.section
+      className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50 py-2 text-black md:py-2"
+      initial={reduceMotion ? false : "hidden"}
+      whileInView={reduceMotion ? undefined : "visible"}
+      viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+      variants={sectionContainerVariants(0.1)}
+    >
       {/* Background accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-5 w-48 h-48 bg-[#8D0F11]/10 rounded-full filter blur-3xl"></div>
@@ -49,21 +63,11 @@ const Feature2: React.FC = React.memo(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          viewport={{ once: true }}
-          className="text-center mb-10"
-        >
+        <motion.div variants={sectionItemVariants} className="mb-10 text-center">
           <div className="flex justify-center mb-3">
-            <motion.div
-              className="p-3 rounded-full bg-[#8D0F11]/10"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            >
+            <div className="rounded-full bg-[#8D0F11]/10 p-3">
               <Brain className="w-6 h-6 text-[#8D0F11]" />
-            </motion.div>
+            </div>
           </div>
 
           <h1 className="font-extrabold text-2xl sm:text-3xl md:text-4xl">
@@ -95,54 +99,59 @@ const Feature2: React.FC = React.memo(() => {
           {features.map((t, index) => {
             const IconComponent = t.icon;
             return (
-              <GlowingCard
+              <motion.div
                 key={index}
-                glowColor={t.glowColor}
-                className="flex flex-col items-center text-center p-6 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg shadow-lg group relative overflow-hidden"
+                variants={sectionItemVariants}
+                whileHover={reduceMotion ? undefined : cardHoverProps}
               >
-                {/* Background image - shown with animation only on hover */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-0 group-hover:opacity-25 transition-all duration-500 transform scale-90 group-hover:scale-100"
-                  style={{
-                    backgroundImage: `url(${t.backgroundImage})`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                  }}
-                ></div>
-
-                <div className="relative z-10">
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="p-3 rounded-2xl bg-[#8D0F11] shadow-lg transform transition-all duration-500 group-hover:scale-110">
-                      <div
-                        className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 
-                       transition-opacity duration-300"
-                      ></div>
-                      <IconComponent className="w-6 h-6 text-white relative z-10" />
-                    </div>
-                  </div>
-
-                  <h2 className="font-bold gradient-text text-2xl lg:text-xl  mb-3 group-hover:text-[#8D0F11] transition-colors duration-300">
-                    {t.title}
-                  </h2>
-
+                <GlowingCard
+                  glowColor={t.glowColor}
+                  className="group relative flex flex-col items-center overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 text-center shadow-lg backdrop-blur-lg"
+                >
+                  {/* Background image - shown with animation only on hover */}
                   <div
-                    className="w-12 h-1 bg-gradient-to-r rounded-full mx-auto mb-4 group-hover:scale-x-125 transition-transform duration-300"
+                    className="absolute inset-0 bg-cover bg-center opacity-0 transition-all duration-500 transform scale-90 group-hover:scale-100 group-hover:opacity-25"
                     style={{
-                      backgroundImage: `linear-gradient(to right, ${t.glowColor}, ${t.glowColor}90)`,
+                      backgroundImage: `url(${t.backgroundImage})`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
                     }}
                   ></div>
 
-                  <p className="text-gray-600  leading-relaxed text-center text-sm">
-                    {t.quote}
-                  </p>
-                </div>
-              </GlowingCard>
+                  <div className="relative z-10">
+                    <div className="mb-4 flex items-center justify-center">
+                      <div className="transform rounded-2xl bg-[#8D0F11] p-3 shadow-lg transition-all duration-500 group-hover:scale-110">
+                        <div
+                          className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 
+                       transition-opacity duration-300"
+                        ></div>
+                        <IconComponent className="relative z-10 h-6 w-6 text-white" />
+                      </div>
+                    </div>
+
+                    <h2 className="gradient-text mb-3 text-2xl font-bold transition-colors duration-300 group-hover:text-[#8D0F11] lg:text-xl">
+                      {t.title}
+                    </h2>
+
+                    <div
+                      className="mx-auto mb-4 h-1 w-12 rounded-full bg-gradient-to-r transition-transform duration-300 group-hover:scale-x-125"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, ${t.glowColor}, ${t.glowColor}90)`,
+                      }}
+                    ></div>
+
+                    <p className="text-center text-sm leading-relaxed text-gray-600">
+                      {t.quote}
+                    </p>
+                  </div>
+                </GlowingCard>
+              </motion.div>
             );
           })}
         </GlowingCards>
       </div>
-    </div>
+    </motion.section>
   );
 });
 

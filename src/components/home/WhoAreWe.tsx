@@ -2,16 +2,32 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { GraduationCap } from "lucide-react";
+import {
+  ctaArrowAnimation,
+  ctaArrowTransition,
+  sectionContainerVariants,
+  sectionItemVariants,
+} from "@/lib/motion";
+import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 export default function WhoAreWe() {
+  const { reduceMotion } = useMotionPreferences();
+
   return (
     <>
       {/* Who Are We Section */}
-      <section className="relative my-auto px-4 sm:px-6 lg:px-8 to-blue-50/30 overflow-hidden">
+      <motion.section
+        className="relative my-auto overflow-hidden px-4 to-blue-50/30 sm:px-6 lg:px-8"
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "visible"}
+        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        variants={sectionContainerVariants(0.12)}
+      >
         <div className="relative max-w-7xl mx-auto mt-10">
           {/* Header section */}
-          <div className="text-center">
+          <motion.div variants={sectionItemVariants} className="text-center">
             <div className="flex justify-center">
               <h1 className="text-center">
                 <span className="text-3xl font-bold gradient-text">Who</span>
@@ -32,12 +48,12 @@ export default function WhoAreWe() {
               <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
               <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Two-container layout */}
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             {/* Left Container - About Us Content */}
-            <div className="lg:w-1/2">
+            <motion.div variants={sectionItemVariants} className="lg:w-1/2">
               <div className="bg-white rounded-2xl p-6 ">
                 <h2 className="text-2xl font-bold gradient-text mb-2 flex  items-center ">
                   <GraduationCap className="mr-2 h-6 w-6 text-[#a63534]" />
@@ -103,25 +119,30 @@ export default function WhoAreWe() {
                     className="inline-flex items-center px-4 py-2 bg-[#a63534] text-white rounded-lg hover:bg-[#8a2d2d] transition-colors"
                   >
                     View Courses
-                    <svg
+                    <motion.svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 ml-2"
                       viewBox="0 0 20 20"
                       fill="currentColor"
+                      animate={reduceMotion ? undefined : ctaArrowAnimation}
+                      transition={reduceMotion ? undefined : ctaArrowTransition}
                     >
                       <path
                         fillRule="evenodd"
                         d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
                         clipRule="evenodd"
                       />
-                    </svg>
+                    </motion.svg>
                   </Link>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Container - Image */}
-            <div className="lg:w-1/2 md:mb-8 lg:mb-2">
+            <motion.div
+              variants={sectionItemVariants}
+              className="lg:w-1/2 md:mb-8 lg:mb-2"
+            >
               <div className="rounded-4xl overflow-hidden ">
                 <Image
                   src="/assets/events/competition.png"
@@ -132,10 +153,10 @@ export default function WhoAreWe() {
                   unoptimized
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
     </>
   );
 }

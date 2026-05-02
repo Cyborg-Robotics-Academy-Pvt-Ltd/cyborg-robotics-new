@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { createStaggerContainer, fadeUpVariants } from "./motion";
 import type { CampLocation } from "./types";
+import { ctaArrowAnimation, ctaArrowTransition } from "@/lib/motion";
+import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 interface Props {
   activeLocation: CampLocation;
@@ -19,6 +21,8 @@ interface Props {
 }
 
 const CTASection = ({ activeLocation, earlyBirdPrice, onRegister }: Props) => {
+  const { reduceMotion } = useMotionPreferences();
+
   return (
     <motion.section
       className="relative overflow-hidden bg-gradient-to-br from-[#1C0A06] to-[#3d1408] px-4 py-20 sm:px-6 sm:py-24"
@@ -99,7 +103,12 @@ const CTASection = ({ activeLocation, earlyBirdPrice, onRegister }: Props) => {
           >
             <Sparkles size={14} />
             Book Now
-            <ArrowRight size={14} />
+            <motion.span
+              animate={reduceMotion ? undefined : ctaArrowAnimation}
+              transition={reduceMotion ? undefined : ctaArrowTransition}
+            >
+              <ArrowRight size={14} />
+            </motion.span>
           </button>
 
           {/* Secondary CTA */}
