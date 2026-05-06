@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Globe,
@@ -205,21 +206,14 @@ const GoogleSitesOfferSection = () => {
                 }}
               />
 
-              {/* TODO: Replace with actual Google Sites workshop video */}
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                poster="/assets/google-sites/workshop.jpg"
-                className="w-full h-full object-cover"
-              >
-                <source
-                  src="/assets/google-sites/workshop.mp4"
-                  type="video/mp4"
-                />
-              </video>
+              <Image
+                src="/assets/workshops/google-site/Google-Site.png"
+                alt="Students building their portfolio website in the Google Sites workshop"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
 
               {/* Overlay */}
               <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#062341]/95 via-[#062341]/60 to-transparent p-5 md:p-6">
