@@ -1752,7 +1752,7 @@ const AdminDashboard = () => {
                   Welcome back, {adminName}! Here's what's happening today.
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+              <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
                 <div className="relative w-full md:w-[320px]">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
@@ -1964,13 +1964,15 @@ const AdminDashboard = () => {
                 Quick Links
               </span>
               {quickLinks.map((link) => (
-                <Link
-                  key={link.title}
-                  href={link.href}
-                  className="inline-flex items-center gap-2 rounded-full border border-red-100 bg-white/80 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
-                >
-                  <span>{link.title}</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                <Link key={link.title} href={link.href}>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] px-5 py-2.5 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:from-red-700 hover:to-red-800 hover:shadow-xl"
+                  >
+                    <span>{link.title}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </motion.button>
                 </Link>
               ))}
             </div>

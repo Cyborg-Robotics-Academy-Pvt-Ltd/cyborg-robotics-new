@@ -635,13 +635,7 @@ const GoogleSitesHero = () => {
                   />
                 </div>
               </div>
-
-              <p className="text-[12px] leading-[1.6] text-[#666] mt-4 mb-4">
-                Please fill in the details below and continue to the integrated
-                payment checkout. Contact form owner:{" "}
-                <strong>gshrikant199980@gmail.com</strong>
-              </p>
-
+              <div className="mb-4"></div>
               <button
                 type="submit"
                 disabled={isInitiatingPayment}

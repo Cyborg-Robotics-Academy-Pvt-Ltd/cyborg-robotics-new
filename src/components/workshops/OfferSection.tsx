@@ -55,7 +55,7 @@ const locations: WorkshopLocation[] = [
     ageGroups: ["Age 4+", "Age 7+", "Age 10+"],
     images: [
       "/assets/workshops/lego/image.png",
-      "/assets/workshops/drone/Image.png",
+      "/assets/workshops/drone/image.png",
       "/assets/online-course/innovation.png",
     ],
     weeks: [
@@ -218,6 +218,7 @@ const OfferSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState(0);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   const location = locations[activeLocation];
 
@@ -416,6 +417,15 @@ const OfferSection = () => {
                   boxShadow:
                     "0 8px 40px rgba(6,35,65,0.12), 0 2px 8px rgba(6,35,65,0.06)",
                 }}
+                role="button"
+                tabIndex={0}
+                onClick={() => setIsImagePreviewOpen(true)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setIsImagePreviewOpen(true);
+                  }
+                }}
               >
                 {/* Border frame */}
                 <div
@@ -445,6 +455,10 @@ const OfferSection = () => {
                     />
                   </motion.div>
                 </AnimatePresence>
+
+                <div className="absolute right-4 top-4 z-20 rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold text-[#062341] shadow-sm backdrop-blur-sm">
+                  Click to view
+                </div>
 
                 {/* Overlay */}
                 <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#062341]/95 via-[#062341]/60 to-transparent p-5 md:p-6">
@@ -784,6 +798,44 @@ const OfferSection = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        <AnimatePresence>
+          {isImagePreviewOpen && (
+            <motion.button
+              type="button"
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 md:p-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsImagePreviewOpen(false)}
+            >
+              <motion.div
+                className="relative h-[70vh] w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.98, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Image
+                  fill
+                  src={location.images[activeImage]}
+                  alt={`Expanded view of ${location.name} workshop photo ${activeImage + 1}`}
+                  sizes="100vw"
+                  className="object-contain bg-[#0b1730]"
+                  priority
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-sm font-semibold text-[#062341] shadow-md"
+                  onClick={() => setIsImagePreviewOpen(false)}
+                >
+                  Close
+                </button>
+              </motion.div>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </motion.section>
     </div>
   );
