@@ -389,7 +389,7 @@ const GoogleSitesOfferSection = () => {
                   No coding needed &middot; Age 10–16
                   <br />
                   <span className="text-[#0855AB] font-medium">
-                    2 May 2026 · Live on Zoom
+                    16 May 2026 · Live on Zoom
                   </span>
                 </p>
               </motion.div>
