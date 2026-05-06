@@ -663,18 +663,12 @@ const ThreeDDesignHero = () => {
                     className="
                       w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3
                       text-[14px] text-[#222] bg-white outline-none
-                      transition-[border-color,box-shadow] duration-200
+                      transition-[border-color,box-shadow] duration-200 mb-4
                       focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]
                     "
                   />
                 </div>
               </div>
-
-              <p className="text-[12px] leading-[1.6] text-[#666] mt-4 mb-4">
-                Please fill in the details below and continue to the integrated
-                payment checkout. Contact form owner:{" "}
-                <strong>gshrikant199980@gmail.com</strong>
-              </p>
 
               <button
                 type="submit"
@@ -701,5 +695,3 @@ const ThreeDDesignHero = () => {
 };
 
 export default ThreeDDesignHero;
-
-

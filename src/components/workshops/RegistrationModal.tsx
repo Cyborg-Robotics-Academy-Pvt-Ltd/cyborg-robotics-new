@@ -71,7 +71,7 @@ const RegistrationModal = ({
             </div>
           )}
           <form onSubmit={onSubmit}>
-            <div className="grid grid-cols-2 gap-[14px] max-sm:grid-cols-1">
+            <div className="grid grid-cols-2 gap-[14px] max-sm:grid-cols-1 mb-4">
               {REGISTRATION_FIELDS.map((field) => (
                 <div
                   key={field.id}

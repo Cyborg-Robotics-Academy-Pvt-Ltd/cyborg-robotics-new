@@ -39,6 +39,7 @@ import {
   Award,
   Clock,
   Target,
+  X,
 } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox";
 import Head from "next/head";
@@ -317,10 +318,27 @@ const Page = ({
   >("");
   const [nextCourseComment, setNextCourseComment] = useState("");
   const [joinSoonTime, setJoinSoonTime] = useState("");
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(setResolvedParams);
   }, [params]);
+
+  useEffect(() => {
+    if (!selectedPhoto) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedPhoto(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [selectedPhoto]);
 
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
 
@@ -1111,36 +1129,45 @@ const Page = ({
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-red-700 p-0.5">
                     <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                       {student.profileimage ? (
-                        <Image
-                          width={50}
-                          height={50}
-                          src={student.profileimage}
-                          alt={
-                            student.fullName || student.username || "Student"
+                        <button
+                          type="button"
+                          className="block w-full h-full cursor-pointer"
+                          onClick={() =>
+                            setSelectedPhoto(student.profileimage!)
                           }
-                          className="w-full h-full object-cover rounded-full"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null; // Prevent infinite loop
-                            if (target.parentNode) {
-                              const parent = target.parentNode as HTMLElement;
-                              parent.innerHTML = "";
-                              const nameToUse =
-                                student.fullName || student.username || "";
-                              const initials = nameToUse
-                                ? nameToUse
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                    .slice(0, 2)
-                                : "";
-                              parent.className =
-                                "w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800";
-                              parent.textContent = initials || "";
+                          aria-label="View profile photo"
+                        >
+                          <Image
+                            width={50}
+                            height={50}
+                            src={student.profileimage}
+                            alt={
+                              student.fullName || student.username || "Student"
                             }
-                          }}
-                          onLoad={(e) => {}}
-                        />
+                            className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null; // Prevent infinite loop
+                              if (target.parentNode) {
+                                const parent = target.parentNode as HTMLElement;
+                                parent.innerHTML = "";
+                                const nameToUse =
+                                  student.fullName || student.username || "";
+                                const initials = nameToUse
+                                  ? nameToUse
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")
+                                      .slice(0, 2)
+                                  : "";
+                                parent.className =
+                                  "w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800";
+                                parent.textContent = initials || "";
+                              }
+                            }}
+                            onLoad={(e) => {}}
+                          />
+                        </button>
                       ) : student.fullName || student.username ? (
                         <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold uppercase text-red-800">
                           {(student.fullName || student.username)
@@ -1485,6 +1512,37 @@ const Page = ({
                   will do next and enter it here.
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedPhoto && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <div
+              className="relative flex h-[min(80vw,24rem)] w-[min(80vw,24rem)] items-center justify-center"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="relative h-full w-full overflow-hidden rounded-full border-1 border-gray-100/10 shadow-2xl">
+                <Image
+                  fill
+                  src={selectedPhoto}
+                  alt={student?.fullName || student?.username || "Student"}
+                  sizes="100vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <button
+                type="button"
+                className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-red-800 text-gray-700 shadow-md transition-colors "
+                onClick={() => setSelectedPhoto(null)}
+                aria-label="Close photo preview"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
             </div>
           </div>
         )}

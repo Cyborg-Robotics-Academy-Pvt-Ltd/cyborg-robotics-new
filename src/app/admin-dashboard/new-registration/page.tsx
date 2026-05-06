@@ -1,6 +1,14 @@
 "use client";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import {
   Table,
@@ -27,6 +35,7 @@ import {
   RefreshCw,
   X,
   FileSpreadsheet,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -41,6 +50,8 @@ type FirestoreRecord = Record<string, any>;
 
 interface Registration {
   id: string;
+  firestoreId?: string;
+  paymentDocId?: string;
   studentName?: string;
   dateOfBirth?: string;
   currentAge?: string;
@@ -143,17 +154,19 @@ const normalizeRegistration = (
       studentData.studentName ||
       studentData.fullName ||
       "",
-    dateOfBirth: record.dateOfBirth || draft.dateOfBirth || studentData.dateOfBirth || "",
+    dateOfBirth:
+      record.dateOfBirth || draft.dateOfBirth || studentData.dateOfBirth || "",
     currentAge:
-      record.currentAge ||
-      draft.currentAge ||
-      studentData.currentAge ||
-      "",
-    schoolName: record.schoolName || draft.schoolName || studentData.schoolName || "",
+      record.currentAge || draft.currentAge || studentData.currentAge || "",
+    schoolName:
+      record.schoolName || draft.schoolName || studentData.schoolName || "",
     class: record.class || draft.class || studentData.class || "",
     board: record.board || draft.board || studentData.board || "",
     primaryParentType:
-      record.primaryParentType || draft.primaryParentType || parentData.primaryParentType || "",
+      record.primaryParentType ||
+      draft.primaryParentType ||
+      parentData.primaryParentType ||
+      "",
     primaryParentName:
       record.primaryParentName ||
       draft.primaryParentName ||
@@ -174,11 +187,23 @@ const normalizeRegistration = (
     currentAddress: record.currentAddress || draft.currentAddress || "",
     permanentAddress: record.permanentAddress || draft.permanentAddress || "",
     selectedCourseKey:
-      record.selectedCourseKey || record.courseKey || draft.selectedCourseKey || course.key || "",
+      record.selectedCourseKey ||
+      record.courseKey ||
+      draft.selectedCourseKey ||
+      course.key ||
+      "",
     selectedCourseName:
-      record.selectedCourseName || record.courseName || draft.selectedCourseName || course.name || "",
+      record.selectedCourseName ||
+      record.courseName ||
+      draft.selectedCourseName ||
+      course.name ||
+      "",
     selectedCourseFee:
-      record.selectedCourseFee || draft.selectedCourseFee || course.price || record.amount || "",
+      record.selectedCourseFee ||
+      draft.selectedCourseFee ||
+      course.price ||
+      record.amount ||
+      "",
     paymentType: record.paymentType || draft.paymentType || "",
     paidAmount: record.paidAmount || draft.paidAmount || record.amount || "",
     paymentRemark: record.paymentRemark || draft.paymentRemark || "",
@@ -209,6 +234,9 @@ const Page = () => {
     direction: "desc",
   });
   const [exporting, setExporting] = useState(false);
+  const [removingRegistrationId, setRemovingRegistrationId] = useState<
+    string | null
+  >(null);
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -223,9 +251,10 @@ const Page = () => {
         getDocs(paymentsCollection),
       ]);
 
-      const registrationData = registrationsSnapshot.docs.map((doc) =>
-        normalizeRegistration(doc.data() as FirestoreRecord, doc.id),
-      );
+      const registrationData = registrationsSnapshot.docs.map((doc) => ({
+        ...normalizeRegistration(doc.data() as FirestoreRecord, doc.id),
+        firestoreId: doc.id,
+      }));
 
       const paymentFallbackData = paymentsSnapshot.docs
         .map((doc) => ({
@@ -233,12 +262,12 @@ const Page = () => {
           data: doc.data() as FirestoreRecord,
         }))
         .filter(({ data }) => data.paymentFlow !== "workshop")
-        .map(({ id, data }) => normalizeRegistration(data, `payment-${id}`));
+        .map(({ id, data }) => ({
+          ...normalizeRegistration(data, `payment-${id}`),
+          paymentDocId: id,
+        }));
 
-      const merged = [
-        ...registrationData,
-        ...paymentFallbackData,
-      ].filter(
+      const merged = [...registrationData, ...paymentFallbackData].filter(
         (item, index, array) => {
           const itemKey = item.orderId || item.id;
           return (
@@ -309,6 +338,72 @@ const Page = () => {
     );
   };
 
+  const handleRemoveRegistration = useCallback(
+    async (registration: Registration) => {
+      const hasRegistrationDoc = Boolean(registration.firestoreId);
+      const hasPaymentReference = Boolean(
+        registration.paymentDocId || registration.orderId,
+      );
+
+      if (!hasRegistrationDoc && !hasPaymentReference) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to remove ${
+          registration.studentName || "this registration"
+        }? This action cannot be undone.`,
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      const db = getFirestore(app);
+      setRemovingRegistrationId(registration.id);
+
+      try {
+        const deletions: Promise<void>[] = [];
+
+        if (registration.firestoreId) {
+          deletions.push(
+            deleteDoc(doc(db, "registrations", registration.firestoreId)),
+          );
+        }
+
+        if (registration.paymentDocId) {
+          deletions.push(
+            deleteDoc(doc(db, "payments", registration.paymentDocId)),
+          );
+        } else if (registration.orderId) {
+          const paymentsQuery = query(
+            collection(db, "payments"),
+            where("orderId", "==", registration.orderId),
+          );
+          const paymentsSnapshot = await getDocs(paymentsQuery);
+
+          paymentsSnapshot.forEach((paymentDoc) => {
+            deletions.push(deleteDoc(paymentDoc.ref));
+          });
+        }
+
+        await Promise.all(deletions);
+
+        setRegistrations((current) =>
+          current.filter((item) => item.id !== registration.id),
+        );
+        setFilteredRegistrations((current) =>
+          current.filter((item) => item.id !== registration.id),
+        );
+      } catch (error) {
+        console.error("Failed to remove registration:", error);
+      } finally {
+        setRemovingRegistrationId(null);
+      }
+    },
+    [],
+  );
+
   const exportToExcel = async () => {
     setExporting(true);
     try {
@@ -338,7 +433,10 @@ const Page = () => {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(sortedRegistrations.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedRegistrations.length / itemsPerPage),
+  );
   const paginated = sortedRegistrations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -353,196 +451,283 @@ const Page = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 mt-20 "
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4 py-8"
     >
-      <Card className="shadow-xl rounded-3xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 p-6 border-b">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <CardTitle className="text-3xl font-bold text-white">
-              Student Registrations
-            </CardTitle>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-rose-700" />
-                <Input
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-10 rounded-full  bg-white   border-none shadow-sm "
-                />
-                {searchTerm && (
-                  <X
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 cursor-pointer text-gray-400 hover:text-rose-600"
-                  />
-                )}
+      <div className="max-w-7xl mx-auto">
+        <Card className="shadow-lg border-0 rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-red-900 to-red-800 px-6 py-8 border-b-0">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle className="text-3xl font-bold text-white mb-1">
+                    Student Registrations
+                  </CardTitle>
+                  <p className="text-red-100 text-sm">
+                    {sortedRegistrations.length} total registrations
+                  </p>
+                </div>
               </div>
-              <Button
-                onClick={fetchRegistrations}
-                className="bg-red-800 hover:bg-red-900 text-white rounded-full flex items-center gap-2"
-              >
-                <RefreshCw
-                  className={loading ? "animate-spin" : ""}
-                  color="white"
-                />{" "}
-                Refresh
-              </Button>
-              <Button
-                onClick={exportToExcel}
-                disabled={exporting || sortedRegistrations.length === 0}
-                className="bg-green-600 text-white hover:bg-green-700 rounded-full flex items-center gap-2"
-              >
-                <FileSpreadsheet color="white" />{" "}
-                {exporting ? "Exporting..." : "Export"}
-              </Button>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1 sm:flex-initial sm:min-w-80">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by name, school, course, or contact..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-11 pr-10 py-2.5 rounded-lg bg-white border border-gray-200 shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={fetchRegistrations}
+                    disabled={loading}
+                    className="bg-white text-red-800 hover:bg-gray-100 border border-gray-200 rounded-lg shadow-sm transition-all flex items-center gap-2 px-4"
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                    />
+                    <span className="hidden sm:inline">Refresh</span>
+                  </Button>
+
+                  <Button
+                    onClick={exportToExcel}
+                    disabled={exporting || sortedRegistrations.length === 0}
+                    className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg shadow-sm transition-all flex items-center gap-2 px-4"
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {exporting ? "Exporting..." : "Export"}
+                    </span>
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="flex justify-center items-center h-60 bg-gradient-to-r from-red-900 via-red-800 to-red-700">
-              <Loader2 className="animate-spin h-8 w-8 text-rose-700" />
-              <span className="ml-2 text-white">Loading...</span>
-            </div>
-          ) : error ? (
-            <div className="text-center p-8 text-rose-700">{error}</div>
-          ) : paginated.length === 0 ? (
-            <div className="text-center p-8 text-gray-500">
-              No registrations found.
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table className="min-w-full">
-                  <TableHeader className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white sticky top-0 z-10">
-                    <TableRow>
-                      {[
-                        { key: "dateOfRegistration", label: "Date" },
-                        { key: "studentName", label: "Name" },
-                        { key: "currentAge", label: "Age" },
-                        { key: "schoolName", label: "School" },
-                        { key: "class", label: "Class" },
-                        { key: "selectedCourseName", label: "Course" },
-                        { key: "paymentType", label: "Payment Type" },
-                        { key: "paidAmount", label: "Paid Amount" },
-                        { key: "paymentRemark", label: "Payment Remark" },
-                        { key: "primaryParentName", label: "Parent" },
-                        { key: "primaryParentContact", label: "Contact" },
-                      ].map((col) => (
-                        <TableHead
-                          key={col.label}
-                          onClick={() =>
-                            col.key && handleSort(col.key as keyof Registration)
-                          }
-                          className={`cursor-pointer px-4 py-3 ${
-                            col.key === "dateOfRegistration" ? "w-28" : ""
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center h-64 bg-white">
+                <Loader2 className="h-8 w-8 animate-spin text-red-600 mb-3" />
+                <p className="text-gray-500">Loading registrations...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-6 text-red-700">
+                {error}
+              </div>
+            ) : paginated.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 bg-white text-gray-400">
+                <Search className="h-12 w-12 mb-3 opacity-30" />
+                <p>No registrations found.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto border-t border-gray-100">
+                  <Table className="w-full">
+                    <TableHeader className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                      <TableRow>
+                        {[
+                          { key: "dateOfRegistration", label: "Date" },
+                          { key: "studentName", label: "Name" },
+                          { key: "currentAge", label: "Age" },
+                          { key: "schoolName", label: "School" },
+                          { key: "class", label: "Class" },
+                          { key: "selectedCourseName", label: "Course" },
+                          { key: "paymentType", label: "Payment Type" },
+                          { key: "paidAmount", label: "Paid Amount" },
+                          { key: "paymentRemark", label: "Remark" },
+                          { key: "primaryParentName", label: "Parent" },
+                          { key: "primaryParentContact", label: "Contact" },
+                          { key: "actions", label: "Actions" },
+                        ].map((col) => (
+                          <TableHead
+                            key={col.label}
+                            onClick={() => {
+                              if (col.key === "actions") return;
+                              handleSort(col.key as keyof Registration);
+                            }}
+                            className={`px-4 py-3 text-xs font-semibold text-gray-700 ${
+                              col.key === "actions"
+                                ? ""
+                                : "cursor-pointer hover:bg-gray-100"
+                            } transition-colors`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{col.label}</span>
+                              {col.key !== "actions" &&
+                                sortConfig?.key === col.key &&
+                                (sortConfig.direction === "asc" ? (
+                                  <ChevronUp
+                                    size={14}
+                                    className="text-red-600"
+                                  />
+                                ) : (
+                                  <ChevronDown
+                                    size={14}
+                                    className="text-red-600"
+                                  />
+                                ))}
+                            </div>
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginated.map((reg, i) => (
+                        <TableRow
+                          key={reg.id}
+                          className="border-b border-gray-100 hover:bg-red-50 transition-colors"
+                        >
+                          <TableCell className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                            {reg.dateOfRegistration || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm font-medium text-gray-900">
+                            {reg.studentName || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700">
+                            {reg.currentAge || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700">
+                            {reg.schoolName || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700">
+                            {reg.class || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                              {reg.selectedCourseName || "-"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700">
+                            {reg.paymentType || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm font-medium text-emerald-700">
+                            {reg.paidAmount ?? "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
+                            {reg.paymentRemark || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700">
+                            {reg.primaryParentName || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm text-gray-700 font-mono text-xs">
+                            {reg.primaryParentContact || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveRegistration(reg)}
+                              disabled={
+                                removingRegistrationId === reg.id ||
+                                (!reg.firestoreId &&
+                                  !reg.paymentDocId &&
+                                  !reg.orderId)
+                              }
+                              className="text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                            >
+                              {removingRegistrationId === reg.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center text-sm text-gray-600">
+                    <span>
+                      Showing {(currentPage - 1) * itemsPerPage + 1}–
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        sortedRegistrations.length,
+                      )}{" "}
+                      of {sortedRegistrations.length}
+                    </span>
+                    <Select
+                      value={String(itemsPerPage)}
+                      onValueChange={(value) => {
+                        setItemsPerPage(Number(value));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-[140px] bg-white border-gray-200 text-gray-700 text-sm">
+                        <SelectValue placeholder="Rows per page" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PAGE_SIZE_OPTIONS.map((size) => (
+                          <SelectItem key={size} value={String(size)}>
+                            {size} per page
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="border-gray-200 hover:bg-gray-100"
+                    >
+                      Prev
+                    </Button>
+                    <div className="flex gap-1">
+                      {Array.from(
+                        { length: totalPages },
+                        (_, idx) => idx + 1,
+                      ).map((n) => (
+                        <Button
+                          key={n}
+                          size="sm"
+                          variant={n === currentPage ? "default" : "outline"}
+                          onClick={() => setCurrentPage(n)}
+                          className={`min-w-10 ${
+                            n === currentPage
+                              ? "bg-red-600 hover:bg-red-700 text-white"
+                              : "border-gray-200 text-gray-700 hover:bg-gray-100"
                           }`}
                         >
-                          <div className="flex items-center gap-1">
-                            {col.label}
-                            {sortConfig?.key === col.key &&
-                              (sortConfig.direction === "asc" ? (
-                                <ChevronUp size={14} />
-                              ) : (
-                                <ChevronDown size={14} />
-                              ))}
-                          </div>
-                        </TableHead>
+                          {n}
+                        </Button>
                       ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginated.map((reg, i) => (
-                      <TableRow
-                        key={reg.id}
-                        className={`${i % 2 ? "bg-gray-50" : "bg-white"}`}
-                      >
-                        <TableCell className="min-w-32">
-                          {reg.dateOfRegistration || "-"}
-                        </TableCell>
-                        <TableCell>{reg.studentName || "-"}</TableCell>
-                        <TableCell>{reg.currentAge || "-"}</TableCell>
-                        <TableCell>{reg.schoolName || "-"}</TableCell>
-                        <TableCell>{reg.class || "-"}</TableCell>
-                        <TableCell>{reg.selectedCourseName || "-"}</TableCell>
-                        <TableCell>{reg.paymentType || "-"}</TableCell>
-                        <TableCell>{reg.paidAmount ?? "-"}</TableCell>
-                        <TableCell>{reg.paymentRemark || "-"}</TableCell>
-                        <TableCell>{reg.primaryParentName || "-"}</TableCell>
-                        <TableCell>{reg.primaryParentContact || "-"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="flex flex-col gap-4 p-4 bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
-                  <span>
-                    Showing {(currentPage - 1) * itemsPerPage + 1}-
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      sortedRegistrations.length,
-                    )} {""}
-                    of {sortedRegistrations.length}
-                  </span>
-                  <Select
-                    value={String(itemsPerPage)}
-                    onValueChange={(value) => {
-                      setItemsPerPage(Number(value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-[140px] bg-white text-black">
-                      <SelectValue placeholder="Rows per page" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAGE_SIZE_OPTIONS.map((size) => (
-                        <SelectItem key={size} value={String(size)}>
-                          {size} / page
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Prev
-                  </Button>
-                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((n) => (
+                    </div>
                     <Button
-                      key={n}
+                      variant="outline"
                       size="sm"
-                      variant={n === currentPage ? "default" : "outline"}
-                      onClick={() => setCurrentPage(n)}
-                      className="min-w-10"
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(p + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="border-gray-200 hover:bg-gray-100"
                     >
-                      {n}
+                      Next
                     </Button>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(p + 1, totalPages))
-                    }
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </motion.div>
   );
 };
 
 export default Page;
-
