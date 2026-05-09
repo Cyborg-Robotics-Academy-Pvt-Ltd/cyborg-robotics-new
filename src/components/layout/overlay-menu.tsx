@@ -454,7 +454,7 @@ export default function OverlayMenu({
                     alt="Cyborg Robotics Academy"
                     width={200}
                     height={32}
-                    className="h-14 w-44"
+                    className="h-14 w-auto"
                   />
                 </Link>
               </div>

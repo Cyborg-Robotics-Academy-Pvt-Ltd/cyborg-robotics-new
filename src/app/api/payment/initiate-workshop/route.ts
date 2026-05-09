@@ -16,6 +16,18 @@ const WORKSHOPS = {
     title: "LEGO Robotics Workshop",
     amount: 499,
   },
+  "drone-workshop": {
+    title: "Drone Workshop",
+    amount: 499,
+  },
+  "3d-design-workshop": {
+    title: "3D Design Workshop",
+    amount: 99,
+  },
+  "pictoblox-workshop": {
+    title: "PictoBlox Workshop",
+    amount: 49,
+  },
   "google-site-workshop": {
     title: "Google Sites Portfolio Workshop",
     amount: 99,

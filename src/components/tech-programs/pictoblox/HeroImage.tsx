@@ -8,26 +8,26 @@ import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
 import { saveOrderId } from "@/lib/order-id-storage";
+import {
+  normalizeWorkshopRegistrationForm,
+  validateWorkshopRegistrationForm,
+  type WorkshopRegistrationFormData,
+  type WorkshopRegistrationFormErrors,
+} from "@/lib/workshop-form-validation";
 
 interface StaticImage {
   url: string;
   alt: string;
 }
 
-interface RegistrationFormData {
-  email: string;
-  contactNumber: string;
-  childName: string;
-  age: string;
-  city: string;
-  area: string;
-}
-
 const PictoBloxHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [formError, setFormError] = useState("");
-  const [formData, setFormData] = useState<RegistrationFormData>({
+  const [formErrors, setFormErrors] = useState<WorkshopRegistrationFormErrors>(
+    {},
+  );
+  const [formData, setFormData] = useState<WorkshopRegistrationFormData>({
     email: "",
     contactNumber: "",
     childName: "",
@@ -68,7 +68,16 @@ const PictoBloxHero = () => {
   ) => {
     const { name, value } = event.target;
     setFormError("");
-    setFormData((current) => ({ ...current, [name]: value }));
+    setFormErrors((current) => ({ ...current, [name]: "" }));
+    setFormData((current) => ({
+      ...current,
+      [name]:
+        name === "contactNumber"
+          ? value.replace(/\D/g, "").slice(0, 10)
+          : name === "age"
+            ? value.replace(/[^\d]/g, "").slice(0, 2)
+            : value,
+    }));
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -76,20 +85,33 @@ const PictoBloxHero = () => {
     if (isInitiatingPayment) return;
 
     try {
+      const normalizedFormData = normalizeWorkshopRegistrationForm(formData);
+      const validationErrors =
+        validateWorkshopRegistrationForm(normalizedFormData);
+
+      setFormData(normalizedFormData);
+      setFormErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setFormError("Please fix the highlighted fields and try again.");
+        return;
+      }
+
       setIsInitiatingPayment(true);
       setFormError("");
+      setFormErrors({});
 
       const response = await fetch("/api/payment/initiate-workshop", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workshopKey: "pictoblox-workshop",
-          email: formData.email,
-          contactNumber: formData.contactNumber,
-          childName: formData.childName,
-          age: formData.age,
-          city: formData.city,
-          area: formData.area,
+          email: normalizedFormData.email,
+          contactNumber: normalizedFormData.contactNumber,
+          childName: normalizedFormData.childName,
+          age: normalizedFormData.age,
+          city: normalizedFormData.city,
+          area: normalizedFormData.area,
         }),
       });
 
@@ -508,8 +530,12 @@ const PictoBloxHero = () => {
                     placeholder="Enter your email address"
                     value={formData.email}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.email)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.email && (
+                    <p className="text-xs text-red-600">{formErrors.email}</p>
+                  )}
                 </div>
 
                 {/* Contact – full width */}
@@ -525,11 +551,19 @@ const PictoBloxHero = () => {
                     name="contactNumber"
                     type="tel"
                     required
+                    inputMode="numeric"
+                    maxLength={10}
                     placeholder="Enter contact number"
                     value={formData.contactNumber}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.contactNumber)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.contactNumber && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.contactNumber}
+                    </p>
+                  )}
                 </div>
 
                 {/* Child name – full width */}
@@ -548,8 +582,14 @@ const PictoBloxHero = () => {
                     placeholder="Enter child's full name"
                     value={formData.childName}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.childName)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.childName && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.childName}
+                    </p>
+                  )}
                 </div>
 
                 {/* Age */}
@@ -567,11 +607,16 @@ const PictoBloxHero = () => {
                     min="4"
                     max="16"
                     required
+                    inputMode="numeric"
                     placeholder="4-16"
                     value={formData.age}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.age)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.age && (
+                    <p className="text-xs text-red-600">{formErrors.age}</p>
+                  )}
                 </div>
 
                 {/* City */}
@@ -590,8 +635,12 @@ const PictoBloxHero = () => {
                     placeholder="Enter city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.city)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.city && (
+                    <p className="text-xs text-red-600">{formErrors.city}</p>
+                  )}
                 </div>
 
                 {/* Area – full width */}
@@ -610,8 +659,12 @@ const PictoBloxHero = () => {
                     placeholder="Enter area or location"
                     value={formData.area}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.area)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.area && (
+                    <p className="text-xs text-red-600">{formErrors.area}</p>
+                  )}
                 </div>
               </div>
               <div className="mb-4"></div>

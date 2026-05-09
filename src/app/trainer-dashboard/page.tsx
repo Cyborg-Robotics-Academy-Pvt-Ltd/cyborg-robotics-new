@@ -535,18 +535,10 @@ export default function TrainerDashboard() {
                 <div className="mt-6 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-gray-100 bg-gray-50/90 px-4 py-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
-                      Assigned courses
+                      Active Student
                     </p>
                     <p className="mt-2 text-2xl font-bold text-gray-900">
                       {overview.assignedCourses}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50/90 px-4 py-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
-                      Recent additions
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-gray-900">
-                      {overview.recentStudents}
                     </p>
                   </div>
                 </div>

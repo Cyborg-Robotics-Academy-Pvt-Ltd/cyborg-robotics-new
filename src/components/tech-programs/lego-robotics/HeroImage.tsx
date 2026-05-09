@@ -8,26 +8,26 @@ import "swiper/css/effect-cards";
 import { EffectCards, Autoplay } from "swiper/modules";
 import Modal from "@/components/ui/Modal";
 import { saveOrderId } from "@/lib/order-id-storage";
+import {
+  normalizeWorkshopRegistrationForm,
+  validateWorkshopRegistrationForm,
+  type WorkshopRegistrationFormData,
+  type WorkshopRegistrationFormErrors,
+} from "@/lib/workshop-form-validation";
 
 interface StaticImage {
   url: string;
   alt: string;
 }
 
-interface RegistrationFormData {
-  email: string;
-  contactNumber: string;
-  childName: string;
-  age: string;
-  city: string;
-  area: string;
-}
-
 const HeroImage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [formError, setFormError] = useState("");
-  const [formData, setFormData] = useState<RegistrationFormData>({
+  const [formErrors, setFormErrors] = useState<WorkshopRegistrationFormErrors>(
+    {},
+  );
+  const [formData, setFormData] = useState<WorkshopRegistrationFormData>({
     email: "",
     contactNumber: "",
     childName: "",
@@ -68,9 +68,15 @@ const HeroImage = () => {
   ) => {
     const { name, value } = event.target;
     setFormError("");
+    setFormErrors((current) => ({ ...current, [name]: "" }));
     setFormData((current) => ({
       ...current,
-      [name]: value,
+      [name]:
+        name === "contactNumber"
+          ? value.replace(/\D/g, "").slice(0, 10)
+          : name === "age"
+            ? value.replace(/[^\d]/g, "").slice(0, 2)
+            : value,
     }));
   };
 
@@ -82,8 +88,21 @@ const HeroImage = () => {
     }
 
     try {
+      const normalizedFormData = normalizeWorkshopRegistrationForm(formData);
+      const validationErrors =
+        validateWorkshopRegistrationForm(normalizedFormData);
+
+      setFormData(normalizedFormData);
+      setFormErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setFormError("Please fix the highlighted fields and try again.");
+        return;
+      }
+
       setIsInitiatingPayment(true);
       setFormError("");
+      setFormErrors({});
 
       const response = await fetch("/api/payment/initiate-workshop", {
         method: "POST",
@@ -92,12 +111,12 @@ const HeroImage = () => {
         },
         body: JSON.stringify({
           workshopKey: "lego-robotics-workshop",
-          email: formData.email,
-          contactNumber: formData.contactNumber,
-          childName: formData.childName,
-          age: formData.age,
-          city: formData.city,
-          area: formData.area,
+          email: normalizedFormData.email,
+          contactNumber: normalizedFormData.contactNumber,
+          childName: normalizedFormData.childName,
+          age: normalizedFormData.age,
+          city: normalizedFormData.city,
+          area: normalizedFormData.area,
         }),
       });
 
@@ -854,7 +873,11 @@ const HeroImage = () => {
                     placeholder="Enter your email address"
                     value={formData.email}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.email)}
                   />
+                  {formErrors.email && (
+                    <p className="text-xs text-red-600">{formErrors.email}</p>
+                  )}
                 </div>
 
                 <div className="registration-field full-width">
@@ -866,11 +889,19 @@ const HeroImage = () => {
                     name="contactNumber"
                     type="tel"
                     required
+                    inputMode="numeric"
+                    maxLength={10}
                     className="registration-input"
                     placeholder="Enter contact number"
                     value={formData.contactNumber}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.contactNumber)}
                   />
+                  {formErrors.contactNumber && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.contactNumber}
+                    </p>
+                  )}
                 </div>
 
                 <div className="registration-field full-width">
@@ -886,7 +917,13 @@ const HeroImage = () => {
                     placeholder="Enter child's full name"
                     value={formData.childName}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.childName)}
                   />
+                  {formErrors.childName && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.childName}
+                    </p>
+                  )}
                 </div>
 
                 <div className="registration-field">
@@ -900,11 +937,16 @@ const HeroImage = () => {
                     min="4"
                     max="16"
                     required
+                    inputMode="numeric"
                     className="registration-input"
                     placeholder="4-16"
                     value={formData.age}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.age)}
                   />
+                  {formErrors.age && (
+                    <p className="text-xs text-red-600">{formErrors.age}</p>
+                  )}
                 </div>
 
                 <div className="registration-field">
@@ -920,7 +962,11 @@ const HeroImage = () => {
                     placeholder="Enter city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.city)}
                   />
+                  {formErrors.city && (
+                    <p className="text-xs text-red-600">{formErrors.city}</p>
+                  )}
                 </div>
 
                 <div className="registration-field full-width">
@@ -936,7 +982,11 @@ const HeroImage = () => {
                     placeholder="Enter area or location"
                     value={formData.area}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.area)}
                   />
+                  {formErrors.area && (
+                    <p className="text-xs text-red-600">{formErrors.area}</p>
+                  )}
                 </div>
               </div>
               <div className="mb-4"></div>

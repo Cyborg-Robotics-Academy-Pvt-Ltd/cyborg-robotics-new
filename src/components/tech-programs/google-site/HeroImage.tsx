@@ -1,33 +1,29 @@
 "use client";
-import Image from "next/image";
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { useState, useRef } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-cards";
-import { EffectCards, Autoplay } from "swiper/modules";
+import { useState, useRef, useEffect } from "react";
 import Modal from "@/components/ui/Modal";
 import { saveOrderId } from "@/lib/order-id-storage";
+import {
+  normalizeWorkshopRegistrationForm,
+  validateWorkshopRegistrationForm,
+  type WorkshopRegistrationFormData,
+  type WorkshopRegistrationFormErrors,
+} from "@/lib/workshop-form-validation";
 
 interface StaticImage {
   url: string;
   alt: string;
 }
 
-interface RegistrationFormData {
-  email: string;
-  contactNumber: string;
-  childName: string;
-  age: string;
-  city: string;
-  area: string;
-}
-
 const GoogleSitesHero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [formError, setFormError] = useState("");
-  const [formData, setFormData] = useState<RegistrationFormData>({
+  const [formErrors, setFormErrors] = useState<WorkshopRegistrationFormErrors>(
+    {},
+  );
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [formData, setFormData] = useState<WorkshopRegistrationFormData>({
     email: "",
     contactNumber: "",
     childName: "",
@@ -68,7 +64,17 @@ const GoogleSitesHero = () => {
   ) => {
     const { name, value } = event.target;
     setFormError("");
-    setFormData((current) => ({ ...current, [name]: value }));
+    setFormErrors((current) => ({ ...current, [name]: "" }));
+    setFormData((current) => {
+      const nextValue =
+        name === "contactNumber"
+          ? value.replace(/\D/g, "").slice(0, 10)
+          : name === "age"
+            ? value.replace(/[^\d]/g, "").slice(0, 2)
+            : value;
+
+      return { ...current, [name]: nextValue };
+    });
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -76,20 +82,33 @@ const GoogleSitesHero = () => {
     if (isInitiatingPayment) return;
 
     try {
+      const normalizedFormData = normalizeWorkshopRegistrationForm(formData);
+      const validationErrors =
+        validateWorkshopRegistrationForm(normalizedFormData);
+
+      setFormData(normalizedFormData);
+      setFormErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setFormError("Please fix the highlighted fields and try again.");
+        return;
+      }
+
       setIsInitiatingPayment(true);
       setFormError("");
+      setFormErrors({});
 
       const response = await fetch("/api/payment/initiate-workshop", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workshopKey: "google-site-workshop",
-          email: formData.email,
-          contactNumber: formData.contactNumber,
-          childName: formData.childName,
-          age: formData.age,
-          city: formData.city,
-          area: formData.area,
+          email: normalizedFormData.email,
+          contactNumber: normalizedFormData.contactNumber,
+          childName: normalizedFormData.childName,
+          age: normalizedFormData.age,
+          city: normalizedFormData.city,
+          area: normalizedFormData.area,
         }),
       });
 
@@ -165,6 +184,16 @@ const GoogleSitesHero = () => {
     { icon: "🔗", text: "Live portfolio website link to keep & share" },
     { icon: "📜", text: "Certificate of participation" },
   ];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveImageIndex((currentIndex) =>
+        currentIndex === staticImages.length - 1 ? 0 : currentIndex + 1,
+      );
+    }, 2800);
+
+    return () => window.clearInterval(interval);
+  }, [staticImages.length]);
 
   return (
     <div className="font-['DM_Sans',sans-serif] overflow-hidden mt-6">
@@ -427,27 +456,33 @@ const GoogleSitesHero = () => {
                       }}
                     />
 
-                    <Swiper
-                      effect="cards"
-                      grabCursor
-                      modules={[EffectCards, Autoplay]}
-                      autoplay={{ delay: 2800, disableOnInteraction: false }}
-                      loop
-                      className="!w-full !h-full [&_.swiper-slide]:rounded-2xl [&_.swiper-slide]:overflow-hidden [&_.swiper-slide_img]:w-full [&_.swiper-slide_img]:h-full [&_.swiper-slide_img]:object-cover"
-                    >
-                      {staticImages.map((image, index) => (
-                        <SwiperSlide key={index}>
-                          <Image
-                            src={image.url}
-                            alt={image.alt}
-                            width={260}
-                            height={360}
-                            className="w-full h-full object-cover"
-                            unoptimized
-                          />
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
+                    {staticImages.map((image, index) => {
+                      const isActive = index === activeImageIndex;
+
+                      return (
+                        <motion.img
+                          key={image.url}
+                          src={image.url}
+                          alt={image.alt}
+                          className="absolute inset-0 h-full w-full rounded-[20px] object-cover"
+                          initial={false}
+                          animate={{
+                            opacity: isActive ? 1 : 0,
+                            scale: isActive ? 1 : 0.96,
+                            rotate: isActive
+                              ? 0
+                              : index < activeImageIndex
+                                ? -2
+                                : 2,
+                          }}
+                          transition={{ duration: 0.45, ease: "easeOut" }}
+                          style={{
+                            zIndex: isActive ? 2 : 1,
+                            pointerEvents: isActive ? "auto" : "none",
+                          }}
+                        />
+                      );
+                    })}
 
                     {/* Bottom gradient overlay with progress bars */}
                     <div
@@ -457,10 +492,12 @@ const GoogleSitesHero = () => {
                         flex items-end pb-3 px-[14px] gap-1
                       "
                     >
-                      {[...Array(5)].map((_, i) => (
+                      {staticImages.map((image, i) => (
                         <div
-                          key={i}
-                          className={`flex-1 h-[2.5px] rounded-sm ${i === 0 ? "bg-white" : "bg-white/30"}`}
+                          key={image.url}
+                          className={`h-[2.5px] flex-1 rounded-sm ${
+                            i === activeImageIndex ? "bg-white" : "bg-white/30"
+                          }`}
                         />
                       ))}
                     </div>
@@ -529,8 +566,12 @@ const GoogleSitesHero = () => {
                     placeholder="Enter your email address"
                     value={formData.email}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.email)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.email && (
+                    <p className="text-xs text-red-600">{formErrors.email}</p>
+                  )}
                 </div>
 
                 {/* Contact – full width */}
@@ -546,11 +587,19 @@ const GoogleSitesHero = () => {
                     name="contactNumber"
                     type="tel"
                     required
+                    inputMode="numeric"
+                    maxLength={10}
                     placeholder="Enter contact number"
                     value={formData.contactNumber}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.contactNumber)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.contactNumber && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.contactNumber}
+                    </p>
+                  )}
                 </div>
 
                 {/* Child name – full width */}
@@ -569,8 +618,14 @@ const GoogleSitesHero = () => {
                     placeholder="Enter child's full name"
                     value={formData.childName}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.childName)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.childName && (
+                    <p className="text-xs text-red-600">
+                      {formErrors.childName}
+                    </p>
+                  )}
                 </div>
 
                 {/* Age */}
@@ -588,11 +643,16 @@ const GoogleSitesHero = () => {
                     min="4"
                     max="16"
                     required
+                    inputMode="numeric"
                     placeholder="4-16"
                     value={formData.age}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.age)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.age && (
+                    <p className="text-xs text-red-600">{formErrors.age}</p>
+                  )}
                 </div>
 
                 {/* City */}
@@ -611,8 +671,12 @@ const GoogleSitesHero = () => {
                     placeholder="Enter city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.city)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.city && (
+                    <p className="text-xs text-red-600">{formErrors.city}</p>
+                  )}
                 </div>
 
                 {/* Area – full width */}
@@ -631,8 +695,12 @@ const GoogleSitesHero = () => {
                     placeholder="Enter area or location"
                     value={formData.area}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(formErrors.area)}
                     className="w-full border border-[rgba(168,27,30,0.18)] rounded-xl px-[14px] py-3 text-[14px] text-[#222] bg-white outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#A81B1E] focus:shadow-[0_0_0_4px_rgba(168,27,30,0.08)]"
                   />
+                  {formErrors.area && (
+                    <p className="text-xs text-red-600">{formErrors.area}</p>
+                  )}
                 </div>
               </div>
               <div className="mb-4"></div>
