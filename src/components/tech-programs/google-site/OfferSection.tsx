@@ -186,16 +186,19 @@ const GoogleSitesOfferSection = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
             {/* Media panel */}
             <motion.div
-              className="video-card relative h-[320px] md:h-[440px] rounded-3xl overflow-hidden lg:sticky lg:top-8"
+              className="lg:sticky lg:top-8"
               initial={{ opacity: 0, x: -24 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.65, ease: [0.23, 1, 0.32, 1] }}
-              style={{
-                boxShadow:
-                  "0 8px 40px rgba(6,35,65,0.12), 0 2px 8px rgba(6,35,65,0.06)",
-              }}
             >
+              <div
+                className="video-card relative h-[320px] overflow-hidden rounded-3xl md:h-[440px]"
+                style={{
+                  boxShadow:
+                    "0 8px 40px rgba(6,35,65,0.12), 0 2px 8px rgba(6,35,65,0.06)",
+                }}
+              >
               {/* Border frame */}
               <div
                 className="absolute inset-0 rounded-3xl z-10 pointer-events-none"
@@ -247,6 +250,7 @@ const GoogleSitesOfferSection = () => {
                     </span>
                   ))}
                 </div>
+              </div>
               </div>
             </motion.div>
 

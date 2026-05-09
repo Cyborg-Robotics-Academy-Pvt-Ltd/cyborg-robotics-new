@@ -254,6 +254,12 @@ export default function RegistrationSuccessClient() {
     "3D Printing": "https://chat.whatsapp.com/REPLACE_3DPRINTING",
     "Drone Technology": "https://chat.whatsapp.com/REPLACE_DRONE",
     "Lego-Robotics": "https://chat.whatsapp.com/REPLACE_LEGOROBOTICS",
+    "LEGO Robotics Workshop": "https://chat.whatsapp.com/REPLACE_LEGOROBOTICS",
+    "3D Design Workshop": "https://chat.whatsapp.com/REPLACE_3DPRINTING",
+    "Drone Workshop": "https://chat.whatsapp.com/REPLACE_DRONE",
+    "PictoBlox Workshop": "https://chat.whatsapp.com/REPLACE_PICTOBLOX",
+    "Google Sites Portfolio Workshop":
+      "https://chat.whatsapp.com/Kez45HjoVuXBXFEZhREfXT",
   };
   const WhatsAppIcon = () => (
     <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -261,6 +267,73 @@ export default function RegistrationSuccessClient() {
     </svg>
   );
   const normalize = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const workshopCommunityLabels: Record<string, string> = {
+    legoroboticsworkshop: "Lego-Robotics Workshop",
+    "3ddesignworkshop": "3D Design Workshop",
+    droneworkshop: "Drone Workshop",
+    pictobloxworkshop: "Pictoblox Workshop",
+    googlesitesportfolioworkshop: "Google-Site Workshop",
+  };
+  const COMMUNITY_CARD_CONTENT: Record<
+    string,
+    { title: string; imageSrc: string; imageAlt: string }
+  > = {
+    Programming: {
+      title: "Programming Community",
+      imageSrc: "/assets/online-course/python.avif",
+      imageAlt: "Programming community",
+    },
+    Robotics: {
+      title: "Robotics Community",
+      imageSrc: "/assets/classroom-course/ev3.png",
+      imageAlt: "Robotics community",
+    },
+    Electronics: {
+      title: "Electronics Community",
+      imageSrc: "/assets/classroom-course/arduino.webp",
+      imageAlt: "Electronics community",
+    },
+    "3D Printing": {
+      title: "3D Design Community",
+      imageSrc: "/assets/classroom-course/3d-printing.png",
+      imageAlt: "3D design community",
+    },
+    "Drone Technology": {
+      title: "Drone Community",
+      imageSrc: "/assets/classroom-course/Drone.png",
+      imageAlt: "Drone community",
+    },
+    "Lego-Robotics": {
+      title: "Lego-Robotics Community",
+      imageSrc: "/assets/workshops/lego/image.png",
+      imageAlt: "Lego robotics community",
+    },
+    "LEGO Robotics Workshop": {
+      title: "Lego-Robotics Workshop Community",
+      imageSrc: "/assets/workshops/lego/image.png",
+      imageAlt: "LEGO Robotics workshop",
+    },
+    "3D Design Workshop": {
+      title: "3D Design Workshop Community",
+      imageSrc: "/assets/workshops/3d-printing/IMG_0327.jpeg",
+      imageAlt: "3D design workshop",
+    },
+    "Drone Workshop": {
+      title: "Drone Workshop Community",
+      imageSrc: "/assets/workshops/drone/Drone_1.jpeg",
+      imageAlt: "Drone workshop",
+    },
+    "PictoBlox Workshop": {
+      title: "Pictoblox Workshop Community",
+      imageSrc: "/assets/workshops/pictoblox/image1.png",
+      imageAlt: "Pictoblox workshop",
+    },
+    "Google Sites Portfolio Workshop": {
+      title: "Google-Site Workshop Community",
+      imageSrc: "/assets/workshops/google-site/Google-Site.png",
+      imageAlt: "Google Site workshop",
+    },
+  };
 
   // ✅ Find purchased course entry
   const purchasedEntry = (() => {
@@ -280,12 +353,37 @@ export default function RegistrationSuccessClient() {
   })();
   // ✅ WhatsApp info
   const whatsappInfo = (() => {
+    const courseName = payment?.courseName?.trim();
+    if (courseName) {
+      const workshopLink = WHATSAPP_LINKS[courseName];
+      const workshopLabel = workshopCommunityLabels[normalize(courseName)];
+      const workshopCard = COMMUNITY_CARD_CONTENT[courseName];
+
+      if (workshopLink && workshopLabel) {
+        return {
+          link: workshopLink,
+          category: workshopLabel,
+          title: workshopCard?.title || `${workshopLabel} Community`,
+          imageSrc:
+            workshopCard?.imageSrc || "/assets/classroom-course/ev3.png",
+          imageAlt: workshopCard?.imageAlt || workshopLabel,
+        };
+      }
+    }
+
     const activeCategory =
       purchasedEntry?.[1]?.category || recommendedCourse?.course.category;
     if (!activeCategory) return null;
     const link = WHATSAPP_LINKS[activeCategory];
     if (!link) return null;
-    return { link, category: activeCategory };
+    const card = COMMUNITY_CARD_CONTENT[activeCategory];
+    return {
+      link,
+      category: activeCategory,
+      title: card?.title || `${activeCategory} Community`,
+      imageSrc: card?.imageSrc || "/assets/classroom-course/ev3.png",
+      imageAlt: card?.imageAlt || activeCategory,
+    };
   })();
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
@@ -346,16 +444,49 @@ export default function RegistrationSuccessClient() {
             {emailSending ? "Sending..." : "Email"}
           </Button> */}
         </div>
-        {/* WhatsApp Button inside card */}
+        {/* Community card */}
         {whatsappInfo && (
-          <a href={whatsappInfo.link} target="_blank" rel="noopener noreferrer">
-            <Button
-              size="sm"
-              className="gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white border-0 rounded-lg shadow-sm shadow-green-200"
-            >
-              <WhatsAppIcon />
-              Join {whatsappInfo.category} Community
-            </Button>
+          <a
+            href={whatsappInfo.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mb-6"
+          >
+            <div className="overflow-hidden w-86 rounded-2xl border border-green-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+              <div className="relative h-48 w-full overflow-hidden">
+                <Image
+                  src={whatsappInfo.imageSrc}
+                  alt={whatsappInfo.imageAlt}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-green-700 shadow-sm">
+                  <WhatsAppIcon />
+                  WhatsApp Community
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                  <p className="text-lg font-semibold">{whatsappInfo.title}</p>
+                  <p className="text-sm text-white/90">
+                    Stay connected for updates, resources, and support.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">
+                    Join {whatsappInfo.category}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Get workshop news and learning updates
+                  </p>
+                </div>
+                <Button className="gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white">
+                  <WhatsAppIcon />
+                  Join Now
+                </Button>
+              </div>
+            </div>
           </a>
         )}
         {emailStatus && (

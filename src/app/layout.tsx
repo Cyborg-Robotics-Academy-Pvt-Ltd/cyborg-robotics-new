@@ -22,7 +22,12 @@ const poppins = Poppins({
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={poppins.variable}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={poppins.variable}
+      data-scroll-behavior="smooth"
+    >
       <body
         className="font-body antialiased overflow-x-hidden"
         suppressHydrationWarning={true}
