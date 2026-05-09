@@ -169,7 +169,10 @@ const RegisterPage: React.FC = () => {
     } else if (stepToValidate === 4) {
       if (!formData.selectedCourseKey)
         newErrors.selectedCourseKey = "Please select a course.";
-      if (formData.paymentType === "installment") {
+      if (
+        formData.paymentType === "installment" ||
+        formData.paymentType === "other"
+      ) {
         if (!formData.paidAmount.trim())
           newErrors.paidAmount = "Please enter amount to pay.";
         else if (Number(formData.paidAmount) <= 0)
@@ -267,7 +270,8 @@ const RegisterPage: React.FC = () => {
           courseKey: formData.selectedCourseKey,
           paymentType: formData.paymentType,
           installmentAmount:
-            formData.paymentType === "installment"
+            formData.paymentType === "installment" ||
+            formData.paymentType === "other"
               ? Number(formData.paidAmount)
               : undefined,
           paymentRemark: formData.paymentRemark,
@@ -862,7 +866,7 @@ const RegisterPage: React.FC = () => {
                         value={formData.paymentType}
                         onChange={handleChange}
                         required
-                        options={["full", "installment"]}
+                        options={["full", "installment", "other"]}
                         icon="file"
                       />
 
@@ -903,7 +907,8 @@ const RegisterPage: React.FC = () => {
                         )}
                       </div>
 
-                      {formData.paymentType === "installment" && (
+                      {(formData.paymentType === "installment" ||
+                        formData.paymentType === "other") && (
                         <>
                           <FormField
                             id="paidAmount"
@@ -912,7 +917,11 @@ const RegisterPage: React.FC = () => {
                             value={formData.paidAmount}
                             onChange={handleChange}
                             required
-                            placeholder="Enter installment amount"
+                            placeholder={
+                              formData.paymentType === "installment"
+                                ? "Enter installment amount"
+                                : "Enter amount"
+                            }
                             icon="file"
                             error={errors.paidAmount}
                           />
@@ -922,7 +931,11 @@ const RegisterPage: React.FC = () => {
                               label="REMARK"
                               value={formData.paymentRemark}
                               onChange={handleChange}
-                              placeholder="Example: First installment"
+                              placeholder={
+                                formData.paymentType === "installment"
+                                  ? "Example: First installment"
+                                  : "Example: Scholarship, cash, custom plan"
+                              }
                             />
                           </div>
                         </>

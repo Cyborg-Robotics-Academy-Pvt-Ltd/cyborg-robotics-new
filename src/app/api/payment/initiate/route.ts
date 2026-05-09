@@ -113,15 +113,23 @@ export async function POST(req: Request) {
     }
 
     const resolvedPaymentType =
-      paymentType === "installment" ? "installment" : "full";
+      paymentType === "installment" || paymentType === "other"
+        ? paymentType
+        : "full";
 
     // Determine amount to charge
     let amount: number;
-    if (resolvedPaymentType === "installment") {
+    if (
+      resolvedPaymentType === "installment" ||
+      resolvedPaymentType === "other"
+    ) {
       const parsed = Number(installmentAmount);
       if (!parsed || isNaN(parsed) || parsed <= 0 || parsed > coursePrice) {
         return NextResponse.json(
-          { success: false, message: `Installment amount must be between 1 and ${coursePrice}` },
+          {
+            success: false,
+            message: `Amount must be between 1 and ${coursePrice}`,
+          },
           { status: 400 }
         );
       }
