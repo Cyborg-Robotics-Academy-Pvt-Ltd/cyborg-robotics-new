@@ -173,10 +173,7 @@ const Footer: React.FC<FooterProps> = () => {
                   className="mt-1 flex-shrink-0 text-red-800"
                   size={22}
                 />
-                <Link
-                  href="https://www.google.com/maps/place/North+Court,+Rd+Number+12,+Jogger's+Park,+Nilanjali+Society,+Kalyani+Nagar,+Pune,+Maharashtra+411006/@18.5492198,73.8982955,786m/data=!3m2!1e3!4b1!4m10!1m2!2m1!1sNorth+court,office+No:2A,+1st+floor,opposite+joggers+park,above+punjab+national+bank,kalyani+nagar,Pune+411+006!3m6!1s0x3bc2c110e47e39a3:0x1790569bae5ab0f4!8m2!3d18.5492148!4d73.9031664!15sCm9Ob3J0aCBjb3VydCxvZmZpY2UgTm86MkEsIDFzdCBmbG9vcixvcHBvc2l0ZSBqb2dnZXJzIHBhcmssYWJvdmUgcHVuamFiIG5hdGlvbmFsIGJhbmlla2FseWFuaSBuYWdhcixQdW5lIDQxMSAwMDYiA4gBAZIBEWNvbXBvdW5kX2J1aWxkaW5n4AEA!16s%2Fg%2F1hjggd2b0?authuser=0&entry=ttu&g_ep=EgoyMDI1MDMxNy4wIKXMDSoASAFQAw%3D%3D"
-                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
-                >
+                <Link href="https://maps.app.goo.gl/uJUYgFrou6qQoS1MA">
                   North Court, Office No: 2A, 1st Floor, Opposite Joggers Park,
                   Above Punjab National Bank, Kalyani Nagar, Pune 411 006
                 </Link>
