@@ -8,17 +8,17 @@ const centers = [
     isHQ: true,
     address:
       "North Court, Office No: 2A, 1st Floor,\nOpposite Joggers Park,\nAbove Punjab National Bank,\nKalyani Nagar, Pune 411006",
-    mapsQuery: "North Court Office 2A Kalyani Nagar Pune",
+    mapsQuery: "https://maps.app.goo.gl/XwqE8E4gk5UoyESh7",
     mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2950.192111274928!2d73.89855296924844!3d18.549219829758282!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c171b358032b%3A0x4458a6a5ef33d0c3!2sCyborg%20Robotics%20Academy%20Pvt%20Ltd!5e1!3m2!1sen!2sin!4v1778499346378!5m2!1sen!2sin",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2950.192111274928!2d73.89855296924846!3d18.54921982975829!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c171b358032b%3A0x4458a6a5ef33d0c3!2sCyborg%20Robotics%20Academy%20Pvt%20Ltd!5e1!3m2!1sen!2sin!4v1778501093110!5m2!1sen!2sin",
   },
   {
     name: "Kharadi",
     note: "BRANCH",
     isHQ: false,
     address:
-      "The Galaxy One, Eon Free Zone Rd,\nNext to EON IT Park & WTC, Kharadi,\nPune, Maharashtra 411014",
-    mapsQuery: "The Galaxy One Kharadi EON Free Zone Pune",
+      "EuroKids Preschool ,The Galaxy One, Eon Free Zone Rd,\nNext to EON IT Park & WTC, Kharadi,\nPune, Maharashtra 411014",
+    mapsQuery: "https://maps.app.goo.gl/W7PiBLEPQn1XskLM6",
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11800.816892947823!2d73.9311816554199!3d18.548518799999993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c16264034c3f%3A0xa8598fade87cd741!2sEuroKids%20PreSchool%20in%20Kharadi%2C%20Pune!5e1!3m2!1sen!2sin!4v1778499089543!5m2!1sen!2sin ",
   },
@@ -27,8 +27,8 @@ const centers = [
     note: "BRANCH",
     isHQ: false,
     address:
-      "Bungalow No 7, Acacia Garden 1,\nMagarpatta, Hadapsar,\nPune, Maharashtra 411013",
-    mapsQuery: "Bungalow 7 Acacia Garden 1 Magarpatta Hadapsar Pune",
+      "Tovi international Preschool, Bungalow No 7, Acacia Garden 1,\nMagarpatta, Hadapsar,\nPune, Maharashtra 411013",
+    mapsQuery: "https://maps.app.goo.gl/L2khHhBZWvbkeMyW6",
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2950.78540692325!2d73.92699624999999!3d18.5148503!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c1262af74173%3A0x45bc7bbccec93c68!2sTovi%20International%20Preschool%20-%20Best%20Preschool%20%26%20Daycare%20in%20Magarpatta!5e1!3m2!1sen!2sin!4v1778499277429!5m2!1sen!2sin",
   },
@@ -187,10 +187,7 @@ const BranchLocations = () => {
 
                 {/* Directions Button */}
                 <a
-                  href={
-                    "https://www.google.com/maps/search/?api=1&query=" +
-                    encodeURIComponent(center.mapsQuery)
-                  }
+                  href={center.mapsQuery}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-all border text-sm ${
