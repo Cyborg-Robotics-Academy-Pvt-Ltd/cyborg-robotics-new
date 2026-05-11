@@ -2,10 +2,12 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import { Building2, MapPin } from "lucide-react";
 import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 
 import Footer from "./Footer";
+import BranchCenter from "./BranchCenter";
 
 // Immediate load - critical above the fold content
 const Features = dynamic(() => import("./Features"));
@@ -74,6 +76,7 @@ const HomePage: React.FC = () => {
         <div>
           <Features />
         </div>
+        <BranchCenter />
         <div id="why-learn-robotics" className="scroll-offset">
           <Feature2 />
         </div>
