@@ -39,8 +39,8 @@ const Carousel = () => {
   return (
     <section className="relative w-full overflow-visible -mt-8 md:-mt-14 lg:-mt-8">
       <div className="relative h-[300px] w-full sm:h-[400px] md:h-[500px] lg:h-[700px] xl:h-[640px] 2xl:h-[920px]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_38%,rgba(185,28,28,0.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(249,115,22,0.16),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.68))]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:38px_38px]" />
+        {/* <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_38%,rgba(185,28,28,0.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(249,115,22,0.16),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.68))]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:38px_38px]" /> */}
         <video
           autoPlay
           loop
@@ -55,7 +55,7 @@ const Carousel = () => {
           Your browser does not support the video tag.
         </video>
 
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_36%_48%,rgba(255,49,49,0.28),transparent_20%)] mix-blend-screen" />
+        {/* <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_36%_48%,rgba(255,49,49,0.28),transparent_20%)] mix-blend-screen" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#050816]/85 to-transparent" />
 
         <div className="absolute inset-0 z-10 flex items-center ">
@@ -129,7 +129,7 @@ const Carousel = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
