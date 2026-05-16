@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import { BadgeCheck, ShieldCheck, UsersRound } from "lucide-react";
-
+import { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 type HighlightItem = {
   title: string;
   subtitle: string;
-  icon: React.ElementType | null;
+  icon: LucideIcon | null;
   imageSrc?: string;
   color: string;
   href: string | null;
