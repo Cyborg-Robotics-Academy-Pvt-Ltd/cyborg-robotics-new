@@ -2,7 +2,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({ enabled: process.e
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ['filamentary-max-segmental.ngrok-free.dev'],
+  allowedDevOrigins: ['filamentary-max-segmental.ngrok-free.dev',"poker-unrelated-prevail.ngrok-free.dev"],
   images: {
     remotePatterns: [
       {
