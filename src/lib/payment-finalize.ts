@@ -1,8 +1,10 @@
 import { db } from "@/lib/firebase";
+import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
 import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
@@ -17,11 +19,13 @@ interface PaymentDocData {
   paymentFlow?: string;
   registrationDraft?: Record<string, unknown>;
   workshopRegistrationDraft?: Record<string, unknown>;
+  competitionRegistrationDraft?: Record<string, unknown>;
   studentData?: Record<string, unknown>;
   parentData?: Record<string, unknown>;
   addressData?: Record<string, unknown>;
   course?: { key?: string; name?: string; price?: number };
   workshop?: { key?: string; name?: string; fee?: number };
+  competition?: { key?: string; name?: string; fee?: number };
   paymentType?: string;
   amount?: number;
 }
@@ -46,6 +50,36 @@ export async function finalizeRegistrationForPayment(
   }
 
   if (payment.registrationId) {
+    if (payment.paymentFlow === "competition") {
+      const registrationRef = doc(
+        db,
+        "competitionRegistrations",
+        payment.registrationId,
+      );
+      const registrationSnapshot = await getDoc(registrationRef);
+      const existingRegistration = registrationSnapshot.exists()
+        ? registrationSnapshot.data()
+        : null;
+      const hallTicketNumber =
+        existingRegistration?.hallTicketNumber ||
+        existingRegistration?.competitionId ||
+        generateCompetitionHallTicketNumber(orderId);
+
+      if (registrationSnapshot.exists()) {
+        await updateDoc(registrationRef, {
+          hallTicketNumber,
+          competitionId: hallTicketNumber,
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      await updateDoc(doc(db, "payments", paymentDoc.id), {
+        hallTicketNumber,
+        competitionId: hallTicketNumber,
+        registrationCreatedAt: serverTimestamp(),
+      });
+    }
+
     return { ok: true, registrationId: payment.registrationId };
   }
 
@@ -132,6 +166,128 @@ export async function finalizeRegistrationForPayment(
     });
 
     return { ok: true, registrationId: workshopDocRef.id };
+  }
+
+  if (payment.paymentFlow === "competition") {
+    const competitionDraft = (payment.competitionRegistrationDraft || {}) as Record<
+      string,
+      any
+    >;
+    const competition = (payment.competition || {}) as Record<string, any>;
+
+    const competitionRegistrationsRef = collection(db, "competitionRegistrations");
+    const existingCompetitionQuery = query(
+      competitionRegistrationsRef,
+      where("orderId", "==", orderId),
+    );
+    const existingCompetitionSnapshot = await getDocs(existingCompetitionQuery);
+
+    if (!existingCompetitionSnapshot.empty) {
+      const existingCompetitionDoc = existingCompetitionSnapshot.docs[0];
+      const existingId = existingCompetitionDoc.id;
+      const existingCompetitionData = existingCompetitionDoc.data();
+      const hallTicketNumber =
+        existingCompetitionData.hallTicketNumber ||
+        existingCompetitionData.competitionId ||
+        generateCompetitionHallTicketNumber(orderId);
+
+      await updateDoc(doc(db, "competitionRegistrations", existingId), {
+        fullName: competitionDraft.fullName ?? "",
+        gradeClass: competitionDraft.gradeClass ?? "",
+        schoolName: competitionDraft.schoolName ?? "",
+        cityState: competitionDraft.cityState ?? "",
+        fullResidentialAddress: competitionDraft.fullResidentialAddress ?? "",
+        parentGuardianName: competitionDraft.parentGuardianName ?? "",
+        parentEmailAddress: competitionDraft.parentEmailAddress ?? "",
+        studentEmailAddress: competitionDraft.studentEmailAddress ?? "",
+        parentGuardianContactNumber:
+          competitionDraft.parentGuardianContactNumber ?? "",
+        emergencyContactNumber: competitionDraft.emergencyContactNumber ?? "",
+        deviceAvailableForCompetition:
+          competitionDraft.deviceAvailableForCompetition ?? "",
+        previousExperience: competitionDraft.previousExperience ?? "",
+        participatedBefore: competitionDraft.participatedBefore ?? "",
+        preferredCodingPlatform: competitionDraft.preferredCodingPlatform ?? "",
+        hallTicketNumber,
+        competitionId: hallTicketNumber,
+        competitionKey: competition.key ?? "",
+        competitionName: competition.name ?? "",
+        registrationFee: competition.fee ?? payment.amount ?? null,
+        paymentType: payment.paymentType ?? "entry-fee",
+        paidAmount: payment.amount ?? competition.fee ?? null,
+        paymentStatus: payment.status ?? "SUCCESS",
+        status: "confirmed",
+        paymentId: payment.transactionReference || txnId || "",
+        updatedAt: serverTimestamp(),
+      });
+
+      await updateDoc(doc(db, "payments", paymentDoc.id), {
+        registrationId: existingId,
+        hallTicketNumber,
+        competitionId: hallTicketNumber,
+        registrationCreatedAt: serverTimestamp(),
+      });
+      return { ok: true, registrationId: existingId };
+    }
+
+    const hallTicketNumber = generateCompetitionHallTicketNumber(orderId);
+    const competitionRegistrationPayload = {
+      fullName: competitionDraft.fullName ?? "",
+      gradeClass: competitionDraft.gradeClass ?? "",
+      schoolName: competitionDraft.schoolName ?? "",
+      cityState: competitionDraft.cityState ?? "",
+      fullResidentialAddress: competitionDraft.fullResidentialAddress ?? "",
+      parentGuardianName: competitionDraft.parentGuardianName ?? "",
+      parentEmailAddress: competitionDraft.parentEmailAddress ?? "",
+      studentEmailAddress: competitionDraft.studentEmailAddress ?? "",
+      parentGuardianContactNumber:
+        competitionDraft.parentGuardianContactNumber ?? "",
+      emergencyContactNumber: competitionDraft.emergencyContactNumber ?? "",
+      deviceAvailableForCompetition:
+        competitionDraft.deviceAvailableForCompetition ?? "",
+      previousExperience: competitionDraft.previousExperience ?? "",
+      participatedBefore: competitionDraft.participatedBefore ?? "",
+      preferredCodingPlatform: competitionDraft.preferredCodingPlatform ?? "",
+      agreedToTerms: Boolean(competitionDraft.agreedToTerms),
+      hallTicketNumber,
+      competitionId: hallTicketNumber,
+      competitionKey: competition.key ?? "",
+      competitionName: competition.name ?? "",
+      registrationFee: competition.fee ?? payment.amount ?? null,
+      paymentType: payment.paymentType ?? "entry-fee",
+      paidAmount: payment.amount ?? competition.fee ?? null,
+      paymentStatus: payment.status ?? "SUCCESS",
+      paymentRemark: "Paid via CodeFest competition page",
+      status: "confirmed",
+      orderId,
+      paymentId: payment.transactionReference || txnId || "",
+      dateOfRegistration: new Date().toISOString().split("T")[0],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    const competitionDocRef = await addDoc(
+      competitionRegistrationsRef,
+      competitionRegistrationPayload,
+    );
+
+    await updateDoc(doc(db, "payments", paymentDoc.id), {
+      registrationId: competitionDocRef.id,
+      studentName: competitionDraft.fullName ?? "",
+      courseName: competition.name ?? "",
+      courseKey: competition.key ?? "",
+      parentEmail: competitionDraft.parentEmailAddress ?? "",
+      primaryParentEmail: competitionDraft.parentEmailAddress ?? "",
+      studentEmail: competitionDraft.studentEmailAddress ?? "",
+      parentPhone: competitionDraft.parentGuardianContactNumber ?? "",
+      primaryParentContact: competitionDraft.parentGuardianContactNumber ?? "",
+      emergencyContactNumber: competitionDraft.emergencyContactNumber ?? "",
+      hallTicketNumber,
+      competitionId: hallTicketNumber,
+      registrationCreatedAt: serverTimestamp(),
+    });
+
+    return { ok: true, registrationId: competitionDocRef.id };
   }
 
   const registrationsRef = collection(db, "registrations");

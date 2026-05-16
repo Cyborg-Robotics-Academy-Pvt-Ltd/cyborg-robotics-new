@@ -8,8 +8,6 @@ import {
   getDocs,
   getFirestore,
   query,
-  serverTimestamp,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import { app } from "@/lib/firebase";
@@ -44,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
 
 type FirestoreTimestampLike = {
   toDate: () => Date;
@@ -51,19 +50,29 @@ type FirestoreTimestampLike = {
 
 type FirestoreRecord = Record<string, any>;
 
-interface WorkshopRegistration {
+interface CompetitionRegistration {
   id: string;
   firestoreId?: string;
   orderId?: string;
-  childName?: string;
-  age?: string;
-  email?: string;
-  contactNumber?: string;
-  city?: string;
-  area?: string;
-  workshopKey?: string;
-  workshopName?: string;
-  workshopFee?: number | string;
+  fullName?: string;
+  gradeClass?: string;
+  schoolName?: string;
+  cityState?: string;
+  fullResidentialAddress?: string;
+  parentGuardianName?: string;
+  parentEmailAddress?: string;
+  studentEmailAddress?: string;
+  parentGuardianContactNumber?: string;
+  emergencyContactNumber?: string;
+  deviceAvailableForCompetition?: string;
+  previousExperience?: string;
+  participatedBefore?: string;
+  preferredCodingPlatform?: string;
+  hallTicketNumber?: string;
+  competitionId?: string;
+  competitionKey?: string;
+  competitionName?: string;
+  registrationFee?: number | string;
   paidAmount?: number | string;
   paymentType?: string;
   paymentStatus?: string;
@@ -101,7 +110,7 @@ const pickFirstValue = <T,>(...values: T[]): T | undefined => {
   });
 };
 
-const getRegistrationDateValue = (registration: WorkshopRegistration) => {
+const getRegistrationDateValue = (registration: CompetitionRegistration) => {
   if (isFirestoreTimestampLike(registration.createdAt)) {
     return registration.createdAt.toDate().getTime();
   }
@@ -121,7 +130,7 @@ const getRegistrationDateValue = (registration: WorkshopRegistration) => {
   return Number.isNaN(parsedDate) ? Number.NEGATIVE_INFINITY : parsedDate;
 };
 
-const formatDisplayDate = (registration: WorkshopRegistration) => {
+const formatDisplayDate = (registration: CompetitionRegistration) => {
   if (isFirestoreTimestampLike(registration.createdAt)) {
     return registration.createdAt.toDate().toLocaleDateString("en-IN");
   }
@@ -167,19 +176,14 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const normalizeWorkshopRecord = (
+const normalizeCompetitionRecord = (
   record: FirestoreRecord,
   id: string,
-): WorkshopRegistration => {
-  const draft = record.workshopRegistrationDraft || {};
-  const workshop = record.workshop || {};
+): CompetitionRegistration => {
+  const draft = record.competitionRegistrationDraft || {};
+  const competition = record.competition || {};
   const normalizedPaymentStatus = String(
-    record.paymentStatus ||
-      (record.paymentType === "booking-request" ||
-      record.source === "workshops-page"
-        ? "PENDING_PAYMENT"
-        : record.status) ||
-      "",
+    record.paymentStatus || record.status || "",
   ).toUpperCase();
   const normalizedPaidAmount =
     record.paidAmount ??
@@ -191,39 +195,64 @@ const normalizeWorkshopRecord = (
   return {
     id,
     firestoreId:
-      typeof id === "string" && id.startsWith("payment-workshop-") ? "" : id,
+      typeof id === "string" && id.startsWith("payment-competition-") ? "" : id,
     orderId: record.orderId || "",
-    childName: record.childName || record.studentName || draft.childName || "",
-    age: String(
-      pickFirstValue(record.age, record.currentAge, draft.age, "") ?? "",
-    ),
-    email:
-      record.email ||
+    fullName: record.fullName || record.studentName || draft.fullName || "",
+    gradeClass: record.gradeClass || draft.gradeClass || "",
+    schoolName: record.schoolName || draft.schoolName || "",
+    cityState: record.cityState || draft.cityState || "",
+    fullResidentialAddress:
+      record.fullResidentialAddress || draft.fullResidentialAddress || "",
+    parentGuardianName:
+      record.parentGuardianName || draft.parentGuardianName || "",
+    parentEmailAddress:
+      record.parentEmailAddress ||
       record.parentEmail ||
       record.primaryParentEmail ||
-      draft.email ||
+      draft.parentEmailAddress ||
       "",
-    contactNumber:
-      record.contactNumber ||
+    studentEmailAddress:
+      record.studentEmailAddress ||
+      record.studentEmail ||
+      draft.studentEmailAddress ||
+      "",
+    parentGuardianContactNumber:
+      record.parentGuardianContactNumber ||
       record.parentPhone ||
       record.primaryParentContact ||
-      draft.contactNumber ||
+      draft.parentGuardianContactNumber ||
       "",
-    city: record.city || draft.city || "",
-    area: record.area || draft.area || "",
-    workshopKey: record.workshopKey || workshop.key || "",
-    workshopName:
-      record.workshopName ||
-      record.selectedCourseName ||
-      record.courseName ||
-      workshop.name ||
+    emergencyContactNumber:
+      record.emergencyContactNumber || draft.emergencyContactNumber || "",
+    deviceAvailableForCompetition:
+      record.deviceAvailableForCompetition ||
+      draft.deviceAvailableForCompetition ||
       "",
-    workshopFee:
-      record.workshopFee ||
-      record.selectedCourseFee ||
-      workshop.fee ||
-      record.amount ||
-      "",
+    previousExperience:
+      record.previousExperience || draft.previousExperience || "",
+    participatedBefore:
+      record.participatedBefore || draft.participatedBefore || "",
+    preferredCodingPlatform:
+      record.preferredCodingPlatform || draft.preferredCodingPlatform || "",
+    hallTicketNumber:
+      record.hallTicketNumber ||
+      record.competitionId ||
+      draft.hallTicketNumber ||
+      (record.orderId
+        ? generateCompetitionHallTicketNumber(record.orderId)
+        : ""),
+    competitionId:
+      record.competitionId ||
+      record.hallTicketNumber ||
+      draft.competitionId ||
+      (record.orderId
+        ? generateCompetitionHallTicketNumber(record.orderId)
+        : ""),
+    competitionKey: record.competitionKey || competition.key || "",
+    competitionName:
+      record.competitionName || record.courseName || competition.name || "",
+    registrationFee:
+      record.registrationFee || competition.fee || record.amount || "",
     paidAmount: normalizedPaidAmount,
     paymentType: record.paymentType || "",
     paymentStatus: normalizedPaymentStatus,
@@ -238,24 +267,67 @@ const normalizeWorkshopRecord = (
   };
 };
 
-const mergeWorkshopRecord = (
-  base: WorkshopRegistration,
-  incoming: WorkshopRegistration,
-): WorkshopRegistration => {
+const mergeCompetitionRecord = (
+  base: CompetitionRegistration,
+  incoming: CompetitionRegistration,
+): CompetitionRegistration => {
   return {
     id: pickFirstValue(base.id, incoming.id) || "",
     orderId: pickFirstValue(base.orderId, incoming.orderId) || "",
-    childName: pickFirstValue(base.childName, incoming.childName) || "",
-    age: pickFirstValue(base.age, incoming.age) || "",
-    email: pickFirstValue(base.email, incoming.email) || "",
-    contactNumber:
-      pickFirstValue(base.contactNumber, incoming.contactNumber) || "",
-    city: pickFirstValue(base.city, incoming.city) || "",
-    area: pickFirstValue(base.area, incoming.area) || "",
-    workshopKey: pickFirstValue(base.workshopKey, incoming.workshopKey) || "",
-    workshopName:
-      pickFirstValue(base.workshopName, incoming.workshopName) || "",
-    workshopFee: pickFirstValue(base.workshopFee, incoming.workshopFee) || "",
+    fullName: pickFirstValue(base.fullName, incoming.fullName) || "",
+    gradeClass: pickFirstValue(base.gradeClass, incoming.gradeClass) || "",
+    schoolName: pickFirstValue(base.schoolName, incoming.schoolName) || "",
+    cityState: pickFirstValue(base.cityState, incoming.cityState) || "",
+    fullResidentialAddress:
+      pickFirstValue(
+        base.fullResidentialAddress,
+        incoming.fullResidentialAddress,
+      ) || "",
+    parentGuardianName:
+      pickFirstValue(base.parentGuardianName, incoming.parentGuardianName) ||
+      "",
+    parentEmailAddress:
+      pickFirstValue(base.parentEmailAddress, incoming.parentEmailAddress) ||
+      "",
+    studentEmailAddress:
+      pickFirstValue(base.studentEmailAddress, incoming.studentEmailAddress) ||
+      "",
+    parentGuardianContactNumber:
+      pickFirstValue(
+        base.parentGuardianContactNumber,
+        incoming.parentGuardianContactNumber,
+      ) || "",
+    emergencyContactNumber:
+      pickFirstValue(
+        base.emergencyContactNumber,
+        incoming.emergencyContactNumber,
+      ) || "",
+    deviceAvailableForCompetition:
+      pickFirstValue(
+        base.deviceAvailableForCompetition,
+        incoming.deviceAvailableForCompetition,
+      ) || "",
+    previousExperience:
+      pickFirstValue(base.previousExperience, incoming.previousExperience) ||
+      "",
+    participatedBefore:
+      pickFirstValue(base.participatedBefore, incoming.participatedBefore) ||
+      "",
+    preferredCodingPlatform:
+      pickFirstValue(
+        base.preferredCodingPlatform,
+        incoming.preferredCodingPlatform,
+      ) || "",
+    hallTicketNumber:
+      pickFirstValue(base.hallTicketNumber, incoming.hallTicketNumber) || "",
+    competitionId:
+      pickFirstValue(base.competitionId, incoming.competitionId) || "",
+    competitionKey:
+      pickFirstValue(base.competitionKey, incoming.competitionKey) || "",
+    competitionName:
+      pickFirstValue(base.competitionName, incoming.competitionName) || "",
+    registrationFee:
+      pickFirstValue(base.registrationFee, incoming.registrationFee) || "",
     paidAmount: pickFirstValue(incoming.paidAmount, base.paidAmount) || "",
     paymentType: pickFirstValue(base.paymentType, incoming.paymentType) || "",
     paymentStatus:
@@ -271,11 +343,11 @@ const mergeWorkshopRecord = (
 };
 
 const Page = () => {
-  const [registrations, setRegistrations] = useState<WorkshopRegistration[]>(
+  const [registrations, setRegistrations] = useState<CompetitionRegistration[]>(
     [],
   );
   const [filteredRegistrations, setFilteredRegistrations] = useState<
-    WorkshopRegistration[]
+    CompetitionRegistration[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -283,7 +355,7 @@ const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof WorkshopRegistration;
+    key: keyof CompetitionRegistration;
     direction: "asc" | "desc";
   }>({
     key: "dateOfRegistration",
@@ -301,42 +373,43 @@ const Page = () => {
       setError(null);
 
       const firestore = getFirestore(app);
-      const workshopRegistrationsCollection = collection(
+      const competitionRegistrationsCollection = collection(
         firestore,
-        "workshopRegistrations",
+        "competitionRegistrations",
       );
       const paymentsCollection = collection(firestore, "payments");
 
-      const [workshopRegistrationsSnapshot, paymentsSnapshot] =
+      const [competitionRegistrationsSnapshot, paymentsSnapshot] =
         await Promise.all([
-          getDocs(workshopRegistrationsCollection),
+          getDocs(competitionRegistrationsCollection),
           getDocs(paymentsCollection),
         ]);
 
-      const workshopRegistrationData = workshopRegistrationsSnapshot.docs.map(
-        (doc) => normalizeWorkshopRecord(doc.data() as FirestoreRecord, doc.id),
-      );
-
-      const workshopPaymentData = paymentsSnapshot.docs
-        .map((doc) => doc.data() as FirestoreRecord)
-        .filter((record) => record.paymentFlow === "workshop")
-        .map((record, index) =>
-          normalizeWorkshopRecord(record, `payment-workshop-${index}`),
+      const competitionRegistrationData =
+        competitionRegistrationsSnapshot.docs.map((entry) =>
+          normalizeCompetitionRecord(entry.data() as FirestoreRecord, entry.id),
         );
 
-      const mergedMap = new Map<string, WorkshopRegistration>();
+      const competitionPaymentData = paymentsSnapshot.docs
+        .map((entry) => entry.data() as FirestoreRecord)
+        .filter((record) => record.paymentFlow === "competition")
+        .map((record, index) =>
+          normalizeCompetitionRecord(record, `payment-competition-${index}`),
+        );
 
-      for (const registration of workshopRegistrationData) {
+      const mergedMap = new Map<string, CompetitionRegistration>();
+
+      for (const registration of competitionRegistrationData) {
         const key = registration.orderId || registration.id;
         mergedMap.set(key, registration);
       }
 
-      for (const payment of workshopPaymentData) {
+      for (const payment of competitionPaymentData) {
         const key = payment.orderId || payment.id;
         const existing = mergedMap.get(key);
         mergedMap.set(
           key,
-          existing ? mergeWorkshopRecord(existing, payment) : payment,
+          existing ? mergeCompetitionRecord(existing, payment) : payment,
         );
       }
 
@@ -344,9 +417,9 @@ const Page = () => {
       setRegistrations(merged);
       setFilteredRegistrations(merged);
     } catch (fetchError) {
-      console.error("Error fetching workshop registrations:", fetchError);
+      console.error("Error fetching competition registrations:", fetchError);
       setError(
-        "Failed to load workshop registrations. Please try again later.",
+        "Failed to load competition registrations. Please try again later.",
       );
     } finally {
       setLoading(false);
@@ -367,12 +440,17 @@ const Page = () => {
     const term = searchTerm.toLowerCase();
     const filtered = registrations.filter(
       (registration) =>
-        registration.childName?.toLowerCase().includes(term) ||
-        registration.email?.toLowerCase().includes(term) ||
-        registration.contactNumber?.toLowerCase().includes(term) ||
-        registration.city?.toLowerCase().includes(term) ||
-        registration.area?.toLowerCase().includes(term) ||
-        registration.workshopName?.toLowerCase().includes(term) ||
+        registration.fullName?.toLowerCase().includes(term) ||
+        registration.studentEmailAddress?.toLowerCase().includes(term) ||
+        registration.parentEmailAddress?.toLowerCase().includes(term) ||
+        registration.parentGuardianContactNumber
+          ?.toLowerCase()
+          .includes(term) ||
+        registration.gradeClass?.toLowerCase().includes(term) ||
+        registration.schoolName?.toLowerCase().includes(term) ||
+        registration.cityState?.toLowerCase().includes(term) ||
+        registration.competitionName?.toLowerCase().includes(term) ||
+        registration.hallTicketNumber?.toLowerCase().includes(term) ||
         registration.orderId?.toLowerCase().includes(term) ||
         registration.paymentStatus?.toLowerCase().includes(term),
     );
@@ -401,7 +479,7 @@ const Page = () => {
     });
   }, [filteredRegistrations, sortConfig]);
 
-  const handleSort = (key: keyof WorkshopRegistration) => {
+  const handleSort = (key: keyof CompetitionRegistration) => {
     setSortConfig((prev) =>
       prev.key === key && prev.direction === "asc"
         ? { key, direction: "desc" }
@@ -410,7 +488,7 @@ const Page = () => {
   };
 
   const handleStatusChange = useCallback(
-    async (registration: WorkshopRegistration, nextStatus: string) => {
+    async (registration: CompetitionRegistration, nextStatus: string) => {
       if (
         !registration.orderId ||
         !isManualStatusEditable(registration.paymentStatus)
@@ -420,7 +498,7 @@ const Page = () => {
       setUpdatingStatusId(registration.id);
 
       try {
-        const response = await fetch("/api/admin/workshop-payment-status", {
+        const response = await fetch("/api/admin/competition-payment-status", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -433,7 +511,9 @@ const Page = () => {
 
         const data = await response.json();
         if (!response.ok || !data.success) {
-          throw new Error(data.message || "Failed to update workshop status");
+          throw new Error(
+            data.message || "Failed to update competition status",
+          );
         }
 
         setRegistrations((current) =>
@@ -458,8 +538,8 @@ const Page = () => {
               : item,
           ),
         );
-      } catch (error) {
-        console.error("Failed to update workshop status:", error);
+      } catch (statusError) {
+        console.error("Failed to update competition status:", statusError);
       } finally {
         setUpdatingStatusId(null);
       }
@@ -468,17 +548,17 @@ const Page = () => {
   );
 
   const handleRemoveRegistration = useCallback(
-    async (registration: WorkshopRegistration) => {
+    async (registration: CompetitionRegistration) => {
       const hasFirestoreRecord = Boolean(registration.firestoreId);
-      const hasWorkshopPaymentReference = Boolean(registration.orderId);
+      const hasPaymentReference = Boolean(registration.orderId);
 
-      if (!hasFirestoreRecord && !hasWorkshopPaymentReference) {
+      if (!hasFirestoreRecord && !hasPaymentReference) {
         return;
       }
 
       const confirmed = window.confirm(
         `Are you sure you want to remove ${
-          registration.childName || "this registration"
+          registration.fullName || "this registration"
         }? This action cannot be undone.`,
       );
 
@@ -495,20 +575,24 @@ const Page = () => {
         if (registration.firestoreId) {
           deletions.push(
             deleteDoc(
-              doc(firestore, "workshopRegistrations", registration.firestoreId),
+              doc(
+                firestore,
+                "competitionRegistrations",
+                registration.firestoreId,
+              ),
             ),
           );
         }
 
         if (registration.orderId) {
-          const workshopPaymentsQuery = query(
+          const paymentsQuery = query(
             collection(firestore, "payments"),
             where("orderId", "==", registration.orderId),
-            where("paymentFlow", "==", "workshop"),
+            where("paymentFlow", "==", "competition"),
           );
-          const workshopPaymentsSnapshot = await getDocs(workshopPaymentsQuery);
+          const paymentsSnapshot = await getDocs(paymentsQuery);
 
-          workshopPaymentsSnapshot.forEach((paymentDoc) => {
+          paymentsSnapshot.forEach((paymentDoc) => {
             deletions.push(deleteDoc(paymentDoc.ref));
           });
         }
@@ -521,8 +605,11 @@ const Page = () => {
         setFilteredRegistrations((current) =>
           current.filter((item) => item.id !== registration.id),
         );
-      } catch (error) {
-        console.error("Failed to remove workshop registration:", error);
+      } catch (removeError) {
+        console.error(
+          "Failed to remove competition registration:",
+          removeError,
+        );
       } finally {
         setRemovingRegistrationId(null);
       }
@@ -535,16 +622,46 @@ const Page = () => {
 
     try {
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Workshop Registrations");
+      const worksheet = workbook.addWorksheet("Competition Registrations");
 
       worksheet.columns = [
         { header: "Date", key: "dateOfRegistration", width: 18 },
-        { header: "Workshop", key: "workshopName", width: 28 },
-        { header: "Child Name", key: "childName", width: 22 },
-        { header: "Age", key: "age", width: 10 },
-        { header: "Contact Number", key: "contactNumber", width: 18 },
-        { header: "City", key: "city", width: 18 },
-        { header: "Area", key: "area", width: 18 },
+        { header: "Competition", key: "competitionName", width: 30 },
+        { header: "Participant Name", key: "fullName", width: 24 },
+        { header: "Hall Ticket", key: "hallTicketNumber", width: 18 },
+        { header: "Grade / Class", key: "gradeClass", width: 16 },
+        { header: "School Name", key: "schoolName", width: 28 },
+        { header: "City & State", key: "cityState", width: 18 },
+        {
+          header: "Residential Address",
+          key: "fullResidentialAddress",
+          width: 36,
+        },
+        { header: "Parent Name", key: "parentGuardianName", width: 24 },
+        { header: "Parent Email", key: "parentEmailAddress", width: 28 },
+        { header: "Student Email", key: "studentEmailAddress", width: 28 },
+        {
+          header: "Parent Contact",
+          key: "parentGuardianContactNumber",
+          width: 18,
+        },
+        {
+          header: "Emergency Contact",
+          key: "emergencyContactNumber",
+          width: 18,
+        },
+        {
+          header: "Device",
+          key: "deviceAvailableForCompetition",
+          width: 14,
+        },
+        { header: "Previous Experience", key: "previousExperience", width: 20 },
+        { header: "Participated Before", key: "participatedBefore", width: 18 },
+        {
+          header: "Preferred Platform",
+          key: "preferredCodingPlatform",
+          width: 18,
+        },
         { header: "Payment Status", key: "paymentStatus", width: 18 },
         { header: "Paid Amount", key: "paidAmount", width: 14 },
         { header: "Order ID", key: "orderId", width: 24 },
@@ -558,7 +675,7 @@ const Page = () => {
       );
 
       const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), "Workshop_Registrations.xlsx");
+      saveAs(new Blob([buffer]), "Competition_Registrations.xlsx");
     } finally {
       setExporting(false);
     }
@@ -585,33 +702,33 @@ const Page = () => {
       className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4 py-8"
     >
       <div className="max-w-7xl mx-auto">
-        <Card className="shadow-lg border-0 rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-red-900 to-red-800 px-6 py-8 border-b-0">
+        <Card className="overflow-hidden rounded-2xl border-0 shadow-lg">
+          <CardHeader className="border-b-0 bg-gradient-to-r from-red-900 to-red-800 px-6 py-8">
             <div className="flex flex-col gap-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-3xl font-bold text-white mb-1">
-                    Workshop Registrations
+                  <CardTitle className="mb-1 text-3xl font-bold text-white">
+                    Competition Registrations
                   </CardTitle>
-                  <p className="text-red-100 text-sm">
+                  <p className="text-sm text-red-100">
                     {sortedRegistrations.length} total registrations
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1 sm:flex-initial sm:min-w-96">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1 sm:min-w-96 sm:flex-initial">
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
-                    placeholder="Search by name, workshop, contact, or city..."
+                    placeholder="Search by participant, hall ticket, email, or city..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="pl-11 pr-10 py-2.5 rounded-lg bg-white border border-gray-200 shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+                    className="rounded-lg border border-gray-200 bg-white py-2.5 pl-11 pr-10 shadow-sm transition-all focus:border-red-500 focus:ring-1 focus:ring-red-500"
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -622,7 +739,7 @@ const Page = () => {
                   <Button
                     onClick={fetchRegistrations}
                     disabled={loading}
-                    className="bg-white text-red-800 hover:bg-gray-100 border border-gray-200 rounded-lg shadow-sm transition-all flex items-center gap-2 px-4"
+                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-red-800 shadow-sm transition-all hover:bg-gray-100"
                   >
                     <RefreshCw
                       className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -633,7 +750,7 @@ const Page = () => {
                   <Button
                     onClick={exportToExcel}
                     disabled={exporting || sortedRegistrations.length === 0}
-                    className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg shadow-sm transition-all flex items-center gap-2 px-4"
+                    className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 text-white shadow-sm transition-all hover:bg-emerald-700"
                   >
                     <FileSpreadsheet className="h-4 w-4" />
                     <span className="hidden sm:inline">
@@ -647,35 +764,37 @@ const Page = () => {
 
           <CardContent className="p-0">
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-64 bg-white">
-                <Loader2 className="h-8 w-8 animate-spin text-red-600 mb-3" />
+              <div className="flex h-64 flex-col items-center justify-center bg-white">
+                <Loader2 className="mb-3 h-8 w-8 animate-spin text-red-600" />
                 <p className="text-gray-500">
-                  Loading workshop registrations...
+                  Loading competition registrations...
                 </p>
               </div>
             ) : error ? (
-              <div className="bg-red-50 border-l-4 border-red-500 p-6 text-red-700">
+              <div className="border-l-4 border-red-500 bg-red-50 p-6 text-red-700">
                 {error}
               </div>
             ) : paginatedRegistrations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 bg-white text-gray-400">
-                <Search className="h-12 w-12 mb-3 opacity-30" />
-                <p>No workshop registrations found.</p>
+              <div className="flex h-64 flex-col items-center justify-center bg-white text-gray-400">
+                <Search className="mb-3 h-12 w-12 opacity-30" />
+                <p>No competition registrations found.</p>
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto border-t border-gray-100">
                   <Table className="w-full">
-                    <TableHeader className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                    <TableHeader className="sticky top-0 z-10 border-b border-gray-200 bg-gray-50">
                       <TableRow>
                         {[
                           { key: "dateOfRegistration", label: "Date" },
-                          { key: "workshopName", label: "Workshop" },
-                          { key: "childName", label: "Child Name" },
-                          { key: "age", label: "Age" },
-                          { key: "contactNumber", label: "Contact" },
-                          { key: "city", label: "City" },
-                          { key: "area", label: "Area" },
+                          { key: "competitionName", label: "Competition" },
+                          { key: "fullName", label: "Participant" },
+                          {
+                            key: "parentGuardianName",
+                            label: "Parent / Contact",
+                          },
+                          { key: "cityState", label: "Location" },
+                          { key: "preferredCodingPlatform", label: "Setup" },
                           { key: "paymentStatus", label: "Payment Status" },
                           { key: "paidAmount", label: "Paid Amount" },
                           { key: "actions", label: "Actions" },
@@ -688,14 +807,14 @@ const Page = () => {
                               }
 
                               handleSort(
-                                column.key as keyof WorkshopRegistration,
+                                column.key as keyof CompetitionRegistration,
                               );
                             }}
                             className={`px-4 py-3 text-xs font-semibold text-gray-700 ${
                               column.key === "actions"
                                 ? ""
-                                : "cursor-pointer hover:bg-gray-100"
-                            } transition-colors`}
+                                : "cursor-pointer transition-colors hover:bg-gray-100"
+                            }`}
                           >
                             <div className="flex items-center gap-2">
                               <span>{column.label}</span>
@@ -721,28 +840,87 @@ const Page = () => {
                       {paginatedRegistrations.map((registration) => (
                         <TableRow
                           key={registration.orderId || registration.id}
-                          className="border-b border-gray-100 hover:bg-red-50 transition-colors"
+                          className="border-b border-gray-100 transition-colors hover:bg-red-50"
                         >
-                          <TableCell className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                             {formatDisplayDate(registration)}
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {registration.workshopName || "-"}
+                            {registration.competitionName || "-"}
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
-                            {registration.childName || "-"}
+                            <div className="min-w-[220px] space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {registration.fullName || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Hall Ticket:{" "}
+                                {registration.hallTicketNumber ||
+                                  registration.competitionId ||
+                                  "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Student Email:{" "}
+                                {registration.studentEmailAddress || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Grade: {registration.gradeClass || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                School: {registration.schoolName || "-"}
+                              </p>
+                            </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
-                            {registration.age || "-"}
-                          </TableCell>
-                          <TableCell className="px-4 py-3 text-sm text-gray-700 font-mono ">
-                            {registration.contactNumber || "-"}
+                            <div className="min-w-[220px] space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {registration.parentGuardianName || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Parent Email:{" "}
+                                {registration.parentEmailAddress || "-"}
+                              </p>
+                              <p className="text-xs font-mono text-gray-500">
+                                Parent Contact:{" "}
+                                {registration.parentGuardianContactNumber ||
+                                  "-"}
+                              </p>
+                              <p className="text-xs font-mono text-gray-500">
+                                Emergency:{" "}
+                                {registration.emergencyContactNumber || "-"}
+                              </p>
+                            </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
-                            {registration.city || "-"}
+                            <div className="min-w-[240px] space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {registration.cityState || "-"}
+                              </p>
+                              <p className="line-clamp-3 text-xs text-gray-500">
+                                {registration.fullResidentialAddress || "-"}
+                              </p>
+                            </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
-                            {registration.area || "-"}
+                            <div className="min-w-[200px] space-y-1">
+                              <p className="text-xs text-gray-500">
+                                Device:{" "}
+                                {registration.deviceAvailableForCompetition ||
+                                  "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Experience:{" "}
+                                {registration.previousExperience || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Participated Before:{" "}
+                                {registration.participatedBefore || "-"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Platform:{" "}
+                                {registration.preferredCodingPlatform || "-"}
+                              </p>
+                            </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
                             {isManualStatusEditable(
@@ -756,7 +934,7 @@ const Page = () => {
                                 disabled={updatingStatusId === registration.id}
                               >
                                 <SelectTrigger
-                                  className={`w-[140px] text-xs font-semibold border rounded-md shadow-none ${getStatusColor(
+                                  className={`w-[140px] rounded-md border text-xs font-semibold shadow-none ${getStatusColor(
                                     registration.paymentStatus || "PENDING",
                                   )}`}
                                 >
@@ -805,7 +983,7 @@ const Page = () => {
                                 (!registration.firestoreId &&
                                   !registration.orderId)
                               }
-                              className="text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                              className="text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
                             >
                               {removingRegistrationId === registration.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -820,8 +998,8 @@ const Page = () => {
                   </Table>
                 </div>
 
-                <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center text-sm text-gray-600">
+                <div className="flex flex-col gap-4 border-t border-gray-100 bg-gray-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 text-sm text-gray-600 sm:flex-row sm:items-center">
                     <span>
                       Showing {(currentPage - 1) * itemsPerPage + 1}–
                       {Math.min(
@@ -837,7 +1015,7 @@ const Page = () => {
                         setCurrentPage(1);
                       }}
                     >
-                      <SelectTrigger className="w-[140px] bg-white border-gray-200 text-gray-700 text-sm">
+                      <SelectTrigger className="w-[140px] border-gray-200 bg-white text-sm text-gray-700">
                         <SelectValue placeholder="Rows per page" />
                       </SelectTrigger>
                       <SelectContent>
@@ -876,7 +1054,7 @@ const Page = () => {
                           onClick={() => setCurrentPage(pageNumber)}
                           className={`min-w-10 ${
                             pageNumber === currentPage
-                              ? "bg-red-600 hover:bg-red-700 text-white"
+                              ? "bg-red-600 text-white hover:bg-red-700"
                               : "border-gray-200 text-gray-700 hover:bg-gray-100"
                           }`}
                         >

@@ -91,6 +91,11 @@ const roleLinksMap: Record<
       icon: <CalendarCheck className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
+      label: "Competition Registration",
+      href: "/admin-dashboard/competition-registration",
+      icon: <CalendarCheck className="h-5 w-5 shrink-0 text-gray-700" />,
+    },
+    {
       label: "Renewal",
       href: "/admin-dashboard/renewal",
       icon: <NotepadText className="h-5 w-5 shrink-0 text-gray-700" />,
