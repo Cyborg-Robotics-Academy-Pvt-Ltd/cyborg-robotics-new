@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Building2, MapPin, Navigation, Crown } from "lucide-react";
 
@@ -40,7 +41,7 @@ const stats = [
   { num: "2", label: "Branches", color: "blue" },
 ];
 
-const BranchLocations = () => {
+const BranchCenter = () => {
   return (
     <div className="bg-gradient-to-b from-slate-50 to-white py-6 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
@@ -218,4 +219,4 @@ const BranchLocations = () => {
   );
 };
 
-export default BranchLocations;
+export default BranchCenter;
