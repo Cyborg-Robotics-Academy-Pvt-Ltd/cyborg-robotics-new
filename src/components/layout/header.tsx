@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     badge: "New",
   },
   { id: "courses", label: "Courses", href: "/all-courses" },
-  { id: "competitions", label: "Competitions", href: "/competition" },
+  { id: "codefest", label: "codefest", href: "/codefest" },
   { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
 ];
 
