@@ -116,7 +116,9 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed mb-5 sm:mb-4">
-          A national-level maze challenge where students test their logic, creativity, speed, and problem-solving skills through exciting interactive gameplay.
+            A national-level maze challenge where students test their logic,
+            creativity, speed, and problem-solving skills through exciting
+            interactive gameplay.
           </p>
 
           {/* CTA Buttons */}
@@ -168,43 +170,45 @@ export default function HeroSection() {
             </button>
 
             {/* Secondary CTA */}
+            {/* Secondary CTA */}
             <button
+              onClick={() => window.open("/rulebook.pdf", "_blank")}
               className="
-      group relative overflow-hidden
-      border border-[#0d3b99]/30
-      bg-white/70 dark:bg-white/5
-      hover:bg-[#082c78]
-      text-[#082c78] hover:text-white
-      active:scale-[0.98]
-      px-8 sm:px-10 py-3.5 sm:py-4
-      rounded-xl sm:rounded-2xl
-      font-semibold tracking-wide
-      flex items-center justify-center gap-2
-      shadow-[0_8px_25px_rgba(8,44,120,0.12)]
-      hover:shadow-[0_15px_35px_rgba(8,44,120,0.28)]
-      backdrop-blur-md
-      transition-all duration-300
-      whitespace-nowrap
-      text-sm sm:text-base
-    "
+    group relative overflow-hidden
+    border border-[#0d3b99]/30
+    bg-white/70 dark:bg-white/5
+    hover:bg-[#082c78]
+    text-[#082c78] hover:text-white
+    active:scale-[0.98]
+    px-8 sm:px-10 py-3.5 sm:py-4
+    rounded-xl sm:rounded-2xl
+    font-semibold tracking-wide
+    flex items-center justify-center gap-2
+    shadow-[0_8px_25px_rgba(8,44,120,0.12)]
+    hover:shadow-[0_15px_35px_rgba(8,44,120,0.28)]
+    backdrop-blur-md
+    transition-all duration-300
+    whitespace-nowrap
+    text-sm sm:text-base
+  "
             >
               {/* Hover Glow */}
               <div
                 className="
-        absolute inset-0 opacity-0 group-hover:opacity-100
-        bg-gradient-to-r from-[#082c78] via-[#0d47c2] to-[#082c78]
-        transition-opacity duration-300
-      "
+      absolute inset-0 opacity-0 group-hover:opacity-100
+      bg-gradient-to-r from-[#082c78] via-[#0d47c2] to-[#082c78]
+      transition-opacity duration-300
+    "
               />
 
               <span className="relative z-10">View Rulebook</span>
 
               <BookOpen
                 className="
-        relative z-10 h-5 w-5
-        transition-transform duration-300
-        group-hover:rotate-6
-      "
+      relative z-10 h-5 w-5
+      transition-transform duration-300
+      group-hover:rotate-6
+    "
               />
             </button>
           </div>
