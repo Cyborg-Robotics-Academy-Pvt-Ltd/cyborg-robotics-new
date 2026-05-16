@@ -1,66 +1,51 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+
 import { GraduationCap } from "lucide-react";
-import {
-  ctaArrowAnimation,
-  ctaArrowTransition,
-  sectionContainerVariants,
-  sectionItemVariants,
-} from "@/lib/motion";
-import { useMotionPreferences } from "@/hooks/useMotionPreferences";
 
 export default function WhoAreWe() {
-  const { reduceMotion } = useMotionPreferences();
-
   return (
-    <>
-      {/* Who Are We Section */}
-      <motion.section
-        className="relative my-auto overflow-hidden px-4 to-blue-50/30 sm:px-6 lg:px-8"
-        initial={reduceMotion ? false : "hidden"}
-        whileInView={reduceMotion ? undefined : "visible"}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
-        variants={sectionContainerVariants(0.12)}
-      >
-        <div className="relative max-w-7xl mx-auto mt-10">
-          {/* Header section */}
-          <motion.div variants={sectionItemVariants} className="text-center">
-            <div className="flex justify-center">
-              <h1 className="text-center">
-                <span className="text-3xl font-bold gradient-text">Who</span>
-                <span className="text-3xl font-bold text-black"> Are We ?</span>
+    <section className="relative w-full overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20 bg-gradient-to-b from-transparent to-blue-50/30">
+      <div className="relative max-w-7xl mx-auto">
+        {/* Header */}
+        <div
+          // variants={sectionItemVariants}
+          className="text-center mb-10 sm:mb-12 lg:mb-16"
+        >
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold">
+                <span className="gradient-text">Who</span>
+                <span className="text-black"> Are We?</span>
               </h1>
-              <div className="">
-                <Image
-                  src="/assets/logo1.png"
-                  alt="Cyborg Robotics Logo"
-                  width={60}
-                  height={60}
-                  className="h-auto w-auto"
-                  unoptimized
-                />
-              </div>
             </div>
-            <div className="flex items-center justify-center gap-1 my-3">
-              <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
-              <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
-              <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
-            </div>
-          </motion.div>
+            <Image
+              src="/assets/logo1.png"
+              alt="Cyborg Robotics Logo"
+              width={60}
+              height={60}
+              className="w-12 h-12 sm:w-16 sm:h-16"
+              priority
+            />
+          </div>
+        </div>
 
-          {/* Two-container layout */}
-          <div className="flex flex-col lg:flex-row gap-8 items-center">
-            {/* Left Container - About Us Content */}
-            <motion.div variants={sectionItemVariants} className="lg:w-1/2">
-              <div className="bg-white rounded-2xl p-6 ">
-                <h2 className="text-2xl font-bold gradient-text mb-2 flex  items-center ">
-                  <GraduationCap className="mr-2 h-6 w-6 text-[#a63534]" />
-                  About Us{" "}
+        {/* Main Layout */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch lg:items-center">
+          {/* Left Container */}
+          <div
+            // variants={sectionItemVariants}
+            className="w-full lg:w-1/2"
+          >
+            <div className="bg-white rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm h-full flex flex-col">
+              {/* About Section */}
+              <div className="mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold gradient-text mb-4 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-[#a63534]" />
+                  <span>About Us</span>
                 </h2>
-                <p className="text-gray-700 mb-4">
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed space-y-2">
                   <span className="font-semibold">Cyborg Robotics Academy</span>{" "}
                   is a{" "}
                   <span className="font-semibold text-[#a63534]">
@@ -93,71 +78,75 @@ export default function WhoAreWe() {
                   </span>
                   .
                 </p>
-
-                {/* Our Achievements & Awards Section */}
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-xl font-bold text-[#a63534] mb-2 flex items-center">
-                    <GraduationCap className="mr-2 h-5 w-5" />
-                    Achievements
-                  </h3>
-                  <p className="text-gray-700">
-                    Our students have won multiple awards, including 3rd Place &
-                    Judges' Award and 2nd Runner Up at IRO 2024, top prizes at
-                    the World STEM & Robotics Olympiad and podium finishes in
-                    Lego Line Follower and Line Follower categories.
-                  </p>
-                </div>
-
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-gray-700">
-                    <strong>Contact:</strong> +91 9175159292 or
-                    info@cyborgrobotics.in
-                  </p>
-                </div>
-                <div className="mt-2">
-                  <Link
-                    href="/all-courses"
-                    className="inline-flex items-center px-4 py-2 bg-[#a63534] text-white rounded-lg hover:bg-[#8a2d2d] transition-colors"
-                  >
-                    View Courses
-                    <motion.svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 ml-2"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      animate={reduceMotion ? undefined : ctaArrowAnimation}
-                      transition={reduceMotion ? undefined : ctaArrowTransition}
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </motion.svg>
-                  </Link>
-                </div>
               </div>
-            </motion.div>
 
-            {/* Right Container - Image */}
-            <motion.div
-              variants={sectionItemVariants}
-              className="lg:w-1/2 md:mb-8 lg:mb-2"
-            >
-              <div className="rounded-4xl overflow-hidden ">
-                <Image
-                  src="/assets/events/competition.png"
-                  alt="Cyborg Robotics Academy"
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover"
-                  unoptimized
-                />
+              {/* Achievements Card */}
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-lg sm:text-xl font-bold text-[#a63534] mb-2 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 flex-shrink-0" />
+                  Achievements
+                </h3>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                  Our students have won multiple awards, including 3rd Place &
+                  Judges' Award and 2nd Runner Up at IRO 2024, top prizes at the
+                  World STEM & Robotics Olympiad and podium finishes in Lego
+                  Line Follower and Line Follower categories.
+                </p>
               </div>
-            </motion.div>
+
+              {/* Contact Card */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm sm:text-base text-gray-700">
+                  <strong>Contact:</strong>
+                  <br className="sm:hidden" />
+                  <span className="block sm:inline sm:ml-1">
+                    +91 9175159292 or info@cyborgrobotics.in
+                  </span>
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <Link
+                href="/all-courses"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 w-full sm:w-auto bg-[#a63534] text-white font-semibold rounded-lg hover:bg-[#8a2d2d] transition-colors duration-200"
+              >
+                View Courses
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  // animate={reduceMotion ? undefined : ctaArrowAnimation}
+                  // transition={reduceMotion ? undefined : ctaArrowTransition}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Container - Image */}
+          <div
+            // variants={sectionItemVariants}
+            className="w-full lg:w-1/2"
+          >
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl lg:rounded-4xl aspect-video sm:aspect-square lg:aspect-auto lg:h-96">
+              <Image
+                src="/assets/events/competition.png"
+                alt="Cyborg Robotics Academy Competition"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+                priority
+              />
+            </div>
           </div>
         </div>
-      </motion.section>
-    </>
+      </div>
+    </section>
   );
 }
