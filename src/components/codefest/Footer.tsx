@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
+import { MotionConfig } from "framer-motion";
 
 const quickLinks = [
   { label: "Home", href: "#top" },
@@ -18,7 +20,6 @@ const quickLinks = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Rules", href: "/terms-conditions" },
   { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
 ];
 
 const importantLinks = [
@@ -28,21 +29,33 @@ const importantLinks = [
 ];
 
 const socialLinks = [
-  { icon: Instagram, label: "Instagram", href: "#" },
-  { icon: Linkedin, label: "LinkedIn", href: "#" },
-  { icon: Youtube, label: "YouTube", href: "#" },
+  {
+    icon: Instagram,
+    label: "Instagram",
+    href: "https://www.instagram.com/cyborgroboticsacademy",
+  },
+  {
+    icon: Linkedin,
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
+  },
+  {
+    icon: Youtube,
+    label: "YouTube",
+    href: "https://www.youtube.com/@cyborgroboticsacademy",
+  },
 ];
 
 const contactItems = [
   {
     icon: Mail,
-    label: "hello@mazechallenge.in",
-    href: "mailto:hello@mazechallenge.in",
+    label: "info@cyborgrobotics.in",
+    href: "mailto:info@cyborgrobotics.in",
   },
   {
     icon: Phone,
-    label: "+91 12345 67890",
-    href: "tel:+911234567890",
+    label: "+91  91751 59292",
+    href: "tel:+919175159292",
   },
   {
     icon: MapPin,
@@ -61,7 +74,10 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 export default function Footer() {
   return (
-    <footer id="contact" className="scroll-mt-24 border-t border-gray-200 bg-white">
+    <footer
+      id="contact"
+      className="scroll-mt-24 border-t border-gray-200 bg-white"
+    >
       <div className="mx-auto max-w-7xl px-6 py-10">
         <Card className="border-gray-200/80 bg-white shadow-sm">
           <CardContent className="grid grid-cols-1 gap-10 p-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -90,16 +106,41 @@ export default function Footer() {
                 the brightest minds.
               </p>
 
-              <div className="flex items-center gap-2">
-                {socialLinks.map(({ icon: Icon, label, href }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    aria-label={label}
-                    className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300 text-gray-500 transition-colors duration-200 hover:border-[#082c78] hover:text-[#082c78]"
-                  >
-                    <Icon size={13} />
-                  </a>
+              <div className="flex gap-3 items-center">
+                {[
+                  {
+                    href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
+                    src: "/assets/social-icons/Linkedin.png",
+                    alt: "LinkedIn",
+                  },
+                  {
+                    href: "https://www.instagram.com/cyborgroboticsacademy",
+                    src: "/assets/social-icons/instagram.webp",
+                    alt: "Instagram",
+                  },
+                  {
+                    href: "https://www.facebook.com/cyborgrobotics/",
+                    src: "/assets/social-icons/Facebook.webp",
+                    alt: "Facebook",
+                  },
+                  {
+                    href: "https://www.youtube.com/@cyborgroboticsacademy",
+                    src: "/assets/social-icons/youtube.png",
+                    alt: "YouTube",
+                  },
+                ].map((item) => (
+                  <div key={item.href} className="relative">
+                    <Link href={item.href}>
+                      <Image
+                        src={item.src}
+                        width={35 + (item.alt === "YouTube" ? 10 : 0)}
+                        height={35 + (item.alt === "YouTube" ? 5 : 0)}
+                        alt={item.alt}
+                        className="rounded-xl transition-all cursor-pointer"
+                      />
+                      <div className="absolute inset-0 rounded-xl"></div>
+                    </Link>
+                  </div>
                 ))}
               </div>
             </div>
