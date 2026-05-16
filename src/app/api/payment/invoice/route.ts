@@ -8,6 +8,11 @@ import {
 import { db } from "@/lib/firebase";
 import { isValidOrderId } from "@/lib/order-id-utils";
 import {
+  PAYMENT_SESSION_COOKIE_NAME,
+  getCookieValue,
+  verifyPaymentSessionCookieValue,
+} from "@/lib/payment-session-binding";
+import {
   collection,
   doc,
   getDocs,
@@ -20,6 +25,76 @@ import {
 import { sendPaymentConfirmation } from "@/lib/email-service";
 
 export const runtime = "nodejs";
+
+function getInvoiceStudentName(paymentData: Record<string, any>): string {
+  return (
+    paymentData?.competitionRegistrationDraft?.fullName ||
+    paymentData?.workshopRegistrationDraft?.childName ||
+    paymentData?.registrationDraft?.studentName ||
+    paymentData.studentName ||
+    "N/A"
+  );
+}
+
+function getInvoiceEmail(paymentData: Record<string, any>): string {
+  return (
+    paymentData?.competitionRegistrationDraft?.parentEmailAddress ||
+    paymentData?.workshopRegistrationDraft?.email ||
+    paymentData?.registrationDraft?.primaryParentEmail ||
+    paymentData.parentEmail ||
+    ""
+  );
+}
+
+function getInvoicePhone(paymentData: Record<string, any>): string {
+  return (
+    paymentData?.competitionRegistrationDraft?.parentGuardianContactNumber ||
+    paymentData?.workshopRegistrationDraft?.contactNumber ||
+    paymentData?.registrationDraft?.primaryParentContact ||
+    paymentData.parentPhone ||
+    ""
+  );
+}
+
+function getInvoiceCourseName(paymentData: Record<string, any>): string {
+  return (
+    paymentData?.competition?.name ||
+    paymentData?.workshop?.name ||
+    paymentData?.course?.name ||
+    paymentData.courseName ||
+    "Course Registration"
+  );
+}
+
+function verifyPaymentOwnership(
+  req: Request,
+  orderId: string | null | undefined,
+  paymentData: Record<string, any>
+): { ok: boolean; reason?: string } {
+  const cookieValue = getCookieValue(
+    req.headers.get("cookie"),
+    PAYMENT_SESSION_COOKIE_NAME
+  );
+  const sessionCheck = verifyPaymentSessionCookieValue(cookieValue);
+
+  if (!sessionCheck.ok) {
+    return { ok: false, reason: sessionCheck.reason };
+  }
+
+  if (sessionCheck.payload.orderId !== orderId) {
+    return { ok: false, reason: "Payment session order mismatch" };
+  }
+
+  if (!paymentData.sessionBindingKey) {
+    return { ok: false, reason: "Payment session binding missing" };
+  }
+
+  if (sessionCheck.payload.sessionBindingKey !== paymentData.sessionBindingKey) {
+    return { ok: false, reason: "Payment session binding mismatch" };
+  }
+
+  return { ok: true };
+}
 
 export async function GET(req: Request) {
   try {
@@ -51,6 +126,17 @@ export async function GET(req: Request) {
 
     const paymentDoc = snapshot.docs[0];
     const payment = paymentDoc.data();
+    const ownershipCheck = verifyPaymentOwnership(req, orderId, payment);
+
+    if (!ownershipCheck.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: ownershipCheck.reason || "Payment session validation failed",
+        },
+        { status: 403 }
+      );
+    }
 
     // --- Gate on payment status - only SUCCESS gets an invoice ---
     if (payment.status !== "SUCCESS" && payment.status !== "CHARGED") {
@@ -88,22 +174,10 @@ export async function GET(req: Request) {
       invoiceNumber,
       orderId: payment.orderId || orderId!,
       transactionId: payment.transactionReference || "",
-      studentName:
-        payment?.registrationDraft?.studentName ||
-        payment.studentName ||
-        "N/A",
-      parentEmail:
-        payment?.registrationDraft?.primaryParentEmail ||
-        payment.parentEmail ||
-        "",
-      parentPhone:
-        payment?.registrationDraft?.primaryParentContact ||
-        payment.parentPhone ||
-        "",
-      courseName:
-        payment?.course?.name ||
-        payment.courseName ||
-        "Course Registration",
+      studentName: getInvoiceStudentName(payment),
+      parentEmail: getInvoiceEmail(payment),
+      parentPhone: getInvoicePhone(payment),
+      courseName: getInvoiceCourseName(payment),
       amount: payment.amount || 0,
       currency: payment.currency || "INR",
       status: payment.status,

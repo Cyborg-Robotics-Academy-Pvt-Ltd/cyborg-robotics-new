@@ -597,8 +597,8 @@ export async function POST(req: Request) {
         : status === "AUTHORIZATION_FAILED" ||
           status === "AUTHENTICATION_FAILED" ||
           status === "JUSPAY_DECLINED"
-        ? "FAILED"
-        : status;
+          ? "FAILED"
+          : status;
 
     let finalStatus = confirmedStatus;
     let finalTxnId = txnId;

@@ -5,16 +5,28 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
+  CalendarDays,
   CheckCircle,
   Download,
-  Mail,
   AlertCircle,
-  ArrowRight,
   ArrowLeft,
+  ShieldCheck,
   Sparkles,
+  Code2,
+  BadgeCheck,
+  Ticket,
+  Clock3,
+  UserRound,
+  Trophy,
+  GraduationCap,
+  MonitorSmartphone,
+  MapPin,
+  LaptopMinimal,
+  Brain,
 } from "lucide-react";
 import { enhancedCourseData } from "@/data/enhancedCourseData";
 import Image from "next/image";
+import { CODEFEST_COMPETITION } from "@/lib/codefest-registration-validation";
 import { readOrderId } from "@/lib/order-id-storage";
 
 type PaymentStatus = {
@@ -24,7 +36,11 @@ type PaymentStatus = {
   transactionReference?: string;
   invoiceNumber?: string;
   courseName?: string;
+  studentName?: string;
 };
+
+const normalizeText = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
 export default function RegistrationSuccessClient() {
   const params = useSearchParams();
@@ -222,6 +238,72 @@ export default function RegistrationSuccessClient() {
   }
 
   const downloadUrl = `/api/payment/invoice?orderId=${orderId}`;
+  const normalizedCourseName = normalizeText(payment?.courseName || "");
+  const isCodefestCompetition =
+    normalizedCourseName === normalizeText(CODEFEST_COMPETITION.name);
+  const hallTicketNumber = isCodefestCompetition
+    ? `CF-${orderId
+        .replace(/[^A-Z0-9]/gi, "")
+        .toUpperCase()
+        .slice(-8)}`
+    : null;
+  const issuedOn = new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date());
+  const issuedDateLabel = issuedOn.toUpperCase();
+  const issuedWeekdayLabel = new Intl.DateTimeFormat("en-IN", {
+    weekday: "long",
+  })
+    .format(new Date())
+    .toUpperCase();
+  const competitionLabel = payment.courseName?.includes("Maze Challenge")
+    ? "Maze Challenge"
+    : payment.courseName || "CodeFest Challenge";
+  const hallTicketDetails = [
+    {
+      label: "PARTICIPANT",
+      value: payment.studentName || "Codefest Participant",
+      icon: <UserRound className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "COMPETITION",
+      value: competitionLabel,
+      icon: <Trophy className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "GRADE",
+      value: "To be shared",
+      highlight: true,
+      icon: <GraduationCap className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "PLATFORM",
+      value: "Scratch / PictoBlox",
+      icon: <MonitorSmartphone className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "VENUE",
+      value: "Shared on registered email",
+      icon: <MapPin className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "DEVICE",
+      value: "Laptop / Desktop",
+      icon: <LaptopMinimal className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "EXPERIENCE",
+      value: "All skill levels",
+      icon: <Brain className="h-5 w-5" strokeWidth={1.8} />,
+    },
+    {
+      label: "REPORTING TIME",
+      value: "Shared on registered email",
+      icon: <Clock3 className="h-5 w-5" strokeWidth={1.8} />,
+    },
+  ];
 
   // ✅ Recommended course logic
   const recommendedCourse = (() => {
@@ -416,6 +498,330 @@ export default function RegistrationSuccessClient() {
             </p>
           </div>
         </div>
+
+        {isCodefestCompetition && hallTicketNumber && (
+          <section className="bg-[#f3f5f9] px-4 py-6 antialiased sm:px-6 sm:py-10">
+            <div
+              className="
+        ticket-card
+        relative
+        isolate
+        mx-auto
+        w-full
+        max-w-[980px]
+        overflow-hidden
+        rounded-[36px]
+        border
+        border-[#ececec]
+        bg-[linear-gradient(to_bottom_right,#ffffff,#fcfcfd)]
+        ring-1
+        ring-black/[0.03]
+        shadow-[0_30px_100px_rgba(15,23,42,0.14)]
+        transition-all
+        duration-500
+        ease-out
+        before:absolute
+        before:left-0
+        before:top-1/2
+        before:h-14
+        before:w-14
+        before:-translate-x-1/2
+        before:-translate-y-1/2
+        before:rounded-full
+        before:bg-[#f3f5f9]
+        after:absolute
+        after:right-0
+        after:top-1/2
+        after:h-14
+        after:w-14
+        after:translate-x-1/2
+        after:-translate-y-1/2
+        after:rounded-full
+        after:bg-[#f3f5f9]
+      "
+            >
+              {/* texture overlay */}
+              <div
+                className="
+          pointer-events-none
+          absolute
+          inset-0
+          opacity-[0.025]
+          mix-blend-multiply
+        "
+              >
+                <div
+                  className="
+            h-full
+            w-full
+            bg-[radial-gradient(circle_at_top_left,#000_1px,transparent_1px)]
+            bg-[length:18px_18px]
+          "
+                />
+              </div>
+
+              {/* HEADER */}
+              <div className="relative flex flex-col gap-6 border-b border-[#eeeeee] px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-8">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-2xl bg-[#C73E1D]/20 blur-xl" />
+
+                    <div
+                      className="
+                relative
+                flex
+                h-14
+                w-14
+                items-center
+                justify-center
+                rounded-2xl
+                bg-gradient-to-br
+                from-[#D84A28]
+                to-[#B92D10]
+                text-[22px]
+                font-black
+                text-white
+                shadow-lg
+              "
+                    >
+                      {"</>"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h1 className="text-[28px] font-black leading-none tracking-tight text-[#0f172a] sm:text-[34px]">
+                      CODE <span className="text-[#C73E1D]">FEST 1.0</span>
+                    </h1>
+
+                    <p className="mt-1 text-[14px] font-medium text-[#475569]">
+                      Code. Compete. Create.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 border-[#e5e7eb] sm:border-l sm:pl-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff2ef] text-[#C73E1D]">
+                    <CalendarDays className="h-6 w-6" strokeWidth={1.8} />
+                  </div>
+
+                  <div>
+                    <div className="text-[16px] font-bold text-[#0f172a]">
+                      {issuedDateLabel}
+                    </div>
+
+                    <div className="text-[13px] font-medium uppercase tracking-[0.15em] text-[#94a3b8]">
+                      {issuedWeekdayLabel}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* HERO */}
+              <div className="px-5 pt-6 sm:px-8 sm:pt-8">
+                <div
+                  className="
+            relative
+            overflow-hidden
+            rounded-[32px]
+            border-2
+            border-[#f5c9c1]
+            bg-gradient-to-br
+            from-[#fff7f5]
+            via-[#fffafa]
+            to-[#fff1ee]
+            px-5
+            py-10
+            text-center
+            sm:px-10
+            sm:py-14
+          "
+                >
+                  {/* ambient glows */}
+                  <div className="absolute -top-20 left-0 h-72 w-72 rounded-full bg-[#C73E1D]/10 blur-3xl" />
+                  <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-orange-300/10 blur-3xl" />
+
+                  {/* ticket cuts */}
+                  <div className="absolute -left-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
+                  <div className="absolute -right-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
+
+                  {/* subtle pattern */}
+                  <div className="absolute inset-0 opacity-[0.03]">
+                    <div className="h-full w-full bg-[radial-gradient(circle_at_top_left,#C73E1D_1px,transparent_1px)] bg-[length:22px_22px]" />
+                  </div>
+
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="h-px w-10 bg-[#C73E1D]/40" />
+
+                      <p className="text-[12px] font-bold tracking-[0.45em] text-[#C73E1D]">
+                        HALL TICKET
+                      </p>
+
+                      <div className="h-px w-10 bg-[#C73E1D]/40" />
+                    </div>
+
+                    <h2
+                      className="
+                mt-6
+                break-all
+                font-['Space_Grotesk',sans-serif]
+                text-[34px]
+                font-black
+                leading-none
+                tracking-[0.05em]
+                text-[#020617]
+                drop-shadow-[0_6px_18px_rgba(2,6,23,0.18)]
+                sm:text-[64px]
+                sm:tracking-[0.12em]
+              "
+                    >
+                      {hallTicketNumber}
+                    </h2>
+
+                    <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-bold tracking-[0.18em] text-[#94a3b8]">
+                      <span>VERIFIED PASS</span>
+                      <span>•</span>
+                      <span>EVENT ACCESS</span>
+                      <span>•</span>
+                      <span>ID REQUIRED</span>
+                    </div>
+
+                    <div
+                      className="
+                mt-6
+                inline-flex
+                items-center
+                gap-2
+                rounded-2xl
+                bg-gradient-to-r
+                from-[#D84A28]
+                to-[#B92D10]
+                px-5
+                py-3
+                text-[12px]
+                font-bold
+                tracking-[0.08em]
+                text-white
+                shadow-lg
+              "
+                    >
+                      <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
+                      YOUR OFFICIAL ENTRY PASS
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* PERFORATION */}
+              <div className="relative my-8">
+                <div className="border-t border-dashed border-[#d6d6d6]" />
+
+                <div className="absolute -left-5 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
+                <div className="absolute -right-5 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
+              </div>
+
+              {/* DETAILS */}
+              <div className="grid grid-cols-1 gap-4 px-5 pb-2 sm:grid-cols-2 sm:gap-5 sm:px-8">
+                {hallTicketDetails.map((item) => (
+                  <div
+                    key={item.label}
+                    className="
+              relative
+              overflow-hidden
+              rounded-[24px]
+            
+              bg-gradient-to-br
+              from-white
+              to-[#fafafa]
+              p-5
+              shadow-[0_10px_25px_rgba(15,23,42,0.04)]
+              transition-all
+              duration-300
+              hover:-translate-y-1
+              hover:scale-[1.015]
+              hover:shadow-[0_20px_40px_rgba(15,23,42,0.10)]
+            "
+                  >
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-900 font-bold">
+                        {item.icon}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#94a3b8]">
+                          {item.label}
+                        </div>
+
+                        <div
+                          className={`mt-1 break-words leading-tight ${
+                            item.highlight
+                              ? "text-[26px] font-black text-[#C73E1D]"
+                              : "text-[20px] font-bold text-[#0f172a]"
+                          }`}
+                        >
+                          {item.value}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* FOOTER */}
+              <div className="px-5 pb-5 sm:px-8 sm:pb-8">
+                <div
+                  className="
+            grid
+            grid-cols-2
+            gap-y-5
+            rounded-[24px]
+            bg-gradient-to-r
+            from-[#D84A28]
+            to-[#B92D10]
+            px-5
+            py-5
+            text-white
+            shadow-lg
+            lg:grid-cols-4
+          "
+                >
+                  {[
+                    "Carry valid school ID",
+                    "Hall ticket is mandatory",
+                    "Reach venue 30 mins early",
+                    "Non-transferable pass",
+                  ].map((item, index) => (
+                    <div
+                      key={item}
+                      className={`
+                flex
+                items-center
+                gap-3
+                ${index !== 3 ? "lg:border-r lg:border-white/20 lg:pr-4" : ""}
+              `}
+                    >
+                      <ShieldCheck
+                        className="h-[18px] w-[18px] shrink-0"
+                        strokeWidth={1.8}
+                      />
+
+                      <p className="text-[13px] font-semibold leading-6">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 text-center text-[13px] font-semibold text-[#94a3b8]">
+                  Organized by{" "}
+                  <span className="font-bold text-[#C73E1D]">
+                    CodeFest Team
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Actions */}
         <div className="flex gap-4 justify-center mb-6">

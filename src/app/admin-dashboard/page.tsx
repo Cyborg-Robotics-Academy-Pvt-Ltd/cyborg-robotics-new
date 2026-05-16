@@ -1720,6 +1720,10 @@ const AdminDashboard = () => {
       title: "Workshop Registration",
       href: "/admin-dashboard/workshop-registration",
     },
+    {
+      title: "Competition Registration",
+      href: "/admin-dashboard/competition-registration",
+    },
   ];
 
   const theme = themes[currentTheme];
