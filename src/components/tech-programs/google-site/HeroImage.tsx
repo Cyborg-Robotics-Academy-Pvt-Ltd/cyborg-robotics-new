@@ -706,7 +706,7 @@ const GoogleSitesHero = () => {
               <div className="mb-4"></div>
               <button
                 type="submit"
-                disabled={isInitiatingPayment}
+                disabled
                 className="
                   w-full bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] text-white border-0
                   rounded-2xl py-[14px] px-[18px] text-[15px] font-bold cursor-pointer
