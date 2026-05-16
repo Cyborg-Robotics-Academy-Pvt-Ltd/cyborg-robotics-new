@@ -97,6 +97,11 @@ const mainMenu: MenuItem[] = [
         icon: Trophy,
         
       },
+      {
+        title: 'CodeFest Competition',
+        href: '/codefest',
+        icon: Trophy,
+      },
        
       // Add other competitions here as needed
     ],
