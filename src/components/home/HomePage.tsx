@@ -7,19 +7,12 @@ import HeroSection from "./HeroSection";
 import NewsLetter from "./NewsLetter";
 
 import Footer from "./Footer";
+import Features from "./Features";
+import Feature2 from "./Feature2";
+import WhoAreWe from "./WhoAreWe";
+import VisionSection from "./VisionSection";
 import BranchCenter from "./BranchCenter";
 
-// Immediate load - critical above the fold content
-const Features = dynamic(() => import("./Features"));
-
-// Progressive load - below the fold content with better loading states
-const Feature2 = dynamic(() => import("./Feature2"));
-
-const WhoAreWe = dynamic(() => import("./WhoAreWe"));
-
-const VisionSection = dynamic(() => import("./VisionSection"));
-
-// Defer heavy interactive components
 const GallerySection = dynamic(() => import("../gallery/GallerySection"), {
   ssr: false,
 });
@@ -76,7 +69,9 @@ const HomePage: React.FC = () => {
         <div>
           <Features />
         </div>
-        <BranchCenter />
+        <div className="">
+          <BranchCenter />
+        </div>
         <div id="why-learn-robotics" className="scroll-offset">
           <Feature2 />
         </div>
