@@ -124,147 +124,133 @@ const LoginPage = () => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      // Find user by email across all collections
+      // STEP 1: Check Firestore FIRST (before Firebase auth)
       const userInfo = await findUserByEmail(email);
 
       if (!userInfo) {
-        await signOut(auth);
-        toast.error("User not found in the system. Please contact admin.");
+        toast.error("User not found in the system. Please register first.");
+        setError("User not found in the system. Please register first.");
         setIsLoading(false);
         return;
       }
 
-      // Check if user's role matches selected role
+      // STEP 2: Validate role match
       if (userInfo.role !== selectedRole) {
-        await signOut(auth);
         toast.error(
-          `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`
+          `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`,
+        );
+        setError(
+          `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`,
         );
         setIsLoading(false);
         return;
       }
 
-      // Check if user's status is pending or inactive
+      // STEP 3: Check account status
       if (userInfo.data.status === "pending") {
-        await signOut(auth);
         toast.error(
-          "Your account is pending admin approval. Please contact Cyborg Team."
+          "Your account is pending admin approval. Please contact Cyborg Team.",
         );
-        setIsLoading(false);
-        return;
-      } else if (userInfo.data.status === "inactive") {
-        await signOut(auth);
-        toast.error(
-          "Your account access has been revoked. Please contact Cyborg Team."
+        setError(
+          "Your account is pending admin approval. Please contact Cyborg Team.",
         );
         setIsLoading(false);
         return;
       }
 
-      // Check other roles to ensure exclusivity (optional, based on your business logic)
-      const roles = ["student", "trainer", "admin"];
-      const otherRoles = roles.filter((role) => role !== selectedRole);
+      if (userInfo.data.status === "inactive") {
+        toast.error(
+          "Your account access has been revoked. Please contact Cyborg Team.",
+        );
+        setError(
+          "Your account access has been revoked. Please contact Cyborg Team.",
+        );
+        setIsLoading(false);
+        return;
+      }
 
-      for (const role of otherRoles) {
-        const roleCollectionRef = collection(db, `${role}s`);
-        const q = query(roleCollectionRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          await signOut(auth);
-          toast.error(
-            "Access denied. You can only log in with your assigned role."
-          );
-          setIsLoading(false);
-          return;
+      // STEP 4: NOW attempt Firebase auth
+      let userCredential;
+      try {
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
+      } catch (authError: unknown) {
+        if (authError instanceof FirebaseError) {
+          if (
+            authError.code === "auth/invalid-credential" ||
+            authError.code === "auth/wrong-password"
+          ) {
+            const err =
+              "Invalid email or password. Please check your credentials.";
+            setError(err);
+            toast.error(err);
+          } else if (authError.code === "auth/too-many-requests") {
+            const err = "Too many failed attempts. Please try again later.";
+            setError(err);
+            toast.error(err);
+          } else if (authError.code === "auth/network-request-failed") {
+            const err = "Network error. Please check your connection.";
+            setError(err);
+            toast.error(err);
+          } else {
+            setError(authError.message || "Authentication failed.");
+            toast.error(authError.message || "Authentication failed.");
+          }
+        } else {
+          setError("Failed to login. Please try again.");
+          toast.error("Failed to login. Please try again.");
         }
+        setIsLoading(false);
+        return;
       }
 
-      // Update last login time
+      // STEP 5: Update last login
       try {
         await setDoc(
           userInfo.ref,
           { lastLogin: serverTimestamp() },
-          { merge: true }
+          { merge: true },
         );
       } catch (updateError) {
         console.error("Could not update last login time:", updateError);
         // Continue with login even if update fails
       }
 
-      // Store role in localStorage
+      // STEP 6: Store role in localStorage
       localStorage.setItem("userRole", selectedRole);
 
       // Show success message
       toast.success(
-        `Welcome back! Redirecting to ${selectedRole} dashboard...`
+        `Welcome back! Redirecting to ${selectedRole} dashboard...`,
       );
 
-      // Redirect based on role
-      switch (selectedRole) {
-        case "student":
-          router.push("/student-dashboard");
-          break;
-        case "trainer":
-          router.push("/trainer-dashboard");
-          break;
-        case "admin":
-          router.push("/admin-dashboard");
-          break;
-        default:
-          toast.error("Invalid role selected");
-      }
-    } catch (error: unknown) {
-      console.error("Login error:", error);
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case "auth/invalid-credential":
-            setError(
-              "Invalid email or password. Please check your credentials."
-            );
-            toast.error(
-              "Invalid email or password. Please check your credentials."
-            );
+      // STEP 7: Redirect based on role (with small delay for state sync)
+      setTimeout(() => {
+        switch (selectedRole) {
+          case "student":
+            router.push("/student-dashboard");
             break;
-          case "auth/user-not-found":
-            setError(
-              "No account exists with this email. Please register first."
-            );
-            toast.error(
-              "No account exists with this email. Please register first."
-            );
+          case "trainer":
+            router.push("/trainer-dashboard");
             break;
-          case "auth/wrong-password":
-            setError("Incorrect password. Please try again.");
-            toast.error("Incorrect password. Please try again.");
-            break;
-          case "auth/invalid-email":
-            setError("Invalid email format. Please enter a valid email.");
-            toast.error("Invalid email format. Please enter a valid email.");
-            break;
-          case "auth/too-many-requests":
-            setError("Too many failed attempts. Please try again later.");
-            toast.error("Too many failed attempts. Please try again later.");
-            break;
-          case "auth/network-request-failed":
-            setError("Network error. Please check your connection.");
-            toast.error("Network error. Please check your connection.");
+          case "admin":
+            router.push("/admin-dashboard");
             break;
           default:
-            setError(error.message || "Failed to login");
-            toast.error(error.message || "Failed to login");
+            toast.error("Invalid role selected");
         }
-      } else {
-        setError("Failed to login. Please try again.");
-        toast.error("Failed to login. Please try again.");
-      }
+      }, 300);
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to login. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -444,24 +430,28 @@ const LoginPage = () => {
                         Registration
                       </h2>
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Link href="/registration/new">
-                          <motion.button
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
+                        <motion.div
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Link
+                            href="/registration/new"
+                            className="inline-block px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
                           >
                             New Registration
-                          </motion.button>
-                        </Link>
-                        <Link href="/registration/renewal">
-                          <motion.button
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
+                          </Link>
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Link
+                            href="/registration/renewal"
+                            className="inline-block px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
                           >
                             Renewal
-                          </motion.button>
-                        </Link>
+                          </Link>
+                        </motion.div>
                       </div>
                     </div>
                   </div>

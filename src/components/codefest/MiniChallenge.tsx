@@ -489,40 +489,48 @@ export default function MiniChallenge({
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#8B1A2B] p-6 text-white shadow-[0_20px_80px_rgba(0,0,0,0.45)]">
-      <div className="absolute top-0 right-0 h-52 w-52 rounded-full bg-[#F5C518]/10 blur-3xl" />
-      <div className="absolute bottom-0 left-0 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
+    <div className="relative overflow-hidden  border border-white/10 bg-red-900 p-4 text-white shadow-xl rounded-3xl sm:p-6">
+      {/* Background Effects */}
+      <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-[#F5C518]/10 blur-3xl sm:h-52 sm:w-52" />
+      <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white/5 blur-3xl sm:h-44 sm:w-44" />
 
       <div className="relative z-10 flex flex-col gap-5">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.35em] text-yellow-300">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          {/* Left Content */}
+          <div className="w-full">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-yellow-300 sm:text-[11px]">
               Mini Challenge
             </p>
-            <h2 className="text-4xl font-black tracking-tight">
+
+            <h2 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl">
               Escape The Maze
             </h2>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/70">
+
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70 sm:text-[15px]">
               Use arrow keys or WASD to navigate through the maze and reach the
               glowing exit as quickly as possible.
             </p>
           </div>
 
-          <div className="grid min-w-[180px] grid-cols-2 gap-3">
+          {/* Stats */}
+          <div className="grid w-full grid-cols-2 gap-3 lg:min-w-[200px] lg:max-w-[220px]">
             <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-md">
               <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
                 Timer
               </p>
-              <p className="tabular-nums text-md  text-yellow-300">
+
+              <p className="text-lg font-bold tabular-nums text-yellow-300 sm:text-xl">
                 {elapsed.toFixed(1)}
               </p>
             </div>
+
             <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-md">
               <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
                 Score
               </p>
-              <p className="tabular-nums text-md  text-white">
+
+              <p className="text-lg font-bold tabular-nums text-white sm:text-xl">
                 {score.toLocaleString()}
               </p>
             </div>
@@ -530,13 +538,58 @@ export default function MiniChallenge({
         </div>
 
         {/* Maze */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/5 p-3 backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/5 p-2 backdrop-blur-xl sm:rounded-3xl sm:p-3">
           <canvas
             ref={canvasRef}
             width={700}
             height={420}
-            className="w-full rounded-2xl border-2 border-[#8B1A2B]/30 bg-white"
+            className="h-auto w-full rounded-2xl border-2 border-[#8B1A2B]/30 bg-white"
           />
+        </div>
+
+        {/* Mobile Touch Controls */}
+        <div className="mt-4 flex flex-col items-center gap-3 lg:hidden">
+          {/* Up */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => move(0, -1)}
+              aria-label="Move Up"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl font-black text-white shadow-lg backdrop-blur-md transition-all duration-150 active:scale-95"
+            >
+              ↑
+            </button>
+          </div>
+
+          {/* Left Down Right */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => move(-1, 0)}
+              aria-label="Move Left"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl font-black text-white shadow-lg backdrop-blur-md transition-all duration-150 active:scale-95"
+            >
+              ←
+            </button>
+
+            <button
+              onClick={() => move(0, 1)}
+              aria-label="Move Down"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl font-black text-white shadow-lg backdrop-blur-md transition-all duration-150 active:scale-95"
+            >
+              ↓
+            </button>
+
+            <button
+              onClick={() => move(1, 0)}
+              aria-label="Move Right"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-2xl font-black text-white shadow-lg backdrop-blur-md transition-all duration-150 active:scale-95"
+            >
+              →
+            </button>
+          </div>
+
+          <p className="mt-1 text-center text-xs text-white/60">
+            Use touch controls to escape the maze
+          </p>
         </div>
 
         {/* Footer */}
@@ -558,6 +611,7 @@ export default function MiniChallenge({
                 points
               </div>
             )}
+
             <button
               onClick={startGame}
               className="rounded-2xl bg-yellow-400 px-5 py-3 font-black text-black shadow-lg shadow-yellow-500/20 transition-all duration-300 hover:scale-105 hover:bg-yellow-300 active:scale-95"

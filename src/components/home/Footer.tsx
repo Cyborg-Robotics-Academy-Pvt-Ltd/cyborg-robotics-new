@@ -1,291 +1,378 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, Mail, MapPinHouse, PhoneCall, RotateCcw } from "lucide-react";
-import { motion } from "framer-motion";
-import styles from "./Footer.module.css";
+import {
+  Mail,
+  MapPin,
+  Phone,
+  RotateCcw,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+
+interface GalleryImage {
+  id: string;
+  imageUrl?: string;
+  src?: string;
+  fileName?: string;
+}
 
 interface FooterProps {
   [key: string]: unknown;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
 const Footer: React.FC<FooterProps> = () => {
-  const [galleryImages, setGalleryImages] = useState<any[]>([]);
-  const [loadingImages, setLoadingImages] = useState(true);
-  const contactRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ];
-  const sectionRefs = useRef([
-    React.createRef<HTMLDivElement>(),
-    React.createRef<HTMLDivElement>(),
-    React.createRef<HTMLDivElement>(),
-    React.createRef<HTMLDivElement>(),
-  ]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const fetchFooterImages = useCallback(async () => {
     try {
       setLoadingImages(true);
 
+      // Fetch latest 20 images, shuffle client-side
       const photosQuery = query(
         collection(db, "photo"),
         orderBy("uploadedAt", "desc"),
+        limit(20),
       );
 
       const snapshot = await getDocs(photosQuery);
-
-      const photosData: any[] = [];
+      const photosData: GalleryImage[] = [];
 
       snapshot.forEach((doc) => {
         photosData.push({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as Omit<GalleryImage, "id">),
         });
       });
 
-      const shuffled = photosData.sort(() => 0.5 - Math.random());
-      const randomFour = shuffled.slice(0, 4);
+      // Fisher-Yates shuffle for better randomization
+      const shuffled = photosData.sort(() => Math.random() - 0.5).slice(0, 4);
 
-      setGalleryImages(randomFour);
+      setGalleryImages(shuffled);
     } catch (error) {
       console.error("Error fetching footer images:", error);
     } finally {
       setLoadingImages(false);
+      setIsInitialLoad(false);
     }
   }, []);
 
-  // Fetch 4 random images from "photo" collection
   useEffect(() => {
     fetchFooterImages();
   }, [fetchFooterImages]);
 
+  const quickLinks = [
+    { href: "/", label: "Home" },
+    { href: "/about-us", label: "About" },
+    { href: "/gallery/photos", label: "Gallery" },
+    { href: "/contact-us", label: "Contact" },
+    { href: "/terms-conditions", label: "Terms" },
+    { href: "/privacy-policy", label: "Privacy" },
+  ];
+
+  const socialLinks = [
+    {
+      href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
+      src: "/assets/social-icons/Linkedin.png",
+      alt: "LinkedIn",
+    },
+    {
+      href: "https://www.instagram.com/cyborgroboticsacademy",
+      src: "/assets/social-icons/instagram.webp",
+      alt: "Instagram",
+    },
+    {
+      href: "https://www.facebook.com/cyborgrobotics/",
+      src: "/assets/social-icons/Facebook.webp",
+      alt: "Facebook",
+    },
+    {
+      href: "https://www.youtube.com/@cyborgroboticsacademy",
+      src: "/assets/social-icons/youtube.png",
+      alt: "YouTube",
+    },
+  ];
+
   return (
-    <footer className="bg-white mt-7 md:my-10 rounded-t-3xl overflow-hidden relative">
-      {/* Decorative Background */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10">
-        <div
-          className={`absolute top-10 left-10 w-64 h-64 bg-red-800 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob}`}
-        />
-        <div
-          className={`absolute top-10 right-10 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob} ${styles.animationDelay2000}`}
-        />
-        <div
-          className={`absolute bottom-10 left-1/2 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 ${styles.animateBlob} ${styles.animationDelay4000}`}
-        />
+    <footer className="relative mt-12 md:mt-20 bg-gradient-to-b from-white via-gray-50/50 to-white overflow-hidden">
+      {/* Subtle animated background elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-100/20 rounded-full blur-3xl opacity-40" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100/20 rounded-full blur-3xl opacity-40" />
       </div>
 
-      <div className="max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="rounded-2xl shadow-xl shadow-gray-300/20 p-6 md:p-8 mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {/* Section 1 */}
-            <div className="space-y-4 bg-white rounded-xl p-5">
-              <Image
-                src="/assets/Cyborg-logo.png"
-                width={150}
-                height={150}
-                alt="Cyborg Robotics Logo"
-                className="w-40 h-auto"
-              />
-              <p className="text-sm text-gray-700 leading-relaxed">
-                <span className="font-bold text-gray-900">
-                  Cyborg Robotics Academy Private Limited
-                </span>{" "}
-                is one of the leading Robotics Academy in Pune offering various
-                technical courses all under one roof.
-              </p>
-              <div className="flex gap-3 items-center">
-                {[
-                  {
-                    href: "https://www.linkedin.com/company/cyborg-robotics-academy-pvt-ltd/",
-                    src: "/assets/social-icons/Linkedin.png",
-                    alt: "LinkedIn",
-                  },
-                  {
-                    href: "https://www.instagram.com/cyborgroboticsacademy",
-                    src: "/assets/social-icons/instagram.webp",
-                    alt: "Instagram",
-                  },
-                  {
-                    href: "https://www.facebook.com/cyborgrobotics/",
-                    src: "/assets/social-icons/Facebook.webp",
-                    alt: "Facebook",
-                  },
-                  {
-                    href: "https://www.youtube.com/@cyborgroboticsacademy",
-                    src: "/assets/social-icons/youtube.png",
-                    alt: "YouTube",
-                  },
-                ].map((item) => (
-                  <motion.div
-                    key={item.href}
-                    whileHover={{ scale: 1 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="relative"
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 py-12 lg:py-16"
+        >
+          {/* Brand Section */}
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="flex items-start gap-3">
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-blue-600 rounded-lg opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300" />
+                <Image
+                  src="/Cyborglogo.png"
+                  width={56}
+                  height={56}
+                  alt="Cyborg Robotics Logo"
+                  className="relative w-14 h-14 object-contain"
+                  priority
+                />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 leading-tight">
+                  Cyborg Robotics
+                </h2>
+                <p className="text-xs font-semibold text-red-700 tracking-widest">
+                  ACADEMY
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm leading-relaxed text-gray-600">
+              Leading robotics academy in Pune offering comprehensive technical
+              courses and hands-on learning experiences.
+            </p>
+
+            {/* Social Links */}
+            <div className="flex gap-3 pt-2">
+              {socialLinks.map((social) => (
+                <motion.div
+                  key={social.alt}
+                  whileHover={{ scale: 1.15, y: -4 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Link
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.alt}
+                    className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 transition-all duration-300 hover:bg-gradient-to-br hover:from-red-600 hover:to-blue-600"
                   >
-                    <Link href={item.href}>
-                      <Image
-                        src={item.src}
-                        width={35 + (item.alt === "YouTube" ? 10 : 0)}
-                        height={35 + (item.alt === "YouTube" ? 5 : 0)}
-                        alt={item.alt}
-                        className="rounded-xl transition-all cursor-pointer"
-                      />
-                      <div className="absolute inset-0 rounded-xl"></div>
+                    <Image
+                      src={social.src}
+                      width={20}
+                      height={20}
+                      alt={social.alt}
+                      className="relative z-10 transition-all duration-300 group-hover:invert"
+                    />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Contact Information */}
+          <motion.div variants={itemVariants} className="space-y-5">
+            <h3 className="text-base font-bold text-gray-900 relative pb-2">
+              Contact
+              <span className="absolute bottom-0 left-0 h-1 w-6 bg-gradient-to-r from-red-600 to-red-400 rounded-full" />
+            </h3>
+
+            <div className="space-y-4">
+              {[
+                {
+                  icon: Mail,
+                  label: "Email",
+                  value: "info@cyborgrobotics.in",
+                  href: "mailto:info@cyborgrobotics.in",
+                },
+                {
+                  icon: Phone,
+                  label: "Phone",
+                  value: "+91 91751 59292",
+                  href: "tel:+919175159292",
+                },
+                {
+                  icon: MapPin,
+                  label: "Location",
+                  value: "Kalyani Nagar, Pune",
+                  href: "https://maps.app.goo.gl/uJUYgFrou6qQoS1MA",
+                },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <motion.a
+                    key={item.label}
+                    href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={
+                      item.href.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex gap-3 group cursor-pointer"
+                  >
+                    <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center group-hover:bg-red-100 transition-colors duration-200">
+                      <Icon className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        {item.label}
+                      </p>
+                      <p className="text-sm text-gray-900 font-medium group-hover:text-red-600 transition-colors">
+                        {item.value}
+                      </p>
+                    </div>
+                  </motion.a>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Quick Links */}
+          <motion.div variants={itemVariants} className="space-y-5">
+            <h3 className="text-base font-bold text-gray-900 relative pb-2">
+              Explore
+              <span className="absolute bottom-0 left-0 h-1 w-6 bg-gradient-to-r from-red-600 to-red-400 rounded-full" />
+            </h3>
+
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.href}>
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href={link.href}
+                      className="text-sm text-gray-600 hover:text-red-600 transition-colors duration-200 group flex items-center gap-1"
+                    >
+                      {link.label}
+                      <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>
                   </motion.div>
-                ))}
-              </div>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Gallery Section */}
+          <motion.div variants={itemVariants} className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-bold text-gray-900 relative pb-2">
+                Photos
+                <span className="absolute bottom-0 left-0 h-1 w-6 bg-gradient-to-r from-red-600 to-red-400 rounded-full" />
+              </h3>
+              <motion.button
+                type="button"
+                onClick={fetchFooterImages}
+                disabled={loadingImages}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-1.5 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Shuffle gallery"
+              >
+                {loadingImages ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-3.5 h-3.5" />
+                )}
+              </motion.button>
             </div>
 
-            {/* Section 2: Contact Information */}
-            <div
-              className="space-y-4 bg-white rounded-xl p-5 "
-              ref={sectionRefs.current[1]}
-            >
-              <h3 className="text-lg font-bold text-gray-900">Contact Us</h3>
-              <motion.div
-                className="flex gap-3 items-center"
-                ref={contactRefs[0]}
-                whileHover={{ x: 8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Mail className="mt-1 flex-shrink-0 text-red-800" size={22} />
-                <Link
-                  href="mailto:info@cyborgrobotics.in"
-                  className="text-base font-medium text-gray-800 hover:text-[#a63534] hover:font-semibold transition-colors"
-                >
-                  info@cyborgrobotics.in
-                </Link>
-              </motion.div>
-              <motion.div
-                className="flex items-start gap-3"
-                ref={contactRefs[1]}
-                whileHover={{ x: 8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MapPinHouse
-                  className="mt-1 flex-shrink-0 text-red-800"
-                  size={22}
-                />
-                <Link href="https://maps.app.goo.gl/uJUYgFrou6qQoS1MA">
-                  North Court, Office No: 2A, 1st Floor, Opposite Joggers Park,
-                  Above Punjab National Bank, Kalyani Nagar, Pune 411 006
-                </Link>
-              </motion.div>
-              <motion.div
-                className="flex items-center gap-3"
-                ref={contactRefs[2]}
-                whileHover={{ x: 8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <PhoneCall
-                  className="mt-1 flex-shrink-0 text-red-800"
-                  size={22}
-                />
-                <Link
-                  href="tel:+919175159292"
-                  className="text-base hover:font-semibold  font-medium text-gray-800 hover:text-[#a63534] transition-colors"
-                >
-                  Phone: +91 91751 59292
-                </Link>
-              </motion.div>
-            </div>
-
-            {/* Section 3 */}
-            <div className="space-y-4 bg-white rounded-xl p-5">
-              <h3 className="text-lg font-bold text-gray-900">Quick Links</h3>
-              <ul className="space-y-3">
-                {[
-                  { href: "/", label: "Home" },
-                  { href: "/about-us", label: "About" },
-                  { href: "/gallery/photos", label: "Gallery" },
-                  { href: "/contact-us", label: "Contact" },
-                  { href: "/terms-conditions", label: "Terms & Conditions" },
-                  { href: "/privacy-policy", label: "Privacy Policy" },
-                ].map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-800 hover:text-red-800 transition-all block"
-                    >
-                      <motion.span
-                        whileHover={{ x: 8 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ display: "inline-block" }}
-                        className="hover:font-semibold"
-                      >
-                        {item.label}
-                      </motion.span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Section 4 - Gallery Highlights 2x2 */}
-            <div className="space-y-4 bg-white rounded-xl p-5">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold text-gray-900">Photo Hub</h3>
-                <button
-                  type="button"
-                  onClick={fetchFooterImages}
-                  disabled={loadingImages}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-red-200 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  aria-label="Shuffle gallery images"
-                >
-                  {loadingImages ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <RotateCcw size={14} />
-                  )}
-                  Shuffle
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 w-52">
+              <AnimatePresence mode="popLayout">
                 {Array.from({ length: 4 }).map((_, index) => {
                   const image = galleryImages[index];
-
                   return (
                     <motion.div
-                      key={index}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="relative aspect-square overflow-hidden rounded-xl bg-gray-100 shadow-sm hover:shadow-lg"
+                      key={image?.id || `placeholder-${index}`}
+                      layoutId={image?.id || `placeholder-${index}`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={image ? { scale: 1.05 } : {}}
+                      className="relative h-28 rounded-xl overflow-hidden bg-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
                     >
                       {image ? (
-                        <Image
-                          src={image.imageUrl || image.src}
-                          alt={image.fileName || "Gallery Image"}
-                          fill
-                          className="object-cover transition-transform duration-300"
-                          sizes="120px"
-                        />
+                        <>
+                          <Image
+                            src={image.imageUrl || image.src || ""}
+                            alt={image.fileName || "Gallery"}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="80px"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                        </>
                       ) : (
-                        <div className="w-full h-full animate-pulse bg-gray-200" />
+                        <div className="w-full h-full animate-pulse bg-gray-300" />
                       )}
                     </motion.div>
                   );
                 })}
-              </div>
+              </AnimatePresence>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* Copyright */}
-        <div className="py-6 text-center border-t border-gray-200">
-          <p className="text-sm text-gray-700">
-            © {new Date().getFullYear()} Cyborg Robotics Academy Private
-            Limited. All Rights Reserved.
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+        {/* Copyright & Legal */}
+        <motion.div
+          variants={itemVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="py-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <p className="text-xs text-gray-600">
+            © {new Date().getFullYear()} Cyborg Robotics Academy. All rights
+            reserved.
           </p>
-        </div>
+          <div className="flex gap-4">
+            <Link
+              href="/terms-conditions"
+              className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Terms
+            </Link>
+            <span className="text-gray-300">•</span>
+            <Link
+              href="/privacy-policy"
+              className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Privacy
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </footer>
   );

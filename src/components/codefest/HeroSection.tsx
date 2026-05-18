@@ -92,7 +92,7 @@ export default function HeroSection() {
   );
 
   return (
-    <section className="relative pt-18  bg-white overflow-hidden">
+    <section className="relative pt-18  bg-white overflow-hidden px-3">
       {/* Square dot patterns */}
       <SquareDotPattern position="top-left" />
       <SquareDotPattern position="bottom-right" />
@@ -169,7 +169,6 @@ export default function HeroSection() {
               />
             </button>
 
-            {/* Secondary CTA */}
             {/* Secondary CTA */}
             <button
               onClick={() => window.open("/rulebook.pdf", "_blank")}
@@ -284,7 +283,7 @@ export default function HeroSection() {
         </div>
 
         {/* Right Column - Image (7 columns) */}
-        <div className="relative order-first flex justify-center lg:order-last lg:col-span-7">
+        <div className="relative flex justify-center lg:order-last lg:col-span-7">
           <div className="relative -z-10 h-[340px] w-full sm:h-[400px] lg:h-[540px]">
             <Image
               src="/assets/codefest.png"
