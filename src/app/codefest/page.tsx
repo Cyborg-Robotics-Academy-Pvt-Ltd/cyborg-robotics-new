@@ -19,12 +19,12 @@ export default function HomePage() {
       <Header />
       <HeroSection />
       <FeatureBar />
-
-      <section className="max-w-7xl mx-auto grid lg:grid-cols-[5fr_8fr] gap-3 px-6 py-10 items-stretch">
-        <div id="about" className="scroll-mt-24">
+      <section className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[5fr_8fr] lg:gap-3 lg:px-6">
+        <div id="about" className="scroll-mt-24 w-full">
           <AboutChallenge />
         </div>
-        <div id="how-it-works" className="scroll-mt-24">
+
+        <div id="how-it-works" className="scroll-mt-24 w-full">
           <HowItWorks />
         </div>
       </section>

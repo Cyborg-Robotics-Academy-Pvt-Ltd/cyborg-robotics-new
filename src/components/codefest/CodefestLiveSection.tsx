@@ -94,23 +94,60 @@ export default function CodefestLiveSection() {
       </section>
 
       {pendingResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-6">
-          <Card className="w-full max-w-md rounded-[28px] border border-white/10 bg-white shadow-2xl">
-            <CardHeader className="pb-3">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#8B1A2B]">
+        <div
+          className="
+      fixed inset-0 z-50
+      flex items-center justify-center
+      bg-black/55
+      px-4 py-6
+      sm:px-6
+    "
+        >
+          <Card
+            className="
+        w-full max-w-md
+        rounded-[24px]
+        border border-white/10
+        bg-white
+        shadow-2xl
+        sm:rounded-[28px]
+      "
+          >
+            <CardHeader className="pb-3 px-5 pt-5 sm:px-6 sm:pt-6">
+              <p
+                className="
+            text-[10px] font-bold uppercase
+            tracking-[0.25em]
+            text-[#8B1A2B]
+            sm:text-xs sm:tracking-[0.3em]
+          "
+              >
                 Challenge Complete
               </p>
-              <CardTitle className="mt-1.5 text-[1.75rem] font-black text-[#082c78]">
+
+              <CardTitle
+                className="
+            mt-1.5
+            text-[1.5rem] font-black leading-tight text-[#082c78]
+            sm:text-[1.75rem]
+          "
+              >
                 Save your score
               </CardTitle>
-              <p className="text-sm leading-relaxed text-gray-500">
+
+              <p
+                className="
+            text-[13px] leading-relaxed text-gray-500
+            sm:text-sm
+          "
+              >
                 You finished in {pendingResult.time.toFixed(1)}s with{" "}
                 {pendingResult.score.toLocaleString()} points. Enter your name
                 to add this run to the live leaderboard.
               </p>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
               <form onSubmit={handleScoreSubmit} className="space-y-3">
                 <Input
                   type="text"
@@ -118,7 +155,18 @@ export default function CodefestLiveSection() {
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="Your name"
                   maxLength={40}
-                  className="h-12 rounded-2xl border border-[#dbe1ea] px-4 text-[15px] font-medium shadow-none focus-visible:ring-1 focus-visible:ring-[#082c78]"
+                  className="
+              h-11 rounded-2xl
+              border border-[#dbe1ea]
+              px-4
+              text-[14px] font-medium
+              shadow-none
+
+              focus-visible:ring-1
+              focus-visible:ring-[#082c78]
+
+              sm:h-12 sm:text-[15px]
+            "
                 />
 
                 {saveError && (
@@ -127,7 +175,7 @@ export default function CodefestLiveSection() {
                   </p>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
@@ -136,14 +184,29 @@ export default function CodefestLiveSection() {
                       setPlayerName("");
                       setSaveError(null);
                     }}
-                    className="h-12 flex-1 rounded-2xl border-[#dbe1ea] font-bold text-[#082c78] hover:bg-slate-50"
+                    className="
+                h-11 flex-1 rounded-2xl
+                border-[#dbe1ea]
+                font-bold text-[#082c78]
+                hover:bg-slate-50
+
+                sm:h-12
+              "
                   >
                     Skip
                   </Button>
+
                   <Button
                     type="submit"
                     disabled={isSaving}
-                    className="h-12 flex-1 rounded-2xl bg-[#8B1A2B] font-bold text-white hover:bg-[#741625]"
+                    className="
+                h-11 flex-1 rounded-2xl
+                bg-[#8B1A2B]
+                font-bold text-white
+                hover:bg-[#741625]
+
+                sm:h-12
+              "
                   >
                     {isSaving ? "Saving..." : "Save Score"}
                   </Button>

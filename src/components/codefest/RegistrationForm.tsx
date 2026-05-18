@@ -108,8 +108,7 @@ const inputClassName =
   "h-14 rounded-2xl border border-gray-200 bg-white pl-12 pr-4 text-[15px] font-500 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#b3202a] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(179,32,42,0.1)] hover:border-gray-300";
 
 const selectTriggerClassName =
-  "h-14 rounded-2xl border border-gray-200 bg-white pl-12 pr-4 text-[15px] font-500 text-gray-700 shadow-none transition-all duration-200 focus:border-[#b3202a] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(179,32,42,0.1)] hover:border-gray-300";
-
+  "h-14 w-full rounded-2xl border border-gray-200 bg-white pl-12 pr-10 text-left text-[14px] sm:text-[15px] font-medium text-gray-700 shadow-none transition-all duration-200 focus:border-[#b3202a] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(179,32,42,0.1)]hover:border-gray-300  overflow-hidden";
 const textareaClassName =
   "min-h-[112px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-[15px] font-500 text-gray-700 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#b3202a] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(179,32,42,0.1)] hover:border-gray-300";
 
@@ -323,65 +322,77 @@ export default function RegistrationForm() {
           transform: scale(1.05);
         }
       `}</style>
-
-      <Card className="w-full rounded-[28px] border border-gray-200 bg-gradient-to-br from-white via-white to-gray-50/50 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
-        <CardHeader className="card-header-glow border-b border-gray-100 pb-6">
-          <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b3202a]/60">
+      <Card className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-gray-50/50 shadow-md sm:rounded-[28px]">
+        <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-[#b3202a]/[0.03] to-[#c73e1d]/[0.02] px-4 py-5 sm:px-6 sm:py-5">
+          <div className="max-w-4xl space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b3202a]/70 sm:text-xs">
               🚀 Competition Registration
             </p>
-            <CardTitle className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl lg:text-5xl">
+
+            <CardTitle className="text-2xl font-black leading-[0.95] tracking-tight text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
               READY TO PARTICIPATE?
               <br />
-              <span className="bg-gradient-to-r from-[#b3202a] to-[#c73e1d] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent font-bold">
                 CodeFest?
               </span>
             </CardTitle>
-            <p className="max-w-2xl text-[15px] leading-relaxed text-gray-600">
+
+            <p className="pt-1 text-sm leading-relaxed text-gray-600 sm:text-[15px]">
               Register now for CODE FEST 1.0 and secure your spot in India’s
               exciting block-based coding competition for young innovators.
             </p>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 pt-8">
-          <div className="grid gap-3 md:grid-cols-3">
+        <CardContent className="space-y-5 px-4 py-5 sm:px-6 sm:py-7">
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 label: "Entry Fee",
                 value: `Rs. ${CODEFEST_COMPETITION.amount}`,
                 icon: "₹",
               },
-              { label: "Platforms", value: "Scratch & PictoBlox", icon: "🖥️" },
-              { label: "Hall Ticket", value: "Auto Generated", icon: "🎫" },
+              {
+                label: "Platforms",
+                value: "Scratch & PictoBlox",
+                icon: "🖥️",
+              },
+              {
+                label: "Hall Ticket",
+                value: "Auto Generated",
+                icon: "🎫",
+              },
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="feature-card rounded-2xl p-4"
-                style={{
-                  animationDelay: `${idx * 0.1}s`,
-                }}
+                className="rounded-2xl border border-red-100 bg-gradient-to-br from-white to-[#fafaf9] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg"
               >
-                <p className="text-2xl">{item.icon}</p>
-                <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-gray-600">
+                <div className="text-2xl">{item.icon}</div>
+
+                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
                   {item.label}
                 </p>
-                <p className="mt-2 text-sm font-bold text-gray-900">
+
+                <p className="mt-2 text-sm font-bold leading-snug text-gray-900 sm:text-[15px]">
                   {item.value}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="feature-card rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-green-50/50 p-4">
-            <div className="flex items-start gap-3">
-              <div className="badge-icon bg-green-600">
+          {/* Secure Payment */}
+          <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-green-50/40 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-sm">
                 <ShieldCheck size={20} />
               </div>
+
               <div className="flex-1">
                 <p className="text-sm font-bold uppercase tracking-[0.1em] text-green-900">
                   Secure Payment Flow
                 </p>
+
                 <p className="mt-1.5 text-sm leading-relaxed text-green-800/80">
                   Your details are securely encrypted. After successful payment,
                   your competition ID and hall ticket are generated instantly.
@@ -390,6 +401,7 @@ export default function RegistrationForm() {
             </div>
           </div>
 
+          {/* CTA */}
           <Button
             onClick={openModal}
             className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white transition-all duration-300"

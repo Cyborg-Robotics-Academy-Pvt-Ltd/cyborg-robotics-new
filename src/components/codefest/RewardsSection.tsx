@@ -46,15 +46,36 @@ export default function RewardsSection() {
     <>
       <section className="w-full">
         <Card className="overflow-hidden rounded-[22px] border-[#ECE3CF] bg-[#FDF8ED] shadow-sm">
-          <CardContent className="flex items-center justify-between px-7 py-7 sm:px-9">
-            <div className="max-w-[360px]">
-              <h2 className="whitespace-nowrap text-[32px] font-extrabold uppercase leading-none tracking-[-1.5px] text-[#082C78] sm:text-[34px]">
+          <CardContent
+            className="
+              flex flex-col-reverse items-center gap-10
+              px-5 py-6
+              sm:px-7 sm:py-7
+              lg:flex-row lg:items-center lg:justify-between lg:px-9
+            "
+          >
+            {/* Left Content */}
+            <div className="w-full max-w-[520px] text-center lg:text-left">
+              <h2
+                className="
+                  text-[26px] font-extrabold uppercase leading-tight tracking-[-1px]
+                  text-[#082C78]
+                  sm:text-[32px]
+                  md:text-[34px]
+                "
+              >
                 Prizes & Recognition
               </h2>
 
-              <div className="mt-5 h-[4px] w-[82px] rounded-full bg-[#D81E25]" />
+              <div className="mx-auto mt-4 h-[4px] w-[82px] rounded-full bg-[#D81E25] lg:mx-0" />
 
-              <p className="mt-7 max-w-[310px] text-[19px] font-semibold leading-[1.45] text-[#2D3F63]">
+              <p
+                className="
+                  mt-6 text-[15px] font-semibold leading-[1.7] text-[#2D3F63]
+                  sm:text-[17px]
+                  md:text-[18px]
+                "
+              >
                 Compete with students across the country, showcase your
                 creativity, and unlock exciting rewards, recognition, and
                 learning opportunities through CODE FEST 1.0.
@@ -62,20 +83,33 @@ export default function RewardsSection() {
 
               <Button
                 onClick={() => setOpen(true)}
-                className="mt-8 h-[54px] rounded-[16px] bg-[#082C78] px-8 text-[18px] font-extrabold text-white hover:bg-[#061F59]"
+                className="
+                  mt-7 h-[50px] w-full rounded-[16px]
+                  bg-[#082C78] px-8 text-[16px] font-extrabold text-white
+                  hover:bg-[#061F59]
+                  sm:w-auto sm:text-[17px]
+                "
               >
                 EXPLORE PRIZES
               </Button>
             </div>
 
-            <div className="flex flex-1 items-center justify-center ">
-              <div className="relative h-[280px] w-[360px] ">
+            {/* Trophy Image */}
+            <div className="flex w-full flex-1 items-center justify-center">
+              <div
+                className="
+                  relative
+                  h-[220px] w-[240px]
+                  sm:h-[260px] sm:w-[300px]
+                  md:h-[300px] md:w-[360px]
+                "
+              >
                 <Image
                   src="/assets/winner-trophy-illustration.png"
                   alt="Rewards Trophy"
                   fill
                   priority
-                  className="object-contain scale-[1.08] "
+                  className="object-contain"
                 />
               </div>
             </div>
@@ -83,18 +117,32 @@ export default function RewardsSection() {
         </Card>
       </section>
 
-      {/* Prizes Modal */}
+      {/* Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col border-0">
+        <DialogContent
+          className="
+            max-h-[85vh] overflow-hidden
+            border-0
+            p-4 sm:p-6
+            sm:max-w-2xl
+          "
+        >
           <DialogHeader>
-            <DialogTitle className="text-3xl font-black uppercase text-[#082C78]">
+            <DialogTitle
+              className="
+                text-center text-2xl font-black uppercase text-[#082C78]
+                sm:text-left sm:text-3xl
+              "
+            >
               Prizes & Recognition
             </DialogTitle>
           </DialogHeader>
 
           <div
             className="
-              space-y-4 overflow-y-auto pr-3 max-h-[55vh]
+              mt-2 space-y-4 overflow-y-auto pr-1 sm:pr-3
+              max-h-[65vh]
+
               [&::-webkit-scrollbar]:w-[6px]
               [&::-webkit-scrollbar-track]:rounded-full
               [&::-webkit-scrollbar-track]:bg-[#E8EDF7]
@@ -102,10 +150,7 @@ export default function RewardsSection() {
               [&::-webkit-scrollbar-thumb]:bg-gradient-to-b
               [&::-webkit-scrollbar-thumb]:from-[#082C78]
               [&::-webkit-scrollbar-thumb]:to-[#1A4DB8]
-              [&::-webkit-scrollbar-thumb]:border-[1px]
-              [&::-webkit-scrollbar-thumb]:border-white
-              hover:[&::-webkit-scrollbar-thumb]:from-[#061F59]
-              hover:[&::-webkit-scrollbar-thumb]:to-[#082C78]
+
               [scrollbar-width:thin]
               [scrollbar-color:#082C78_#E8EDF7]
             "
@@ -113,19 +158,41 @@ export default function RewardsSection() {
             {PRIZES.map((prize, i) => (
               <div
                 key={i}
-                className="rounded-lg border border-gray-200 bg-gradient-to-r from-blue-50 to-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
+                className="
+                  rounded-xl border border-gray-200
+                  bg-gradient-to-r from-blue-50 to-white
+                  p-4 sm:p-5
+                  transition-all hover:border-blue-300 hover:shadow-md
+                "
               >
-                <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                   <span className="text-4xl">{prize.icon}</span>
+
                   <div className="flex-1">
-                    <h3 className="font-bold uppercase tracking-wide text-[#082C78]">
+                    <h3
+                      className="
+                        text-sm font-bold uppercase tracking-wide text-[#082C78]
+                        sm:text-base
+                      "
+                    >
                       {prize.title}
                     </h3>
-                    <p className="mt-1 font-semibold text-gray-800">
+
+                    <p
+                      className="
+                        mt-1 text-sm font-semibold text-gray-800
+                        sm:text-base
+                      "
+                    >
                       {prize.amount}
                     </p>
+
                     {prize.description && (
-                      <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                      <p
+                        className="
+                          mt-2 text-sm leading-relaxed text-gray-600
+                        "
+                      >
                         {prize.description}
                       </p>
                     )}

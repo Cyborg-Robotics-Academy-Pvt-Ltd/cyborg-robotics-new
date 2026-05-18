@@ -27,17 +27,15 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      width={W}
-      height={H}
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       className="absolute top-0 h-full"
       style={{
         [side]: 0,
-        opacity: side === "left" ? 0.22 : 0.9,
+        opacity: side === "left" ? 0.18 : 0.88,
         height: "100%",
         width: "auto",
-        maxWidth: side === "left" ? "38%" : "50%",
+        maxWidth: side === "left" ? "42%" : "58%",
       }}
       preserveAspectRatio={side === "left" ? "xMinYMid meet" : "xMaxYMid meet"}
     >
@@ -49,6 +47,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
               <stop offset="35%" stopColor="#e8860a" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#0a2472" stopOpacity="0" />
             </radialGradient>
+
             <radialGradient id="floor" cx="50%" cy="10%" r="80%">
               <stop offset="0%" stopColor="#f5c518" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#f5c518" stopOpacity="0" />
@@ -66,6 +65,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
             ry={H * 0.52}
             fill="url(#glow)"
           />
+
           <ellipse
             cx={W * 0.68}
             cy={H * 0.93}
@@ -79,6 +79,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
       {MAZE.map((row, r) =>
         row.map((cell, c) => {
           if (cell !== 1) return null;
+
           return (
             <rect
               key={`${r}-${c}`}
@@ -96,6 +97,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
       {MAZE.map((row, r) =>
         row.map((cell, c) => {
           if (cell !== 0) return null;
+
           return (
             <rect
               key={`path-${r}-${c}`}
@@ -118,6 +120,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
           const dy = 1 * CELL;
           const dw = CELL - 4;
           const dh = CELL * 6;
+
           return (
             <g>
               <rect
@@ -130,6 +133,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
                 strokeWidth="1.5"
                 rx="1"
               />
+
               <rect
                 x={dx}
                 y={dy}
@@ -139,6 +143,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
                 opacity="0.93"
                 rx="0.5"
               />
+
               <rect
                 x={dx}
                 y={dy}
@@ -148,6 +153,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
                 opacity="0.25"
                 rx="0.5"
               />
+
               <circle cx={dx + 3} cy={dy + dh * 0.52} r="1.8" fill="#b87008" />
             </g>
           );
@@ -158,44 +164,123 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
 
 export default function FinalCTA() {
   const scrollToRegistration = () => {
-    document
-      .getElementById("codefest-registration")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("codefest-registration")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-10">
+    <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 sm:pb-10">
       <Card
-        className="relative overflow-hidden rounded-3xl border-none"
-        style={{ background: "#0a2472", minHeight: 180 }}
+        className="
+          relative overflow-hidden
+          rounded-[28px]
+          border-none
+
+          sm:rounded-3xl
+        "
+        style={{
+          background: "#0a2472",
+          minHeight: 180,
+        }}
       >
+        {/* Background Mazes */}
         <MazeSVG side="left" />
         <MazeSVG side="right" />
 
-        <CardContent className="relative z-10 flex items-center justify-between px-10 py-10">
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#071a56]/85 via-[#0a2472]/70 to-transparent" />
+
+        <CardContent
+          className="
+            relative z-10
+            flex flex-col items-start gap-7
+            px-5 py-8
+
+            sm:px-8 sm:py-10
+            lg:flex-row lg:items-center lg:justify-between
+            lg:px-10
+          "
+        >
+          {/* Content */}
           <div className="max-w-xl">
-            <h2
-              className="font-black uppercase leading-tight"
-              style={{
-                fontSize: "clamp(1.4rem, 2.8vw, 2.3rem)",
-                color: "#fff",
-              }}
+            <div
+              className="
+                inline-flex items-center gap-2
+                rounded-full
+                border border-white/10
+                bg-white/5
+                px-3 py-1.5
+                backdrop-blur-sm
+              "
             >
-              Only a few will find{" "}
-              <span style={{ color: "#f5c518" }}>the exit.</span>
+              <span className="h-2 w-2 rounded-full bg-[#f5c518]" />
+
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-yellow-500">
+                Final Challenge
+              </span>
+            </div>
+
+            <h2
+              className="
+                mt-5
+                text-[2rem] font-font uppercase
+                leading-[0.95]
+                tracking-[-1.5px]
+                text-white
+
+                sm:text-[2.6rem]
+                lg:text-[2.8rem]
+              "
+            >
+              Only a few will
+              <br />
+              find <span className="text-[#f5c518]">the exit.</span>
             </h2>
-            <p className="mt-2 text-sm" style={{ color: "#93aee0" }}>
-              The maze is ready. Are you?
+
+            <p
+              className="
+                mt-4
+                max-w-md
+                text-[14px] leading-relaxed
+                text-white
+
+                sm:text-[15px]
+              "
+            >
+              The maze is ready. Are you prepared to solve the challenge,
+              compete against top participants, and secure your place on the
+              leaderboard?
             </p>
           </div>
 
-          <Button
-            onClick={scrollToRegistration}
-            className="mr-32 h-auto whitespace-nowrap rounded-xl bg-[#f5c518] px-7 py-3.5 text-[14px] font-black uppercase tracking-[0.08em] text-[#0a0a0a] hover:bg-[#f1cd45]"
-          >
-            Register Now
-            <ArrowRight size={16} strokeWidth={3} />
-          </Button>
+          {/* CTA */}
+          <div className="w-full sm:w-auto">
+            <Button
+              onClick={scrollToRegistration}
+              className="
+                h-[54px] w-full
+                rounded-2xl
+                bg-[#f5c518]
+                px-7
+
+                text-[13px] font-black uppercase
+                tracking-[0.08em]
+                text-[#0a0a0a]
+
+                transition-all duration-300
+
+                hover:scale-[1.02]
+                hover:bg-[#f1cd45]
+
+                sm:w-auto
+              "
+            >
+              Register Now
+              <ArrowRight size={16} strokeWidth={3} className="ml-1" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </section>

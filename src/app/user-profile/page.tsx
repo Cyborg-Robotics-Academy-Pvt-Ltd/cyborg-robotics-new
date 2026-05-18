@@ -17,6 +17,7 @@ import {
   Camera,
   User,
 } from "lucide-react";
+import HangingIdCard from "@/components/lightswind/hanging-id-card";
 
 const UserProfile = () => {
   const { user: authUser, userRole, loading: authLoading } = useAuth();
@@ -176,16 +177,21 @@ const UserProfile = () => {
     : "";
 
   return (
-    <div className="min-h-full bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-xs">
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            border: "0.5px solid rgba(0,0,0,0.1)",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-          }}
-        >
-          {/* â”€â”€ Header â”€â”€ */}
+    // Extra top padding so the rope anchor has vertical breathing room
+    <div className="min-h-full bg-white flex items-center justify-center p-4 pt-2">
+      <HangingIdCard
+        ropeLength={100}
+        ropeColor="#A81B1E"
+        accentColor="#A81B1E"
+        className="w-full max-w-xs"
+      >
+        {/*
+          ── Card content passed as children ──
+          The HangingIdCard renders this inside its card div.
+          All existing functionality (edit username, upload photo, modal) is untouched.
+        */}
+        <div className="rounded-2xl overflow-hidden">
+          {/* ── Header ── */}
           <div
             className="relative p-5 overflow-hidden"
             style={{
@@ -204,13 +210,17 @@ const UserProfile = () => {
             </p>
           </div>
 
-          {/* â”€â”€ Avatar â”€â”€ */}
+          {/* ── Avatar ── */}
           <div className="flex justify-center" style={{ marginTop: "-36px" }}>
             <div className="relative w-[76px] h-[76px]">
               {profileImageSrc ? (
                 <button
                   type="button"
-                  onClick={() => setShowProfilePreview(true)}
+                  onClick={(e) => {
+                    // Prevent click from propagating to HangingIdCard's onClick (physics impulse)
+                    e.stopPropagation();
+                    setShowProfilePreview(true);
+                  }}
                   className="block w-full h-full"
                   aria-label="View profile photo"
                 >
@@ -245,6 +255,7 @@ const UserProfile = () => {
               <label
                 htmlFor="profile-picture-upload"
                 className="absolute bottom-0 right-0 flex items-center justify-center cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
                 style={{
                   width: "22px",
                   height: "22px",
@@ -261,6 +272,7 @@ const UserProfile = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleProfilePictureUpload}
+                onClick={(e) => e.stopPropagation()}
                 className="hidden"
                 disabled={isUploading}
               />
@@ -274,10 +286,13 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* â”€â”€ Name â”€â”€ */}
+          {/* ── Name ── */}
           <div className="px-5">
             {isEditingUsername ? (
-              <div className="flex flex-col items-center gap-3 py-3">
+              <div
+                className="flex flex-col items-center gap-3 py-3"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <input
                   type="text"
                   value={editedUsername}
@@ -314,7 +329,10 @@ const UserProfile = () => {
                   {getDisplayName()}
                 </h2>
                 <button
-                  onClick={() => setIsEditingUsername(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditingUsername(true);
+                  }}
                   className="flex items-center justify-center rounded-full transition-colors"
                   style={{
                     width: "26px",
@@ -341,7 +359,7 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* â”€â”€ Info Rows â”€â”€ */}
+          {/* ── Info Rows ── */}
           <div className="px-4 pb-4 flex flex-col gap-1.5">
             {/* Email */}
             <div
@@ -479,7 +497,7 @@ const UserProfile = () => {
             )}
           </div>
 
-          {/* â”€â”€ Footer â”€â”€ */}
+          {/* ── Footer ── */}
           <div className="p-3 text-center" style={{ background: "#A81B1E" }}>
             <p
               className="text-white font-medium"
@@ -489,9 +507,9 @@ const UserProfile = () => {
             </p>
           </div>
         </div>
-      </div>
+      </HangingIdCard>
 
-      {/* â”€â”€ Profile Preview Modal â”€â”€ */}
+      {/* ── Profile Preview Modal ── (outside HangingIdCard — fixed overlay) */}
       {showProfilePreview && profileImageSrc && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"

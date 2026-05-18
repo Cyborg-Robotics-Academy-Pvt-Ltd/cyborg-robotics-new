@@ -514,7 +514,7 @@ export default function Header() {
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className={`mx-auto flex max-w-[1440px] items-center justify-between rounded-[26px] border pl-5 pr-4 sm:pl-6 sm:pr-5 lg:pl-7 lg:pr-6 ${
             isTransparentMode
-              ? "border-white/15 bg-white/10 text-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl"
+              ? "border-white/10 border  bg-black text-white shadow-md backdrop-blur-xl"
               : isScrolled
                 ? "border-red-100 bg-white text-[#1a1a1a] shadow-[0_14px_34px_rgba(15,23,42,0.08)]"
                 : "border-red-100 bg-white text-[#1a1a1a] shadow-[0_10px_26px_rgba(15,23,42,0.05)]"

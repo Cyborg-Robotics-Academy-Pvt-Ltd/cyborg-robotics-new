@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useMemo,
+  useCallback,
+} from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import Header from "@/components/layout/header";
 import GallerySkeleton from "@/components/gallery/GallerySkeleton";
 
@@ -26,51 +32,92 @@ const Lightbox = React.memo(
     if (!image) return null;
 
     return (
-      <div
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+      <motion.div
+        className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
       >
-        <div
-          className="relative w-full max-w-6xl max-h-full flex items-center justify-center"
+        <motion.div
+          className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center"
           onClick={(e) => e.stopPropagation()}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.2 }}
         >
-          <button
-            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+          {/* Close Button */}
+          <motion.button
+            className="absolute top-4 right-4 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg"
             onClick={onClose}
             aria-label="Close lightbox"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <X className="w-6 h-6 bg-red-800 rounded-full p-1" />
-          </button>
+            <X className="w-6 h-6" />
+          </motion.button>
 
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+          {/* Previous Button */}
+          <motion.button
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
             onClick={onPrev}
             aria-label="Previous image"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ChevronLeft className="w-6 h-6 bg-red-800 rounded-full p-1" />
-          </button>
+            <ChevronLeft className="w-6 h-6" />
+          </motion.button>
 
-          <div className="max-h-[90vh] max-w-[90vw] flex items-center justify-center p-8 rounded-2xl">
+          {/* Image Container */}
+          <motion.div
+            className="w-full max-h-[80vh] flex items-center justify-center rounded-xl overflow-hidden"
+            key={image.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <Image
               src={image.imageUrl || image.src}
               alt={image.fileName || image.alt || "Gallery image"}
-              width={800}
-              height={600}
-              className="max-h-[80vh] max-w-[80vw] object-contain"
-              priority={false}
-              unoptimized // Allow browser to handle optimization
+              width={1200}
+              height={900}
+              className="max-h-[80vh] max-w-full object-contain"
+              priority
+              unoptimized
             />
-          </div>
+          </motion.div>
 
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
+          {/* Next Button */}
+          <motion.button
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
             onClick={onNext}
             aria-label="Next image"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ChevronRight className="w-6 h-6 bg-red-800 rounded-full p-1" />
-          </button>
-        </div>
-      </div>
+            <ChevronRight className="w-6 h-6" />
+          </motion.button>
+
+          {/* Mobile Navigation Hints */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 sm:hidden text-white/70 text-xs">
+            <button
+              onClick={onPrev}
+              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={onNext}
+              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+            >
+              Next →
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
     );
   },
 );
@@ -79,51 +126,38 @@ const BehindSceneContent = () => {
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
 
-  // Set initial active tab based on URL parameter or default to 'certificates'
-  const [activeTab, setActiveTab] = useState(
+  const [activeTab, setActiveTab] = useState<string>(
     tabFromUrl &&
-      [
-        "certificates",
-        "actions",
-        "competitions",
-        "workshops",
-        "achievements",
-      ].includes(tabFromUrl)
+      ["certificates", "actions", "competitions", "workshops"].includes(
+        tabFromUrl,
+      )
       ? tabFromUrl
       : "certificates",
   );
 
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [categoryLoading, setCategoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<any>(null);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const itemsPerPage = 9; // Show 9 images per page (3x3 grid)
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(
+    new Set(),
+  );
+  const itemsPerPage = 12;
 
-  // Fetch all photos from Firebase
+  // Fetch photos once
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        setLoading(true);
-
         const photosQuery = query(
           collection(db, "photo"),
           orderBy("uploadedAt", "desc"),
         );
         const photosSnapshot = await getDocs(photosQuery);
-
-        const photosData: any[] = [];
-
-        photosSnapshot.forEach((doc) => {
-          const data = doc.data();
-          photosData.push({
-            id: doc.id,
-            ...data,
-          });
-        });
-
+        const photosData = photosSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setPhotos(photosData);
       } catch (err) {
         console.error("Error fetching photos:", err);
@@ -136,134 +170,123 @@ const BehindSceneContent = () => {
     fetchPhotos();
   }, []);
 
-  // Update URL when tab changes
+  const categoryMap = useMemo(
+    () => ({
+      certificates: "Student Certificate",
+      actions: "Student Action",
+      competitions: "Competition Glory",
+      workshops: "Workshops",
+    }),
+    [],
+  );
+
+  const filteredPhotos = useMemo(() => {
+    const categoryName = categoryMap[activeTab as keyof typeof categoryMap];
+    return photos.filter((photo) => photo.category === categoryName);
+  }, [photos, activeTab, categoryMap]);
+
+  const { currentItems, totalPages } = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredPhotos.slice(
+      indexOfFirstItem,
+      indexOfLastItem,
+    );
+    const totalPages = Math.ceil(filteredPhotos.length / itemsPerPage);
+    return { currentItems, totalPages };
+  }, [filteredPhotos, currentPage]);
+
+  // Preload images on tab switch
   useEffect(() => {
-    // Update the URL without causing a full page reload
+    if (currentItems.length === 0) return;
+
+    currentItems.slice(0, 6).forEach((img) => {
+      if (!preloadedImages.has(img.id)) {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = img.imageUrl || img.src;
+        document.head.appendChild(link);
+
+        setPreloadedImages((prev) => new Set([...prev, img.id]));
+      }
+    });
+  }, [currentItems, preloadedImages]);
+
+  // Preload next page images
+  useEffect(() => {
+    const nextPageStart = currentPage * itemsPerPage;
+    const nextPageEnd = nextPageStart + itemsPerPage;
+    const nextPageImages = filteredPhotos.slice(nextPageStart, nextPageEnd);
+
+    setTimeout(() => {
+      nextPageImages.forEach((img) => {
+        if (!preloadedImages.has(img.id)) {
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.as = "image";
+          link.href = img.imageUrl || img.src;
+          document.head.appendChild(link);
+
+          setPreloadedImages((prev) => new Set([...prev, img.id]));
+        }
+      });
+    }, 500);
+  }, [currentPage, filteredPhotos, preloadedImages]);
+
+  const goToNextImage = useCallback(() => {
+    setSelectedImage((prev: any) => {
+      if (!prev) return null;
+      const currentIndex = filteredPhotos.findIndex(
+        (img) => img.id === prev.id,
+      );
+      if (currentIndex === -1) return prev;
+      const nextIndex = (currentIndex + 1) % filteredPhotos.length;
+      return filteredPhotos[nextIndex];
+    });
+  }, [filteredPhotos]);
+
+  const goToPreviousImage = useCallback(() => {
+    setSelectedImage((prev: any) => {
+      if (!prev) return null;
+      const currentIndex = filteredPhotos.findIndex(
+        (img) => img.id === prev.id,
+      );
+      if (currentIndex === -1) return prev;
+      const prevIndex =
+        (currentIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
+      return filteredPhotos[prevIndex];
+    });
+  }, [filteredPhotos]);
+
+  const closeLightbox = useCallback(() => {
+    setSelectedImage(null);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        goToNextImage();
+      } else if (e.key === "ArrowLeft") {
+        goToPreviousImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, closeLightbox, goToNextImage, goToPreviousImage]);
+
+  useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", activeTab);
     window.history.replaceState({}, "", url.toString());
+    setCurrentPage(1);
   }, [activeTab]);
 
-  // Show category loading when switching tabs
-  useEffect(() => {
-    if (!loading) {
-      // Only show category loading after initial load
-      setCategoryLoading(true);
-      const timer = setTimeout(() => {
-        setCategoryLoading(false);
-      }, 300); // Brief loading indication
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab, loading]);
-
-  // Handle keyboard navigation for lightbox
-  useEffect(() => {
-    if (!lightboxOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeLightbox();
-      } else if (e.key === "ArrowRight") {
-        goToNextImage();
-      } else if (e.key === "ArrowLeft") {
-        goToPreviousImage();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [lightboxOpen, selectedImage, activeTab]);
-
-  // Listen for URL changes (e.g., browser back/forward buttons)
-
-  const tabs = [
-    { id: "certificates", label: "Student Certificate" },
-    { id: "actions", label: "Student Action" },
-    { id: "competitions", label: "Student in (Competition) Glory" },
-
-    { id: "workshops", label: "Workshops" },
-  ];
-
-  // Helper function to get all images in the current category (for navigation in lightbox)
-  const getAllImagesInCategory = (category: string) => {
-    return photos.filter((photo) => {
-      if (
-        (category === "certificates" &&
-          photo.category === "Student Certificate") ||
-        (category === "actions" && photo.category === "Student Action") ||
-        (category === "competitions" &&
-          photo.category === "Competition Glory") ||
-        (category === "activities" && photo.category === "Class Activities") ||
-        (category === "events" && photo.category === "Events") ||
-        (category === "workshops" && photo.category === "Workshops")
-      ) {
-        return true;
-      }
-      return false;
-    });
-  };
-
-  // Function to close the lightbox
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-    setSelectedImage(null);
-  };
-
-  // Function to navigate to the next image in the lightbox
-  const goToNextImage = () => {
-    if (!selectedImage) return;
-
-    const currentCategoryImages = getAllImagesInCategory(activeTab);
-    const currentIndex = currentCategoryImages.findIndex(
-      (img) => img.id === selectedImage.id,
-    );
-
-    if (currentIndex !== -1) {
-      const nextIndex = (currentIndex + 1) % currentCategoryImages.length;
-      setSelectedImage(currentCategoryImages[nextIndex]);
-    }
-  };
-
-  // Function to navigate to the previous image in the lightbox
-  const goToPreviousImage = () => {
-    if (!selectedImage) return;
-
-    const currentCategoryImages = getAllImagesInCategory(activeTab);
-    const currentIndex = currentCategoryImages.findIndex(
-      (img) => img.id === selectedImage.id,
-    );
-
-    if (currentIndex !== -1) {
-      const prevIndex =
-        (currentIndex - 1 + currentCategoryImages.length) %
-        currentCategoryImages.length;
-      setSelectedImage(currentCategoryImages[prevIndex]);
-    }
-  };
-
-  // Handle keyboard navigation for lightbox
-  useEffect(() => {
-    if (!lightboxOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeLightbox();
-      } else if (e.key === "ArrowRight") {
-        goToNextImage();
-      } else if (e.key === "ArrowLeft") {
-        goToPreviousImage();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [lightboxOpen, closeLightbox, goToNextImage, goToPreviousImage]);
-
-  // Listen for URL changes (e.g., browser back/forward buttons)
   useEffect(() => {
     const handlePopState = () => {
       const url = new URL(window.location.href);
@@ -279,152 +302,15 @@ const BehindSceneContent = () => {
     };
 
     window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Filter photos by category
-  const getPhotosByCategory = (category: string) => {
-    return getAllImagesInCategory(category);
-  };
-
-  // Pagination logic moved to component level
-  const getCurrentItems = (images: any[]) => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = images.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(images.length / itemsPerPage);
-    return { currentItems, totalPages };
-  };
-
-  const renderImages = (images: any[]) => {
-    const { currentItems, totalPages } = getCurrentItems(images);
-
-    // Show skeleton loaders when switching categories
-    if (categoryLoading) {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-          {Array.from({ length: itemsPerPage }).map((_, index) => (
-            <motion.div
-              key={index}
-              className="overflow-hidden rounded-2xl shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className="aspect-square overflow-hidden">
-                <div className="w-full h-full bg-gray-200 animate-pulse rounded-none" />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      );
-    }
-
-    if (images.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
-            No photos available in this category.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-          {currentItems.map((img, index) => (
-            <motion.div
-              key={img.id || img.fileName}
-              className="overflow-hidden rounded-2xl shadow-lg  transform transition-transform duration-300 hover:-translate-y-1 cursor-pointer"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => {
-                setSelectedImage(img);
-                setLightboxOpen(true);
-              }}
-            >
-              <div className="aspect-square overflow-hidden">
-                <Image
-                  src={img.imageUrl || img.src}
-                  alt={img.fileName || img.alt}
-                  width={600}
-                  height={600}
-                  className="w-full h-full object-cover transition-transform duration-300 cursor-pointer"
-                  priority={index < 2}
-                  loading={index < 6 ? "eager" : "lazy"}
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center mt-8 space-x-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`p-2 rounded-full ${
-                currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-red-800 hover:bg-red-100"
-              }`}
-            >
-              <ChevronLeft size={20} />
-            </button>
-
-            <div className="flex space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`w-10 h-10 rounded-full ${
-                      currentPage === pageNum
-                        ? "bg-red-800 text-white"
-                        : "text-gray-700 hover:bg-red-100"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className={`p-2 rounded-full ${
-                currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-red-800 hover:bg-red-100"
-              }`}
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        )}
-      </>
-    );
-  };
+  const tabs = [
+    { id: "certificates", label: "Student Certificate", icon: "🎖️" },
+    { id: "actions", label: "Student Action", icon: "⚡" },
+    { id: "competitions", label: "Student in Glory", icon: "🏆" },
+    { id: "workshops", label: "Workshops", icon: "🛠️" },
+  ];
 
   if (loading) {
     return (
@@ -436,97 +322,239 @@ const BehindSceneContent = () => {
   }
 
   return (
-    <div className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Header />
       <div className="max-w-7xl mx-auto mt-10">
+        {/* Hero Section with Enhanced Design */}
         <motion.div
-          className="text-center mb-8 md:mb-12"
-          initial={{ opacity: 0, y: -20 }}
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h1 className="text-3xl gradient-text md:text-4xl font-bold  mb-3 md:mb-4">
-            Student Achievements
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="mb-4"
+          >
+            <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-800 text-sm font-semibold mb-4">
+              Gallery
+            </span>
+          </motion.div>
+
+          <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 leading-tight">
+            Student{" "}
+            <span className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 bg-clip-text text-transparent">
+              Achievements
+            </span>
           </h1>
-          <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
             Explore our students' certificates, accomplishments, and moments of
-            glory in competitions
+            glory in competitions and workshops
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (activeTab !== tab.id) {
-                  setCategoryLoading(true); // Show loading immediately
-                  setActiveTab(tab.id);
-                  setCurrentPage(1); // Reset to first page when changing tabs
-                  // Update URL with the new tab
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("tab", tab.id);
-                  window.history.replaceState({}, "", url.toString());
-                }
-              }}
-              className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-                activeTab === tab.id
-                  ? "bg-red-800 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-red-100 border border-gray-200 hover:text-red-800"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
+        {/* Enhanced Tab Navigation */}
         <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
+          className="flex flex-wrap justify-center gap-3 mb-16"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl  p-4 md:p-6"
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
+          <div className="inline-flex gap-2 p-1 bg-gray-100 rounded-2xl">
+            {tabs.map((tab) => (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 text-sm md:text-base ${
+                  activeTab === tab.id
+                    ? "bg-red-800 text-white shadow-lg shadow-red-800/30"
+                    : "text-gray-700 hover:text-red-800 hover:bg-white"
+                }`}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Gallery Container with Enhanced Styling */}
+        <motion.div
+          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-gray-200/50 p-8 md:p-10"
+          key={activeTab}
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
           {error ? (
-            <div className="text-center py-12">
-              <p className="text-red-600 text-lg">{error}</p>
-            </div>
+            <motion.div
+              className="text-center py-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-5xl mb-4">⚠️</div>
+              <p className="text-red-600 text-lg font-medium">{error}</p>
+            </motion.div>
+          ) : filteredPhotos.length === 0 ? (
+            <motion.div
+              className="text-center py-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-6xl mb-4">📷</div>
+              <p className="text-gray-500 text-lg font-medium">
+                No photos available in this category.
+              </p>
+            </motion.div>
           ) : (
             <>
-              {activeTab === "certificates" &&
-                renderImages(getPhotosByCategory("certificates"))}
-              {activeTab === "actions" &&
-                renderImages(getPhotosByCategory("actions"))}
-              {activeTab === "competitions" &&
-                renderImages(getPhotosByCategory("competitions"))}
+              {/* Image Grid - Enhanced with 4 column layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <AnimatePresence mode="wait">
+                  {currentItems.map((img, index) => (
+                    <motion.div
+                      key={img.id}
+                      className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-square shadow-md hover:shadow-2xl transition-all duration-300"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      whileHover={{ y: -6 }}
+                      onClick={() => setSelectedImage(img)}
+                    >
+                      {/* Image */}
+                      <Image
+                        src={img.imageUrl || img.src}
+                        alt={img.fileName || img.alt}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700"
+                        priority={index < 4}
+                        loading={index < 8 ? "eager" : "lazy"}
+                        quality={75}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        placeholder="blur"
+                        blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23f3f4f6' width='400' height='400'/%3E%3C/svg%3E"
+                      />
 
-              {activeTab === "workshops" &&
-                renderImages(getPhotosByCategory("workshops"))}
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Badge */}
+                      <motion.div
+                        className="absolute top-4 right-4 bg-red-800/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        View
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {/* Enhanced Pagination */}
+              {totalPages > 1 && (
+                <motion.div
+                  className="flex justify-center items-center gap-4 pt-8 border-t border-gray-200"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <motion.button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === 1
+                        ? "text-gray-300 cursor-not-allowed bg-gray-100"
+                        : "text-red-800 hover:bg-red-100 shadow-md hover:shadow-lg"
+                    }`}
+                    whileHover={currentPage !== 1 ? { scale: 1.1 } : {}}
+                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                  >
+                    <ChevronLeft size={20} />
+                  </motion.button>
+
+                  <div className="flex gap-2">
+                    {Array.from({ length: Math.min(5, totalPages) }).map(
+                      (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <motion.button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 rounded-full font-semibold transition-all text-sm ${
+                              currentPage === pageNum
+                                ? "bg-red-800 text-white shadow-lg shadow-red-800/30"
+                                : "text-gray-700 hover:bg-red-100 bg-gray-100"
+                            }`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {pageNum}
+                          </motion.button>
+                        );
+                      },
+                    )}
+                  </div>
+
+                  <motion.button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === totalPages
+                        ? "text-gray-300 cursor-not-allowed bg-red-100"
+                        : "text-red-800 hover:bg-red-800 hover:text-red-800 shadow-md hover:shadow-lg"
+                    }`}
+                    whileHover={
+                      currentPage !== totalPages ? { scale: 1.1 } : {}
+                    }
+                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                  >
+                    <ChevronRight size={20} />
+                  </motion.button>
+                </motion.div>
+              )}
             </>
           )}
         </motion.div>
       </div>
 
       {/* Lightbox */}
-      {lightboxOpen && selectedImage && (
-        <Lightbox
-          image={selectedImage}
-          onClose={closeLightbox}
-          onNext={goToNextImage}
-          onPrev={goToPreviousImage}
-        />
-      )}
+      <AnimatePresence>
+        {selectedImage && (
+          <Lightbox
+            image={selectedImage}
+            onClose={closeLightbox}
+            onNext={goToNextImage}
+            onPrev={goToPreviousImage}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
 const BehindScenePage = () => {
   return (
-    <Suspense
-      fallback={
-        <GallerySkeleton showHeader={false} showTabs={false} itemsPerPage={6} />
-      }
-    >
+    <Suspense fallback={<GallerySkeleton />}>
       <BehindSceneContent />
     </Suspense>
   );
