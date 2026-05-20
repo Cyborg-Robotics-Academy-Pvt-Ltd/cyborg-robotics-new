@@ -241,7 +241,7 @@ export const HangingIdCard = ({
             empty areas (children with their own handlers will stopPropagation naturally)
         */}
         <div
-          className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 bg-white dark:bg-zinc-900 mt-[-2px]"
+          className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/20  bg-white  mt-[-2px]"
           style={{ pointerEvents: "auto" }}
           onClick={onCardClick}
         >
@@ -257,9 +257,7 @@ export const HangingIdCard = ({
                 </p>
               </div>
               <div className="px-4 py-4 flex flex-col items-center gap-2">
-                <p className="text-sm font-bold text-zinc-900 dark:text-white">
-                  {name}
-                </p>
+                <p className="text-sm font-bold text-zinc-900 ">{name}</p>
                 <p className="text-[11px] text-zinc-500">{role}</p>
                 <p
                   className="text-[10px] font-mono font-bold"
@@ -274,7 +272,7 @@ export const HangingIdCard = ({
       </div>
 
       {/* Drag hint */}
-      <p className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-600 font-medium select-none pointer-events-none">
+      <p className="mt-2 text-[11px] text-zinc-400  font-medium select-none pointer-events-none">
         Drag or click the card
       </p>
     </div>
