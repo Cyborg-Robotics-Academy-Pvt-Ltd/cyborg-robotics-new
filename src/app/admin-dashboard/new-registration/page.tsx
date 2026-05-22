@@ -97,6 +97,41 @@ interface Registration {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
+const normalizeText = (value: unknown) =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
+const isCompetitionRecord = (record: FirestoreRecord) => {
+  const paymentFlow = normalizeText(record.paymentFlow);
+  const competitionName = normalizeText(
+    record.competitionName ||
+      record.courseName ||
+      record.selectedCourseName ||
+      record.competition?.name,
+  );
+  const competitionKey = normalizeText(
+    record.competitionKey || record.courseKey || record.competition?.key,
+  );
+
+  return (
+    paymentFlow === "competition" ||
+    Boolean(record.competitionRegistrationDraft) ||
+    Boolean(record.competition) ||
+    competitionKey.includes("codefest") ||
+    competitionName.includes("codefest") ||
+    competitionName.includes("mazechallenge")
+  );
+};
+
+const isWorkshopRecord = (record: FirestoreRecord) =>
+  normalizeText(record.paymentFlow) === "workshop" ||
+  Boolean(record.workshopRegistrationDraft) ||
+  Boolean(record.workshop);
+
+const isStudentRegistrationRecord = (record: FirestoreRecord) =>
+  !isWorkshopRecord(record) && !isCompetitionRecord(record);
+
 const isFirestoreTimestampLike = (
   value: unknown,
 ): value is FirestoreTimestampLike => {
@@ -251,17 +286,23 @@ const Page = () => {
         getDocs(paymentsCollection),
       ]);
 
-      const registrationData = registrationsSnapshot.docs.map((doc) => ({
-        ...normalizeRegistration(doc.data() as FirestoreRecord, doc.id),
-        firestoreId: doc.id,
-      }));
+      const registrationData = registrationsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          data: doc.data() as FirestoreRecord,
+        }))
+        .filter(({ data }) => isStudentRegistrationRecord(data))
+        .map(({ id, data }) => ({
+          ...normalizeRegistration(data, id),
+          firestoreId: id,
+        }));
 
       const paymentFallbackData = paymentsSnapshot.docs
         .map((doc) => ({
           id: doc.id,
           data: doc.data() as FirestoreRecord,
         }))
-        .filter(({ data }) => data.paymentFlow !== "workshop")
+        .filter(({ data }) => isStudentRegistrationRecord(data))
         .map(({ id, data }) => ({
           ...normalizeRegistration(data, `payment-${id}`),
           paymentDocId: id,
@@ -619,7 +660,7 @@ const Page = () => {
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
                             {reg.primaryParentName || "-"}
                           </TableCell>
-                          <TableCell className="px-4 py-3 text-sm text-gray-700 font-mono text-xs">
+                          <TableCell className="px-4 py-3 text-sm text-gray-700 font-mono ">
                             {reg.primaryParentContact || "-"}
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">

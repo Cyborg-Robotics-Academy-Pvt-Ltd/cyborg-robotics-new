@@ -368,6 +368,18 @@ export async function GET(req: Request) {
     return redirectToFailedStatus(trustedBaseUrl, orderIdParam, "stored_amount_invalid");
   }
 
+  if (existingData.status === "SUCCESS") {
+    await finalizeRegistrationForPayment(
+      orderIdParam,
+      existingData.transactionReference
+    );
+
+    const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
+      orderId: orderIdParam,
+    });
+    return NextResponse.redirect(successUrl.toString(), { status: 302 });
+  }
+
   const verified = await verifyWithGateway(orderIdParam);
   const finalStatus = verified?.status || "PENDING";
   const confirmedAmount = verified?.amount;
@@ -437,8 +449,7 @@ export async function GET(req: Request) {
       rawResponse: verified.rawResponse,
     });
 
-    const successUrl = buildRedirectUrl(trustedBaseUrl, "/payment/status", {
-      verify: "true",
+    const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
       orderId: orderIdParam,
     });
     return NextResponse.redirect(successUrl.toString(), { status: 302 });
@@ -533,6 +544,8 @@ export async function POST(req: Request) {
     }
 
     const { orderId, status, txnId } = orderData;
+    const acceptHeader = req.headers.get("accept") || "";
+    const isBrowserReturn = acceptHeader.includes("text/html");
 
     console.log("=== ORDER DATA ===");
     console.log("order_id:", orderId);
@@ -557,7 +570,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const acceptHeader = req.headers.get("accept") || "";
     const signedParams = params ?? toSearchParamsFromBody(body);
     const trustedBaseUrl = getTrustedBaseUrl(req);
     if (!trustedBaseUrl) {
@@ -567,7 +579,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (acceptHeader.includes("text/html")) {
+    if (isBrowserReturn) {
       const signatureCheck = verifyReturnUrlSignature(signedParams, getResponseKey());
       if (!signatureCheck.ok) {
         console.error("Return URL signature verification failed:", signatureCheck.reason);
@@ -627,32 +639,46 @@ export async function POST(req: Request) {
 
     const paymentDoc = snapshot.docs[0];
     const existingData = paymentDoc.data();
-    const ownershipCheck = verifyPaymentOwnership(req, orderId, existingData);
-    if (!ownershipCheck.ok) {
-      await safeWritePaymentAuditLog({
-        eventType: "return_signature",
-        source: "payment_return_post",
-        orderId,
-        status: existingData.status,
-        amount: existingData.amount,
-        txnId: existingData.transactionReference || null,
-        bankRef: extractBankRef(existingData),
-        success: false,
-        reason: ownershipCheck.reason || "Payment session validation failed",
-        requestMethod: req.method,
-        requestPath,
-        rawRequest: body || Object.fromEntries(signedParams.entries()),
-        metadata: {
-          sessionBindingKeyPresent: Boolean(existingData.sessionBindingKey),
-        },
-      });
-      return redirectToFailedStatus(
-        trustedBaseUrl,
-        orderId,
-        "session_binding_mismatch"
-      );
+    if (isBrowserReturn) {
+      const ownershipCheck = verifyPaymentOwnership(req, orderId, existingData);
+      if (!ownershipCheck.ok) {
+        await safeWritePaymentAuditLog({
+          eventType: "return_signature",
+          source: "payment_return_post",
+          orderId,
+          status: existingData.status,
+          amount: existingData.amount,
+          txnId: existingData.transactionReference || null,
+          bankRef: extractBankRef(existingData),
+          success: false,
+          reason: ownershipCheck.reason || "Payment session validation failed",
+          requestMethod: req.method,
+          requestPath,
+          rawRequest: body || Object.fromEntries(signedParams.entries()),
+          metadata: {
+            sessionBindingKeyPresent: Boolean(existingData.sessionBindingKey),
+          },
+        });
+        return redirectToFailedStatus(
+          trustedBaseUrl,
+          orderId,
+          "session_binding_mismatch"
+        );
+      }
     }
     const expectedAmount = normalizeAmount(existingData.amount);
+
+    if (isBrowserReturn && existingData.status === "SUCCESS") {
+      await finalizeRegistrationForPayment(
+        orderId,
+        existingData.transactionReference
+      );
+
+      const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
+        orderId,
+      });
+      return NextResponse.redirect(successUrl.toString(), { status: 302 });
+    }
 
     if (expectedAmount === null) {
       console.error("Stored amount missing or invalid for order:", orderId);
@@ -756,10 +782,9 @@ export async function POST(req: Request) {
       rawResponse: verified?.rawResponse || body || params?.toString() || rawText,
     });
 
-    if (acceptHeader.includes("text/html")) {
+    if (isBrowserReturn) {
       if (finalStatus === "SUCCESS") {
-        const successUrl = buildRedirectUrl(trustedBaseUrl, "/payment/status", {
-          verify: "true",
+        const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
           orderId: orderId,
         });
         return NextResponse.redirect(successUrl.toString(), { status: 302 });

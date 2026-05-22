@@ -1717,8 +1717,8 @@ const AdminDashboard = () => {
       href: "/admin-dashboard/assign-trainer",
     },
     {
-      title: "Workshop Registration",
-      href: "/admin-dashboard/workshop-registration",
+      title: "New Registration",
+      href: "/registration/new",
     },
     {
       title: "Competition Registration",

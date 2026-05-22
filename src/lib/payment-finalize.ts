@@ -1,5 +1,6 @@
 import { db } from "@/lib/firebase";
 import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
+import { sendPaymentConfirmationEmailForOrder } from "@/lib/payment-confirmation-email";
 import {
   addDoc,
   collection,
@@ -44,6 +45,18 @@ export async function finalizeRegistrationForPayment(
 
   const paymentDoc = paymentSnapshot.docs[0];
   const payment = paymentDoc.data() as PaymentDocData;
+  const paymentRef = doc(db, "payments", paymentDoc.id);
+
+  const finishSuccessfully = async (registrationId: string) => {
+    await sendPaymentConfirmationEmailForOrder(orderId, paymentDoc.id, {
+      ...payment,
+      orderId,
+      registrationId,
+      transactionReference: payment.transactionReference || txnId,
+    });
+
+    return { ok: true, registrationId };
+  };
 
   if (payment.status !== "SUCCESS" && payment.status !== "CHARGED") {
     return { ok: false, reason: "Payment not successful" };
@@ -73,14 +86,14 @@ export async function finalizeRegistrationForPayment(
         });
       }
 
-      await updateDoc(doc(db, "payments", paymentDoc.id), {
+      await updateDoc(paymentRef, {
         hallTicketNumber,
         competitionId: hallTicketNumber,
         registrationCreatedAt: serverTimestamp(),
       });
     }
 
-    return { ok: true, registrationId: payment.registrationId };
+    return await finishSuccessfully(payment.registrationId);
   }
 
   if (payment.paymentFlow === "workshop") {
@@ -119,11 +132,11 @@ export async function finalizeRegistrationForPayment(
         updatedAt: serverTimestamp(),
       });
 
-      await updateDoc(doc(db, "payments", paymentDoc.id), {
+      await updateDoc(paymentRef, {
         registrationId: existingId,
         registrationCreatedAt: serverTimestamp(),
       });
-      return { ok: true, registrationId: existingId };
+      return await finishSuccessfully(existingId);
     }
 
     const workshopRegistrationPayload = {
@@ -152,7 +165,7 @@ export async function finalizeRegistrationForPayment(
       workshopRegistrationPayload,
     );
 
-    await updateDoc(doc(db, "payments", paymentDoc.id), {
+    await updateDoc(paymentRef, {
       registrationId: workshopDocRef.id,
       studentName: workshopDraft.childName ?? "",
       currentAge: workshopDraft.age ?? "",
@@ -165,7 +178,7 @@ export async function finalizeRegistrationForPayment(
       registrationCreatedAt: serverTimestamp(),
     });
 
-    return { ok: true, registrationId: workshopDocRef.id };
+    return await finishSuccessfully(workshopDocRef.id);
   }
 
   if (payment.paymentFlow === "competition") {
@@ -221,13 +234,13 @@ export async function finalizeRegistrationForPayment(
         updatedAt: serverTimestamp(),
       });
 
-      await updateDoc(doc(db, "payments", paymentDoc.id), {
+      await updateDoc(paymentRef, {
         registrationId: existingId,
         hallTicketNumber,
         competitionId: hallTicketNumber,
         registrationCreatedAt: serverTimestamp(),
       });
-      return { ok: true, registrationId: existingId };
+      return await finishSuccessfully(existingId);
     }
 
     const hallTicketNumber = generateCompetitionHallTicketNumber(orderId);
@@ -271,7 +284,7 @@ export async function finalizeRegistrationForPayment(
       competitionRegistrationPayload,
     );
 
-    await updateDoc(doc(db, "payments", paymentDoc.id), {
+    await updateDoc(paymentRef, {
       registrationId: competitionDocRef.id,
       studentName: competitionDraft.fullName ?? "",
       courseName: competition.name ?? "",
@@ -287,7 +300,7 @@ export async function finalizeRegistrationForPayment(
       registrationCreatedAt: serverTimestamp(),
     });
 
-    return { ok: true, registrationId: competitionDocRef.id };
+    return await finishSuccessfully(competitionDocRef.id);
   }
 
   const registrationsRef = collection(db, "registrations");
@@ -296,11 +309,11 @@ export async function finalizeRegistrationForPayment(
 
   if (!existingRegSnapshot.empty) {
     const existingId = existingRegSnapshot.docs[0].id;
-    await updateDoc(doc(db, "payments", paymentDoc.id), {
+    await updateDoc(paymentRef, {
       registrationId: existingId,
       registrationCreatedAt: serverTimestamp(),
     });
-    return { ok: true, registrationId: existingId };
+    return await finishSuccessfully(existingId);
   }
 
   const draft = (payment.registrationDraft || {}) as Record<string, any>;
@@ -337,7 +350,7 @@ export async function finalizeRegistrationForPayment(
 
   const regDocRef = await addDoc(registrationsRef, registrationPayload);
 
-  await updateDoc(doc(db, "payments", paymentDoc.id), {
+  await updateDoc(paymentRef, {
     registrationId: regDocRef.id,
     studentName: registrationPayload.studentName,
     courseName: registrationPayload.selectedCourseName,
@@ -347,5 +360,5 @@ export async function finalizeRegistrationForPayment(
     registrationCreatedAt: serverTimestamp(),
   });
 
-  return { ok: true, registrationId: regDocRef.id };
+  return await finishSuccessfully(regDocRef.id);
 }

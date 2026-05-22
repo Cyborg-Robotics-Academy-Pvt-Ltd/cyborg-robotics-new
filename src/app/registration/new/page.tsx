@@ -15,7 +15,6 @@ import {
   Home,
   Map,
   ChevronDown,
-  Cpu,
   Shield,
   Zap,
 } from "lucide-react";
@@ -35,7 +34,7 @@ interface FormData {
   currentAddress: string;
   permanentAddress: string;
   selectedCourseKey: string;
-  paymentType: string;
+
   paidAmount: string;
   paymentRemark: string;
 }
@@ -63,7 +62,6 @@ const RegisterPage: React.FC = () => {
     currentAddress: "",
     permanentAddress: "",
     selectedCourseKey: "",
-    paymentType: "full",
     paidAmount: "",
     paymentRemark: "",
   });
@@ -76,19 +74,6 @@ const RegisterPage: React.FC = () => {
     useState<boolean>(false);
   const [step, setStep] = useState(1);
   const totalSteps = 5;
-  const selectedCourse = formData.selectedCourseKey
-    ? courseData[formData.selectedCourseKey]
-    : undefined;
-
-  useEffect(() => {
-    if (formData.paymentType === "full") {
-      setFormData((prev) => ({
-        ...prev,
-        paidAmount: selectedCourse?.price ? String(selectedCourse.price) : "",
-        paymentRemark: "",
-      }));
-    }
-  }, [formData.paymentType, formData.selectedCourseKey, selectedCourse?.price]);
 
   useEffect(() => {
     if (formData.dateOfBirth) {
@@ -169,15 +154,10 @@ const RegisterPage: React.FC = () => {
     } else if (stepToValidate === 4) {
       if (!formData.selectedCourseKey)
         newErrors.selectedCourseKey = "Please select a course.";
-      if (
-        formData.paymentType === "installment" ||
-        formData.paymentType === "other"
-      ) {
-        if (!formData.paidAmount.trim())
-          newErrors.paidAmount = "Please enter amount to pay.";
-        else if (Number(formData.paidAmount) <= 0)
-          newErrors.paidAmount = "Amount must be greater than 0.";
-      }
+      if (!formData.paidAmount.trim())
+        newErrors.paidAmount = "Please enter amount to pay.";
+      else if (Number(formData.paidAmount) <= 0)
+        newErrors.paidAmount = "Amount must be greater than 0.";
     } else if (stepToValidate === 5) {
       if (!termsAccepted)
         newErrors.termsAccepted = "You must accept the terms and conditions.";
@@ -268,12 +248,7 @@ const RegisterPage: React.FC = () => {
           currentAddress: formData.currentAddress,
           permanentAddress: formData.permanentAddress,
           courseKey: formData.selectedCourseKey,
-          paymentType: formData.paymentType,
-          installmentAmount:
-            formData.paymentType === "installment" ||
-            formData.paymentType === "other"
-              ? Number(formData.paidAmount)
-              : undefined,
+          paidAmount: Number(formData.paidAmount),
           paymentRemark: formData.paymentRemark,
         }),
       });
@@ -830,46 +805,11 @@ const RegisterPage: React.FC = () => {
                   </div>
                 </div>
               )}
-
               {step === 4 && (
                 <div>
                   <SectionTitle number="4" title="Payment Details" />
                   <div className="field-card">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="md:col-span-2">
-                        <div className="fee-card">
-                          <p className="text-xs text-gray-500 font-semibold tracking-wider uppercase mb-1">
-                            Course Fee
-                          </p>
-                          <p
-                            className="text-3xl font-bold text-gray-900"
-                            style={{ fontFamily: "'Rajdhani', sans-serif" }}
-                          >
-                            {selectedCourse?.price
-                              ? `₹ ${selectedCourse.price.toLocaleString("en-IN")}`
-                              : "—"}
-                          </p>
-                          {!selectedCourse && (
-                            <p className="text-xs text-gray-400 mt-1">
-                              Select a course below to view fee
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-400 mt-2">
-                            You'll be redirected to bank checkout after Step 5.
-                          </p>
-                        </div>
-                      </div>
-
-                      <DropdownField
-                        id="paymentType"
-                        label="PAYMENT TYPE"
-                        value={formData.paymentType}
-                        onChange={handleChange}
-                        required
-                        options={["full", "installment", "other"]}
-                        icon="file"
-                      />
-
                       <div className="md:col-span-2">
                         <label
                           className="block text-gray-700 text-xs font-semibold mb-2 tracking-wider"
@@ -890,9 +830,6 @@ const RegisterPage: React.FC = () => {
                             {courseOptions.map((course) => (
                               <option key={course.key} value={course.key}>
                                 {course.title}
-                                {course.price
-                                  ? ` (₹ ${course.price.toLocaleString("en-IN")})`
-                                  : ""}
                               </option>
                             ))}
                           </select>
@@ -907,39 +844,27 @@ const RegisterPage: React.FC = () => {
                         )}
                       </div>
 
-                      {(formData.paymentType === "installment" ||
-                        formData.paymentType === "other") && (
-                        <>
-                          <FormField
-                            id="paidAmount"
-                            label="AMOUNT TO PAY"
-                            type="number"
-                            value={formData.paidAmount}
-                            onChange={handleChange}
-                            required
-                            placeholder={
-                              formData.paymentType === "installment"
-                                ? "Enter installment amount"
-                                : "Enter amount"
-                            }
-                            icon="file"
-                            error={errors.paidAmount}
-                          />
-                          <div className="md:col-span-2">
-                            <TextareaField
-                              id="paymentRemark"
-                              label="REMARK"
-                              value={formData.paymentRemark}
-                              onChange={handleChange}
-                              placeholder={
-                                formData.paymentType === "installment"
-                                  ? "Example: First installment"
-                                  : "Example: Scholarship, cash, custom plan"
-                              }
-                            />
-                          </div>
-                        </>
-                      )}
+                      <FormField
+                        id="paidAmount"
+                        label="AMOUNT TO PAY"
+                        type="number"
+                        value={formData.paidAmount}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter amount"
+                        icon="file"
+                        error={errors.paidAmount}
+                      />
+
+                      <div className="md:col-span-2">
+                        <TextareaField
+                          id="paymentRemark"
+                          label="REMARK"
+                          value={formData.paymentRemark}
+                          onChange={handleChange}
+                          placeholder="e.g. First installment, scholarship, custom plan"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

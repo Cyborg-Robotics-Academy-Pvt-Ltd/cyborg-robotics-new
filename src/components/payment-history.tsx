@@ -86,6 +86,11 @@ const normalizeStatus = (status: string) =>
     .trim()
     .toUpperCase();
 
+const isPendingPaymentStatus = (status: string) =>
+  ["PENDING", "CREATED", "AUTHORIZED", "PENDING_VBV"].includes(
+    normalizeStatus(status),
+  );
+
 const getStatusDisplay = (status: string) => {
   const normalized = normalizeStatus(status);
 
@@ -248,6 +253,9 @@ export default function PaymentHistory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [copying, setCopying] = useState(false);
+  const [reconcilingOrderId, setReconcilingOrderId] = useState<string | null>(
+    null,
+  );
 
   const orderIdFilter = useMemo(() => {
     const queryValue =
@@ -387,10 +395,7 @@ export default function PaymentHistory() {
   const pendingAmount = useMemo(
     () =>
       filteredSummaries
-        .filter(
-          (summary) =>
-            normalizeStatus(summary.latestRecord.status) === "PENDING",
-        )
+        .filter((summary) => isPendingPaymentStatus(summary.latestRecord.status))
         .reduce((sum, summary) => sum + summary.latestRecord.amount, 0),
     [filteredSummaries],
   );
@@ -413,6 +418,39 @@ export default function PaymentHistory() {
       });
     } finally {
       setCopying(false);
+    }
+  };
+
+  const reconcilePayment = async (orderId: string) => {
+    try {
+      setReconcilingOrderId(orderId);
+      const response = await fetch("/api/admin/payment-reconcile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to reconcile payment");
+      }
+
+      toast.success({
+        title: "Payment reconciled",
+        description: `${orderId} is now ${data.payment.status}.`,
+      });
+      await fetchPayments();
+    } catch (error) {
+      console.error("Failed to reconcile payment:", error);
+      toast.destructive({
+        title: "Reconcile failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please check the gateway order and try again.",
+      });
+    } finally {
+      setReconcilingOrderId(null);
     }
   };
 
@@ -662,6 +700,26 @@ export default function PaymentHistory() {
                             <div>{payment.bankRef || "-"}</div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap px-3 py-2.5 align-top">
+                            {isPendingPaymentStatus(payment.status) ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mr-2"
+                                onClick={() => reconcilePayment(summary.orderId)}
+                                disabled={reconcilingOrderId === summary.orderId}
+                                aria-label="Reconcile payment with gateway"
+                                title="Reconcile payment with gateway"
+                              >
+                                <RefreshCw
+                                  className={`h-3.5 w-3.5 ${
+                                    reconcilingOrderId === summary.orderId
+                                      ? "animate-spin"
+                                      : ""
+                                  }`}
+                                />
+                              </Button>
+                            ) : null}
                             <Button asChild variant="ghost" size="sm">
                               <Link
                                 href={`/admin-dashboard/payment-management/${summary.orderId}`}

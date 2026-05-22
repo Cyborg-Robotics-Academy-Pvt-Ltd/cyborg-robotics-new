@@ -15,6 +15,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { finalizeRegistrationForPayment } from "@/lib/payment-finalize";
 
 function normalizeAmount(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -463,6 +464,10 @@ export async function PUT(req: Request) {
       gatewayResponse: juspayData,
       updatedAt: new Date().toISOString(),
     });
+
+    if (confirmedStatus === "SUCCESS") {
+      await finalizeRegistrationForPayment(orderId, transactionReference);
+    }
 
     await safeWritePaymentAuditLog({
       eventType: "status_verify",
