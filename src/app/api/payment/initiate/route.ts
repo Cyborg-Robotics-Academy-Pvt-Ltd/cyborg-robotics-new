@@ -8,9 +8,17 @@ import {
   derivePaymentOwnerSeed,
   PAYMENT_SESSION_COOKIE_NAME,
 } from "@/lib/payment-session-binding";
-import { courseData } from "@/data/courseData";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+
+// ─── HARDCODED COURSES (SYNC WITH FRONTEND) ───
+const COURSES = {
+  regular: { key: "regular", title: "Regular Course", price: 5000 },
+  camp: { key: "camp", title: "Summer Camp", price: 8000 },
+  yearlong: { key: "yearlong", title: "Year-Long Program", price: 15000 },
+} as const;
+
+type CourseKey = keyof typeof COURSES;
 
 function requireString(value: unknown, fieldName: string): string | null {
   if (!value || typeof value !== "string" || !value.trim()) return fieldName;
@@ -70,7 +78,10 @@ export async function POST(req: Request) {
 
     if (missingFields.length > 0) {
       return NextResponse.json(
-        { success: false, message: `Missing required fields: ${missingFields.join(", ")}` },
+        {
+          success: false,
+          message: `Missing required fields: ${missingFields.join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -84,16 +95,22 @@ export async function POST(req: Request) {
 
     if (!/^\d{10}$/.test(primaryParentContact)) {
       return NextResponse.json(
-        { success: false, message: "Invalid phone number - must be 10 digits" },
+        {
+          success: false,
+          message: "Invalid phone number - must be 10 digits",
+        },
         { status: 400 }
       );
     }
 
-    // --- Course validation ---
-    const course = courseData[courseKey as string];
+    // --- Course validation (HARDCODED) ---
+    const course = COURSES[courseKey as CourseKey];
     if (!course) {
       return NextResponse.json(
-        { success: false, message: "Invalid course selection" },
+        {
+          success: false,
+          message: `Invalid course selection. Valid options: ${Object.keys(COURSES).join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -173,7 +190,10 @@ export async function POST(req: Request) {
     if (!juspayResponse.ok) {
       console.error("Juspay order creation failed:", juspayData);
       return NextResponse.json(
-        { success: false, message: "Failed to create payment order. Please try again." },
+        {
+          success: false,
+          message: "Failed to create payment order. Please try again.",
+        },
         { status: 502 }
       );
     }
@@ -268,7 +288,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Payment initiation error:", error);
     return NextResponse.json(
-      { success: false, message: "Payment initiation failed. Please try again." },
+      {
+        success: false,
+        message: "Payment initiation failed. Please try again.",
+      },
       { status: 500 }
     );
   }
