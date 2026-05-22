@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { courseData } from "../../../data/courseData";
 import { saveOrderId } from "@/lib/order-id-storage";
 import {
   User,
@@ -20,6 +19,18 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+// ─── HARDCODED COURSE OPTIONS ───
+const COURSES = {
+  regular: { key: "regular", title: "Regular Course" },
+  camp: { key: "camp", title: "Summer Camp" },
+  yearlong: { key: "yearlong", title: "Year-Long Program" },
+} as const;
+
+type CourseKey = keyof typeof COURSES;
+
+// Convert to array for dropdown
+const courseOptions = Object.values(COURSES);
+
 interface FormData {
   studentName: string;
   dateOfBirth: string;
@@ -34,20 +45,11 @@ interface FormData {
   currentAddress: string;
   permanentAddress: string;
   selectedCourseKey: string;
-
   paidAmount: string;
   paymentRemark: string;
 }
 
 const RegisterPage: React.FC = () => {
-  const courseOptions = Object.entries(courseData)
-    .map(([key, course]) => ({
-      key,
-      title: course.title,
-      price: course.price ?? 0,
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title));
-
   const [formData, setFormData] = useState<FormData>({
     studentName: "",
     dateOfBirth: "",
@@ -168,7 +170,16 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await handleInitiatePayment();
+    // Only validate step 5 (Terms) - all previous steps already validated
+    if (!validateStep(5)) {
+      toast.error("Please accept the terms and conditions.", {
+        position: "top-center",
+        duration: 4000,
+        style: { background: "#EF4444", color: "#FFFFFF", fontWeight: "bold" },
+      });
+      return;
+    }
+    await initiatePayment();
   };
 
   const nextStep = () => {
@@ -187,47 +198,8 @@ const RegisterPage: React.FC = () => {
     if (step > 1) setStep((prev) => prev - 1);
   };
 
-  const handleInitiatePayment = async () => {
+  const initiatePayment = async () => {
     if (isInitiatingPayment) return;
-
-    const step1Valid = validateStep(1);
-    const step2Valid = validateStep(2);
-    const step3Valid = validateStep(3);
-    const step4Valid = validateStep(4);
-    const step5Valid = validateStep(5);
-
-    if (
-      !step1Valid ||
-      !step2Valid ||
-      !step3Valid ||
-      !step4Valid ||
-      !step5Valid
-    ) {
-      const issues: string[] = [];
-      if (!step1Valid) {
-        issues.push("Step 1: Student Information");
-        setStep(1);
-      } else if (!step2Valid) {
-        issues.push("Step 2: Parent Information");
-        setStep(2);
-      } else if (!step3Valid) {
-        issues.push("Step 3: Address Information");
-        setStep(3);
-      } else if (!step4Valid) {
-        issues.push("Step 4: Payment Details");
-        setStep(4);
-      } else if (!step5Valid) {
-        issues.push("Step 5: Terms & Conditions");
-        setStep(5);
-      }
-
-      toast.error(`Please complete ${issues.join(", ")}.`, {
-        position: "top-center",
-        duration: 6000,
-        style: { background: "#EF4444", color: "#FFFFFF", fontWeight: "bold" },
-      });
-      return;
-    }
 
     try {
       setIsInitiatingPayment(true);
@@ -259,7 +231,6 @@ const RegisterPage: React.FC = () => {
         if (data.orderId) saveOrderId(data.orderId);
         window.location.href = data.paymentUrl;
       } else {
-        console.error("Payment initiation error:", data);
         toast.error(
           `Payment initiation failed: ${data.message || "Unknown error"}`,
           {
@@ -512,7 +483,6 @@ const RegisterPage: React.FC = () => {
               <div className="flex items-center gap-4 mb-4">
                 <div className="logo-ring">
                   <div className="logo-inner">
-                    {/* Replace this <img> src with your actual logo path */}
                     <Image
                       width={24}
                       height={24}
@@ -520,7 +490,6 @@ const RegisterPage: React.FC = () => {
                       alt="Cyborg Robotics"
                       className="w-8 h-8 object-contain"
                     />
-                    {/* <Cpu className="w-6 h-6 text-white" strokeWidth={1.5} /> */}
                   </div>
                 </div>
 
@@ -978,7 +947,7 @@ const RegisterPage: React.FC = () => {
   );
 };
 
-// ─── Sub-components (unchanged props/logic) ───
+// ─── Sub-components ───
 
 interface SectionTitleProps {
   number: string;
