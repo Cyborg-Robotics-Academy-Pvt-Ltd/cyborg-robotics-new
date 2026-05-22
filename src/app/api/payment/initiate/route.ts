@@ -12,7 +12,6 @@ import { courseData } from "@/data/courseData";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
-// Validate required string field
 function requireString(value: unknown, fieldName: string): string | null {
   if (!value || typeof value !== "string" || !value.trim()) return fieldName;
   return null;
@@ -38,13 +37,11 @@ export async function POST(req: Request) {
       currentAddress,
       permanentAddress,
       courseKey,
-      paymentType,
-      installmentAmount,
+      paidAmount,
       paymentRemark,
-      amount: clientAmount,
     } = body;
 
-    // --- Input validation (no zod) ---
+    // --- Input validation ---
     const missingFields: string[] = [];
 
     const fields: [unknown, string][] = [
@@ -72,30 +69,27 @@ export async function POST(req: Request) {
     }
 
     if (missingFields.length > 0) {
-      console.log("Validation failed. Missing fields:", missingFields);
       return NextResponse.json(
         { success: false, message: `Missing required fields: ${missingFields.join(", ")}` },
         { status: 400 }
       );
     }
 
-    // Email format check
-    if (primaryParentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primaryParentEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primaryParentEmail)) {
       return NextResponse.json(
         { success: false, message: "Invalid email format" },
         { status: 400 }
       );
     }
 
-    // Phone format check
-    if (primaryParentContact && !/^\d{10}$/.test(primaryParentContact)) {
+    if (!/^\d{10}$/.test(primaryParentContact)) {
       return NextResponse.json(
         { success: false, message: "Invalid phone number - must be 10 digits" },
         { status: 400 }
       );
     }
 
-    // --- Server-side amount resolution - never trust client ---
+    // --- Course validation ---
     const course = courseData[courseKey as string];
     if (!course) {
       return NextResponse.json(
@@ -112,38 +106,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const resolvedPaymentType =
-      paymentType === "installment" || paymentType === "other"
-        ? paymentType
-        : "full";
-
-    // Determine amount to charge
-    let amount: number;
-    if (
-      resolvedPaymentType === "installment" ||
-      resolvedPaymentType === "other"
-    ) {
-      const parsed = Number(installmentAmount);
-      if (!parsed || isNaN(parsed) || parsed <= 0 || parsed > coursePrice) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `Amount must be between 1 and ${coursePrice}`,
-          },
-          { status: 400 }
-        );
-      }
-      amount = parsed;
-    } else {
-      // Default to full payment
-      amount = coursePrice;
-    }
-
-    if (clientAmount && Number(clientAmount) !== amount) {
-      console.warn(
-        `Client amount ignored. Expected ${amount}, got ${clientAmount}. Using server amount.`
+    // --- Amount resolution ---
+    const parsedAmount = Number(paidAmount);
+    if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+      return NextResponse.json(
+        { success: false, message: "Amount must be greater than 0" },
+        { status: 400 }
       );
     }
+
+    const amount = parsedAmount;
+    const resolvedPaymentType = amount === coursePrice ? "full" : "partial";
 
     // --- Environment variables ---
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
@@ -156,8 +129,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // --- Generate IDs server-side ---
-    const orderId = generateOrderId(); // not client-supplied, not predictable
+    // --- Generate IDs ---
+    const orderId = generateOrderId();
     const customerSeed = userId || primaryParentEmail;
     const customerId = generateCustomerId(customerSeed);
     const paymentOwnerSeed = derivePaymentOwnerSeed(userId, primaryParentEmail);
@@ -198,7 +171,6 @@ export async function POST(req: Request) {
     const juspayData = await juspayResponse.json();
 
     if (!juspayResponse.ok) {
-      // Log internally, never expose juspay error to client
       console.error("Juspay order creation failed:", juspayData);
       return NextResponse.json(
         { success: false, message: "Failed to create payment order. Please try again." },
@@ -215,8 +187,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // --- Save pending payment record to Firestore before redirecting ---
-    // This ensures we have a record even if user abandons after payment
+    // --- Save to Firestore ---
     await addDoc(collection(db, "payments"), {
       orderId,
       customerId,
@@ -270,10 +241,7 @@ export async function POST(req: Request) {
         selectedCourseFee: coursePrice,
         paymentType: resolvedPaymentType,
         paidAmount: amount,
-        paymentRemark:
-          resolvedPaymentType === "installment"
-            ? String(paymentRemark || "").trim()
-            : "",
+        paymentRemark: String(paymentRemark || "").trim(),
       },
       amount,
       currency: "INR",
@@ -283,11 +251,7 @@ export async function POST(req: Request) {
       createdAt: serverTimestamp(),
     });
 
-    const response = NextResponse.json({
-      success: true,
-      paymentUrl,
-      orderId,
-    });
+    const response = NextResponse.json({ success: true, paymentUrl, orderId });
 
     const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
     if (cookieValue) {
@@ -302,7 +266,6 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    // Log internally, never expose stack trace to client
     console.error("Payment initiation error:", error);
     return NextResponse.json(
       { success: false, message: "Payment initiation failed. Please try again." },
@@ -310,4 +273,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

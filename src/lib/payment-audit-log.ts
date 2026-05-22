@@ -6,7 +6,8 @@ export type PaymentAuditSource =
   | "payment_status_put"
   | "payment_return_get"
   | "payment_return_post"
-  | "payment_webhook_post";
+  | "payment_webhook_post"
+  | "admin_payment_reconcile";
 
 export type PaymentAuditEventType =
   | "status_lookup"

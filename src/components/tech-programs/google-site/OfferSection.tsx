@@ -108,6 +108,10 @@ const GoogleSitesOfferSection = () => {
           transform: translateY(-1px);
           box-shadow: 0 8px 24px rgba(168,27,30,0.35);
         }
+        .cta-btn:disabled:hover {
+          transform: none;
+          box-shadow: none;
+        }
         .cta-btn:hover .arrow-icon { transform: translateX(3px); }
         .arrow-icon { transition: transform 0.25s ease; }
 
@@ -378,13 +382,17 @@ const GoogleSitesOfferSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.55, duration: 0.45 }}
               >
-                <button className="cta-btn inline-flex items-center gap-2 bg-[#A81B1E] text-white text-sm px-6 py-3 rounded-xl shadow-md">
+                <button
+                  type="button"
+                  disabled
+                  className="cta-btn inline-flex items-center gap-2 bg-[#A81B1E] text-white text-sm px-6 py-3 rounded-xl shadow-md opacity-70 cursor-not-allowed"
+                >
                   <Zap size={15} strokeWidth={2.2} />
-                  Secure Your Seat – ₹99
+                  Workshop Closed
                   <ArrowRight size={14} className="arrow-icon" />
                 </button>
                 <p className="text-slate-400 text-xs font-light leading-snug">
-                  No coding needed &middot; Age 10–16
+                  Registration is temporarily closed
                   <br />
                   <span className="text-[#0855AB] font-medium">
                     16 May 2026 · Live on Zoom

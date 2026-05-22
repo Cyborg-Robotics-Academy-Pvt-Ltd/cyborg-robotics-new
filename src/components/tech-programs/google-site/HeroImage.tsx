@@ -16,6 +16,7 @@ interface StaticImage {
 }
 
 const GoogleSitesHero = () => {
+  const isWorkshopClosed = true;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [formError, setFormError] = useState("");
@@ -79,7 +80,7 @@ const GoogleSitesHero = () => {
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isInitiatingPayment) return;
+    if (isWorkshopClosed || isInitiatingPayment) return;
 
     try {
       const normalizedFormData = normalizeWorkshopRegistrationForm(formData);
@@ -331,7 +332,13 @@ const GoogleSitesHero = () => {
               {/* CTA */}
               <motion.div variants={itemVariants} className="mb-1">
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  type="button"
+                  disabled={isWorkshopClosed}
+                  onClick={() => {
+                    if (!isWorkshopClosed) {
+                      setIsModalOpen(true);
+                    }
+                  }}
                   className="
                     relative overflow-hidden whitespace-nowrap
                     bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] text-white border-0
@@ -342,13 +349,15 @@ const GoogleSitesHero = () => {
                     before:content-[''] before:absolute before:top-0 before:-left-full before:w-[60%] before:h-full
                     before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent
                     before:transition-[left] before:duration-500 hover:before:left-[150%]
+                    disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-[0_6px_22px_rgba(168,27,30,0.35)]
                   "
                 >
-                  🌐 Secure Your Seat – ₹99
+                  {isWorkshopClosed
+                    ? "Workshop Closed"
+                    : isInitiatingPayment
+                      ? "Connecting to Payment..."
+                      : "Register Now"}
                 </button>
-                <p className="text-[11px] text-[#bbb] mt-[6px] mb-0">
-                  Limited seats · Walk away with a live website
-                </p>
               </motion.div>
 
               {/* What's Included card */}
@@ -706,7 +715,7 @@ const GoogleSitesHero = () => {
               <div className="mb-4"></div>
               <button
                 type="submit"
-                disabled
+                disabled={isWorkshopClosed || isInitiatingPayment}
                 className="
                   w-full bg-gradient-to-br from-[#A81B1E] to-[#C73E1D] text-white border-0
                   rounded-2xl py-[14px] px-[18px] text-[15px] font-bold cursor-pointer
@@ -716,9 +725,11 @@ const GoogleSitesHero = () => {
                   disabled:opacity-70 disabled:cursor-not-allowed
                 "
               >
-                {isInitiatingPayment
-                  ? "Connecting to Payment..."
-                  : "Secure Your Seat & Pay Rs. 99"}
+                {isWorkshopClosed
+                  ? "Workshop Closed"
+                  : isInitiatingPayment
+                    ? "Connecting to Payment..."
+                    : "Secure Your Seat & Pay Rs. 99"}
               </button>
             </form>
           </div>
