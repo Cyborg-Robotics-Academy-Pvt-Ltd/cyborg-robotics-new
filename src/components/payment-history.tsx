@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/hooks/use-toast";
+import { normalizePaymentStatus } from "@/lib/payment-status";
 
 interface PaymentRecord {
   id: string;
@@ -39,8 +40,10 @@ interface PaymentRecord {
   amount: number;
   currency: string;
   status: string;
+  paymentStatus?: string;
   transactionReference?: string;
   bankRef?: string;
+  gatewayResponse?: Record<string, any>;
   studentName?: string;
   studentEmail?: string;
   courseName?: string;
@@ -86,13 +89,31 @@ const normalizeStatus = (status: string) =>
     .trim()
     .toUpperCase();
 
+const getEffectivePaymentStatus = (payment: PaymentRecord) => {
+  const status = normalizeStatus(payment.status);
+  const paymentStatus = normalizeStatus(payment.paymentStatus || "");
+  const gatewayStatus = normalizeStatus(payment.gatewayResponse?.status || "");
+
+  const effective =
+    status && status !== "NEW"
+      ? status
+      : paymentStatus && paymentStatus !== "NEW"
+        ? paymentStatus
+        : gatewayStatus && gatewayStatus !== "NEW"
+          ? gatewayStatus
+          : status;
+
+  const normalized = normalizePaymentStatus(effective);
+  return normalized === "NEW" ? "PENDING" : normalized;
+};
+
 const isPendingPaymentStatus = (status: string) =>
   ["PENDING", "CREATED", "AUTHORIZED", "PENDING_VBV"].includes(
-    normalizeStatus(status),
+    normalizePaymentStatus(status),
   );
 
 const getStatusDisplay = (status: string) => {
-  const normalized = normalizeStatus(status);
+  const normalized = normalizePaymentStatus(status);
 
   if (normalized === "SUCCESS" || normalized === "CHARGED") {
     return {
@@ -116,20 +137,11 @@ const getStatusDisplay = (status: string) => {
     };
   }
 
-  if (
-    normalized === "AUTHORIZATION_FAILED" ||
-    normalized === "AUTHENTICATION_FAILED" ||
-    normalized === "JUSPAY_DECLINED" ||
-    normalized === "FAILED" ||
-    normalized === "DECLINED"
-  ) {
+  if (normalized === "FAILED") {
     return {
       label: "Failed",
       variant: "destructive" as const,
-      explanation:
-        normalized === "AUTHORIZATION_FAILED"
-          ? "Authorization failed before capture, so this order did not complete successfully."
-          : "The gateway rejected or failed the payment attempt.",
+      explanation: "The gateway rejected or failed the payment attempt.",
     };
   }
 
@@ -226,7 +238,8 @@ const buildPlainTextReport = (summaries: PaymentSummary[]) => {
   const rows = summaries.map((summary) => {
     const payment = summary.latestRecord;
     const product = getPaymentProduct(payment);
-    const status = getStatusDisplay(payment.status);
+    const effectiveStatus = getEffectivePaymentStatus(payment);
+    const status = getStatusDisplay(effectiveStatus);
 
     return [
       summary.orderId,
@@ -236,7 +249,7 @@ const buildPlainTextReport = (summaries: PaymentSummary[]) => {
       product.name,
       formatCurrency(payment.amount, payment.currency || "INR"),
       status.label,
-      normalizeStatus(payment.status),
+      effectiveStatus,
       payment.transactionReference || "-",
       payment.bankRef || "-",
       status.explanation,
@@ -342,7 +355,7 @@ export default function PaymentHistory() {
 
       const payment = summary.latestRecord;
       const product = getPaymentProduct(payment);
-      const status = normalizeStatus(payment.status);
+      const status = getEffectivePaymentStatus(payment);
 
       const matchesSearch =
         !normalizedSearch ||
@@ -359,7 +372,7 @@ export default function PaymentHistory() {
 
       const matchesStatus =
         filterStatus === "all" ||
-        normalizeStatus(payment.status) === filterStatus;
+        getEffectivePaymentStatus(payment) === filterStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -385,7 +398,7 @@ export default function PaymentHistory() {
     () =>
       filteredSummaries
         .filter((summary) => {
-          const status = normalizeStatus(summary.latestRecord.status);
+          const status = getEffectivePaymentStatus(summary.latestRecord);
           return status === "SUCCESS" || status === "CHARGED";
         })
         .reduce((sum, summary) => sum + summary.latestRecord.amount, 0),
@@ -395,7 +408,11 @@ export default function PaymentHistory() {
   const pendingAmount = useMemo(
     () =>
       filteredSummaries
-        .filter((summary) => isPendingPaymentStatus(summary.latestRecord.status))
+        .filter((summary) =>
+          isPendingPaymentStatus(
+            getEffectivePaymentStatus(summary.latestRecord),
+          ),
+        )
         .reduce((sum, summary) => sum + summary.latestRecord.amount, 0),
     [filteredSummaries],
   );
@@ -480,14 +497,15 @@ export default function PaymentHistory() {
   };
 
   const renderStatusCell = (payment: PaymentRecord) => {
-    const status = getStatusDisplay(payment.status);
+    const effectiveStatus = getEffectivePaymentStatus(payment);
+    const status = getStatusDisplay(effectiveStatus);
 
     return (
       <div className="space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
-          {getStatusBadge(payment.status)}
+          {getStatusBadge(effectiveStatus)}
           <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wide text-slate-600">
-            {normalizeStatus(payment.status) || "UNKNOWN"}
+            {effectiveStatus || "UNKNOWN"}
           </span>
         </div>
         <div className="max-w-[250px] text-[11px] leading-4 text-slate-500">
@@ -700,14 +718,20 @@ export default function PaymentHistory() {
                             <div>{payment.bankRef || "-"}</div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap px-3 py-2.5 align-top">
-                            {isPendingPaymentStatus(payment.status) ? (
+                            {isPendingPaymentStatus(
+                              getEffectivePaymentStatus(payment),
+                            ) ? (
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 className="mr-2"
-                                onClick={() => reconcilePayment(summary.orderId)}
-                                disabled={reconcilingOrderId === summary.orderId}
+                                onClick={() =>
+                                  reconcilePayment(summary.orderId)
+                                }
+                                disabled={
+                                  reconcilingOrderId === summary.orderId
+                                }
                                 aria-label="Reconcile payment with gateway"
                                 title="Reconcile payment with gateway"
                               >

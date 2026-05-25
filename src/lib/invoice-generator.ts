@@ -40,7 +40,7 @@ function formatMoney(amount: number, currency: string): string {
     maximumFractionDigits: 2,
   });
 
-  return currency && currency !== "INR" ? `${currency} ${formatted}` : `₹${formatted}`;
+  return currency && currency !== "INR" ? `${currency} ${formatted}` : ` Rs. ${formatted}`;
 }
 
 function formatDate(value: string): string {
@@ -121,13 +121,13 @@ function drawHeader(doc: PDFKit.PDFDocument, data: InvoiceData, contentWidth: nu
 
   // Company Info
   doc
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(14)
     .fillColor(COLORS.text)
     .text(INVOICE_BRAND.name, x + 60, y);
 
   doc
-    .font("Helvetica")
+    .font("Times-Roman")
     .fontSize(10)
     .fillColor(COLORS.muted)
     .text(
@@ -140,16 +140,16 @@ function drawHeader(doc: PDFKit.PDFDocument, data: InvoiceData, contentWidth: nu
   const rightX = x + contentWidth - 200;
 
   doc
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(20)
     .fillColor(COLORS.text)
     .text("INVOICE", rightX, y);
 
   doc
-    .font("Helvetica")
+    .font("Times-Roman")
     .fontSize(10)
     .fillColor(COLORS.muted)
-    .text(`Invoice #: ${data.invoiceNumber}`, rightX, y + 28)
+    .text(`Invoice: #${data.invoiceNumber}`, rightX, y + 28)
     .text(`Date: ${formatDate(data.paymentDate)}`, rightX, y + 44)
     .text(`Status: ${paymentLabel(data.status)}`, rightX, y + 60);
 
@@ -201,25 +201,25 @@ function drawTwoColumnSection(
 
   let leftHeight =
     18 +
-    measureText("BILL TO", "Helvetica-Bold", 9, innerWidth) +
+    measureText("BILL TO", "Times-Bold", 9, innerWidth) +
     8 +
-    measureText(data.studentName, "Helvetica-Bold", 13, innerWidth) +
+    measureText(data.studentName, "Times-Bold", 13, innerWidth) +
     8;
 
   billLines.forEach((line) => {
-    leftHeight += measureText(line, "Helvetica", 10.5, innerWidth) + 4;
+    leftHeight += measureText(line, "Times-Roman", 10.5, innerWidth) + 4;
   });
 
   let rightHeight =
     18 +
-    measureText("TRANSACTION CONTEXT", "Helvetica-Bold", 9, innerWidth) +
+    measureText("TRANSACTION CONTEXT", "Times-Bold", 9, innerWidth) +
     8 +
-    measureText("Course Registration Payment", "Helvetica-Bold", 13, innerWidth) +
+    measureText("Course Registration Payment", "Times-Bold", 13, innerWidth) +
     10;
 
   contextLines.forEach((item) => {
-    rightHeight += measureText(item.label, "Helvetica-Bold", 8.2, innerWidth) + 2;
-    rightHeight += measureText(item.value, "Helvetica", 10.5, innerWidth) + 8;
+    rightHeight += measureText(item.label, "Times-Bold", 8.2, innerWidth) + 2;
+    rightHeight += measureText(item.value, "Times-Roman", 10.5, innerWidth) + 8;
   });
 
   const badgeHeight = 18;
@@ -235,13 +235,13 @@ function drawTwoColumnSection(
 
   doc
     .fillColor(COLORS.accent)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(9)
     .text("BILL TO", leftX, top + 18, { width: innerWidth });
 
   doc
     .fillColor(COLORS.text)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(13)
     .text(data.studentName, leftX, top + 34, { width: innerWidth, lineGap });
 
@@ -249,7 +249,7 @@ function drawTwoColumnSection(
   billLines.forEach((line) => {
     doc
       .fillColor(COLORS.muted)
-      .font("Helvetica")
+      .font("Times-Roman")
       .fontSize(10.5)
       .text(line, leftX, billY, { width: innerWidth, lineGap });
 
@@ -258,13 +258,13 @@ function drawTwoColumnSection(
 
   doc
     .fillColor(COLORS.accent)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(9)
     .text("TRANSACTION CONTEXT", rightX, top + 18, { width: innerWidth });
 
   doc
     .fillColor(COLORS.text)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(13)
     .text("Course Registration Payment", rightX, top + 34, {
       width: innerWidth,
@@ -275,7 +275,7 @@ function drawTwoColumnSection(
   contextLines.forEach((item) => {
     doc
       .fillColor(COLORS.muted)
-      .font("Helvetica-Bold")
+      .font("Times-Bold")
       .fontSize(8.2)
       .text(item.label.toUpperCase(), rightX, contextY, {
         width: innerWidth,
@@ -285,7 +285,7 @@ function drawTwoColumnSection(
 
     doc
       .fillColor(COLORS.text)
-      .font("Helvetica")
+      .font("Times-Roman")
       .fontSize(10.5)
       .text(item.value, rightX, contextY, {
         width: innerWidth,
@@ -308,7 +308,7 @@ function drawTwoColumnSection(
 
   doc
     .fillColor(statusPalette.text)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(8.5)
     .text(paymentLabel(data.status), rightX, badgeY + 5, {
       width: 76,
@@ -332,7 +332,7 @@ function drawTable(doc: PDFKit.PDFDocument, top: number, contentWidth: number, d
     const colW = width * cols[i];
 
     doc
-      .font("Helvetica-Bold")
+      .font("Times-Bold")
       .fontSize(10)
       .fillColor(COLORS.text)
       .text(h, cursorX, top, {
@@ -361,7 +361,7 @@ function drawTable(doc: PDFKit.PDFDocument, top: number, contentWidth: number, d
     const colW = width * cols[i];
 
     doc
-      .font("Helvetica")
+      .font("Times-Roman")
       .fontSize(10)
       .fillColor(COLORS.text)
       .text(val, cursorX, rowY, {
@@ -391,7 +391,7 @@ function drawSummary(doc: PDFKit.PDFDocument, top: number, contentWidth: number,
 
   lines.forEach(([label, value], i) => {
     doc
-      .font(i === 2 ? "Helvetica-Bold" : "Helvetica")
+      .font(i === 2 ? "Times-Bold" : "Times-Roman")
       .fontSize(11)
       .fillColor(COLORS.text)
       .text(label, rightX, y);
@@ -420,7 +420,7 @@ function drawPaymentDetails(
 
   doc
     .fillColor(COLORS.accent)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(9)
     .text("PAYMENT DETAILS", x, top, { width: contentWidth });
 
@@ -454,7 +454,7 @@ function drawPaymentDetails(
 
     doc
       .fillColor(COLORS.muted)
-      .font("Helvetica")
+      .font("Times-Roman")
       .fontSize(8.5)
       .text(`${detail.label}:`, cardX + 12, cardY + 12, {
         width: cardWidth - 24,
@@ -463,7 +463,7 @@ function drawPaymentDetails(
 
     doc
       .fillColor(COLORS.text)
-      .font("Helvetica-Bold")
+      .font("Times-Bold")
       .fontSize(9.5)
       .text(detail.value, cardX + 12, cardY + 26, {
         width: cardWidth - 24,
@@ -474,7 +474,7 @@ function drawPaymentDetails(
     if ("extra" in detail && detail.extra) {
       doc
         .fillColor(COLORS.muted)
-        .font("Helvetica")
+        .font("Times-Roman")
         .fontSize(8.8)
         .text(detail.extra, cardX + 12, cardY + 40, {
           width: cardWidth - 24,
@@ -494,13 +494,13 @@ function drawNotes(doc: PDFKit.PDFDocument, top: number, contentWidth: number): 
 
   doc
     .fillColor(COLORS.accent)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(9)
     .text("NOTES / TERMS", x + 18, top + 16, { width: contentWidth - 36 });
 
   doc
     .fillColor(COLORS.muted)
-    .font("Helvetica")
+    .font("Times-Roman")
     .fontSize(9.5)
     .text(
       "This is a computer-generated invoice issued against a payment captured through the academy's payment gateway. Please retain it for admission, support, and refund-related communication.",
@@ -531,7 +531,7 @@ function drawFooter(doc: PDFKit.PDFDocument, top: number, contentWidth: number, 
 
   doc
     .fillColor(palette.text)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(8.5)
     .text(badge, x, top + 17, {
       width: badge === "PENDING" ? 74 : 64,
@@ -540,7 +540,7 @@ function drawFooter(doc: PDFKit.PDFDocument, top: number, contentWidth: number, 
 
   doc
     .fillColor(COLORS.muted)
-    .font("Helvetica")
+    .font("Times-Roman")
     .fontSize(9)
     .text(
       "Computer-generated invoice. No physical signature or seal is required.",
@@ -553,7 +553,7 @@ function drawFooter(doc: PDFKit.PDFDocument, top: number, contentWidth: number, 
 
   doc
     .fillColor(COLORS.text)
-    .font("Helvetica-Bold")
+    .font("Times-Bold")
     .fontSize(9)
     .text(INVOICE_BRAND.name, x + contentWidth - 180, top + 17, {
       width: 180,
@@ -614,3 +614,6 @@ export function generateInvoiceNumber(): string {
 
   return `INV-CRA-${datePart}-${random}`;
 }
+
+
+

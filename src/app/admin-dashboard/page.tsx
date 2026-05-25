@@ -1333,6 +1333,103 @@ const AdminDashboard = () => {
         });
       });
 
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const recentClassTasks = studentsSnapshot.docs
+        .flatMap((doc) => {
+          const data = doc.data();
+          const studentName =
+            data.fullName || data.username || data.studentName || "Student";
+          const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+          return tasks
+            .map((task: any, taskIndex: number) => {
+              const taskDate = task.dateTime ? new Date(task.dateTime) : null;
+              if (!taskDate || Number.isNaN(taskDate.getTime())) return null;
+
+              return {
+                id: `class-${doc.id}-${taskIndex}`,
+                studentName,
+                taskName: task.task || "Class task",
+                courseName: task.course || "course",
+                status: String(task.status || "").trim(),
+                time: taskDate,
+              };
+            })
+            .filter(Boolean);
+        })
+        .filter((task: any) => task.time >= sevenDaysAgo)
+        .sort((a: any, b: any) => b.time.getTime() - a.time.getTime())
+        .slice(0, 5);
+
+      recentClassTasks.forEach((task: any) => {
+        const isComplete = task.status.toLowerCase() === "complete";
+        activities.push({
+          id: task.id,
+          type: "class_task",
+          name: isComplete ? "Class Completed" : "Class Updated",
+          description: `${task.studentName} ${isComplete ? "completed" : "updated"} ${task.courseName}: ${task.taskName}`,
+          time: task.time,
+          icon: CheckCircle2,
+          iconColor: isComplete ? "text-emerald-600" : "text-blue-600",
+        });
+      });
+
+      // Fetch recent successful payments
+      const paymentsSnapshot = await getDocs(collection(db, "payments"));
+      const recentPayments = paymentsSnapshot.docs
+        .filter((doc) => {
+          const data = doc.data();
+          const status = String(data.status || "").toUpperCase();
+          const paidAt = data.updatedAt || data.createdAt;
+          if (!paidAt || !SUCCESS_PAYMENT_STATUSES.has(status)) return false;
+
+          const paidDate = paidAt.toDate ? paidAt.toDate() : new Date(paidAt);
+          return paidDate >= sevenDaysAgo;
+        })
+        .sort((a, b) => {
+          const dataA = a.data();
+          const dataB = b.data();
+          const dateA = dataA.updatedAt?.toDate
+            ? dataA.updatedAt.toDate()
+            : dataA.createdAt?.toDate
+              ? dataA.createdAt.toDate()
+              : new Date(dataA.updatedAt || dataA.createdAt);
+          const dateB = dataB.updatedAt?.toDate
+            ? dataB.updatedAt.toDate()
+            : dataB.createdAt?.toDate
+              ? dataB.createdAt.toDate()
+              : new Date(dataB.updatedAt || dataB.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 5);
+
+      recentPayments.forEach((doc, index) => {
+        const data = doc.data();
+        const paidAt = data.updatedAt || data.createdAt;
+        const payerName =
+          data.studentName ||
+          data.registrationDraft?.studentName ||
+          data.workshopRegistrationDraft?.childName ||
+          data.competitionRegistrationDraft?.fullName ||
+          "Student";
+        const courseName =
+          data.courseName ||
+          data.course?.name ||
+          data.workshop?.name ||
+          data.competition?.name ||
+          "program";
+
+        activities.push({
+          id: `payment-${index}`,
+          type: "payment",
+          name: "Payment Received",
+          description: `${payerName} paid ${formatCurrency(Number(data.amount) || 0)} for ${courseName}`,
+          time: paidAt?.toDate ? paidAt.toDate() : new Date(paidAt),
+          icon: CreditCard,
+          iconColor: "text-emerald-600",
+        });
+      });
+
       // Fetch recent trainer additions
       const trainersSnapshot = await getDocs(collection(db, "trainers"));
       const recentTrainers = trainersSnapshot.docs
@@ -1343,9 +1440,6 @@ const AdminDashboard = () => {
           const createdDate = createdAt.toDate
             ? createdAt.toDate()
             : new Date(createdAt);
-          const sevenDaysAgo = new Date(
-            now.getTime() - 7 * 24 * 60 * 60 * 1000,
-          );
           return createdDate >= sevenDaysAgo;
         })
         .sort((a, b) => {
@@ -2301,6 +2395,7 @@ const AdminDashboard = () => {
                       )}
                       dot={(props: any) => (
                         <circle
+                          key={`dot-${props.index || props.cx}-${props.cy}`}
                           cx={props.cx}
                           cy={props.cy}
                           r={4}
@@ -2505,7 +2600,7 @@ const AdminDashboard = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700"></div>
                   </div>
                 ) : recentActivities.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="max-h-[420px] space-y-6 overflow-y-auto pr-2">
                     {recentActivities.map((activity) => (
                       <ActionItem
                         key={activity.id}

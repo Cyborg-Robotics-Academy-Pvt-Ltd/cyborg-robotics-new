@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { normalizePaymentStatus } from "@/lib/payment-status";
 
 type FirestoreTimestampLike = {
   toDate: () => Date;
@@ -89,6 +90,7 @@ interface Registration {
   selectedCourseName?: string;
   selectedCourseFee?: number | string;
   paymentType?: string;
+  paymentStatus?: string;
   paidAmount?: number | string;
   paymentRemark?: string;
   createdAt?: FirestoreTimestampLike | string;
@@ -101,6 +103,55 @@ const normalizeText = (value: unknown) =>
   String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
+
+const getPaymentStatusColor = (status?: string) => {
+  switch (normalizePaymentStatus(status)) {
+    case "SUCCESS":
+      return "bg-emerald-100 text-emerald-800";
+    case "FAILED":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-amber-100 text-amber-800";
+  }
+};
+
+const normalizeAdminPaymentStatus = (status: unknown) => {
+  const normalized = normalizePaymentStatus(String(status || ""));
+  return normalized === "NEW" ? "PENDING" : normalized;
+};
+
+const mergeRegistrationRecords = (
+  base: Registration,
+  incoming: Registration,
+): Registration => {
+  const incomingIsPayment = Boolean(incoming.paymentDocId);
+
+  return {
+    ...base,
+    ...Object.fromEntries(
+      Object.entries(incoming).filter(([, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string") return value.trim().length > 0;
+        return true;
+      }),
+    ),
+    id: base.id,
+    firestoreId: base.firestoreId || incoming.firestoreId,
+    paymentDocId: incoming.paymentDocId || base.paymentDocId,
+    paymentStatus: incomingIsPayment
+      ? incoming.paymentStatus
+      : base.paymentStatus || incoming.paymentStatus,
+    paidAmount: incomingIsPayment
+      ? incoming.paidAmount
+      : base.paidAmount || incoming.paidAmount,
+    paymentType: incomingIsPayment
+      ? incoming.paymentType || base.paymentType
+      : base.paymentType || incoming.paymentType,
+    paymentRemark: incomingIsPayment
+      ? incoming.paymentRemark || base.paymentRemark
+      : base.paymentRemark || incoming.paymentRemark,
+  };
+};
 
 const isCompetitionRecord = (record: FirestoreRecord) => {
   const paymentFlow = normalizeText(record.paymentFlow);
@@ -240,6 +291,9 @@ const normalizeRegistration = (
       record.amount ||
       "",
     paymentType: record.paymentType || draft.paymentType || "",
+    paymentStatus: normalizeAdminPaymentStatus(
+      record.paymentStatus || record.status,
+    ),
     paidAmount: record.paidAmount || draft.paidAmount || record.amount || "",
     paymentRemark: record.paymentRemark || draft.paymentRemark || "",
     dateOfRegistration:
@@ -308,15 +362,18 @@ const Page = () => {
           paymentDocId: id,
         }));
 
-      const merged = [...registrationData, ...paymentFallbackData].filter(
-        (item, index, array) => {
-          const itemKey = item.orderId || item.id;
-          return (
-            index ===
-            array.findIndex((entry) => (entry.orderId || entry.id) === itemKey)
-          );
-        },
-      );
+      const mergedByOrder = new Map<string, Registration>();
+
+      [...registrationData, ...paymentFallbackData].forEach((item) => {
+        const itemKey = item.orderId || item.id;
+        const existing = mergedByOrder.get(itemKey);
+        mergedByOrder.set(
+          itemKey,
+          existing ? mergeRegistrationRecords(existing, item) : item,
+        );
+      });
+
+      const merged = Array.from(mergedByOrder.values());
 
       setRegistrations(merged);
       setFilteredRegistrations(merged);
@@ -346,6 +403,7 @@ const Page = () => {
         reg.dateOfRegistration?.toLowerCase().includes(term) ||
         reg.selectedCourseName?.toLowerCase().includes(term) ||
         reg.paymentType?.toLowerCase().includes(term) ||
+        reg.paymentStatus?.toLowerCase().includes(term) ||
         reg.paymentRemark?.toLowerCase().includes(term),
     );
     setFilteredRegistrations(filtered);
@@ -463,7 +521,8 @@ const Page = () => {
         { header: "Course", key: "selectedCourseName", width: 25 },
         { header: "Course Fee", key: "selectedCourseFee", width: 15 },
         { header: "Payment Type", key: "paymentType", width: 15 },
-        { header: "Paid Amount", key: "paidAmount", width: 15 },
+        { header: "Payment Status", key: "paymentStatus", width: 18 },
+        { header: " Amount", key: "paidAmount", width: 15 },
         { header: "Payment Remark", key: "paymentRemark", width: 30 },
       ];
       sortedRegistrations.forEach((reg) => worksheet.addRow(reg));
@@ -584,7 +643,8 @@ const Page = () => {
                           { key: "class", label: "Class" },
                           { key: "selectedCourseName", label: "Course" },
                           { key: "paymentType", label: "Payment Type" },
-                          { key: "paidAmount", label: "Paid Amount" },
+                          { key: "paymentStatus", label: "Payment Status" },
+                          { key: "paidAmount", label: "Amount" },
                           { key: "paymentRemark", label: "Remark" },
                           { key: "primaryParentName", label: "Parent" },
                           { key: "primaryParentContact", label: "Contact" },
@@ -650,6 +710,15 @@ const Page = () => {
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
                             {reg.paymentType || "-"}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-sm">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getPaymentStatusColor(
+                                reg.paymentStatus,
+                              )}`}
+                            >
+                              {normalizePaymentStatus(reg.paymentStatus)}
+                            </span>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm font-medium text-emerald-700">
                             {reg.paidAmount ?? "-"}

@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 // ─── HARDCODED COURSE OPTIONS ───
 const COURSES = {
@@ -131,6 +132,11 @@ const RegisterPage: React.FC = () => {
         newErrors.studentName = "Student name is required.";
       if (!formData.dateOfBirth)
         newErrors.dateOfBirth = "Date of birth is required.";
+      else {
+        const age = parseInt(formData.currentAge);
+        if (age < 3 || age > 25)
+          newErrors.dateOfBirth = "Age must be between 3 and 25 years.";
+      }
       if (!formData.schoolName.trim())
         newErrors.schoolName = "School name is required.";
       if (!formData.class.trim()) newErrors.class = "Grade is required.";
@@ -480,46 +486,48 @@ const RegisterPage: React.FC = () => {
             <div className="circuit-pattern" />
             <div className="relative z-10 px-6 py-6 sm:px-8 sm:py-7">
               {/* Logo row */}
-              <div className="flex items-center gap-4 mb-4">
-                <div className="logo-ring">
-                  <div className="logo-inner">
-                    <Image
-                      width={24}
-                      height={24}
-                      src="/cyborglogo.png"
-                      alt="Cyborg Robotics"
-                      className="w-8 h-8 object-contain"
-                    />
+              <Link href="/">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="logo-ring">
+                    <div className="logo-inner">
+                      <Image
+                        width={24}
+                        height={24}
+                        src="/cyborglogo.png"
+                        alt="Cyborg Robotics"
+                        className="w-8 h-8 object-contain"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="academy-badge mb-1.5">
+                      <Zap className="w-3 h-3" />
+                      Est. 2020 · Pune
+                    </div>
+                    <h1
+                      className="reg-heading text-white font-bold leading-tight"
+                      style={{
+                        fontSize: "clamp(20px, 4vw, 28px)",
+                        letterSpacing: "0.01em",
+                      }}
+                    >
+                      CYBORG ROBOTICS ACADEMY
+                    </h1>
+                    <p className="text-red-200 text-xs mt-0.5 font-medium tracking-wide">
+                      Empowering Young Innovators
+                    </p>
+                  </div>
+
+                  {/* Right badge */}
+                  <div className="ml-auto hidden sm:flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-xl px-3 py-2">
+                    <Shield className="w-4 h-4 text-white/70" />
+                    <span className="text-white/80 text-xs font-medium">
+                      Secure Registration
+                    </span>
                   </div>
                 </div>
-
-                <div>
-                  <div className="academy-badge mb-1.5">
-                    <Zap className="w-3 h-3" />
-                    Est. 2020 · Pune
-                  </div>
-                  <h1
-                    className="reg-heading text-white font-bold leading-tight"
-                    style={{
-                      fontSize: "clamp(20px, 4vw, 28px)",
-                      letterSpacing: "0.01em",
-                    }}
-                  >
-                    CYBORG ROBOTICS ACADEMY
-                  </h1>
-                  <p className="text-red-200 text-xs mt-0.5 font-medium tracking-wide">
-                    Empowering Young Innovators
-                  </p>
-                </div>
-
-                {/* Right badge */}
-                <div className="ml-auto hidden sm:flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-xl px-3 py-2">
-                  <Shield className="w-4 h-4 text-white/70" />
-                  <span className="text-white/80 text-xs font-medium">
-                    Secure Registration
-                  </span>
-                </div>
-              </div>
+              </Link>
 
               {/* Title */}
               <div className="flex items-center gap-3">
@@ -619,14 +627,30 @@ const RegisterPage: React.FC = () => {
                         icon="building"
                         error={errors.schoolName}
                       />
-                      <FormField
+                      <DropdownField
                         id="class"
                         label="GRADE"
-                        type="text"
                         value={formData.class}
                         onChange={handleChange}
                         required
-                        placeholder="e.g. Grade 5"
+                        options={[
+                          "Nursery",
+                          "KG",
+                          "1",
+                          "2",
+                          "3",
+                          "4",
+                          "5",
+                          "6",
+                          "7",
+                          "8",
+                          "9",
+                          "10",
+                          "11",
+                          "12",
+                          "College",
+                          "Other",
+                        ]}
                         icon="book"
                         error={errors.class}
                       />

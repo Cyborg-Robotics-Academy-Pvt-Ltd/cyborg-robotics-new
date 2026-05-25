@@ -129,8 +129,8 @@ interface StudentData {
 type ActivityStatus = "active" | "inactive" | "incomplete";
 type FollowUpFilter = "" | "first" | "second" | "not_interested" | "joined";
 
-const TWO_WEEKS_MS = 5 * 60 * 1000;
-const ONE_MONTH_MS = 10 * 60 * 1000;
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 const ACTIVITY_STATUS_CONFIG: Record<
   ActivityStatus,
@@ -247,15 +247,17 @@ function getFollowUpDisplayLabel(student: Student) {
 function getFollowUpHistoryLabels(student: Student) {
   const history = student.followUpHistory || [];
 
-  return history.map((entry) => {
-    const stageLabel = getFollowUpStageLabel(entry.stage);
-    const dayLabel = getFollowUpDayLabel(entry.date);
+  return history
+    .map((entry) => {
+      const stageLabel = getFollowUpStageLabel(entry.stage);
+      const dayLabel = getFollowUpDayLabel(entry.date);
 
-    if (stageLabel === "Not interested" || stageLabel === "Joined")
-      return stageLabel;
-    if (stageLabel && dayLabel) return `${stageLabel} - ${dayLabel}`;
-    return stageLabel || dayLabel || null;
-  }).filter((label): label is string => Boolean(label));
+      if (stageLabel === "Not interested" || stageLabel === "Joined")
+        return stageLabel;
+      if (stageLabel && dayLabel) return `${stageLabel} - ${dayLabel}`;
+      return stageLabel || dayLabel || null;
+    })
+    .filter((label): label is string => Boolean(label));
 }
 
 // ─── DERIVED STATUS LOGIC ─────────────────────────────────────────────────────
@@ -312,7 +314,9 @@ function getStudentCourseDetailUrl(student: Student) {
   if (!primaryCourse?.name) return `/${student.PrnNumber}`;
 
   const courseSlug = toCourseSlug(primaryCourse.name, primaryCourse.level);
-  return courseSlug ? `/${student.PrnNumber}/${courseSlug}` : `/${student.PrnNumber}`;
+  return courseSlug
+    ? `/${student.PrnNumber}/${courseSlug}`
+    : `/${student.PrnNumber}`;
 }
 
 function getTrainerDisplayName(trainer?: Trainer | null) {
@@ -891,38 +895,36 @@ const Page = () => {
               c.completed !== true &&
               (!c.status || c.status.toLowerCase() !== "complete"),
           );
-        return s.courses.some(
-          (c) => {
-            if (
-              typeof c === "string" ||
-              c.completed === true ||
-              (c.status && c.status.toLowerCase() === "complete")
-            ) {
-              return false;
+        return s.courses.some((c) => {
+          if (
+            typeof c === "string" ||
+            c.completed === true ||
+            (c.status && c.status.toLowerCase() === "complete")
+          ) {
+            return false;
+          }
+
+          const courseTrainerId = String(c.trainerId || "").trim();
+          const courseTrainerName = normalizeTrainerValue(c.trainerName);
+
+          if (trainerFilter.startsWith("id:")) {
+            if (selectedTrainerId && courseTrainerId === selectedTrainerId) {
+              return true;
             }
 
-            const courseTrainerId = String(c.trainerId || "").trim();
-            const courseTrainerName = normalizeTrainerValue(c.trainerName);
+            return Boolean(
+              selectedTrainerLabel &&
+                courseTrainerName &&
+                courseTrainerName === selectedTrainerLabel,
+            );
+          }
 
-            if (trainerFilter.startsWith("id:")) {
-              if (selectedTrainerId && courseTrainerId === selectedTrainerId) {
-                return true;
-              }
+          if (trainerFilter.startsWith("name:")) {
+            return courseTrainerName === selectedTrainerLabel;
+          }
 
-              return Boolean(
-                selectedTrainerLabel &&
-                  courseTrainerName &&
-                  courseTrainerName === selectedTrainerLabel,
-              );
-            }
-
-            if (trainerFilter.startsWith("name:")) {
-              return courseTrainerName === selectedTrainerLabel;
-            }
-
-            return c.trainerName === trainerFilter;
-          },
-        );
+          return c.trainerName === trainerFilter;
+        });
       })
       .filter((s) => {
         if (!centerFilter) return true;
@@ -932,8 +934,7 @@ const Page = () => {
           return s.PrnNumber.startsWith("CRAVN");
         if (centerFilter === "Magarpatta")
           return s.PrnNumber.startsWith("CRAMG");
-        if (centerFilter === "Kharadi")
-          return s.PrnNumber.startsWith("CRAKH");
+        if (centerFilter === "Kharadi") return s.PrnNumber.startsWith("CRAKH");
         return true;
       })
       .filter((s) => {
@@ -1400,9 +1401,9 @@ const Page = () => {
             followUpDate: nextFollowUpDate,
             followUpStage: nextFollowUpStage,
             followUpHistory: [
-              ...((remarkStudent.followUpHistory || []).filter(
+              ...(remarkStudent.followUpHistory || []).filter(
                 (entry) => entry.stage !== followUpStageDraft,
-              )),
+              ),
               {
                 stage: followUpStageDraft,
                 date: nextFollowUpDate,
@@ -1607,19 +1608,22 @@ const Page = () => {
       }));
   }, []);
 
-  const getTrainerColumnEntries = useCallback((student: Student) => {
-    const allocations = getActiveTrainerAllocations(student);
-    const hasMultipleCourses = allocations.length > 1;
+  const getTrainerColumnEntries = useCallback(
+    (student: Student) => {
+      const allocations = getActiveTrainerAllocations(student);
+      const hasMultipleCourses = allocations.length > 1;
 
-    return allocations.map((allocation) => ({
-      ...allocation,
-      title: hasMultipleCourses
-        ? allocation.trainerLabel
-          ? `${allocation.courseLabel} - ${allocation.trainerLabel}`
-          : allocation.courseLabel
-        : allocation.trainerLabel || "Unassigned",
-    }));
-  }, [getActiveTrainerAllocations]);
+      return allocations.map((allocation) => ({
+        ...allocation,
+        title: hasMultipleCourses
+          ? allocation.trainerLabel
+            ? `${allocation.courseLabel} - ${allocation.trainerLabel}`
+            : allocation.courseLabel
+          : allocation.trainerLabel || "Unassigned",
+      }));
+    },
+    [getActiveTrainerAllocations],
+  );
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
   const TABS = [
@@ -2088,7 +2092,8 @@ const Page = () => {
                                     className="text-xs text-gray-700 font-medium"
                                     title={c.title}
                                   >
-                                    {getTrainerColumnEntries(student).length > 1 ? (
+                                    {getTrainerColumnEntries(student).length >
+                                    1 ? (
                                       c.trainerLabel ? (
                                         <>
                                           <span>{c.courseLabel}</span>
@@ -2109,8 +2114,7 @@ const Page = () => {
                                 ))}
                               {getTrainerColumnEntries(student).length > 2 && (
                                 <p className="text-[11px] text-gray-400 font-medium">
-                                  +
-                                  {getTrainerColumnEntries(student).length - 2}{" "}
+                                  +{getTrainerColumnEntries(student).length - 2}{" "}
                                   more
                                 </p>
                               )}
@@ -2150,24 +2154,24 @@ const Page = () => {
                               </p>
                               {latestClassDate && (
                                 <>
-                                <span
-                                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold mt-1 ${activityStatusConfig.cls}`}
-                                >
-                                  {activityStatusConfig.label}
-                                </span>
-                                {usesFollowUp && followUpDisplayLabel && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFollowUpDetailStudent(student);
-                                    }}
-                                    className="block text-[10px] text-amber-700 mt-1 font-semibold hover:underline"
+                                  <span
+                                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold mt-1 ${activityStatusConfig.cls}`}
                                   >
-                                    See follow-up detail
-                                  </button>
-                                )}
-                              </>
-                            )}
+                                    {activityStatusConfig.label}
+                                  </span>
+                                  {usesFollowUp && followUpDisplayLabel && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setFollowUpDetailStudent(student);
+                                      }}
+                                      className="block text-[10px] text-amber-700 mt-1 font-semibold hover:underline"
+                                    >
+                                      See follow-up detail
+                                    </button>
+                                  )}
+                                </>
+                              )}
                             </div>
                           ) : (
                             <span className="text-xs text-gray-300 italic">
@@ -2210,7 +2214,9 @@ const Page = () => {
                             )}
                             {usesFollowUp && followUpDisplayLabel && (
                               <button
-                                onClick={() => setFollowUpDetailStudent(student)}
+                                onClick={() =>
+                                  setFollowUpDetailStudent(student)
+                                }
                                 className="text-[11px] font-semibold text-amber-700 hover:underline"
                               >
                                 See follow-up detail
@@ -2650,7 +2656,9 @@ const Page = () => {
           <div>
             <label className={labelCls}>Remark</label>
             <textarea
-              className={inputCls + " resize-none bg-gray-50 cursor-not-allowed"}
+              className={
+                inputCls + " resize-none bg-gray-50 cursor-not-allowed"
+              }
               readOnly
               rows={4}
               value={followUpDetailStudent?.remark || ""}
@@ -2733,16 +2741,16 @@ const Page = () => {
               </div>
               {followUpStageDraft !== "not_interested" &&
                 followUpStageDraft !== "joined" && (
-                <div>
-                  <label className={labelCls}>Next Follow Up</label>
-                  <input
-                    type="date"
-                    value={followUpDateDraft}
-                    onChange={(e) => setFollowUpDateDraft(e.target.value)}
-                    className={inputCls}
-                  />
-                </div>
-              )}
+                  <div>
+                    <label className={labelCls}>Next Follow Up</label>
+                    <input
+                      type="date"
+                      value={followUpDateDraft}
+                      onChange={(e) => setFollowUpDateDraft(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                )}
             </>
           )}
           <div>
