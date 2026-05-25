@@ -16,7 +16,11 @@ import {
   isFailedPaymentStatus,
   isSuccessfulPaymentStatus,
   isTerminalPaymentStatus,
+  normalizePaymentStatus,
 } from "@/lib/payment-status";
+
+const FAILURE_SETTLE_DELAY_MS = 5000;
+const PAYMENT_STATUS_POLL_INTERVAL_MS = 2500;
 
 interface PaymentData {
   orderId?: string;
@@ -27,6 +31,19 @@ interface PaymentData {
   courseName?: string;
 }
 
+const getFailureMessage = (reason?: string | null) => {
+  switch ((reason || "").trim().toLowerCase()) {
+    case "session_binding_mismatch":
+      return "We could not verify this payment session. Please start the payment again.";
+    case "stored_amount_invalid":
+    case "gateway_amount_missing":
+    case "amount_mismatch":
+      return "Payment verification failed. No successful payment has been confirmed for this order.";
+    default:
+      return "No successful payment has been confirmed for this order. You can try again or contact us if money was deducted.";
+  }
+};
+
 export default function PaymentStatusClient() {
   const router = useRouter();
   const params = useSearchParams();
@@ -34,6 +51,7 @@ export default function PaymentStatusClient() {
   const [orderIdResolved, setOrderIdResolved] = useState(false);
 
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [canShowFailure, setCanShowFailure] = useState(false);
   const syncInFlightRef = useRef(false);
 
   useEffect(() => {
@@ -43,8 +61,38 @@ export default function PaymentStatusClient() {
   }, [params]);
 
   useEffect(() => {
-    setPaymentData(null);
+    setCanShowFailure(false);
+
+    if (!orderId) return;
+
+    const timeout = window.setTimeout(() => {
+      setCanShowFailure(true);
+    }, FAILURE_SETTLE_DELAY_MS);
+
+    return () => window.clearTimeout(timeout);
   }, [orderId]);
+
+  useEffect(() => {
+    const statusFromQuery = params.get("status");
+    const verifyFromQuery = params.get("verify");
+    const isFailureRedirect =
+      verifyFromQuery === "true" && !isSuccessfulPaymentStatus(statusFromQuery);
+
+    if (
+      orderId &&
+      (isTerminalPaymentStatus(statusFromQuery) || isFailureRedirect)
+    ) {
+      setPaymentData({
+        orderId,
+        status: isFailureRedirect
+          ? "FAILED"
+          : normalizePaymentStatus(statusFromQuery),
+      });
+      return;
+    }
+
+    setPaymentData(null);
+  }, [orderId, params]);
 
   const fetchCurrentStatus = async () => {
     if (!orderId) return;
@@ -54,8 +102,14 @@ export default function PaymentStatusClient() {
       const data = await res.json();
 
       if (data.success) {
-        setPaymentData(data.payment);
-        return data.payment as PaymentData;
+        const payment = data.payment as PaymentData;
+        setPaymentData((current) =>
+          isFailedPaymentStatus(current?.status) &&
+          !isTerminalPaymentStatus(payment?.status)
+            ? current
+            : payment,
+        );
+        return payment;
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -78,8 +132,14 @@ export default function PaymentStatusClient() {
       const data = await res.json();
 
       if (data.success) {
-        setPaymentData(data.payment);
-        return isTerminalPaymentStatus(data.payment?.status);
+        const payment = data.payment as PaymentData;
+        setPaymentData((current) =>
+          isFailedPaymentStatus(current?.status) &&
+          !isTerminalPaymentStatus(payment?.status)
+            ? current
+            : payment,
+        );
+        return isTerminalPaymentStatus(payment?.status);
       }
     } catch (err) {
       console.error("Payment sync error:", err);
@@ -111,11 +171,8 @@ export default function PaymentStatusClient() {
     bootstrap();
 
     const interval = setInterval(async () => {
-      const terminal = await syncPaymentStatus();
-      if (terminal) {
-        clearInterval(interval);
-      }
-    }, 5000);
+      await syncPaymentStatus();
+    }, PAYMENT_STATUS_POLL_INTERVAL_MS);
 
     return () => {
       clearInterval(interval);
@@ -128,7 +185,7 @@ export default function PaymentStatusClient() {
     router.replace(`/registration-success?orderId=${encodeURIComponent(orderId)}`);
   }, [orderId, paymentData?.status, router]);
 
-  const currentStatus = paymentData?.status || "PENDING";
+  const currentStatus = normalizePaymentStatus(paymentData?.status);
   const amountLabel =
     paymentData?.amount !== undefined && paymentData?.amount !== null
       ? `₹${paymentData.amount.toLocaleString("en-IN")}`
@@ -136,6 +193,8 @@ export default function PaymentStatusClient() {
 
   const isSuccess = isSuccessfulPaymentStatus(currentStatus);
   const isFailed = isFailedPaymentStatus(currentStatus);
+  const shouldShowFailed = isFailed && canShowFailure;
+  const failureMessage = getFailureMessage(params.get("reason"));
 
   if (!orderIdResolved) {
     return (
@@ -172,7 +231,7 @@ export default function PaymentStatusClient() {
     );
   }
 
-  if (!isFailed) {
+  if (!shouldShowFailed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff8f8] via-white to-[#f8ebeb] px-4">
         <div className="w-full max-w-sm rounded-2xl border border-[#8D0F11]/10 bg-white/95 px-6 py-7 text-center shadow-2xl shadow-[#8D0F11]/10">
@@ -201,7 +260,7 @@ export default function PaymentStatusClient() {
           Payment failed
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          No amount has been collected for this order. You can try the registration again or contact us if money was deducted.
+          {failureMessage}
         </p>
 
         <div className="mt-5 space-y-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-left">

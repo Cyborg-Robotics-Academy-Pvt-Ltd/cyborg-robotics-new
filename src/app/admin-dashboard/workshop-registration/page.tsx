@@ -44,6 +44,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { normalizePaymentStatus } from "@/lib/payment-status";
 
 type FirestoreTimestampLike = {
   toDate: () => Date;
@@ -75,7 +76,7 @@ interface WorkshopRegistration {
 }
 
 const isManualStatusEditable = (paymentStatus?: string) => {
-  const normalized = String(paymentStatus || "PENDING").toUpperCase();
+  const normalized = normalizeAdminPaymentStatus(paymentStatus || "PENDING");
   return normalized === "PENDING" || normalized === "PENDING_PAYMENT";
 };
 
@@ -144,21 +145,22 @@ const formatDisplayDate = (registration: WorkshopRegistration) => {
 };
 
 const formatPaymentStatusLabel = (paymentStatus?: string) => {
-  if (!paymentStatus) {
+  const normalized = normalizeAdminPaymentStatus(paymentStatus);
+
+  if (!normalized) {
     return "PENDING";
   }
 
-  if (paymentStatus === "PENDING_PAYMENT") {
+  if (normalized === "PENDING_PAYMENT") {
     return "PENDING";
   }
 
-  return paymentStatus.replace(/_/g, " ");
+  return normalized.replace(/_/g, " ");
 };
 
 const getStatusColor = (status: string) => {
-  switch (status) {
+  switch (normalizeAdminPaymentStatus(status)) {
     case "SUCCESS":
-    case "CHARGED":
       return "bg-emerald-100 text-emerald-800 border-emerald-200";
     case "FAILED":
       return "bg-red-100 text-red-800 border-red-200";
@@ -167,20 +169,29 @@ const getStatusColor = (status: string) => {
   }
 };
 
+function normalizeAdminPaymentStatus(status?: string | null) {
+  const raw = String(status || "")
+    .trim()
+    .toUpperCase();
+  if (raw === "NEW") return "PENDING";
+  if (raw === "PENDING_PAYMENT") return "PENDING_PAYMENT";
+  return normalizePaymentStatus(raw);
+}
+
 const normalizeWorkshopRecord = (
   record: FirestoreRecord,
   id: string,
 ): WorkshopRegistration => {
   const draft = record.workshopRegistrationDraft || {};
   const workshop = record.workshop || {};
-  const normalizedPaymentStatus = String(
+  const normalizedPaymentStatus = normalizeAdminPaymentStatus(
     record.paymentStatus ||
       (record.paymentType === "booking-request" ||
       record.source === "workshops-page"
         ? "PENDING_PAYMENT"
         : record.status) ||
       "",
-  ).toUpperCase();
+  );
   const normalizedPaidAmount =
     record.paidAmount ??
     (normalizedPaymentStatus === "SUCCESS" ||
@@ -546,7 +557,7 @@ const Page = () => {
         { header: "City", key: "city", width: 18 },
         { header: "Area", key: "area", width: 18 },
         { header: "Payment Status", key: "paymentStatus", width: 18 },
-        { header: "Paid Amount", key: "paidAmount", width: 14 },
+        { header: "Amount", key: "paidAmount", width: 14 },
         { header: "Order ID", key: "orderId", width: 24 },
       ];
 
@@ -677,7 +688,7 @@ const Page = () => {
                           { key: "city", label: "City" },
                           { key: "area", label: "Area" },
                           { key: "paymentStatus", label: "Payment Status" },
-                          { key: "paidAmount", label: "Paid Amount" },
+                          { key: "paidAmount", label: "Amount" },
                           { key: "actions", label: "Actions" },
                         ].map((column) => (
                           <TableHead

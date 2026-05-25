@@ -69,8 +69,10 @@ function redirectToFailedStatus(
 ) {
   const url = buildRedirectUrl(baseUrl, "/payment/status", {
     verify: "true",
+    status: "FAILED",
   });
   if (orderId) url.searchParams.set("orderId", orderId);
+  if (reason) url.searchParams.set("reason", reason);
   return NextResponse.redirect(url.toString(), { status: 302 });
 }
 
@@ -323,32 +325,8 @@ export async function GET(req: Request) {
 
   const paymentDoc = snapshot.docs[0];
   const existingData = paymentDoc.data();
-  const ownershipCheck = verifyPaymentOwnership(req, orderIdParam, existingData);
-  if (!ownershipCheck.ok) {
-    await safeWritePaymentAuditLog({
-      eventType: "return_signature",
-      source: "payment_return_get",
-      orderId: orderIdParam,
-      status: existingData.status,
-      amount: existingData.amount,
-      txnId: existingData.transactionReference || null,
-      bankRef: extractBankRef(existingData),
-      success: false,
-      reason: ownershipCheck.reason || "Payment session validation failed",
-      requestMethod: req.method,
-      requestPath,
-      rawRequest: Object.fromEntries(searchParams.entries()),
-      metadata: {
-        sessionBindingKeyPresent: Boolean(existingData.sessionBindingKey),
-      },
-    });
-    return redirectToFailedStatus(
-      trustedBaseUrl,
-      orderIdParam,
-      "session_binding_mismatch"
-    );
-  }
   const expectedAmount = normalizeAmount(existingData.amount);
+
   if (expectedAmount === null) {
     console.error("Stored amount missing or invalid for order:", orderIdParam);
     await safeWritePaymentAuditLog({
@@ -378,6 +356,49 @@ export async function GET(req: Request) {
       orderId: orderIdParam,
     });
     return NextResponse.redirect(successUrl.toString(), { status: 302 });
+  }
+
+  const ownershipCheck = verifyPaymentOwnership(req, orderIdParam, existingData);
+  if (!ownershipCheck.ok) {
+    const verified = await verifyWithGateway(orderIdParam);
+    if (verified?.status === "SUCCESS" && verified.amount === expectedAmount) {
+      await updatePaymentStatus(
+        orderIdParam,
+        "SUCCESS",
+        verified.txnId,
+        verified.bankRef,
+        verified.rawResponse
+      );
+      await finalizeRegistrationForPayment(orderIdParam, verified.txnId);
+
+      const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
+        orderId: orderIdParam,
+      });
+      return NextResponse.redirect(successUrl.toString(), { status: 302 });
+    }
+
+    await safeWritePaymentAuditLog({
+      eventType: "return_signature",
+      source: "payment_return_get",
+      orderId: orderIdParam,
+      status: existingData.status,
+      amount: existingData.amount,
+      txnId: existingData.transactionReference || null,
+      bankRef: extractBankRef(existingData),
+      success: false,
+      reason: ownershipCheck.reason || "Payment session validation failed",
+      requestMethod: req.method,
+      requestPath,
+      rawRequest: Object.fromEntries(searchParams.entries()),
+      metadata: {
+        sessionBindingKeyPresent: Boolean(existingData.sessionBindingKey),
+      },
+    });
+    return redirectToFailedStatus(
+      trustedBaseUrl,
+      orderIdParam,
+      "session_binding_mismatch"
+    );
   }
 
   const verified = await verifyWithGateway(orderIdParam);
@@ -469,6 +490,16 @@ export async function GET(req: Request) {
     rawRequest: Object.fromEntries(searchParams.entries()),
     rawResponse: verified?.rawResponse,
   });
+
+  if (verified && finalStatus !== "PENDING") {
+    await updatePaymentStatus(
+      orderIdParam,
+      finalStatus,
+      verified.txnId,
+      verified.bankRef,
+      verified.rawResponse
+    );
+  }
 
   const statusUrl = buildRedirectUrl(trustedBaseUrl, "/payment/status", {
     orderId: orderIdParam,
@@ -639,9 +670,44 @@ export async function POST(req: Request) {
 
     const paymentDoc = snapshot.docs[0];
     const existingData = paymentDoc.data();
+    const expectedAmount = normalizeAmount(existingData.amount);
+
+    if (isBrowserReturn && existingData.status === "SUCCESS") {
+      await finalizeRegistrationForPayment(
+        orderId,
+        existingData.transactionReference
+      );
+
+      const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
+        orderId,
+      });
+      return NextResponse.redirect(successUrl.toString(), { status: 302 });
+    }
+
     if (isBrowserReturn) {
       const ownershipCheck = verifyPaymentOwnership(req, orderId, existingData);
       if (!ownershipCheck.ok) {
+        const verified = await verifyWithGateway(orderId);
+        if (verified?.status === "SUCCESS" && verified.amount === expectedAmount) {
+          await updatePaymentStatus(
+            orderId,
+            "SUCCESS",
+            verified.txnId,
+            verified.bankRef,
+            verified.rawResponse
+          );
+          await finalizeRegistrationForPayment(orderId, verified.txnId);
+
+          const successUrl = buildRedirectUrl(
+            trustedBaseUrl,
+            "/registration-success",
+            {
+              orderId,
+            }
+          );
+          return NextResponse.redirect(successUrl.toString(), { status: 302 });
+        }
+
         await safeWritePaymentAuditLog({
           eventType: "return_signature",
           source: "payment_return_post",
@@ -665,19 +731,6 @@ export async function POST(req: Request) {
           "session_binding_mismatch"
         );
       }
-    }
-    const expectedAmount = normalizeAmount(existingData.amount);
-
-    if (isBrowserReturn && existingData.status === "SUCCESS") {
-      await finalizeRegistrationForPayment(
-        orderId,
-        existingData.transactionReference
-      );
-
-      const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
-        orderId,
-      });
-      return NextResponse.redirect(successUrl.toString(), { status: 302 });
     }
 
     if (expectedAmount === null) {

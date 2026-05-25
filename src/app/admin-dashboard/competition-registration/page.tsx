@@ -43,6 +43,7 @@ import { motion } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
+import { normalizePaymentStatus } from "@/lib/payment-status";
 
 type FirestoreTimestampLike = {
   toDate: () => Date;
@@ -84,7 +85,7 @@ interface CompetitionRegistration {
 }
 
 const isManualStatusEditable = (paymentStatus?: string) => {
-  const normalized = String(paymentStatus || "PENDING").toUpperCase();
+  const normalized = normalizeAdminPaymentStatus(paymentStatus || "PENDING");
   return normalized === "PENDING" || normalized === "PENDING_PAYMENT";
 };
 
@@ -153,21 +154,22 @@ const formatDisplayDate = (registration: CompetitionRegistration) => {
 };
 
 const formatPaymentStatusLabel = (paymentStatus?: string) => {
-  if (!paymentStatus) {
+  const normalized = normalizeAdminPaymentStatus(paymentStatus);
+
+  if (!normalized) {
     return "PENDING";
   }
 
-  if (paymentStatus === "PENDING_PAYMENT") {
+  if (normalized === "PENDING_PAYMENT") {
     return "PENDING";
   }
 
-  return paymentStatus.replace(/_/g, " ");
+  return normalized.replace(/_/g, " ");
 };
 
 const getStatusColor = (status: string) => {
-  switch (status) {
+  switch (normalizeAdminPaymentStatus(status)) {
     case "SUCCESS":
-    case "CHARGED":
       return "bg-emerald-100 text-emerald-800 border-emerald-200";
     case "FAILED":
       return "bg-red-100 text-red-800 border-red-200";
@@ -176,15 +178,24 @@ const getStatusColor = (status: string) => {
   }
 };
 
+function normalizeAdminPaymentStatus(status?: string | null) {
+  const raw = String(status || "")
+    .trim()
+    .toUpperCase();
+  if (raw === "NEW") return "PENDING";
+  if (raw === "PENDING_PAYMENT") return "PENDING_PAYMENT";
+  return normalizePaymentStatus(raw);
+}
+
 const normalizeCompetitionRecord = (
   record: FirestoreRecord,
   id: string,
 ): CompetitionRegistration => {
   const draft = record.competitionRegistrationDraft || {};
   const competition = record.competition || {};
-  const normalizedPaymentStatus = String(
+  const normalizedPaymentStatus = normalizeAdminPaymentStatus(
     record.paymentStatus || record.status || "",
-  ).toUpperCase();
+  );
   const normalizedPaidAmount =
     record.paidAmount ??
     (normalizedPaymentStatus === "SUCCESS" ||
@@ -663,7 +674,7 @@ const Page = () => {
           width: 18,
         },
         { header: "Payment Status", key: "paymentStatus", width: 18 },
-        { header: "Paid Amount", key: "paidAmount", width: 14 },
+        { header: "Amount", key: "paidAmount", width: 14 },
         { header: "Order ID", key: "orderId", width: 24 },
       ];
 
@@ -796,7 +807,7 @@ const Page = () => {
                           { key: "cityState", label: "Location" },
                           { key: "preferredCodingPlatform", label: "Setup" },
                           { key: "paymentStatus", label: "Payment Status" },
-                          { key: "paidAmount", label: "Paid Amount" },
+                          { key: "paidAmount", label: "Amount" },
                           { key: "actions", label: "Actions" },
                         ].map((column) => (
                           <TableHead
