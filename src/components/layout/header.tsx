@@ -44,11 +44,16 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { id: "codefest", label: "Codefest", href: "/codefest" },
+  // {
+  //   id: "tech-programs",
+  //   label: "Tech Programs",
+  //   href: "/tech-programs",
+  //   badge: "New",
+  // },
   {
-    id: "tech-programs",
-    label: "Tech Programs",
-    href: "/tech-programs",
-    badge: "New",
+    id: "robotics-diploma",
+    label: "Robotics Diploma",
+    href: "/robotics-diploma",
   },
   { id: "courses", label: "Courses", href: "/all-courses" },
   { id: "gallery", label: "Photo Hub", href: "/gallery/behind-scene" },
