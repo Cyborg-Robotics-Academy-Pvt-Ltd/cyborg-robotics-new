@@ -40,6 +40,9 @@ interface Registration {
   currentAddress?: string;
   permanentAddress?: string;
   studentPRN?: string;
+  PrnNumber?: string;
+  prnNumber?: string;
+  prn?: string;
   courseType?: string;
   dateOfJoining?: string;
   duration?: string;
@@ -59,10 +62,23 @@ interface Registration {
   studentRegistrationNo?: string;
   contactNumber?: string;
   dateOfRegistration?: string;
+  center?: string;
+  branch?: string;
   location?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
+
+const getPrnNumber = (registration: Registration) =>
+  registration.studentRegistrationNo ||
+  registration.studentPRN ||
+  registration.PrnNumber ||
+  registration.prnNumber ||
+  registration.prn ||
+  "";
+
+const getCenter = (registration: Registration) =>
+  registration.center || registration.branch || "";
 
 const Page = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -113,6 +129,8 @@ const Page = () => {
     const filtered = registrations.filter(
       (reg) =>
         reg.studentName?.toLowerCase().includes(lowercasedSearch) ||
+        getPrnNumber(reg).toLowerCase().includes(lowercasedSearch) ||
+        getCenter(reg).toLowerCase().includes(lowercasedSearch) ||
         reg.primaryParentName?.toLowerCase().includes(lowercasedSearch) ||
         reg.schoolName?.toLowerCase().includes(lowercasedSearch)
     );
@@ -198,7 +216,7 @@ const Page = () => {
     worksheet.columns = [
       { header: "ADD DATE", key: "dateOfRegistration", width: 20 },
       {
-        header: "Student Registration No.",
+        header: "PRN Number",
         key: "studentRegistrationNo",
         width: 25,
       },
@@ -207,6 +225,7 @@ const Page = () => {
       { header: "Preferred Day", key: "preferredDay", width: 15 },
       { header: "Preferred Batch", key: "preferredTime", width: 20 },
       { header: "Date of Joining", key: "dateOfJoining", width: 15 },
+      { header: "Center", key: "center", width: 18 },
       { header: "Location", key: "location", width: 15 },
       { header: "Duration (Hrs)", key: "duration", width: 15 },
       { header: "No. of Sessions", key: "sessions", width: 15 },
@@ -232,6 +251,8 @@ const Page = () => {
     sortedRegistrations.forEach((reg) => {
       const formatted = {
         ...reg,
+        studentRegistrationNo: getPrnNumber(reg),
+        center: getCenter(reg),
         preferredDay: Array.isArray(reg.preferredDay)
           ? reg.preferredDay.join(", ")
           : reg.preferredDay || "",
@@ -267,7 +288,7 @@ const Page = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white" />
                 <Input
                   className="pl-12 pr-4 py-3 rounded-full focus:ring-4 focus:ring-red-400/50 transition-all duration-300 text-base shadow-lg placeholder:text-white text-white border-0"
-                  placeholder="Search by name or school..."
+                  placeholder="Search by name, PRN, center, or school..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -317,9 +338,10 @@ const Page = () => {
                       { key: "studentName", label: "Student Name" },
                       {
                         key: "studentRegistrationNo",
-                        label: "Registration No.",
+                        label: "PRN Number",
                       },
                       { key: "contactNumber", label: "Contact Number" },
+                      { key: "center", label: "Center" },
                       { key: "location", label: "Location" },
                       { key: "preferredDay", label: "Preferred Day" },
                       { key: "preferredTime", label: "Preferred Batch" },
@@ -379,10 +401,9 @@ const Page = () => {
                         <TableCell className="font-medium">
                           {reg.studentName || "-"}
                         </TableCell>
-                        <TableCell>
-                          {reg.studentRegistrationNo || "-"}
-                        </TableCell>
+                        <TableCell>{getPrnNumber(reg) || "-"}</TableCell>
                         <TableCell>{reg.contactNumber || "-"}</TableCell>
+                        <TableCell>{getCenter(reg) || "-"}</TableCell>
                         <TableCell>{reg.location || "-"}</TableCell>
                         <TableCell>
                           {Array.isArray(reg.preferredDay)

@@ -1812,7 +1812,7 @@ const AdminDashboard = () => {
     },
     {
       title: "New Registration",
-      href: "/registration/new",
+      href: "/registration",
     },
     {
       title: "Competition Registration",

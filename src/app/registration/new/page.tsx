@@ -48,6 +48,7 @@ interface FormData {
   selectedCourseKey: string;
   paidAmount: string;
   paymentRemark: string;
+  hearAboutUs: string;
 }
 
 const RegisterPage: React.FC = () => {
@@ -67,6 +68,7 @@ const RegisterPage: React.FC = () => {
     selectedCourseKey: "",
     paidAmount: "",
     paymentRemark: "",
+    hearAboutUs: "",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -141,6 +143,8 @@ const RegisterPage: React.FC = () => {
         newErrors.schoolName = "School name is required.";
       if (!formData.class.trim()) newErrors.class = "Grade is required.";
       if (!formData.board) newErrors.board = "Board is required.";
+      if (!formData.hearAboutUs)
+        newErrors.hearAboutUs = "Please tell us how you heard about us.";
     } else if (stepToValidate === 2) {
       if (!formData.primaryParentType)
         newErrors.primaryParentType = "Primary parent type is required.";
@@ -663,6 +667,23 @@ const RegisterPage: React.FC = () => {
                         options={["CBSE", "ICSE", "State Board", "IB", "Other"]}
                         icon="file"
                         error={errors.board}
+                      />
+                      <DropdownField
+                        id="hearAboutUs"
+                        label="HOW DID YOU HEAR ABOUT US?"
+                        value={formData.hearAboutUs}
+                        onChange={handleChange}
+                        required
+                        options={[
+                          "Facebook",
+                          "Instagram",
+                          "WhatsApp",
+                          "Friend/Family",
+                          "Event/Workshop",
+                          "Other",
+                        ]}
+                        icon="file"
+                        error={errors.hearAboutUs}
                       />
                     </div>
                   </div>

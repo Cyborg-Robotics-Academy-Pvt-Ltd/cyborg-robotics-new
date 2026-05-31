@@ -84,13 +84,8 @@ interface CompetitionRegistration {
   createdAt?: FirestoreTimestampLike | string;
 }
 
-const isManualStatusEditable = (paymentStatus?: string) => {
-  const normalized = normalizeAdminPaymentStatus(paymentStatus || "PENDING");
-  return normalized === "PENDING" || normalized === "PENDING_PAYMENT";
-};
-
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-const STATUS_OPTIONS = ["PENDING", "SUCCESS", "FAILED"] as const;
+const STATUS_OPTIONS = ["FAILED", "PENDING", "SUCCESS", "CASH_PAY"] as const;
 
 const isFirestoreTimestampLike = (
   value: unknown,
@@ -160,6 +155,10 @@ const formatPaymentStatusLabel = (paymentStatus?: string) => {
     return "PENDING";
   }
 
+  if (normalized === "CASH_PAY") {
+    return "Cash Pay";
+  }
+
   if (normalized === "PENDING_PAYMENT") {
     return "PENDING";
   }
@@ -170,6 +169,7 @@ const formatPaymentStatusLabel = (paymentStatus?: string) => {
 const getStatusColor = (status: string) => {
   switch (normalizeAdminPaymentStatus(status)) {
     case "SUCCESS":
+    case "CASH_PAY":
       return "bg-emerald-100 text-emerald-800 border-emerald-200";
     case "FAILED":
       return "bg-red-100 text-red-800 border-red-200";
@@ -182,6 +182,9 @@ function normalizeAdminPaymentStatus(status?: string | null) {
   const raw = String(status || "")
     .trim()
     .toUpperCase();
+  if (raw === "CASH_PAY" || raw === "CASH PAY" || raw === "CASH") {
+    return "CASH_PAY";
+  }
   if (raw === "NEW") return "PENDING";
   if (raw === "PENDING_PAYMENT") return "PENDING_PAYMENT";
   return normalizePaymentStatus(raw);
@@ -500,10 +503,7 @@ const Page = () => {
 
   const handleStatusChange = useCallback(
     async (registration: CompetitionRegistration, nextStatus: string) => {
-      if (
-        !registration.orderId ||
-        !isManualStatusEditable(registration.paymentStatus)
-      ) {
+      if (!registration.orderId) {
         return;
       }
       setUpdatingStatusId(registration.id);
@@ -934,50 +934,39 @@ const Page = () => {
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
-                            {isManualStatusEditable(
-                              registration.paymentStatus,
-                            ) ? (
-                              <Select
-                                value={registration.paymentStatus || "PENDING"}
-                                onValueChange={(value) =>
-                                  handleStatusChange(registration, value)
-                                }
-                                disabled={updatingStatusId === registration.id}
-                              >
-                                <SelectTrigger
-                                  className={`w-[140px] rounded-md border text-xs font-semibold shadow-none ${getStatusColor(
-                                    registration.paymentStatus || "PENDING",
-                                  )}`}
-                                >
-                                  <SelectValue>
-                                    {updatingStatusId === registration.id
-                                      ? "Updating..."
-                                      : formatPaymentStatusLabel(
-                                          registration.paymentStatus,
-                                        )}
-                                  </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {STATUS_OPTIONS.filter(
-                                    (status) => status !== "PENDING",
-                                  ).map((status) => (
-                                    <SelectItem key={status} value={status}>
-                                      {formatPaymentStatusLabel(status)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <span
-                                className={`inline-flex min-w-[140px] items-center justify-center rounded-md border px-3 py-2 text-xs font-semibold ${getStatusColor(
+                            <Select
+                              value={normalizeAdminPaymentStatus(
+                                registration.paymentStatus || "PENDING",
+                              )}
+                              onValueChange={(value) =>
+                                handleStatusChange(registration, value)
+                              }
+                              disabled={
+                                updatingStatusId === registration.id ||
+                                !registration.orderId
+                              }
+                            >
+                              <SelectTrigger
+                                className={`w-[140px] rounded-md border text-xs font-semibold shadow-none ${getStatusColor(
                                   registration.paymentStatus || "PENDING",
                                 )}`}
                               >
-                                {formatPaymentStatusLabel(
-                                  registration.paymentStatus,
-                                )}
-                              </span>
-                            )}
+                                <SelectValue>
+                                  {updatingStatusId === registration.id
+                                    ? "Updating..."
+                                    : formatPaymentStatusLabel(
+                                        registration.paymentStatus,
+                                      )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_OPTIONS.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {formatPaymentStatusLabel(status)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm font-medium text-emerald-700">
                             {registration.paidAmount ?? "-"}

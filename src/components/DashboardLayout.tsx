@@ -24,14 +24,12 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
-  CalendarCheck,
   Clapperboard,
   ClipboardList,
   FilePen,
   LayoutDashboard,
   LogOut,
   Menu,
-  NotepadText,
   UserLock,
 } from "lucide-react";
 import { PanelRightOpen, PanelRightClose } from "@/components/ui/panel-buttons";
@@ -81,24 +79,17 @@ const roleLinksMap: Record<
     },
 
     {
-      label: "New Registration",
-      href: "/admin-dashboard/new-registration",
+      label: "Registrations",
+      href: "/admin-dashboard/registrations",
       icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-    {
-      label: "Workshop Registration",
-      href: "/admin-dashboard/workshop-registration",
-      icon: <CalendarCheck className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-    {
-      label: "Competition Registration",
-      href: "/admin-dashboard/competition-registration",
-      icon: <CalendarCheck className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-    {
-      label: "Renewal",
-      href: "/admin-dashboard/renewal",
-      icon: <NotepadText className="h-5 w-5 shrink-0 text-gray-700" />,
+      activeWhen: (pathname) =>
+        [
+          "/admin-dashboard/registrations",
+          "/admin-dashboard/new-registration",
+          "/admin-dashboard/workshop-registration",
+          "/admin-dashboard/competition-registration",
+          "/admin-dashboard/renewal",
+        ].some((path) => pathname.startsWith(path)),
     },
     {
       label: "Student Media",
