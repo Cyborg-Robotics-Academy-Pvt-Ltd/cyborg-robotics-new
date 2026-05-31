@@ -12,10 +12,10 @@ import {
   where,
 } from "firebase/firestore";
 
-const ALLOWED_STATUSES = new Set(["PENDING", "SUCCESS", "FAILED"]);
+const ALLOWED_STATUSES = new Set(["PENDING", "SUCCESS", "FAILED", "CASH_PAY"]);
 
 function mapPaymentStatusToRecordStatus(paymentStatus: string) {
-  if (paymentStatus === "SUCCESS") {
+  if (paymentStatus === "SUCCESS" || paymentStatus === "CASH_PAY") {
     return "confirmed";
   }
 
@@ -64,17 +64,6 @@ export async function POST(req: Request) {
 
     const paymentDoc = paymentSnapshot.docs[0];
     const paymentData = paymentDoc.data();
-    const currentStatus = String(paymentData.status || "PENDING").toUpperCase();
-
-    if ((currentStatus === "SUCCESS" || currentStatus === "CHARGED") && nextStatus !== "SUCCESS") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Confirmed workshop payments cannot be changed manually.",
-        },
-        { status: 409 }
-      );
-    }
 
     await updateDoc(doc(db, "payments", paymentDoc.id), {
       status: nextStatus,
@@ -84,10 +73,12 @@ export async function POST(req: Request) {
       updatedAt: serverTimestamp(),
     });
 
-    if (nextStatus === "SUCCESS") {
+    if (nextStatus === "SUCCESS" || nextStatus === "CASH_PAY") {
       await finalizeRegistrationForPayment(
         orderId,
-        paymentData.transactionReference || "MANUAL_VERIFIED"
+        nextStatus === "CASH_PAY"
+          ? "CASH_PAY"
+          : paymentData.transactionReference || "MANUAL_VERIFIED"
       );
     }
 

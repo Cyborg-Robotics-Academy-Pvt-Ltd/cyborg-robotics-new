@@ -98,6 +98,7 @@ interface Registration {
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
+const STATUS_OPTIONS = ["FAILED", "PENDING", "SUCCESS", "CASH_PAY"] as const;
 
 const normalizeText = (value: unknown) =>
   String(value || "")
@@ -105,8 +106,11 @@ const normalizeText = (value: unknown) =>
     .replace(/[^a-z0-9]+/g, "");
 
 const getPaymentStatusColor = (status?: string) => {
-  switch (normalizePaymentStatus(status)) {
+  const normalized = normalizeAdminPaymentStatus(status);
+
+  switch (normalized) {
     case "SUCCESS":
+    case "CASH_PAY":
       return "bg-emerald-100 text-emerald-800";
     case "FAILED":
       return "bg-red-100 text-red-800";
@@ -116,8 +120,19 @@ const getPaymentStatusColor = (status?: string) => {
 };
 
 const normalizeAdminPaymentStatus = (status: unknown) => {
-  const normalized = normalizePaymentStatus(String(status || ""));
+  const raw = String(status || "").trim().toUpperCase();
+  if (raw === "CASH_PAY" || raw === "CASH PAY" || raw === "CASH") {
+    return "CASH_PAY";
+  }
+
+  const normalized = normalizePaymentStatus(raw);
   return normalized === "NEW" ? "PENDING" : normalized;
+};
+
+const formatPaymentStatusLabel = (status?: string) => {
+  const normalized = normalizeAdminPaymentStatus(status);
+  if (normalized === "CASH_PAY") return "Cash Pay";
+  return normalized.replace(/_/g, " ");
 };
 
 const mergeRegistrationRecords = (
@@ -326,6 +341,7 @@ const Page = () => {
   const [removingRegistrationId, setRemovingRegistrationId] = useState<
     string | null
   >(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -498,6 +514,49 @@ const Page = () => {
         console.error("Failed to remove registration:", error);
       } finally {
         setRemovingRegistrationId(null);
+      }
+    },
+    [],
+  );
+
+  const handleStatusChange = useCallback(
+    async (registration: Registration, nextStatus: string) => {
+      setUpdatingStatusId(registration.id);
+
+      try {
+        const response = await fetch("/api/admin/registration-payment-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: registration.orderId,
+            paymentDocId: registration.paymentDocId,
+            firestoreId: registration.firestoreId,
+            registrationType: "new",
+            status: nextStatus,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to update registration status");
+        }
+
+        const updateRegistration = (item: Registration) =>
+          item.id === registration.id
+            ? {
+                ...item,
+                paymentStatus: data.paymentStatus,
+              }
+            : item;
+
+        setRegistrations((current) => current.map(updateRegistration));
+        setFilteredRegistrations((current) => current.map(updateRegistration));
+      } catch (error) {
+        console.error("Failed to update registration status:", error);
+      } finally {
+        setUpdatingStatusId(null);
       }
     },
     [],
@@ -712,13 +771,32 @@ const Page = () => {
                             {reg.paymentType || "-"}
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
-                            <span
-                              className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getPaymentStatusColor(
-                                reg.paymentStatus,
-                              )}`}
+                            <Select
+                              value={normalizeAdminPaymentStatus(reg.paymentStatus)}
+                              onValueChange={(value) =>
+                                handleStatusChange(reg, value)
+                              }
+                              disabled={updatingStatusId === reg.id}
                             >
-                              {normalizePaymentStatus(reg.paymentStatus)}
-                            </span>
+                              <SelectTrigger
+                                className={`w-[140px] border text-xs font-semibold shadow-none ${getPaymentStatusColor(
+                                  reg.paymentStatus,
+                                )}`}
+                              >
+                                <SelectValue>
+                                  {updatingStatusId === reg.id
+                                    ? "Updating..."
+                                    : formatPaymentStatusLabel(reg.paymentStatus)}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_OPTIONS.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {formatPaymentStatusLabel(status)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm font-medium text-emerald-700">
                             {reg.paidAmount ?? "-"}

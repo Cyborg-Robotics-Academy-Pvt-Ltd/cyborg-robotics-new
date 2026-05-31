@@ -435,7 +435,7 @@ const LoginPage = () => {
                           whileTap={{ scale: 0.95 }}
                         >
                           <Link
-                            href="/registration/new"
+                            href="/registration"
                             className="inline-block px-5 py-2.5 bg-gradient-to-r from-[#991b1b] to-[#7f1d1d] text-white text-sm font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-red-700 hover:to-red-800"
                           >
                             New Registration

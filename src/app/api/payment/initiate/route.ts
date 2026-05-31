@@ -47,7 +47,332 @@ export async function POST(req: Request) {
       courseKey,
       paidAmount,
       paymentRemark,
+      paymentFlow,
+      studentRegistrationNo,
+      contactNumber,
+      parentEmail,
+      preferredDay,
+      preferredBatch,
+      center,
+      location,
+      selectedCourseName,
     } = body;
+
+    if (paymentFlow === "other") {
+      const missingFields: string[] = [];
+      const otherFields: [unknown, string][] = [
+        [studentName, "studentName"],
+        [selectedCourseName, "selectedCourseName"],
+      ];
+
+      for (const [value, name] of otherFields) {
+        const error = requireString(value, name);
+        if (error) missingFields.push(name);
+      }
+
+      const parsedAmount = Number(paidAmount);
+      if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+        missingFields.push("paidAmount");
+      }
+
+      if (missingFields.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Missing required fields: ${missingFields.join(", ")}`,
+          },
+          { status: 400 }
+        );
+      }
+
+      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+      const API_KEY = process.env.HDFC_API_KEY;
+      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
+        return NextResponse.json(
+          { success: false, message: "Server configuration error" },
+          { status: 500 }
+        );
+      }
+
+      const orderId = generateOrderId();
+      const customerSeed = String(`${studentName}-${selectedCourseName}`);
+      const customerId = generateCustomerId(customerSeed);
+      const paymentOwnerSeed = derivePaymentOwnerSeed(null, customerSeed);
+      const paymentSessionBinding = createPaymentSessionBinding(
+        orderId,
+        customerId,
+        paymentOwnerSeed
+      );
+      const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
+      const amount = parsedAmount;
+
+      const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-merchantid": MERCHANT_ID,
+          Authorization: `Basic ${Buffer.from(API_KEY + ":").toString("base64")}`,
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          amount,
+          currency: "INR",
+          customer_id: customerId,
+          return_url: returnUrl.toString(),
+          metadata: {
+            studentName,
+            courseName: selectedCourseName,
+            courseKey: "other",
+            internalCustomerId: customerId,
+            paymentType: "other",
+            paymentFlow: "other",
+          },
+        }),
+      });
+
+      const juspayData = await juspayResponse.json();
+
+      if (!juspayResponse.ok) {
+        console.error("Juspay other order creation failed:", juspayData);
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Failed to create payment order. Please try again.",
+          },
+          { status: 502 }
+        );
+      }
+
+      const paymentUrl = juspayData?.payment_links?.web;
+      if (!paymentUrl) {
+        console.error("Juspay did not return a payment URL:", juspayData);
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Payment URL not received. Please try again.",
+          },
+          { status: 502 }
+        );
+      }
+
+      await addDoc(collection(db, "payments"), {
+        orderId,
+        customerId,
+        ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+        sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+        sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+        sessionBindingSource: "studentName",
+        paymentFlow: "other",
+        studentName: String(studentName).trim(),
+        selectedCourseName: String(selectedCourseName).trim(),
+        courseName: String(selectedCourseName).trim(),
+        courseKey: "other",
+        otherDraft: {
+          studentName: String(studentName).trim(),
+          selectedCourseName: String(selectedCourseName).trim(),
+          courseName: String(selectedCourseName).trim(),
+          paymentType: "other",
+          paidAmount: amount,
+          paymentRemark: String(paymentRemark || "").trim(),
+        },
+        amount,
+        currency: "INR",
+        paymentType: "other",
+        status: "PENDING",
+        createdAt: serverTimestamp(),
+      });
+
+      const response = NextResponse.json({ success: true, paymentUrl, orderId });
+
+      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+      if (cookieValue) {
+        response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 8,
+        });
+      }
+
+      return response;
+    }
+
+    if (paymentFlow === "renewal") {
+      const missingFields: string[] = [];
+      const renewalFields: [unknown, string][] = [
+        [studentName, "studentName"],
+        [studentRegistrationNo, "studentRegistrationNo"],
+        [contactNumber, "contactNumber"],
+        [parentEmail, "parentEmail"],
+        [selectedCourseName, "selectedCourseName"],
+      ];
+      for (const [value, name] of renewalFields) {
+        const error = requireString(value, name);
+        if (error) missingFields.push(name);
+      }
+
+      if (missingFields.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Missing required fields: ${missingFields.join(", ")}`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail)) {
+        return NextResponse.json(
+          { success: false, message: "Invalid email format" },
+          { status: 400 }
+        );
+      }
+
+      if (!/^\d{10}$/.test(contactNumber)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid phone number - must be 10 digits",
+          },
+          { status: 400 }
+        );
+      }
+
+      const parsedAmount = Number(paidAmount);
+      if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+        return NextResponse.json(
+          { success: false, message: "Amount must be greater than 0" },
+          { status: 400 }
+        );
+      }
+
+      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+      const API_KEY = process.env.HDFC_API_KEY;
+      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
+        return NextResponse.json(
+          { success: false, message: "Server configuration error" },
+          { status: 500 }
+        );
+      }
+
+      const orderId = generateOrderId();
+      const customerSeed = String(parentEmail || studentRegistrationNo);
+      const customerId = generateCustomerId(customerSeed);
+      const paymentOwnerSeed = derivePaymentOwnerSeed(null, customerSeed);
+      const paymentSessionBinding = createPaymentSessionBinding(
+        orderId,
+        customerId,
+        paymentOwnerSeed
+      );
+      const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
+      const amount = parsedAmount;
+
+      const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-merchantid": MERCHANT_ID,
+          Authorization: `Basic ${Buffer.from(API_KEY + ":").toString("base64")}`,
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          amount,
+          currency: "INR",
+          customer_id: customerId,
+          customer_email: parentEmail,
+          customer_phone: contactNumber,
+          return_url: returnUrl.toString(),
+          metadata: {
+            studentName,
+            courseName: selectedCourseName || "Renewal",
+            courseKey: "renewal",
+            internalCustomerId: customerId,
+            paymentType: "renewal",
+            paymentFlow: "renewal",
+            studentRegistrationNo,
+          },
+        }),
+      });
+
+      const juspayData = await juspayResponse.json();
+
+      if (!juspayResponse.ok) {
+        console.error("Juspay renewal order creation failed:", juspayData);
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Failed to create payment order. Please try again.",
+          },
+          { status: 502 }
+        );
+      }
+
+      const paymentUrl = juspayData?.payment_links?.web;
+      if (!paymentUrl) {
+        console.error("Juspay did not return a payment URL:", juspayData);
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Payment URL not received. Please try again.",
+          },
+          { status: 502 }
+        );
+      }
+
+      await addDoc(collection(db, "payments"), {
+        orderId,
+        customerId,
+        ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+        sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+        sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+        sessionBindingSource: "email",
+        paymentFlow: "renewal",
+        studentName,
+        courseName: selectedCourseName || "Renewal",
+        courseKey: "renewal",
+        parentEmail,
+        parentPhone: contactNumber,
+        renewalDraft: {
+          studentName: String(studentName).trim(),
+          studentRegistrationNo: String(studentRegistrationNo).trim(),
+          contactNumber: String(contactNumber).trim(),
+          parentEmail: String(parentEmail).trim(),
+          preferredDay,
+          preferredBatch: String(preferredBatch).trim(),
+          preferredTime: String(preferredBatch).trim(),
+          center: String(center || "").trim(),
+          location: String(location || "").trim(),
+          selectedCourseName: String(selectedCourseName || "").trim(),
+          courseName: String(selectedCourseName || "").trim(),
+          paymentType: "renewal",
+          paidAmount: amount,
+          paymentRemark: String(paymentRemark || "").trim(),
+        },
+        amount,
+        currency: "INR",
+        paymentType: "renewal",
+        status: "PENDING",
+        createdAt: serverTimestamp(),
+      });
+
+      const response = NextResponse.json({ success: true, paymentUrl, orderId });
+
+      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+      if (cookieValue) {
+        response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 8,
+        });
+      }
+
+      return response;
+    }
 
     // --- Input validation ---
     const missingFields: string[] = [];

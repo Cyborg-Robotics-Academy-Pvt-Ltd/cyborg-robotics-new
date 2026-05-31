@@ -19,6 +19,8 @@ interface PaymentDocData {
   registrationId?: string;
   paymentFlow?: string;
   registrationDraft?: Record<string, unknown>;
+  renewalDraft?: Record<string, unknown>;
+  otherDraft?: Record<string, unknown>;
   workshopRegistrationDraft?: Record<string, unknown>;
   competitionRegistrationDraft?: Record<string, unknown>;
   studentData?: Record<string, unknown>;
@@ -29,6 +31,11 @@ interface PaymentDocData {
   competition?: { key?: string; name?: string; fee?: number };
   paymentType?: string;
   amount?: number;
+}
+
+function isSuccessfulFinalStatus(status?: string | null) {
+  const normalized = String(status || "").trim().toUpperCase();
+  return normalized === "SUCCESS" || normalized === "CHARGED" || normalized === "CASH_PAY";
 }
 
 export async function finalizeRegistrationForPayment(
@@ -58,7 +65,7 @@ export async function finalizeRegistrationForPayment(
     return { ok: true, registrationId };
   };
 
-  if (payment.status !== "SUCCESS" && payment.status !== "CHARGED") {
+  if (!isSuccessfulFinalStatus(payment.status)) {
     return { ok: false, reason: "Payment not successful" };
   }
 
@@ -94,6 +101,126 @@ export async function finalizeRegistrationForPayment(
     }
 
     return await finishSuccessfully(payment.registrationId);
+  }
+
+  if (payment.paymentFlow === "renewal") {
+    const renewalDraft = (payment.renewalDraft || {}) as Record<string, any>;
+    const renewalsRef = collection(db, "renewals");
+    const existingRenewalQuery = query(
+      renewalsRef,
+      where("orderId", "==", orderId),
+    );
+    const existingRenewalSnapshot = await getDocs(existingRenewalQuery);
+
+    const renewalPayload = {
+      studentName: renewalDraft.studentName ?? payment.studentData?.studentName ?? "",
+      studentRegistrationNo: renewalDraft.studentRegistrationNo ?? "",
+      contactNumber: renewalDraft.contactNumber ?? "",
+      parentEmail: renewalDraft.parentEmail ?? "",
+      preferredDay: Array.isArray(renewalDraft.preferredDay)
+        ? renewalDraft.preferredDay
+        : [],
+      preferredBatch: renewalDraft.preferredBatch ?? "",
+      preferredTime: renewalDraft.preferredTime ?? renewalDraft.preferredBatch ?? "",
+      center: renewalDraft.center ?? "",
+      location: renewalDraft.location ?? "",
+      selectedCourseName:
+        renewalDraft.selectedCourseName ?? renewalDraft.courseName ?? "",
+      courseName: renewalDraft.courseName ?? renewalDraft.selectedCourseName ?? "",
+      paymentType: renewalDraft.paymentType ?? payment.paymentType ?? "renewal",
+      paidAmount: renewalDraft.paidAmount ?? payment.amount ?? null,
+      paymentStatus: payment.status ?? "SUCCESS",
+      paymentRemark: renewalDraft.paymentRemark ?? "",
+      status: "confirmed",
+      orderId,
+      paymentId: payment.transactionReference || txnId || "",
+      dateOfRegistration: new Date().toISOString().split("T")[0],
+      updatedAt: serverTimestamp(),
+    };
+
+    if (!existingRenewalSnapshot.empty) {
+      const existingRenewalDoc = existingRenewalSnapshot.docs[0];
+      const existingId = existingRenewalDoc.id;
+
+      await updateDoc(doc(db, "renewals", existingId), renewalPayload);
+      await updateDoc(paymentRef, {
+        registrationId: existingId,
+        registrationCreatedAt: serverTimestamp(),
+      });
+
+      return await finishSuccessfully(existingId);
+    }
+
+    const renewalDocRef = await addDoc(renewalsRef, {
+      ...renewalPayload,
+      createdAt: serverTimestamp(),
+    });
+
+    await updateDoc(paymentRef, {
+      registrationId: renewalDocRef.id,
+      studentName: renewalPayload.studentName,
+      courseName: renewalPayload.courseName || "Renewal",
+      courseKey: "renewal",
+      parentEmail: renewalPayload.parentEmail,
+      parentPhone: renewalPayload.contactNumber,
+      registrationCreatedAt: serverTimestamp(),
+    });
+
+    return await finishSuccessfully(renewalDocRef.id);
+  }
+
+  if (payment.paymentFlow === "other") {
+    const otherDraft = (payment.otherDraft || {}) as Record<string, any>;
+    const otherRegistrationsRef = collection(db, "otherRegistrations");
+    const existingOtherQuery = query(
+      otherRegistrationsRef,
+      where("orderId", "==", orderId),
+    );
+    const existingOtherSnapshot = await getDocs(existingOtherQuery);
+
+    const otherPayload = {
+      studentName: otherDraft.studentName ?? payment.studentData?.studentName ?? "",
+      selectedCourseName:
+        otherDraft.selectedCourseName ?? otherDraft.courseName ?? "",
+      courseName: otherDraft.courseName ?? otherDraft.selectedCourseName ?? "",
+      paymentType: otherDraft.paymentType ?? payment.paymentType ?? "other",
+      paidAmount: otherDraft.paidAmount ?? payment.amount ?? null,
+      paymentStatus: payment.status ?? "SUCCESS",
+      paymentRemark: otherDraft.paymentRemark ?? "",
+      status: "confirmed",
+      orderId,
+      paymentId: payment.transactionReference || txnId || "",
+      dateOfRegistration: new Date().toISOString().split("T")[0],
+      updatedAt: serverTimestamp(),
+    };
+
+    if (!existingOtherSnapshot.empty) {
+      const existingOtherDoc = existingOtherSnapshot.docs[0];
+      const existingId = existingOtherDoc.id;
+
+      await updateDoc(doc(db, "otherRegistrations", existingId), otherPayload);
+      await updateDoc(paymentRef, {
+        registrationId: existingId,
+        registrationCreatedAt: serverTimestamp(),
+      });
+
+      return await finishSuccessfully(existingId);
+    }
+
+    const otherDocRef = await addDoc(otherRegistrationsRef, {
+      ...otherPayload,
+      createdAt: serverTimestamp(),
+    });
+
+    await updateDoc(paymentRef, {
+      registrationId: otherDocRef.id,
+      studentName: otherPayload.studentName,
+      courseName: otherPayload.courseName || "Other",
+      courseKey: "other",
+      registrationCreatedAt: serverTimestamp(),
+    });
+
+    return await finishSuccessfully(otherDocRef.id);
   }
 
   if (payment.paymentFlow === "workshop") {
