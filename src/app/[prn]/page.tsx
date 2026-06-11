@@ -7,22 +7,24 @@ import {
   getDocs,
   doc,
   updateDoc,
-  deleteDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
   AlertTriangle,
   BookOpen,
   Trophy,
-  Award,
   Calendar,
   UserCheck,
   Trash2,
   X,
   Check,
+  ChevronRight,
+  Pencil,
+  Shield,
+  GraduationCap,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
-import Head from "next/head";
 import Image from "next/image";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -39,6 +41,7 @@ interface CourseData {
 interface Student {
   PrnNumber: string;
   username: string;
+  profileimage?: string;
   courses: CourseData[];
   courseClassNumbers?: {
     [key: string]: string;
@@ -50,75 +53,108 @@ async function getStudentData(prn: string) {
   const studentsRef = collection(db, "students");
   const q = query(studentsRef, where("PrnNumber", "==", prn));
   const querySnapshot = await getDocs(q);
-
-  if (querySnapshot.empty) {
-    return null;
-  }
-
-  return querySnapshot.docs[0].data() as Student;
+  if (querySnapshot.empty) return null;
+  const d = querySnapshot.docs[0].data();
+  return {
+    ...d,
+    profileimage: d.profileimage || d.imageUrl || d.imageUrls?.[0] || undefined,
+  } as Student;
 }
 
 function toSlug(courseName: string, level?: string) {
-  if (typeof courseName !== "string" || !courseName) {
-    return "";
-  }
+  if (typeof courseName !== "string" || !courseName) return "";
   let slug = courseName
     .toLowerCase()
     .replace(/ & /g, "-and-")
     .replace(/ \+ /g, "-plus-")
     .replace(/ /g, "-")
     .replace(/[^\w-]+/g, "");
-
-  // Add level to the slug if provided
   if (level) {
-    // Convert numeric level to text if needed
     let levelText = level;
     if (level === "1") levelText = "beginner";
     else if (level === "2") levelText = "intermediate";
     else if (level === "3") levelText = "advanced";
     else if (level === "4") levelText = "expert";
-
     slug += `-level-${levelText}`;
   }
-
   return slug;
 }
 
-function getLevelColor(level: string) {
+function getLevelConfig(level: string) {
   switch (level.toLowerCase()) {
     case "1":
     case "beginner":
-      return "bg-green-50 text-green-700 border-green-200";
+      return {
+        label: "Beginner",
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        dot: "bg-emerald-500",
+      };
     case "2":
     case "intermediate":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return {
+        label: "Intermediate",
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+        dot: "bg-blue-500",
+      };
     case "3":
     case "advanced":
-      return "bg-purple-50 text-purple-700 border-purple-200";
+      return {
+        label: "Advanced",
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+        dot: "bg-purple-500",
+      };
     case "4":
     case "expert":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return {
+        label: "Expert",
+        bg: "bg-amber-50",
+        text: "text-amber-700",
+        border: "border-amber-200",
+        dot: "bg-amber-500",
+      };
     default:
-      return "bg-gray-50 text-gray-700 border-gray-200";
+      return {
+        label: `Level ${level}`,
+        bg: "bg-gray-50",
+        text: "text-gray-700",
+        border: "border-gray-200",
+        dot: "bg-gray-500",
+      };
   }
 }
 
-function getLevelLabel(level: string) {
-  switch (level.toLowerCase()) {
-    case "1":
-    case "beginner":
-      return "Beginner";
-    case "2":
-    case "intermediate":
-      return "Intermediate";
-    case "3":
-    case "advanced":
-      return "Advanced";
-    case "4":
-    case "expert":
-      return "Expert";
+function getStatusConfig(status?: string) {
+  switch (status?.toLowerCase()) {
+    case "active":
+      return {
+        label: "Active",
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        dot: "bg-emerald-500",
+      };
+    case "inactive":
+      return {
+        label: "Inactive",
+        bg: "bg-red-50",
+        text: "text-[#9F0712]",
+        border: "border-red-200",
+        dot: "bg-red-500",
+      };
     default:
-      return `Level ${level}`;
+      return {
+        label: "Active",
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        dot: "bg-emerald-500",
+      };
   }
 }
 
@@ -131,7 +167,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [newClassNumber, setNewClassNumber] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [classNumberError, setClassNumberError] = React.useState<string | null>(
-    null
+    null,
   );
   const [deletingIndex, setDeletingIndex] = React.useState<number | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] =
@@ -173,8 +209,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
 
   const handleSave = async (index: number) => {
     if (!student) return;
-
-    // Validate class number is between 1 and 30
     const classNumberValue = parseInt(newClassNumber, 10);
     if (
       isNaN(classNumberValue) ||
@@ -185,7 +219,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
       return;
     }
     setClassNumberError(null);
-
     setLoading(true);
     try {
       const updatedCourses = [...student.courses];
@@ -193,7 +226,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
         ...updatedCourses[index],
         classNumber: newClassNumber,
       };
-      // Update Firestore
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("PrnNumber", "==", student.PrnNumber));
       const querySnapshot = await getDocs(q);
@@ -205,7 +237,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
         setNewClassNumber("");
       }
     } catch {
-      // Handle error
     } finally {
       setLoading(false);
     }
@@ -218,23 +249,18 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
 
   const handleDeleteConfirm = async () => {
     if (!student || deletingIndex === null) return;
-
     setLoading(true);
     try {
       const updatedCourses = [...student.courses];
-      updatedCourses.splice(deletingIndex, 1); // Remove the course at the specified index
-
-      // Update Firestore
+      updatedCourses.splice(deletingIndex, 1);
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("PrnNumber", "==", student.PrnNumber));
       const querySnapshot = await getDocs(q);
-
       if (!querySnapshot.empty) {
         const studentDocRef = doc(db, "students", querySnapshot.docs[0].id);
         await updateDoc(studentDocRef, { courses: updatedCourses });
         setStudent({ ...student, courses: updatedCourses });
       }
-
       setDeletingIndex(null);
       setShowDeleteConfirmation(false);
     } catch (error) {
@@ -249,268 +275,369 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
     setShowDeleteConfirmation(false);
   };
 
-  if (student === null) {
-    return null;
-  }
+  if (student === null) return null;
 
   if (!student) {
     return (
-      <>
-        <main
-          role="main"
-          aria-label="Student Not Found"
-          className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4 relative overflow-hidden"
-        >
-          {/* Animated background elements */}
-          <div className="absolute inset-0">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-800/5 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-800/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <main
+        role="main"
+        aria-label="Student Not Found"
+        className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4"
+      >
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-red-50">
+              <AlertTriangle className="w-8 h-8 text-[#A81B1E]" />
+            </div>
+            <h2
+              className="text-2xl font-bold mb-2 text-gray-900"
+              style={{ fontFamily: "Syne, sans-serif" }}
+            >
+              Student Not Found
+            </h2>
+            <p className="text-gray-500 mb-6">
+              No student found with PRN:{" "}
+              <code className="font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                {prn}
+              </code>
+            </p>
+            <Link href="/student-list">
+              <button className="px-6 py-2.5 bg-[#A81B1E] text-white text-sm font-semibold rounded-xl hover:bg-[#8a1518] transition-colors">
+                Back to Student List
+              </button>
+            </Link>
           </div>
-
-          <div className="relative max-w-md w-full text-center">
-            <RoboticsCard className="p-10 bg-white/80 backdrop-blur-sm border-2 border-dashed border-red-200">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg bg-gradient-to-br from-red-700 to-red-800">
-                <AlertTriangle className="w-12 h-12 text-white animate-bounce" />
-              </div>
-              <h2 className="text-3xl font-bold mb-3 text-red-800">
-                Student Not Found
-              </h2>
-              <p className="text-gray-600 text-lg mb-6">
-                No student found with PRN:{" "}
-                <span className="font-mono font-bold">{prn}</span>
-              </p>
-              <Link href="/student-list">
-                <button className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold rounded-lg shadow-md hover:from-red-800 hover:to-red-900 transition-all duration-300 transform hover:-translate-y-0.5">
-                  Back to Student List
-                </button>
-              </Link>
-            </RoboticsCard>
-          </div>
-        </main>
-      </>
+        </div>
+      </main>
     );
   }
 
+  const statusConfig = getStatusConfig(student.status);
+  const completedCount =
+    student.courses?.filter((c) => c.completed).length || 0;
+  const certCount = student.courses?.filter((c) => c.certificate).length || 0;
+
   return (
     <>
+      {/* Page */}
       <main
         role="main"
         aria-label="Student Dashboard"
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100  relative overflow-hidden"
+        className="min-h-screen bg-[#fafafa]"
       >
-        <div className="relative container mx-auto px-4 py-8 max-w-7xl">
-          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Welcome,{" "}
-                <span className="text-red-800">{student.username}</span>
-              </h1>
-              <p className="text-gray-600 flex items-center">
-                <UserCheck className="w-4 h-4 mr-2" />
-                PRN: {student.PrnNumber}
-              </p>
-              <div className="mt-2">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    student.status === "active"
-                      ? "bg-green-100 text-green-800 border border-green-200"
-                      : student.status === "inactive"
-                        ? "bg-red-100 text-[#9F0712] border border-[#9F0712]"
-                        : "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                  }`}
+        {/* Top Header Bar */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4 py-4 max-w-7xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#A81B1E] flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 leading-none mb-0.5">
+                  Student Dashboard
+                </p>
+                <h1
+                  className="text-base font-bold text-gray-900 leading-none"
+                  style={{ fontFamily: "Syne, sans-serif" }}
                 >
-                  Status:{" "}
-                  {student.status
-                    ? student.status.charAt(0).toUpperCase() +
-                      student.status.slice(1)
-                    : "Active"}
-                </span>
+                  {student.username}
+                </h1>
               </div>
             </div>
-            <Link
-              href="/student-list"
-              className="w-full sm:w-auto mt-4 sm:mt-0"
-            >
-              <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white text-base font-semibold rounded-xl shadow-lg hover:from-red-800 hover:to-red-900 hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:-translate-y-0.5">
-                <Calendar className="w-5 h-5 mr-2" />
+            <Link href="/student-list">
+              <button className="flex items-center gap-2 px-4 py-2 bg-[#A81B1E] text-white text-sm font-semibold rounded-xl hover:bg-[#8a1518] transition-colors">
+                <Calendar className="w-4 h-4" />
                 Student Record
               </button>
             </Link>
           </div>
+        </div>
 
-          {/* Enrolled Courses Section */}
-          {!student.courses || student.courses.length === 0 ? (
-            <RoboticsCard className="p-12 text-center border-2 border-dashed border-red-200 bg-gradient-to-br from-white to-red-50">
-              <div className="py-8">
-                <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg bg-gradient-to-br from-red-700 to-red-800">
-                  <BookOpen className="w-12 h-12 text-white" />
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Student Profile Card */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                {/* Avatar */}
+                <div className="w-14 h-14 rounded-2xl bg-[#A81B1E]/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {student.profileimage ? (
+                    <Image
+                      src={student.profileimage}
+                      alt={student.username}
+                      width={56}
+                      height={56}
+                      className="w-full h-full object-cover rounded-2xl"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = "/assets/logo1.png";
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="text-xl font-bold text-[#A81B1E]"
+                      style={{ fontFamily: "Syne, sans-serif" }}
+                    >
+                      {student.username?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-red-800">
-                  No Courses Enrolled
-                </h3>
-                <p className="text-gray-600 text-lg max-w-md mx-auto mb-6">
-                  This student is not currently enrolled in any courses.
-                </p>
-                <Link href="/all-courses">
-                  <button className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold rounded-lg shadow-md hover:from-red-800 hover:to-red-900 transition-all duration-300 transform hover:-translate-y-0.5">
-                    Browse Courses
-                  </button>
-                </Link>
-              </div>
-            </RoboticsCard>
-          ) : (
-            <RoboticsCard className="p-8 bg-white/80 backdrop-blur-sm">
-              <div className="mb-8 pb-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold text-red-800 mb-2">
-                      Enrolled Courses
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2
+                      className="text-xl font-bold text-gray-900"
+                      style={{ fontFamily: "Syne, sans-serif" }}
+                    >
+                      {student.username}
                     </h2>
-                    <p className="text-gray-600 flex items-center">
-                      <BookOpen className="w-5 h-5 mr-2 text-red-700" />
-                      Currently enrolled in
-                      <span className="font-bold mx-1 text-red-800">
-                        {student.courses?.length || 0}
+                    {/* Status badge */}
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}
+                      />
+                      {statusConfig.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>
+                      PRN:{" "}
+                      <span className="font-mono font-semibold text-gray-700">
+                        {student.PrnNumber}
                       </span>
-                      course{(student.courses?.length || 0) !== 1 ? "s" : ""}
-                    </p>
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+              {/* Stats row */}
+              <div className="flex items-center gap-3">
+                <div className="text-center px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                  <p
+                    className="text-2xl font-bold text-gray-900"
+                    style={{ fontFamily: "Syne, sans-serif" }}
+                  >
+                    {student.courses?.length || 0}
+                  </p>
+                  <p className="text-xs text-gray-500">Enrolled</p>
+                </div>
+                <div className="text-center px-4 py-2.5 bg-emerald-50 rounded-xl border border-emerald-100">
+                  <p
+                    className="text-2xl font-bold text-emerald-700"
+                    style={{ fontFamily: "Syne, sans-serif" }}
+                  >
+                    {completedCount}
+                  </p>
+                  <p className="text-xs text-emerald-600">Completed</p>
+                </div>
+                <div className="text-center px-4 py-2.5 bg-amber-50 rounded-xl border border-amber-100">
+                  <p
+                    className="text-2xl font-bold text-amber-700"
+                    style={{ fontFamily: "Syne, sans-serif" }}
+                  >
+                    {certCount}
+                  </p>
+                  <p className="text-xs text-amber-600">Certificates</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Courses Section */}
+          {!student.courses || student.courses.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#A81B1E]/10 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-8 h-8 text-[#A81B1E]" />
+              </div>
+              <h3
+                className="text-xl font-bold text-gray-900 mb-2"
+                style={{ fontFamily: "Syne, sans-serif" }}
+              >
+                No Courses Enrolled
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                This student is not currently enrolled in any courses.
+              </p>
+              <Link href="/all-courses">
+                <button className="px-5 py-2.5 bg-[#A81B1E] text-white text-sm font-semibold rounded-xl hover:bg-[#8a1518] transition-colors">
+                  Browse Courses
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2
+                    className="text-lg font-bold text-gray-900"
+                    style={{ fontFamily: "Syne, sans-serif" }}
+                  >
+                    Enrolled Courses
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {student.courses.length} course
+                    {student.courses.length !== 1 ? "s" : ""} total
+                  </p>
+                </div>
+                {userChecked && isAdmin && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#A81B1E]/10 rounded-lg">
+                    <Shield className="w-3.5 h-3.5 text-[#A81B1E]" />
+                    <span className="text-xs font-semibold text-[#A81B1E]">
+                      Admin Mode
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Course Cards Grid */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {[...(student.courses || [])].reverse().map((course, index) => {
-                  // Reverse index for correct mapping
                   const realIndex = (student.courses?.length || 0) - 1 - index;
+                  const levelConfig = getLevelConfig(course.level);
+                  const courseNumber = (student.courses?.length || 0) - index;
+
                   return (
-                    <RoboticsCard
+                    <div
                       key={`${course.name}-${index}`}
-                      className="group relative overflow-hidden border-2 border-gray-200 hover:border-red-700 transition-all duration-500"
-                      variant="elevated"
-                      interactive
+                      className="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-[#A81B1E]/30 transition-all duration-300 overflow-hidden group"
                     >
-                      {/* Completed Overlay */}
-                      {course && course.completed && (
-                        <div
-                          className="absolute inset-0 z-20 bg-black/10 rounded-2xl flex items-center justify-center"
-                          style={{ pointerEvents: "none" }}
-                        >
-                          <div className="relative">
-                            <Image
-                              src="/completed.png"
-                              alt="Course Completed"
-                              width={300}
-                              height={300}
-                              className="object-contain drop-shadow-2xl "
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {/* Certificate Badge */}
-                      {course.certificate && (
-                        <div className="absolute top-4 right-4 z-20 animate-bounce">
+                      {/* Completed overlay */}
+                      {course.completed && (
+                        <div className="absolute inset-0 z-20 bg-black/5 rounded-2xl flex items-center justify-center pointer-events-none">
                           <Image
-                            src="/assets/certificate.png"
-                            alt="Certificate"
-                            width={60}
-                            height={60}
-                            className="object-contain drop-shadow-lg"
+                            src="/completed.png"
+                            alt="Course Completed"
+                            width={240}
+                            height={240}
+                            className="object-contain drop-shadow-xl"
                           />
                         </div>
                       )}
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-700 to-red-800 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <BookOpen className="w-7 h-7 text-white" />
+
+                      {/* Certificate badge */}
+                      {course.certificate && (
+                        <div className="absolute top-3 right-3 z-20">
+                          <Image
+                            src="/assets/certificate.png"
+                            alt="Certificate"
+                            width={48}
+                            height={48}
+                            className="object-contain drop-shadow-md"
+                          />
+                        </div>
+                      )}
+
+                      {/* Top accent stripe */}
+                      <div className="h-1 w-full bg-gradient-to-r from-[#A81B1E] to-[#C73E1D]" />
+
+                      <div className="p-5">
+                        {/* Course header */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#A81B1E]/10 flex items-center justify-center">
+                            <BookOpen className="w-5 h-5 text-[#A81B1E]" />
                           </div>
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-800 font-bold text-sm">
-                            {(student.courses?.length || 0) - index}
-                          </div>
+                          <span className="text-xs font-mono font-bold text-gray-300">
+                            #{String(courseNumber).padStart(2, "0")}
+                          </span>
                         </div>
 
-                        <div className="mb-4">
-                          <div
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getLevelColor(course.level)}`}
+                        {/* Level badge */}
+                        <div className="mb-2">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${levelConfig.bg} ${levelConfig.text} ${levelConfig.border}`}
                           >
-                            <Trophy className="w-3 h-3 mr-1" />
-                            {getLevelLabel(course.level)}
-                          </div>
+                            <Trophy className="w-3 h-3" />
+                            {levelConfig.label}
+                          </span>
                         </div>
 
+                        {/* Course name */}
                         <Link
                           href={`/${student.PrnNumber}/${toSlug(course.name, course.level)}`}
-                          className="text-xl font-bold mb-3 line-clamp-2 transition-colors duration-300 block text-red-800 hover:text-red-900 hover:underline"
+                          className="block mb-4"
                         >
-                          {course.name}
+                          <h3
+                            className="text-base font-bold text-gray-900 line-clamp-2 group-hover:text-[#A81B1E] group-hover:underline transition-colors"
+                            style={{ fontFamily: "Syne, sans-serif" }}
+                          >
+                            {course.name}
+                          </h3>
                         </Link>
 
-                        <div className="mt-6 pt-4 border-t border-gray-100">
+                        {/* Class number + edit */}
+                        <div className="pt-4 border-t border-gray-100">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs text-gray-500 mb-1">
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-400 mb-1">
                                 Class Number
                               </p>
+
                               {userChecked &&
                               isAdmin &&
                               editingIndex === realIndex ? (
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="text"
-                                    className={`border rounded px-2 py-1 text-sm w-20 focus:ring-2 focus:ring-red-300 focus:outline-none ${classNumberError ? "border-red-500" : ""}`}
-                                    value={newClassNumber}
-                                    onChange={(e) => {
-                                      setNewClassNumber(e.target.value);
-                                      // Clear error when user starts typing
-                                      if (classNumberError) {
-                                        setClassNumberError(null);
-                                      }
-                                    }}
-                                    disabled={loading}
-                                  />
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      className={`w-20 border rounded-lg px-2.5 py-1.5 text-sm font-mono focus:ring-2 focus:ring-[#A81B1E]/30 focus:border-[#A81B1E] outline-none transition-all ${classNumberError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+                                      value={newClassNumber}
+                                      onChange={(e) => {
+                                        setNewClassNumber(e.target.value);
+                                        if (classNumberError)
+                                          setClassNumberError(null);
+                                      }}
+                                      disabled={loading}
+                                    />
+                                    <button
+                                      className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleSave(realIndex);
+                                      }}
+                                      disabled={loading}
+                                    >
+                                      <Check className="w-3 h-3" />
+                                      {loading ? "Saving…" : "Save"}
+                                    </button>
+                                    <button
+                                      className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-50 text-gray-600 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleCancel();
+                                      }}
+                                      disabled={loading}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
                                   {classNumberError && (
-                                    <div className="text-red-500 text-xs mt-1">
+                                    <p className="text-red-500 text-xs">
                                       {classNumberError}
-                                    </div>
+                                    </p>
                                   )}
-                                  <button
-                                    className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 border border-green-300 transition-all duration-200"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleSave(realIndex);
-                                    }}
-                                    disabled={loading}
-                                  >
-                                    {loading ? "Saving..." : "Save"}
-                                  </button>
-                                  <button
-                                    className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded hover:bg-gray-200 border border-gray-300 transition-all duration-200"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleCancel();
-                                    }}
-                                    disabled={loading}
-                                  >
-                                    Cancel
-                                  </button>
                                 </div>
                               ) : (
-                                <div className="flex items-center">
-                                  <p className="text-lg font-bold font-mono text-red-800">
-                                    {course.classNumber || "N/A"}
-                                  </p>
-                                  {/* Show Edit button only for admin */}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-bold font-mono text-gray-900">
+                                    {course.classNumber || "—"}
+                                  </span>
                                   {userChecked &&
                                     isAdmin &&
                                     editingIndex !== realIndex && (
                                       <button
-                                        className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 border border-yellow-300 transition-all duration-200"
+                                        className="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           handleEditClick(
                                             realIndex,
-                                            course.classNumber
+                                            course.classNumber,
                                           );
                                         }}
                                       >
+                                        <Pencil className="w-3 h-3" />
                                         Edit
                                       </button>
                                     )}
@@ -518,69 +645,86 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                               )}
                             </div>
 
-                            {/* Delete button for admin only */}
-                            {userChecked && isAdmin && (
-                              <div className="mt-4 pt-4 border-t border-gray-100">
-                                <button
-                                  className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleDeleteClick(realIndex);
-                                  }}
-                                >
-                                  <Trash2 className="w-4 h-4 mr-1" />
-                                  Delete Course
-                                </button>
-                              </div>
-                            )}
+                            {/* View course arrow */}
+                            <Link
+                              href={`/${student.PrnNumber}/${toSlug(course.name, course.level)}`}
+                              className="flex items-center justify-center w-8 h-8 rounded-xl bg-gray-50 hover:bg-[#A81B1E] hover:text-white text-gray-400 transition-all duration-200 group/arrow"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </Link>
                           </div>
+
+                          {/* Delete — admin only, bottom of card */}
+                          {userChecked && isAdmin && (
+                            <button
+                              className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-red-600 text-xs font-semibold rounded-xl border border-red-100 bg-red-50 hover:bg-red-100 transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteClick(realIndex);
+                              }}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Delete Course
+                            </button>
+                          )}
                         </div>
                       </div>
-                    </RoboticsCard>
+                    </div>
                   );
                 })}
               </div>
-            </RoboticsCard>
+            </>
           )}
         </div>
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirmation && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-red-800">
-                  Confirm Deletion
-                </h3>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <h3
+                    className="text-base font-bold text-gray-900"
+                    style={{ fontFamily: "Syne, sans-serif" }}
+                  >
+                    Delete Course
+                  </h3>
+                </div>
                 <button
                   onClick={handleDeleteCancel}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-gray-700 mb-6">
-                Are you sure you want to delete this course? This action cannot
-                be undone.
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                Are you sure you want to remove this course? This action{" "}
+                <span className="font-semibold text-gray-800">
+                  cannot be undone
+                </span>
+                .
               </p>
-              <div className="flex justify-end space-x-3">
+              <div className="flex gap-3">
                 <button
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
                   onClick={handleDeleteCancel}
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 text-white bg-red-700 rounded-lg hover:bg-red-800 transition-colors flex items-center"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
                   onClick={handleDeleteConfirm}
                   disabled={loading}
                 >
                   {loading ? (
-                    <span>Deleting...</span>
+                    <span>Deleting…</span>
                   ) : (
                     <>
-                      <Check className="w-4 h-4 mr-1" />
+                      <Trash2 className="w-3.5 h-3.5" />
                       Delete
                     </>
                   )}
