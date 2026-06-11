@@ -43,7 +43,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { id: "codefest", label: "Codefest", href: "/codefest" },
+  { id: "codefest", label: "Codefest", href: "/codefest", badge: "New" },
   // {
   //   id: "tech-programs",
   //   label: "Tech Programs",

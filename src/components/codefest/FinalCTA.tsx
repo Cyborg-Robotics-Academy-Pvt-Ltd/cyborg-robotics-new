@@ -164,10 +164,7 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
 
 export default function FinalCTA() {
   const scrollToRegistration = () => {
-    document.getElementById("codefest-registration")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    window.dispatchEvent(new Event("open-codefest-registration"));
   };
 
   return (

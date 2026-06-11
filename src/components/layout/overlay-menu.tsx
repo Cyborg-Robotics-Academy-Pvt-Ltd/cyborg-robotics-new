@@ -169,8 +169,13 @@ const MenuList = ({
   // Separate items with children (accordion) and without (links)
   // Filter out mobile-only items if we're on desktop
   const filteredItems = items.filter((item) => !(item.mobileOnly && !isMobile));
+  const priorityLinkItems = filteredItems.filter(
+    (item) => !item.children && item.mobileOnly,
+  );
   const accordionItems = filteredItems.filter((item) => item.children);
-  const linkItems = filteredItems.filter((item) => !item.children);
+  const linkItems = filteredItems.filter(
+    (item) => !item.children && !item.mobileOnly,
+  );
 
   const isRootLevel = depth === 0;
   const containerSpacingClass = isRootLevel ? "space-y-2" : "space-y-1";
@@ -192,6 +197,51 @@ const MenuList = ({
       animate="visible"
       exit="hidden"
     >
+      {priorityLinkItems.map((item) => {
+        const isActive =
+          activeSection === item.id ||
+          (activeSection &&
+            item.href &&
+            item.href.includes(`#${activeSection}`)) ||
+          (activeSection === "hero" && item.href === "/about-us") ||
+          (typeof window !== "undefined" &&
+            item.href &&
+            window.location.pathname === item.href) ||
+          (typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/blogs") &&
+            item.href === "/blogs");
+
+        return (
+          <motion.div key={item.title} variants={itemVariants}>
+            <Link
+              href={item.href || "#"}
+              onClick={() => handleItemClick(item)}
+              className={`flex items-center justify-between rounded-lg ${linkPaddingClass} transition-all duration-300 ${
+                isActive
+                  ? "bg-red-800 text-white shadow-md"
+                  : "bg-white text-foreground hover:bg-gray-100 shadow-sm hover:shadow-md"
+              }`}
+            >
+              <div className={`flex items-center ${iconGapClass}`}>
+                {item.icon && (
+                  <item.icon
+                    className={`${iconSizeClass} ${
+                      isActive ? "text-white" : "text-red-700"
+                    }`}
+                  />
+                )}
+                <span className="font-semibold">{item.title}</span>
+                {item.badge && (
+                  <span className="rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+            </Link>
+          </motion.div>
+        );
+      })}
+
       {/* Render all accordion items inside a single Accordion */}
       {accordionItems.length > 0 && (
         <Accordion type="single" collapsible>
@@ -217,6 +267,11 @@ const MenuList = ({
                     />
                   )}
                   <span className="font-semibold">{item.title}</span>
+                  {item.badge && (
+                    <span className="rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                      {item.badge}
+                    </span>
+                  )}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-1 pl-4 pr-3 pt-2 bg-gray-50 rounded-b-xl">
@@ -293,6 +348,11 @@ const MenuList = ({
                     />
                   )}
                   <span className="font-semibold">{item.title}</span>
+                  {item.badge && (
+                    <span className="rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                      {item.badge}
+                    </span>
+                  )}
                 </div>
               )}
             </Link>
