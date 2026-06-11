@@ -56,9 +56,7 @@ export default function HeroSection() {
   }, []);
 
   const scrollToRegistration = () => {
-    document
-      .getElementById("codefest-registration")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.dispatchEvent(new Event("open-codefest-registration"));
   };
 
   // Square dot pattern grid

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -131,7 +131,7 @@ const initialFormData: CodefestRegistrationFormData = {
 };
 
 export default function RegistrationForm() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(
@@ -139,6 +139,25 @@ export default function RegistrationForm() {
   );
   const [formData, setFormData] =
     useState<CodefestRegistrationFormData>(initialFormData);
+
+  useEffect(() => {
+    const openRegistrationForm = () => {
+      setFormError("");
+      setIsModalOpen(true);
+    };
+
+    window.addEventListener(
+      "open-codefest-registration",
+      openRegistrationForm,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "open-codefest-registration",
+        openRegistrationForm,
+      );
+    };
+  }, []);
 
   const openModal = () => {
     setFormError("");

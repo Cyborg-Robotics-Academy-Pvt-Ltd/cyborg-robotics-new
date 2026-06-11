@@ -1,16 +1,36 @@
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, Building2, Calendar, Camera, FileText, Phone, Users, Award, BookCopy, HandHelping, PersonStanding, Drama, Trophy, Sparkles, FolderKanban, Bot, Target, Tent } from 'lucide-react';
+import { BookOpen, Building2, Calendar, Camera, FileText, Phone, Users, Award, BookCopy, HandHelping, PersonStanding, Drama, Trophy, Sparkles, FolderKanban, Bot, Target, Tent, GraduationCap } from 'lucide-react';
 
 export interface MenuItem {
   title: string;
   icon?: LucideIcon;
   href?: string;
+  badge?: string;
   children?: MenuItem[];
   id?: string; // Added for tracking active sections
   mobileOnly?: boolean; // Flag to indicate if menu item should only show on mobile
 }
 
 const mainMenu: MenuItem[] = [
+  {
+    title: 'Robotics Diploma',
+    icon: GraduationCap,
+    href: '/robotics-diploma',
+    mobileOnly: true,
+  },
+  {
+    title: 'Codefest',
+    icon: Trophy,
+    href: '/codefest',
+    badge: 'New',
+    mobileOnly: true,
+  },
+  {
+    title: 'Summer Camp',
+    icon: Tent,
+    href: '/summer-camp-2026',
+    mobileOnly: true,
+  },
    {
     title: 'Tech Programs',
     icon: Bot,
@@ -49,6 +69,7 @@ const mainMenu: MenuItem[] = [
       { title: 'Careers', href: '/careers', icon: HandHelping, id: 'careers' },
     ],
   },
+
   {
     title: 'Event Stories',
     icon: Calendar,
