@@ -196,9 +196,12 @@ const normalizeCompetitionRecord = (
 ): CompetitionRegistration => {
   const draft = record.competitionRegistrationDraft || {};
   const competition = record.competition || {};
-  const normalizedPaymentStatus = normalizeAdminPaymentStatus(
-    record.paymentStatus || record.status || "",
-  );
+  
+  // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
+  const rawStatus = record.paymentStatus || record.status || "";
+  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+  
+  const normalizedPaymentStatus = normalizeAdminPaymentStatus(statusToNormalize);
   const normalizedPaidAmount =
     record.paidAmount ??
     (normalizedPaymentStatus === "SUCCESS" ||
@@ -285,7 +288,7 @@ const mergeCompetitionRecord = (
   base: CompetitionRegistration,
   incoming: CompetitionRegistration,
 ): CompetitionRegistration => {
-  return {
+  const merged = {
     id: pickFirstValue(base.id, incoming.id) || "",
     orderId: pickFirstValue(base.orderId, incoming.orderId) || "",
     fullName: pickFirstValue(base.fullName, incoming.fullName) || "",
@@ -344,9 +347,8 @@ const mergeCompetitionRecord = (
       pickFirstValue(base.registrationFee, incoming.registrationFee) || "",
     paidAmount: pickFirstValue(incoming.paidAmount, base.paidAmount) || "",
     paymentType: pickFirstValue(base.paymentType, incoming.paymentType) || "",
-    paymentStatus:
-      pickFirstValue(incoming.paymentStatus, base.paymentStatus) || "",
-    status: pickFirstValue(incoming.status, base.status) || "",
+    paymentStatus: base.paymentStatus || incoming.paymentStatus || "",
+    status: base.status || incoming.status || "",
     paymentId: pickFirstValue(incoming.paymentId, base.paymentId) || "",
     source: pickFirstValue(base.source, incoming.source) || "",
     dateOfRegistration:
@@ -354,6 +356,27 @@ const mergeCompetitionRecord = (
       "",
     createdAt: base.createdAt || incoming.createdAt,
   };
+
+  // Improved status merging: prefer terminal statuses (SUCCESS, FAILED) over PENDING
+  const baseStatus = base.paymentStatus || "";
+  const incomingStatus = incoming.paymentStatus || "";
+
+  if (baseStatus === "SUCCESS" || baseStatus === "CHARGED") {
+    merged.paymentStatus = baseStatus;
+  } else if (incomingStatus === "SUCCESS" || incomingStatus === "CHARGED") {
+    merged.paymentStatus = incomingStatus;
+  } else if (baseStatus === "FAILED") {
+    merged.paymentStatus = baseStatus;
+  } else {
+    merged.paymentStatus = incomingStatus || baseStatus;
+  }
+
+  // Handle amount if status is SUCCESS
+  if (merged.paymentStatus === "SUCCESS" || merged.paymentStatus === "CHARGED") {
+    merged.paidAmount = incoming.paidAmount || base.paidAmount || incoming.registrationFee || base.registrationFee;
+  }
+
+  return merged;
 };
 
 const Page = () => {

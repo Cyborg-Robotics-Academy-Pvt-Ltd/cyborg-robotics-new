@@ -43,6 +43,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { FaWhatsapp } from "react-icons/fa";
 import { normalizePaymentStatus } from "@/lib/payment-status";
 import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
 
@@ -200,6 +201,41 @@ const formatPaymentStatusLabel = (paymentStatus?: string) => {
     : normalized.replace(/_/g, " ");
 };
 
+const isWhatsAppFollowUpStatus = (paymentStatus?: string) => {
+  const normalized = normalizeAdminPaymentStatus(paymentStatus);
+  return (
+    normalized === "FAILED" ||
+    normalized === "PENDING" ||
+    normalized === "PENDING_PAYMENT"
+  );
+};
+
+const getWhatsAppPhoneNumber = (contact?: string) => {
+  const digits = String(contact || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.length === 11 && digits.startsWith("0"))
+    return `91${digits.slice(1)}`;
+  return digits;
+};
+
+const getWhatsAppFollowUpLink = (registration: UnifiedRegistration) => {
+  const phoneNumber = getWhatsAppPhoneNumber(registration.contact);
+  if (!phoneNumber) return "";
+
+  const status = formatPaymentStatusLabel(
+    registration.paymentStatus,
+  ).toLowerCase();
+  const studentName = registration.name || "your child";
+  const programName = registration.programName || "the registration";
+  const orderText = registration.orderId
+    ? ` Order ID: ${registration.orderId}.`
+    : "";
+  const message = `Hi, this is Cyborg Robotics. We noticed that the payment for ${studentName} - ${programName} is ${status}.${orderText} Please send us a screenshot of the payment so we can verify it and mark your order as paid. Let us know if you need any help completing the payment.`;
+
+  return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+};
+
 const isCompetitionRecord = (record: FirestoreRecord) => {
   const paymentFlow = normalizeText(record.paymentFlow);
   const competitionName = normalizeText(
@@ -262,25 +298,42 @@ const getRegistrationDateValue = (registration: UnifiedRegistration) => {
 const mergeRegistrationRecords = (
   base: UnifiedRegistration,
   incoming: UnifiedRegistration,
-): UnifiedRegistration => ({
-  ...base,
-  ...Object.fromEntries(
-    Object.entries(incoming).filter(([, value]) => {
-      if (value === null || value === undefined) return false;
-      if (typeof value === "string") return value.trim().length > 0;
-      return true;
-    }),
-  ),
-  id: base.id,
-  firestoreId: base.firestoreId || incoming.firestoreId,
-  paymentDocId: incoming.paymentDocId || base.paymentDocId,
-  paymentStatus: incoming.paymentDocId
-    ? incoming.paymentStatus
-    : base.paymentStatus || incoming.paymentStatus,
-  amount: incoming.paymentDocId
-    ? incoming.amount
-    : base.amount || incoming.amount,
-});
+): UnifiedRegistration => {
+  const merged = {
+    ...base,
+    ...Object.fromEntries(
+      Object.entries(incoming).filter(([, value]) => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "string") return value.trim().length > 0;
+        return true;
+      }),
+    ),
+    id: base.id,
+    firestoreId: base.firestoreId || incoming.firestoreId,
+    paymentDocId: incoming.paymentDocId || base.paymentDocId,
+  };
+
+  // Improved status merging: prefer terminal statuses (SUCCESS, FAILED) over PENDING
+  const baseStatus = base.paymentStatus || "";
+  const incomingStatus = incoming.paymentStatus || "";
+
+  if (baseStatus === "SUCCESS" || baseStatus === "CHARGED") {
+    merged.paymentStatus = baseStatus;
+  } else if (incomingStatus === "SUCCESS" || incomingStatus === "CHARGED") {
+    merged.paymentStatus = incomingStatus;
+  } else if (baseStatus === "FAILED") {
+    merged.paymentStatus = baseStatus;
+  } else {
+    merged.paymentStatus = incomingStatus || baseStatus;
+  }
+
+  // Same for amount: if we have a success status, make sure we have the amount
+  if (merged.paymentStatus === "SUCCESS" || merged.paymentStatus === "CHARGED") {
+    merged.amount = incoming.amount || base.amount;
+  }
+
+  return merged;
+};
 
 // ─── Normalizers ──────────────────────────────────────────────────────────────
 
@@ -432,12 +485,17 @@ const normalizeWorkshop = (
 ): UnifiedRegistration => {
   const draft = record.workshopRegistrationDraft || {};
   const workshop = record.workshop || {};
+  
+  // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
+  const rawStatus = record.paymentStatus || record.status || "";
+  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+
   const normalizedPaymentStatus = normalizeAdminPaymentStatus(
-    record.paymentStatus ||
+    statusToNormalize ||
       (record.paymentType === "booking-request" ||
       record.source === "workshops-page"
         ? "PENDING_PAYMENT"
-        : record.status) ||
+        : "") ||
       "",
   );
   const paidAmount =
@@ -493,9 +551,13 @@ const normalizeCompetition = (
 ): UnifiedRegistration => {
   const draft = record.competitionRegistrationDraft || {};
   const competition = record.competition || {};
-  const normalizedPaymentStatus = normalizeAdminPaymentStatus(
-    record.paymentStatus || record.status || "",
-  );
+  
+  // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
+  const rawStatus = record.paymentStatus || record.status || "";
+  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+  
+  const normalizedPaymentStatus = normalizeAdminPaymentStatus(statusToNormalize);
+
   const hallTicket =
     record.hallTicketNumber ||
     record.competitionId ||
@@ -990,7 +1052,7 @@ const Page = () => {
       key: "payment",
       label: "Payment",
       sortable: "paymentStatus",
-      width: "w-[155px]",
+      width: "w-[190px]",
     },
     { key: "amount", label: "Amount", sortable: "amount", width: "w-[90px]" },
     { key: "actions", label: "", width: "w-[48px]" },
@@ -1145,6 +1207,11 @@ const Page = () => {
                       {paginatedRegistrations.map((registration) => {
                         const rowKey = `${registration.registrationType}-${registration.id}`;
                         const isExpanded = expandedRowId === registration.id;
+                        const whatsAppFollowUpLink = isWhatsAppFollowUpStatus(
+                          registration.paymentStatus,
+                        )
+                          ? getWhatsAppFollowUpLink(registration)
+                          : "";
 
                         return (
                           <React.Fragment key={rowKey}>
@@ -1217,36 +1284,57 @@ const Page = () => {
 
                               {/* Payment */}
                               <TableCell className="px-4 py-3">
-                                <Select
-                                  value={normalizeAdminPaymentStatus(
-                                    registration.paymentStatus,
-                                  )}
-                                  onValueChange={(value) =>
-                                    handleStatusChange(registration, value)
-                                  }
-                                  disabled={
-                                    updatingStatusId === registration.id
-                                  }
-                                >
-                                  <SelectTrigger
-                                    className={`w-[130px] border text-xs font-semibold shadow-none ${getPaymentStatusColor(registration.paymentStatus)}`}
+                                <div className="flex items-center gap-2">
+                                  <Select
+                                    value={normalizeAdminPaymentStatus(
+                                      registration.paymentStatus,
+                                    )}
+                                    onValueChange={(value) =>
+                                      handleStatusChange(registration, value)
+                                    }
+                                    disabled={
+                                      updatingStatusId === registration.id
+                                    }
                                   >
-                                    <SelectValue>
-                                      {updatingStatusId === registration.id
-                                        ? "Updating..."
-                                        : formatPaymentStatusLabel(
-                                            registration.paymentStatus,
-                                          )}
-                                    </SelectValue>
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {STATUS_OPTIONS.map((status) => (
-                                      <SelectItem key={status} value={status}>
-                                        {formatPaymentStatusLabel(status)}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                    <SelectTrigger
+                                      className={`w-[130px] border text-xs font-semibold shadow-none ${getPaymentStatusColor(registration.paymentStatus)}`}
+                                    >
+                                      <SelectValue>
+                                        {updatingStatusId === registration.id
+                                          ? "Updating..."
+                                          : formatPaymentStatusLabel(
+                                              registration.paymentStatus,
+                                            )}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {STATUS_OPTIONS.map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                          {formatPaymentStatusLabel(status)}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  {whatsAppFollowUpLink && (
+                                    <Button
+                                      asChild
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 rounded-full bg-emerald-50 p-0 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+                                      aria-label="Message on WhatsApp"
+                                      title="Message on WhatsApp"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <a
+                                        href={whatsAppFollowUpLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <FaWhatsapp className="h-4 w-4" />
+                                      </a>
+                                    </Button>
+                                  )}
+                                </div>
                                 <p className="text-[11px] text-gray-400 mt-1.5">
                                   {registration.paymentType || "—"}
                                 </p>

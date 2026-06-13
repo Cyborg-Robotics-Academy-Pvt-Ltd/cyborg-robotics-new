@@ -7,14 +7,7 @@ import React, {
 } from "react";
 import { useEffect, useRef } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import {
-  IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
-  IconUsers,
-  IconUserPlus,
-  IconHome,
-} from "@tabler/icons-react";
+import { IconUserBolt, IconUsers } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -24,13 +17,15 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
+  BookOpenText,
   Clapperboard,
-  ClipboardList,
   FilePen,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
   UserLock,
+  UserPlus,
 } from "lucide-react";
 import { PanelRightOpen, PanelRightClose } from "@/components/ui/panel-buttons";
 import Link from "next/link";
@@ -70,12 +65,12 @@ const roleLinksMap: Record<
     {
       label: "Student Enrollment",
       href: "/create-user",
-      icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" />,
+      icon: <UserPlus className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Student Record",
       href: "/student-list",
-      icon: <ClipboardList className="h-5 w-5 shrink-0 text-gray-700" />,
+      icon: <BookOpenText className="h-5 w-5 shrink-0 text-gray-700" />,
     },
 
     {
@@ -109,7 +104,7 @@ const roleLinksMap: Record<
     {
       label: "Gallery Management",
       href: "/admin-dashboard/photo-upload",
-      icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
+      icon: <Images className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Logout",

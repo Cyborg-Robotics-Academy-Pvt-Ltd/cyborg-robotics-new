@@ -85,6 +85,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import DashboardNotification from "@/components/admin/DashboardNotification";
 
 // Theme configurations
 const themes: Record<
@@ -469,12 +470,34 @@ const AdminDashboard = () => {
   const deferredGlobalSearchQuery = useDeferredValue(globalSearchQuery);
   const globalSearchInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Notification state
+  const [notification, setNotification] = useState<{
+    title: string;
+    message: string;
+    type: "info" | "success" | "warning";
+  } | null>(null);
+
   const [drilldownOpen, setDrilldownOpen] = useState(false);
   const [selectedDrilldownPoint, setSelectedDrilldownPoint] = useState<{
     label: string;
     periodStart: string;
     periodEnd: string;
   } | null>(null);
+
+  // Effect to trigger welcome notification once per session
+  useEffect(() => {
+    if (!isLoading && adminName) {
+      const hasShownWelcome = sessionStorage.getItem("admin_welcome_shown");
+      if (!hasShownWelcome) {
+        setNotification({
+          title: "Welcome Back!",
+          message: `Hello ${adminName}, the dashboard is up to date with the latest registrations and payments.`,
+          type: "success",
+        });
+        sessionStorage.setItem("admin_welcome_shown", "true");
+      }
+    }
+  }, [isLoading, adminName]);
 
   const openEnrollmentDrilldown = useCallback(
     (payload?: Record<string, any>) => {
@@ -2893,6 +2916,16 @@ const AdminDashboard = () => {
           </DialogContent>
         </Dialog>
       </main>
+
+      {notification && (
+        <DashboardNotification
+          title={notification.title}
+          message={notification.message}
+          type={notification.type}
+          duration={10000}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </>
   );
 };
