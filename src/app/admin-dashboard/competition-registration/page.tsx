@@ -196,12 +196,14 @@ const normalizeCompetitionRecord = (
 ): CompetitionRegistration => {
   const draft = record.competitionRegistrationDraft || {};
   const competition = record.competition || {};
-  
+
   // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
   const rawStatus = record.paymentStatus || record.status || "";
-  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
-  
-  const normalizedPaymentStatus = normalizeAdminPaymentStatus(statusToNormalize);
+  const statusToNormalize =
+    rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+
+  const normalizedPaymentStatus =
+    normalizeAdminPaymentStatus(statusToNormalize);
   const normalizedPaidAmount =
     record.paidAmount ??
     (normalizedPaymentStatus === "SUCCESS" ||
@@ -372,8 +374,16 @@ const mergeCompetitionRecord = (
   }
 
   // Handle amount if status is SUCCESS
-  if (merged.paymentStatus === "SUCCESS" || merged.paymentStatus === "CHARGED") {
-    merged.paidAmount = incoming.paidAmount || base.paidAmount || incoming.registrationFee || base.registrationFee;
+  if (
+    merged.paymentStatus === "SUCCESS" ||
+    merged.paymentStatus === "CHARGED"
+  ) {
+    merged.paidAmount =
+      incoming.paidAmount ??
+      base.paidAmount ??
+      incoming.registrationFee ??
+      base.registrationFee ??
+      "";
   }
 
   return merged;
