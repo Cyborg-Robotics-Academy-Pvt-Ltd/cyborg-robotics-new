@@ -1335,7 +1335,9 @@ const Page = () => {
         await updateDoc(ref, {
           tasks: [...(d.tasks || []), { task, dateTime, status, course }],
         });
-        toast.success("Class added!");
+        toast.success(
+          `Class "${task}" for ${course} added for ${selectedStudent.username}`,
+        );
         setIsModalOpen(false);
         resetForm();
         await fetchStudents();
@@ -2474,7 +2476,7 @@ const Page = () => {
       </div>
 
       <Toaster
-        position="top-right"
+        position="bottom-right"
         toastOptions={{
           style: {
             background: "#1f2937",

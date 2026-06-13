@@ -105,10 +105,11 @@ export default function RegistrationSuccessClient() {
     }
 
     const controller = new AbortController();
+    let pollInterval: NodeJS.Timeout;
 
-    const load = async () => {
+    const load = async (isPoll = false) => {
       try {
-        setLoading(true);
+        if (!isPoll) setLoading(true);
 
         const res = await fetch(`/api/payment/status?orderId=${orderId}`, {
           signal: controller.signal,
@@ -120,19 +121,45 @@ export default function RegistrationSuccessClient() {
           throw new Error(data.message || "Failed to fetch payment status");
         }
 
-        setPayment(data.payment);
+        const currentPayment = data.payment;
+        setPayment(currentPayment);
+
+        // If status is still PENDING, try to trigger a verification sync
+        if (currentPayment.status === "PENDING") {
+          fetch("/api/payment/status", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId }),
+          }).catch(() => {}); // silent fail, webhook might still fix it
+        } else {
+          // If we got a terminal status, stop polling
+          if (pollInterval) clearInterval(pollInterval);
+        }
       } catch (err) {
         if ((err as any).name === "AbortError") return;
-
-        setError(err instanceof Error ? err.message : "Failed to load status");
+        if (!isPoll) setError(err instanceof Error ? err.message : "Failed to load status");
       } finally {
-        setLoading(false);
+        if (!isPoll) setLoading(false);
       }
     };
 
     load();
 
-    return () => controller.abort();
+    // Poll every 3 seconds if status is not SUCCESS yet, for up to 30 seconds
+    let pollCount = 0;
+    pollInterval = setInterval(() => {
+      pollCount++;
+      if (pollCount > 10) {
+        clearInterval(pollInterval);
+        return;
+      }
+      load(true);
+    }, 3000);
+
+    return () => {
+      controller.abort();
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [orderId, orderIdResolved]);
 
   // ✅ Generate invoice (only once)
@@ -504,14 +531,7 @@ export default function RegistrationSuccessClient() {
                     </div>
 
                     <h2
-                      className="
-                mt-6
-                break-all
-                font-['Space_Grotesk',sans-serif]
-                text-[34px]
-                font-black
-                leading-none
-                tracking-[0.05em]
+                      className="mt-6 break-all font-['Space_Grotesk',sans-serif] text-[34px] font-black leading-none tracking-[0.05em]
                 text-[#020617]
                 drop-shadow-[0_6px_18px_rgba(2,6,23,0.18)]
                 sm:text-[64px]
@@ -613,9 +633,7 @@ export default function RegistrationSuccessClient() {
               {/* FOOTER */}
               <div className="px-5 pb-5 sm:px-8 sm:pb-8">
                 <div
-                  className="
-            grid
-            grid-cols-2
+                  className="grid grid-cols-2
             gap-y-5
             rounded-[24px]
             bg-gradient-to-r
