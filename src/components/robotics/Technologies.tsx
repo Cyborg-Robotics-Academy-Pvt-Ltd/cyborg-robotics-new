@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const TECHNOLOGIES = [
   {
@@ -78,7 +79,7 @@ const Technologies = () => {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-60px" }}
-        className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 max-w-5xl mx-auto"
+        className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-5 max-w-6xl mx-auto"
       >
         {TECHNOLOGIES.map((tech) => (
           <motion.div key={tech.name} variants={item}>
@@ -105,15 +106,17 @@ const Technologies = () => {
 
               <div
                 className="
-                w-10 h-10 flex items-center justify-center rounded-[10px]
+                w-16 h-16 flex items-center justify-center rounded-[10px]
                 bg-gray-50 group-hover:bg-red-50
                 transition-colors duration-200
               "
               >
-                <img
+                <Image
                   src={tech.logo}
-                  alt={tech.name.replace("\n", " ")}
-                  className="w-7 h-7 object-contain"
+                  width={68}
+                  height={68}
+                  alt={`${tech.name.replace("\n", " ")} logo`}
+                  className=" object-contain"
                 />
               </div>
 
