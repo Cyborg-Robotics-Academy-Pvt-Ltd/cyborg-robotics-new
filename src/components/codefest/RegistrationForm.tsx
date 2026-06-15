@@ -54,13 +54,6 @@ const textFields = [
     type: "text",
   },
   {
-    id: "schoolName",
-    label: "School Name",
-    placeholder: "Enter school name",
-    icon: School,
-    type: "text",
-  },
-  {
     id: "cityState",
     label: "City & State",
     placeholder: "Enter city and state",
@@ -75,15 +68,8 @@ const textFields = [
     type: "text",
   },
   {
-    id: "parentEmailAddress",
-    label: "Parent Email Address",
-    placeholder: "Preferably Gmail",
-    icon: Mail,
-    type: "email",
-  },
-  {
-    id: "studentEmailAddress",
-    label: "Student Email Address",
+    id: "emailAddress",
+    label: "Email Address",
     placeholder: "Preferably Gmail",
     icon: Mail,
     type: "email",
@@ -115,17 +101,12 @@ const textareaClassName =
 const initialFormData: CodefestRegistrationFormData = {
   fullName: "",
   gradeClass: "",
-  schoolName: "",
   cityState: "",
   fullResidentialAddress: "",
   parentGuardianName: "",
-  parentEmailAddress: "",
-  studentEmailAddress: "",
+  emailAddress: "",
   parentGuardianContactNumber: "",
   emergencyContactNumber: "",
-  deviceAvailableForCompetition: "",
-  previousExperience: "",
-  participatedBefore: "",
   preferredCodingPlatform: "",
   agreedToTerms: false,
 };
@@ -146,10 +127,7 @@ export default function RegistrationForm() {
       setIsModalOpen(true);
     };
 
-    window.addEventListener(
-      "open-codefest-registration",
-      openRegistrationForm,
-    );
+    window.addEventListener("open-codefest-registration", openRegistrationForm);
 
     return () => {
       window.removeEventListener(
@@ -488,9 +466,7 @@ export default function RegistrationForm() {
                     <div
                       key={id}
                       className={
-                        id === "schoolName" ||
-                        id === "parentEmailAddress" ||
-                        id === "studentEmailAddress"
+                        id === "emailAddress"
                           ? "space-y-2.5 md:col-span-2"
                           : "space-y-2.5"
                       }
@@ -500,7 +476,9 @@ export default function RegistrationForm() {
                         className="text-xs font-bold uppercase tracking-[0.15em] text-gray-700"
                       >
                         {label}
-                        <span className="required-asterisk"> *</span>
+                        {id !== "emergencyContactNumber" && (
+                          <span className="required-asterisk"> *</span>
+                        )}
                       </Label>
                       <div className="field-group relative">
                         <Input
@@ -508,19 +486,28 @@ export default function RegistrationForm() {
                           name={id}
                           type={type}
                           placeholder={placeholder}
-                          value={formData[id]}
+                          value={
+                            formData[
+                              id as keyof CodefestRegistrationFormData
+                            ] as string
+                          }
                           onChange={handleInputChange}
                           className={inputClassName}
-                          aria-invalid={Boolean(formErrors[id])}
+                          aria-invalid={Boolean(
+                            formErrors[
+                              id as keyof CodefestRegistrationFormData
+                            ],
+                          )}
                         />
                         <Icon
                           size={18}
                           className="field-icon absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                         />
                       </div>
-                      {formErrors[id] && (
+                      {formErrors[id as keyof CodefestRegistrationFormData] && (
                         <p className="error-badge text-xs text-red-600 font-medium">
-                          ✗ {formErrors[id]}
+                          ✗{" "}
+                          {formErrors[id as keyof CodefestRegistrationFormData]}
                         </p>
                       )}
                     </div>
@@ -559,34 +546,6 @@ export default function RegistrationForm() {
 
                 {[
                   {
-                    id: "deviceAvailableForCompetition",
-                    label: "Device Available For Competition",
-                    icon: Laptop,
-                    options: [
-                      { value: "laptop", label: "Laptop" },
-                      { value: "desktop", label: "Desktop" },
-                    ],
-                  },
-                  {
-                    id: "previousExperience",
-                    label: "Previous Coding Experience",
-                    icon: Trophy,
-                    options: [
-                      { value: "beginner", label: "Beginner" },
-                      { value: "intermediate", label: "Intermediate" },
-                      { value: "advanced", label: "Advanced" },
-                    ],
-                  },
-                  {
-                    id: "participatedBefore",
-                    label: "Participated In Coding Competitions Before?",
-                    icon: BadgeCheck,
-                    options: [
-                      { value: "yes", label: "Yes" },
-                      { value: "no", label: "No" },
-                    ],
-                  },
-                  {
                     id: "preferredCodingPlatform",
                     label: "Preferred Coding Platform",
                     icon: Laptop,
@@ -596,14 +555,7 @@ export default function RegistrationForm() {
                     ],
                   },
                 ].map(({ id, label, icon: Icon, options }) => (
-                  <div
-                    key={id}
-                    className={
-                      id === "deviceAvailableForCompetition"
-                        ? "space-y-2.5"
-                        : "space-y-2.5"
-                    }
-                  >
+                  <div key={id} className="space-y-2.5 md:col-span-2">
                     <Label
                       htmlFor={id}
                       className="text-xs font-bold uppercase tracking-[0.15em] text-gray-700"
@@ -664,27 +616,6 @@ export default function RegistrationForm() {
                     )}
                   </div>
                 ))}
-
-                <div className="space-y-2.5 md:col-span-2">
-                  <Label
-                    htmlFor="hallTicketPreview"
-                    className="text-xs font-bold uppercase tracking-[0.15em] text-gray-700"
-                  >
-                    Competition ID / Hall Ticket
-                  </Label>
-                  <div className="field-group relative">
-                    <Input
-                      id="hallTicketPreview"
-                      value="🎫 Auto generated after registration"
-                      readOnly
-                      className={`${inputClassName} bg-gradient-to-r from-gray-50 to-gray-100/50 text-gray-500 cursor-not-allowed`}
-                    />
-                    <BadgeCheck
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4">
@@ -717,16 +648,23 @@ export default function RegistrationForm() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white"
-              >
-                {isSubmitting
-                  ? "🔄 Processing..."
-                  : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`}
-                {!isSubmitting && <ArrowRight size={18} className="ml-2" />}
-              </Button>
+              <div className="space-y-4">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white"
+                >
+                  {isSubmitting
+                    ? "🔄 Processing..."
+                    : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`}
+                  {!isSubmitting && <ArrowRight size={18} className="ml-2" />}
+                </Button>
+
+                <p className="text-center text-[13px] font-semibold text-gray-500">
+                  Note : Competition ID / Hall Ticket will be available after
+                  registration
+                </p>
+              </div>
             </form>
           </div>
         </div>
