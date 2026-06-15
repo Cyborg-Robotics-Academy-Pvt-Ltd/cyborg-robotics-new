@@ -70,7 +70,7 @@ const textFields = [
   {
     id: "emailAddress",
     label: "Email Address",
-    placeholder: "Preferably Gmail",
+    placeholder: "Enter email address",
     icon: Mail,
     type: "email",
   },

@@ -166,7 +166,7 @@ export default function Hero() {
               </a>
 
               <a
-                href="/robotics-diploma.png"
+                href="/assets/year-long-course/courses/cyborg-diploma.pdf"
                 download
                 className="
                   inline-flex
