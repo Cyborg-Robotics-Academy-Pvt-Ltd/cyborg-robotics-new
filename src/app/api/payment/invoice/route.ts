@@ -38,7 +38,7 @@ function getInvoiceStudentName(paymentData: Record<string, any>): string {
 
 function getInvoiceEmail(paymentData: Record<string, any>): string {
   return (
-    paymentData?.competitionRegistrationDraft?.parentEmailAddress ||
+    paymentData?.competitionRegistrationDraft?.emailAddress ||
     paymentData?.workshopRegistrationDraft?.email ||
     paymentData?.registrationDraft?.primaryParentEmail ||
     paymentData.parentEmail ||

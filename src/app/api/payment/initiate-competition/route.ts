@@ -35,23 +35,14 @@ export async function POST(req: Request) {
     const missingFields = [
       requireString(body.fullName, "fullName"),
       requireString(body.gradeClass, "gradeClass"),
-      requireString(body.schoolName, "schoolName"),
       requireString(body.cityState, "cityState"),
       requireString(body.fullResidentialAddress, "fullResidentialAddress"),
       requireString(body.parentGuardianName, "parentGuardianName"),
-      requireString(body.parentEmailAddress, "parentEmailAddress"),
-      requireString(body.studentEmailAddress, "studentEmailAddress"),
+      requireString(body.emailAddress, "emailAddress"),
       requireString(
         body.parentGuardianContactNumber,
         "parentGuardianContactNumber",
       ),
-      requireString(body.emergencyContactNumber, "emergencyContactNumber"),
-      requireString(
-        body.deviceAvailableForCompetition,
-        "deviceAvailableForCompetition",
-      ),
-      requireString(body.previousExperience, "previousExperience"),
-      requireString(body.participatedBefore, "participatedBefore"),
       requireString(body.preferredCodingPlatform, "preferredCodingPlatform"),
     ].filter(Boolean);
 
@@ -68,18 +59,12 @@ export async function POST(req: Request) {
     const normalizedFormData = normalizeCodefestRegistrationForm({
       fullName: body.fullName || "",
       gradeClass: body.gradeClass || "",
-      schoolName: body.schoolName || "",
       cityState: body.cityState || "",
       fullResidentialAddress: body.fullResidentialAddress || "",
       parentGuardianName: body.parentGuardianName || "",
-      parentEmailAddress: body.parentEmailAddress || "",
-      studentEmailAddress: body.studentEmailAddress || "",
+      emailAddress: body.emailAddress || "",
       parentGuardianContactNumber: body.parentGuardianContactNumber || "",
       emergencyContactNumber: body.emergencyContactNumber || "",
-      deviceAvailableForCompetition:
-        body.deviceAvailableForCompetition || "",
-      previousExperience: body.previousExperience || "",
-      participatedBefore: body.participatedBefore || "",
       preferredCodingPlatform: body.preferredCodingPlatform || "",
       agreedToTerms: Boolean(body.agreedToTerms),
     });
@@ -108,11 +93,11 @@ export async function POST(req: Request) {
     }
 
     const orderId = generateOrderId();
-    const customerSeed = body.userId || normalizedFormData.parentEmailAddress;
+    const customerSeed = body.userId || normalizedFormData.emailAddress;
     const customerId = generateCustomerId(customerSeed);
     const paymentOwnerSeed = derivePaymentOwnerSeed(
       body.userId,
-      normalizedFormData.parentEmailAddress,
+      normalizedFormData.emailAddress,
     );
     const paymentSessionBinding = createPaymentSessionBinding(
       orderId,
@@ -133,7 +118,7 @@ export async function POST(req: Request) {
         amount: CODEFEST_COMPETITION.amount,
         currency: "INR",
         customer_id: customerId,
-        customer_email: normalizedFormData.parentEmailAddress,
+        customer_email: normalizedFormData.emailAddress,
         customer_phone: normalizedFormData.parentGuardianContactNumber,
         return_url: returnUrl.toString(),
         metadata: {
@@ -189,7 +174,7 @@ export async function POST(req: Request) {
       },
       competitionRegistrationDraft: normalizedFormData,
       studentName: normalizedFormData.fullName,
-      studentEmail: normalizedFormData.studentEmailAddress,
+      studentEmail: normalizedFormData.emailAddress,
       studentPhone: normalizedFormData.parentGuardianContactNumber,
       courseName: CODEFEST_COMPETITION.name,
       createdAt: serverTimestamp(),

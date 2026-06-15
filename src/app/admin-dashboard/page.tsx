@@ -1838,8 +1838,8 @@ const AdminDashboard = () => {
       href: "/registration",
     },
     {
-      title: "Competition Registration",
-      href: "/admin-dashboard/competition-registration",
+      title: " Register Student",
+      href: "/admin-dashboard/registrations",
     },
   ];
 

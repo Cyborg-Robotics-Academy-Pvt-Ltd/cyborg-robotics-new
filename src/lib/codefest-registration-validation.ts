@@ -1,17 +1,12 @@
 export interface CodefestRegistrationFormData {
   fullName: string;
   gradeClass: string;
-  schoolName: string;
   cityState: string;
   fullResidentialAddress: string;
   parentGuardianName: string;
-  parentEmailAddress: string;
-  studentEmailAddress: string;
+  emailAddress: string;
   parentGuardianContactNumber: string;
-  emergencyContactNumber: string;
-  deviceAvailableForCompetition: string;
-  previousExperience: string;
-  participatedBefore: string;
+  emergencyContactNumber?: string;
   preferredCodingPlatform: string;
   agreedToTerms: boolean;
 }
@@ -40,7 +35,6 @@ export function normalizeCodefestRegistrationForm(
   return {
     fullName: formData.fullName.replace(/\s+/g, " ").trim(),
     gradeClass: formData.gradeClass.replace(/\s+/g, " ").trim(),
-    schoolName: formData.schoolName.replace(/\s+/g, " ").trim(),
     cityState: formData.cityState.replace(/\s+/g, " ").trim(),
     fullResidentialAddress: formData.fullResidentialAddress
       .replace(/\s+/g, " ")
@@ -48,17 +42,13 @@ export function normalizeCodefestRegistrationForm(
     parentGuardianName: formData.parentGuardianName
       .replace(/\s+/g, " ")
       .trim(),
-    parentEmailAddress: formData.parentEmailAddress.trim(),
-    studentEmailAddress: formData.studentEmailAddress.trim(),
+    emailAddress: formData.emailAddress.trim(),
     parentGuardianContactNumber: formData.parentGuardianContactNumber
       .replace(/\D/g, "")
       .slice(0, 10),
     emergencyContactNumber: formData.emergencyContactNumber
-      .replace(/\D/g, "")
-      .slice(0, 10),
-    deviceAvailableForCompetition: formData.deviceAvailableForCompetition.trim(),
-    previousExperience: formData.previousExperience.trim(),
-    participatedBefore: formData.participatedBefore.trim(),
+      ? formData.emergencyContactNumber.replace(/\D/g, "").slice(0, 10)
+      : "",
     preferredCodingPlatform: formData.preferredCodingPlatform.trim(),
     agreedToTerms: Boolean(formData.agreedToTerms),
   };
@@ -80,10 +70,6 @@ export function validateCodefestRegistrationForm(
     errors.gradeClass = "Grade or class is required.";
   }
 
-  if (!data.schoolName) {
-    errors.schoolName = "School name is required.";
-  }
-
   if (!data.cityState) {
     errors.cityState = "City and state are required.";
   } else if (data.cityState.length < 2) {
@@ -102,16 +88,10 @@ export function validateCodefestRegistrationForm(
     errors.parentGuardianName = "Enter the parent or guardian full name.";
   }
 
-  if (!data.parentEmailAddress) {
-    errors.parentEmailAddress = "Parent email is required.";
-  } else if (!EMAIL_REGEX.test(data.parentEmailAddress)) {
-    errors.parentEmailAddress = "Enter a valid parent email address.";
-  }
-
-  if (!data.studentEmailAddress) {
-    errors.studentEmailAddress = "Student email is required.";
-  } else if (!EMAIL_REGEX.test(data.studentEmailAddress)) {
-    errors.studentEmailAddress = "Enter a valid student email address.";
+  if (!data.emailAddress) {
+    errors.emailAddress = "Email address is required.";
+  } else if (!EMAIL_REGEX.test(data.emailAddress)) {
+    errors.emailAddress = "Enter a valid email address.";
   }
 
   if (!data.parentGuardianContactNumber) {
@@ -122,38 +102,9 @@ export function validateCodefestRegistrationForm(
       "Enter a valid 10-digit contact number.";
   }
 
-  if (!data.emergencyContactNumber) {
-    errors.emergencyContactNumber = "Emergency contact number is required.";
-  } else if (!/^\d{10}$/.test(data.emergencyContactNumber)) {
+  if (data.emergencyContactNumber && !/^\d{10}$/.test(data.emergencyContactNumber)) {
     errors.emergencyContactNumber =
       "Enter a valid 10-digit emergency contact number.";
-  }
-
-  if (!data.deviceAvailableForCompetition) {
-    errors.deviceAvailableForCompetition = "Please select an available device.";
-  }
-
-  if (!["laptop", "desktop"].includes(data.deviceAvailableForCompetition)) {
-    errors.deviceAvailableForCompetition =
-      "Device must be Laptop or Desktop.";
-  }
-
-  if (!data.previousExperience) {
-    errors.previousExperience = "Please select previous experience.";
-  }
-
-  if (!["beginner", "intermediate", "advanced"].includes(data.previousExperience)) {
-    errors.previousExperience =
-      "Experience must be Beginner, Intermediate, or Advanced.";
-  }
-
-  if (!data.participatedBefore) {
-    errors.participatedBefore =
-      "Please select whether you have participated before.";
-  }
-
-  if (!["yes", "no"].includes(data.participatedBefore)) {
-    errors.participatedBefore = "Please select Yes or No.";
   }
 
   if (!data.preferredCodingPlatform) {

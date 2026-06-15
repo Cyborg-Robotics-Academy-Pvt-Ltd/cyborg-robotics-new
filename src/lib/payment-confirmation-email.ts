@@ -38,7 +38,7 @@ function getInvoiceStudentName(payment: PaymentData): string {
 
 function getInvoiceEmail(payment: PaymentData): string {
   return (
-    payment?.competitionRegistrationDraft?.parentEmailAddress ||
+    payment?.competitionRegistrationDraft?.emailAddress ||
     payment?.workshopRegistrationDraft?.email ||
     payment?.registrationDraft?.primaryParentEmail ||
     payment.parentEmail ||

@@ -61,13 +61,9 @@ interface CompetitionRegistration {
   cityState?: string;
   fullResidentialAddress?: string;
   parentGuardianName?: string;
-  parentEmailAddress?: string;
-  studentEmailAddress?: string;
+  emailAddress?: string;
   parentGuardianContactNumber?: string;
   emergencyContactNumber?: string;
-  deviceAvailableForCompetition?: string;
-  previousExperience?: string;
-  participatedBefore?: string;
   preferredCodingPlatform?: string;
   hallTicketNumber?: string;
   competitionId?: string;
@@ -224,15 +220,13 @@ const normalizeCompetitionRecord = (
       record.fullResidentialAddress || draft.fullResidentialAddress || "",
     parentGuardianName:
       record.parentGuardianName || draft.parentGuardianName || "",
-    parentEmailAddress:
-      record.parentEmailAddress ||
+    emailAddress:
+      record.emailAddress ||
       record.parentEmail ||
-      record.primaryParentEmail ||
-      draft.parentEmailAddress ||
-      "",
-    studentEmailAddress:
-      record.studentEmailAddress ||
       record.studentEmail ||
+      record.primaryParentEmail ||
+      draft.emailAddress ||
+      draft.parentEmailAddress ||
       draft.studentEmailAddress ||
       "",
     parentGuardianContactNumber:
@@ -243,14 +237,6 @@ const normalizeCompetitionRecord = (
       "",
     emergencyContactNumber:
       record.emergencyContactNumber || draft.emergencyContactNumber || "",
-    deviceAvailableForCompetition:
-      record.deviceAvailableForCompetition ||
-      draft.deviceAvailableForCompetition ||
-      "",
-    previousExperience:
-      record.previousExperience || draft.previousExperience || "",
-    participatedBefore:
-      record.participatedBefore || draft.participatedBefore || "",
     preferredCodingPlatform:
       record.preferredCodingPlatform || draft.preferredCodingPlatform || "",
     hallTicketNumber:
@@ -305,11 +291,8 @@ const mergeCompetitionRecord = (
     parentGuardianName:
       pickFirstValue(base.parentGuardianName, incoming.parentGuardianName) ||
       "",
-    parentEmailAddress:
-      pickFirstValue(base.parentEmailAddress, incoming.parentEmailAddress) ||
-      "",
-    studentEmailAddress:
-      pickFirstValue(base.studentEmailAddress, incoming.studentEmailAddress) ||
+    emailAddress:
+      pickFirstValue(base.emailAddress, incoming.emailAddress) ||
       "",
     parentGuardianContactNumber:
       pickFirstValue(
@@ -321,17 +304,6 @@ const mergeCompetitionRecord = (
         base.emergencyContactNumber,
         incoming.emergencyContactNumber,
       ) || "",
-    deviceAvailableForCompetition:
-      pickFirstValue(
-        base.deviceAvailableForCompetition,
-        incoming.deviceAvailableForCompetition,
-      ) || "",
-    previousExperience:
-      pickFirstValue(base.previousExperience, incoming.previousExperience) ||
-      "",
-    participatedBefore:
-      pickFirstValue(base.participatedBefore, incoming.participatedBefore) ||
-      "",
     preferredCodingPlatform:
       pickFirstValue(
         base.preferredCodingPlatform,
@@ -488,8 +460,7 @@ const Page = () => {
     const filtered = registrations.filter(
       (registration) =>
         registration.fullName?.toLowerCase().includes(term) ||
-        registration.studentEmailAddress?.toLowerCase().includes(term) ||
-        registration.parentEmailAddress?.toLowerCase().includes(term) ||
+        registration.emailAddress?.toLowerCase().includes(term) ||
         registration.parentGuardianContactNumber
           ?.toLowerCase()
           .includes(term) ||
@@ -674,7 +645,6 @@ const Page = () => {
         { header: "Participant Name", key: "fullName", width: 24 },
         { header: "Hall Ticket", key: "hallTicketNumber", width: 18 },
         { header: "Grade / Class", key: "gradeClass", width: 16 },
-        { header: "School Name", key: "schoolName", width: 28 },
         { header: "City & State", key: "cityState", width: 18 },
         {
           header: "Residential Address",
@@ -682,8 +652,7 @@ const Page = () => {
           width: 36,
         },
         { header: "Parent Name", key: "parentGuardianName", width: 24 },
-        { header: "Parent Email", key: "parentEmailAddress", width: 28 },
-        { header: "Student Email", key: "studentEmailAddress", width: 28 },
+        { header: "Email Address", key: "emailAddress", width: 32 },
         {
           header: "Parent Contact",
           key: "parentGuardianContactNumber",
@@ -694,13 +663,6 @@ const Page = () => {
           key: "emergencyContactNumber",
           width: 18,
         },
-        {
-          header: "Device",
-          key: "deviceAvailableForCompetition",
-          width: 14,
-        },
-        { header: "Previous Experience", key: "previousExperience", width: 20 },
-        { header: "Participated Before", key: "participatedBefore", width: 18 },
         {
           header: "Preferred Platform",
           key: "preferredCodingPlatform",
@@ -904,14 +866,7 @@ const Page = () => {
                                   "-"}
                               </p>
                               <p className="text-xs text-gray-500">
-                                Student Email:{" "}
-                                {registration.studentEmailAddress || "-"}
-                              </p>
-                              <p className="text-xs text-gray-500">
                                 Grade: {registration.gradeClass || "-"}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                School: {registration.schoolName || "-"}
                               </p>
                             </div>
                           </TableCell>
@@ -921,11 +876,11 @@ const Page = () => {
                                 {registration.parentGuardianName || "-"}
                               </p>
                               <p className="text-xs text-gray-500">
-                                Parent Email:{" "}
-                                {registration.parentEmailAddress || "-"}
+                                Email:{" "}
+                                {registration.emailAddress || "-"}
                               </p>
                               <p className="text-xs font-mono text-gray-500">
-                                Parent Contact:{" "}
+                                Contact:{" "}
                                 {registration.parentGuardianContactNumber ||
                                   "-"}
                               </p>
@@ -947,19 +902,6 @@ const Page = () => {
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
                             <div className="min-w-[200px] space-y-1">
-                              <p className="text-xs text-gray-500">
-                                Device:{" "}
-                                {registration.deviceAvailableForCompetition ||
-                                  "-"}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Experience:{" "}
-                                {registration.previousExperience || "-"}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Participated Before:{" "}
-                                {registration.participatedBefore || "-"}
-                              </p>
                               <p className="text-xs text-gray-500">
                                 Platform:{" "}
                                 {registration.preferredCodingPlatform || "-"}
