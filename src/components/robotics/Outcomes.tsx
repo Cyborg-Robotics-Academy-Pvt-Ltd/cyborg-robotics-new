@@ -103,14 +103,14 @@ const specializations = [
     icon: Brain,
     name: "Artificial Intelligence",
     desc: "Build intelligent systems with ML, neural networks, and automation pipelines.",
-    image: "/images/ai-specialization.jpg",
+    image: "/assets/year-long-course/courses/AI.png",
     shortDesc: "Machine learning, neural networks, and intelligent automation.",
   },
   {
     icon: Plane,
     name: "Drone Technology",
     desc: "Design, program, and fly autonomous aerial vehicles for real-world missions.",
-    image: "/images/drone-specialization.jpg",
+    image: "/assets/year-long-course/courses/drone.png",
     shortDesc: "Autonomous aerial vehicles for real-world missions.",
   },
 ];
@@ -219,19 +219,6 @@ export default function Outcomes() {
                   <p className="text-[11.5px] text-neutral-500 leading-relaxed line-clamp-2">
                     {shortDesc}
                   </p>
-
-                  {/* CTA row */}
-                  <div className="flex items-center gap-1.5 mt-3">
-                    <span className="text-[11px] font-semibold text-red-800 opacity-0 group-hover:opacity-100 translate-x-[-4px] group-hover:translate-x-0 transition-all duration-200">
-                      Explore
-                    </span>
-                    <div className="w-6 h-6 rounded-full border border-red-800 flex items-center justify-center group-hover:bg-red-800 transition-colors duration-200">
-                      <ChevronRight
-                        size={11}
-                        className="text-red-800 group-hover:text-white transition-colors duration-200"
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}

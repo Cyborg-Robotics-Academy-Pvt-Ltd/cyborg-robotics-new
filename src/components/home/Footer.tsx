@@ -141,7 +141,7 @@ const Footer: React.FC<FooterProps> = () => {
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-blue-600 rounded-lg opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300" />
                 <Image
-                  src="/Cyborglogo.png"
+                  src="/cyborglogo.png"
                   width={56}
                   height={56}
                   alt="Cyborg Robotics Logo"

@@ -1,52 +1,42 @@
 "use client";
-import Link from "next/link";
 import { motion } from "framer-motion";
 
 const TECHNOLOGIES = [
   {
     name: "LEGO\nSpike Prime",
     logo: "/assets/year-long-course/logos/spike-prime.png",
-    href: "/all-courses/spike-prime",
   },
   {
     name: "EV3",
     logo: "/assets/year-long-course/logos/ev3.png",
-    href: "/all-courses/robotics-ev3",
   },
   {
     name: "Arduino",
     logo: "/assets/year-long-course/logos/arduino.png",
-    href: "/all-courses/arduino",
   },
   {
     name: "Python",
     logo: "/assets/year-long-course/logos/python.png",
-    href: "/all-courses/python-language",
   },
   {
     name: "Quarky",
     logo: "/assets/year-long-course/logos/quarky.png",
-    href: "/all-courses/robotics-with-quarky",
   },
   {
     name: "Tinkercad",
     logo: "/assets/year-long-course/logos/tinkercad.png",
-    href: "/all-courses/3d-printing",
   },
   {
     name: "PictoBlox",
     logo: "/assets/year-long-course/logos/pictoblox.png",
-    href: "/all-courses/coding-ai-pictoblox",
   },
   {
     name: "Meta Quest",
     logo: "/assets/year-long-course/logos/meta-quest.png",
-    href: "#",
   },
   {
     name: "Drone\nSystems",
     logo: "/assets/year-long-course/logos/drone.png",
-    href: "/all-courses/drone",
   },
 ];
 
@@ -88,12 +78,11 @@ const Technologies = () => {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-60px" }}
-        className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2.5 max-w-5xl mx-auto"
+        className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 max-w-5xl mx-auto"
       >
         {TECHNOLOGIES.map((tech) => (
           <motion.div key={tech.name} variants={item}>
-            <Link
-              href={tech.href}
+            <div
               aria-label={`Explore ${tech.name.replace("\n", " ")} course`}
               className="
                 group flex flex-col items-center gap-2 p-3.5
@@ -138,7 +127,7 @@ const Technologies = () => {
               >
                 {tech.name}
               </span>
-            </Link>
+            </div>
           </motion.div>
         ))}
       </motion.div>

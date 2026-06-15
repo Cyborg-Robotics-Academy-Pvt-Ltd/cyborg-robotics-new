@@ -92,7 +92,7 @@ const LearningJourney = () => {
         {phases.map((p, i) => (
           <div
             key={p.phase}
-            className="flex items-start gap-4 relative pb-7 last:pb-0"
+            className="flex items-start gap-4 relative pb-7 last:pb-0 "
           >
             {/* Left: node + connector */}
             <div className="flex flex-col items-center flex-shrink-0">

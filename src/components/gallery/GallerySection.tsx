@@ -1,404 +1,463 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
 
-// Import Swiper React components
-import { Swiper, SwiperSlide } from "swiper/react";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/effect-coverflow";
-import "swiper/css/pagination";
-
-// Import required modules
-import { EffectCoverflow, Pagination } from "swiper/modules";
-
-// Import Firebase
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useMemo,
+  useCallback,
+} from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import Header from "@/components/layout/header";
+import GallerySkeleton from "@/components/gallery/GallerySkeleton";
 
-// Import auth context
-import { useAuth } from "@/lib/auth-context";
+// Lightbox Component
+const Lightbox = React.memo(
+  ({
+    image,
+    onClose,
+    onNext,
+    onPrev,
+  }: {
+    image: any;
+    onClose: () => void;
+    onNext: () => void;
+    onPrev: () => void;
+  }) => {
+    if (!image) return null;
 
-// Import custom styles
-import "./swiper.css";
-import { X } from "lucide-react";
-import Image from "next/image";
+    return (
+      <motion.div
+        className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <motion.div
+          className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.button
+            className="absolute top-4 right-4 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg"
+            onClick={onClose}
+            aria-label="Close lightbox"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <X className="w-6 h-6" />
+          </motion.button>
 
-const GallerySection = () => {
-  const { userRole } = useAuth();
-  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+          <motion.button
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
+            onClick={onPrev}
+            aria-label="Previous image"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </motion.button>
+
+          <motion.div
+            className="w-full max-h-[80vh] flex items-center justify-center rounded-xl overflow-hidden"
+            key={image.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Image
+              src={image.imageUrl || image.src}
+              alt={image.fileName || image.alt || "Gallery image"}
+              width={1200}
+              height={900}
+              className="max-h-[80vh] max-w-full object-contain"
+              priority
+              unoptimized
+            />
+          </motion.div>
+
+          <motion.button
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
+            onClick={onNext}
+            aria-label="Next image"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ChevronRight className="w-6 h-6" />
+          </motion.button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 sm:hidden text-white/70 text-xs">
+            <button
+              onClick={onPrev}
+              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={onNext}
+              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+            >
+              Next →
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  },
+);
+
+const BehindSceneContent = () => {
+  const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<any>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(
+    new Set(),
+  );
+  const itemsPerPage = 12;
 
-  // Fetch images from Firebase
+  // Fetch photos once - only "Competition Glory" category
   useEffect(() => {
-    const fetchImages = async () => {
+    const fetchPhotos = async () => {
       try {
-        const q = query(
-          collection(db, "homeGalleryImage"),
+        const photosQuery = query(
+          collection(db, "photo"),
           orderBy("uploadedAt", "desc"),
         );
-        const querySnapshot = await getDocs(q);
-        const images: any[] = [];
-        let index = 1;
-        querySnapshot.forEach((doc) => {
-          const { fileId, ...rest } = doc.data();
-          images.push({
-            id: String(index++),
-            ...rest,
-          });
-        });
-        setGalleryImages(images);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-        // Fallback to static data if Firebase fetch fails
+        const photosSnapshot = await getDocs(photosQuery);
+        const photosData = photosSnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((photo: any) => photo.category === "Competition Glory");
+        setPhotos(photosData);
+      } catch (err) {
+        console.error("Error fetching photos:", err);
+        setError("Failed to load photos");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchImages();
+    fetchPhotos();
   }, []);
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
+  const { currentItems, totalPages } = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = photos.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(photos.length / itemsPerPage);
+    return { currentItems, totalPages };
+  }, [photos, currentPage]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
-    try {
-      // Upload each file
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/home-gallery-upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        return await response.json();
-      });
-
-      const results = await Promise.all(uploadPromises);
-
-      // Check if all uploads were successful
-      const successfulUploads = results.filter((result) => result.imageUrl);
-      const failedUploads = results.filter((result) => !result.imageUrl);
-
-      if (successfulUploads.length > 0) {
-        console.log("Successfully uploaded images:", successfulUploads);
-        // Refresh the gallery to show the new images
-        const q = query(
-          collection(db, "homeGalleryImage"),
-          orderBy("uploadedAt", "desc"),
-        );
-        const querySnapshot = await getDocs(q);
-        const images: any[] = [];
-        let index = 1;
-        querySnapshot.forEach((doc) => {
-          const { fileId, ...rest } = doc.data();
-          images.push({
-            id: String(index++),
-            ...rest,
-          });
-        });
-        setGalleryImages(images);
-
-        if (failedUploads.length > 0) {
-          alert(
-            `Uploaded ${successfulUploads.length} images successfully. ${failedUploads.length} uploads failed.`,
-          );
-        } else {
-          alert(`Uploaded ${successfulUploads.length} images successfully!`);
-        }
-      } else {
-        console.error("All uploads failed:", results);
-        alert("All uploads failed: " + results.map((r) => r.error).join(", "));
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("Upload failed: " + error);
-    } finally {
-      setIsUploading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  // Function to open the image modal
-  const openImageModal = (image: any, index: number) => {
-    setSelectedImage(image);
-    setCurrentImageIndex(index);
-    document.body.style.overflow = "hidden"; // Prevent background scrolling
-  };
-
-  // Function to close the image modal
-  const closeImageModal = () => {
-    setSelectedImage(null);
-    document.body.style.overflow = "auto"; // Re-enable scrolling
-  };
-
-  // Function to navigate to the next image
-  const goToNextImage = () => {
-    if (galleryImages.length > 0) {
-      const nextIndex = (currentImageIndex + 1) % galleryImages.length;
-      setCurrentImageIndex(nextIndex);
-      setSelectedImage(galleryImages[nextIndex]);
-    }
-  };
-
-  // Function to navigate to the previous image
-  const goToPreviousImage = () => {
-    if (galleryImages.length > 0) {
-      const prevIndex =
-        currentImageIndex === 0
-          ? galleryImages.length - 1
-          : currentImageIndex - 1;
-      setCurrentImageIndex(prevIndex);
-      setSelectedImage(galleryImages[prevIndex]);
-    }
-  };
-
-  // Handle keyboard navigation
+  // Preload current page images
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedImage) {
-        if (e.key === "Escape") {
-          closeImageModal();
-        } else if (e.key === "ArrowRight") {
-          goToNextImage();
-        } else if (e.key === "ArrowLeft") {
-          goToPreviousImage();
+    if (currentItems.length === 0) return;
+
+    currentItems.slice(0, 6).forEach((img) => {
+      if (!preloadedImages.has(img.id)) {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = img.imageUrl || img.src;
+        document.head.appendChild(link);
+
+        setPreloadedImages((prev) => new Set([...prev, img.id]));
+      }
+    });
+  }, [currentItems, preloadedImages]);
+
+  // Preload next page images
+  useEffect(() => {
+    const nextPageStart = currentPage * itemsPerPage;
+    const nextPageEnd = nextPageStart + itemsPerPage;
+    const nextPageImages = photos.slice(nextPageStart, nextPageEnd);
+
+    const timer = setTimeout(() => {
+      nextPageImages.forEach((img) => {
+        if (!preloadedImages.has(img.id)) {
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.as = "image";
+          link.href = img.imageUrl || img.src;
+          document.head.appendChild(link);
+
+          setPreloadedImages((prev) => new Set([...prev, img.id]));
         }
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [currentPage, photos, preloadedImages]);
+
+  const goToNextImage = useCallback(() => {
+    setSelectedImage((prev: any) => {
+      if (!prev) return null;
+      const currentIndex = photos.findIndex((img) => img.id === prev.id);
+      if (currentIndex === -1) return prev;
+      const nextIndex = (currentIndex + 1) % photos.length;
+      return photos[nextIndex];
+    });
+  }, [photos]);
+
+  const goToPreviousImage = useCallback(() => {
+    setSelectedImage((prev: any) => {
+      if (!prev) return null;
+      const currentIndex = photos.findIndex((img) => img.id === prev.id);
+      if (currentIndex === -1) return prev;
+      const prevIndex = (currentIndex - 1 + photos.length) % photos.length;
+      return photos[prevIndex];
+    });
+  }, [photos]);
+
+  const closeLightbox = useCallback(() => {
+    setSelectedImage(null);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        goToNextImage();
+      } else if (e.key === "ArrowLeft") {
+        goToPreviousImage();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedImage, currentImageIndex, galleryImages]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, closeLightbox, goToNextImage, goToPreviousImage]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
-      </div>
+      <>
+        <Header />
+        <GallerySkeleton />
+      </>
     );
   }
 
   return (
-    <div className="w-full h-full mt-4 md:mt-12">
-      {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        multiple
-        className="hidden"
-      />
-
-      {/* Upload button - only show for admin users */}
-      {userRole === "admin" && (
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={handleUploadClick}
-            disabled={isUploading}
-            className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center disabled:opacity-50"
-          >
-            {isUploading ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Uploading...
-              </>
-            ) : (
-              "Upload Image"
-            )}
-          </button>
-        </div>
-      )}
-
-      <h1 className="text-center font-bold text-2xl md:text-3xl">
-        Celebrating <span className="gradient-text">Learning</span>
-      </h1>
-      <div className="flex items-center justify-center gap-1 my-3">
-        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#8D0F11]/60 rounded-full"></div>
-        <div className="w-16 h-0.5 bg-gradient-to-r from-[#8D0F11]/60 to-[#8D0F11] rounded-full"></div>
-        <div className="w-8 h-0.5 bg-gradient-to-r from-[#8D0F11] to-transparent rounded-full"></div>
-      </div>
-      <p className="text-center text-sm md:text-base text-gray-600 mt-1">
-        Explore moments from our programs and events
-      </p>
-
-      <div className="mx-6 md:mx-0">
-        <style jsx global>{`
-          .mySwiper .swiper-pagination-bullet {
-            background: #cbd5e1;
-            opacity: 1;
-            width: 8px;
-            height: 8px;
-            transition: all 0.3s ease;
-          }
-          .mySwiper .swiper-pagination-bullet-active {
-            background: #8d0f11;
-            width: 20px;
-            border-radius: 4px;
-          }
-        `}</style>
-        <Swiper
-          effect={"coverflow"}
-          grabCursor={true}
-          spaceBetween={20}
-          centeredSlides={true}
-          slidesPerView={"auto"}
-          coverflowEffect={{
-            rotate: 30,
-            stretch: 0,
-            depth: 100,
-            modifier: 1,
-            slideShadows: true,
-          }}
-          pagination={true}
-          modules={[EffectCoverflow, Pagination]}
-          className="mySwiper"
-          initialSlide={0}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Header />
+      <div className="max-w-7xl mx-auto mt-10">
+        {/* Hero Section */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          {galleryImages.map((item: any, index) => (
-            <SwiperSlide key={item.id}>
-              <Image
-                src={item.imageUrl || item.src}
-                width={500}
-                height={500}
-                alt={`Gallery item ${item.id}`}
-                className="cursor-pointer"
-                onClick={() => openImageModal(item, index)}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={closeImageModal}
-        >
-          <div
-            className="relative max-w-6xl max-h-full w-full"
-            onClick={(e) => e.stopPropagation()}
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="mb-4"
           >
-            <button
-              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
-              onClick={closeImageModal}
-              aria-label="Close image"
+            <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-800 text-sm font-semibold mb-4">
+              Gallery
+            </span>
+          </motion.div>
+
+          <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 leading-tight">
+            Student{" "}
+            <span className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 bg-clip-text text-transparent">
+              Glory
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+            Celebrating our students' wins, awards, and standout moments from
+            competitions
+          </p>
+        </motion.div>
+
+        {/* Gallery Container */}
+        <motion.div
+          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-gray-200/50 p-8 md:p-10"
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {error ? (
+            <motion.div
+              className="text-center py-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              <X className="w-6 h-6 bg-white text-black rounded-2xl" />
-            </button>
+              <div className="text-5xl mb-4">⚠️</div>
+              <p className="text-red-600 text-lg font-medium">{error}</p>
+            </motion.div>
+          ) : photos.length === 0 ? (
+            <motion.div
+              className="text-center py-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-6xl mb-4">📷</div>
+              <p className="text-gray-500 text-lg font-medium">
+                No photos available in this category.
+              </p>
+            </motion.div>
+          ) : (
+            <>
+              {/* Image Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <AnimatePresence mode="wait">
+                  {currentItems.map((img, index) => (
+                    <motion.div
+                      key={img.id}
+                      className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-square shadow-md hover:shadow-2xl transition-all duration-300"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      whileHover={{ y: -6 }}
+                      onClick={() => setSelectedImage(img)}
+                    >
+                      <Image
+                        src={img.imageUrl || img.src}
+                        alt={img.fileName || img.alt}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700"
+                        priority={index < 4}
+                        loading={index < 8 ? "eager" : "lazy"}
+                        quality={75}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        placeholder="blur"
+                        blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23f3f4f6' width='400' height='400'/%3E%3C/svg%3E"
+                      />
 
-            {/* Navigation buttons */}
-            {galleryImages.length > 1 && (
-              <>
-                <button
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goToPreviousImage();
-                  }}
-                  aria-label="Previous image"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <button
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center z-10 hover:bg-opacity-75 transition-all"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goToNextImage();
-                  }}
-                  aria-label="Next image"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            <div className="flex justify-center items-center h-full ">
-              <Image
-                width={500}
-                height={500}
-                src={selectedImage.imageUrl || selectedImage.src}
-                alt={`Gallery item ${selectedImage.id}`}
-                className="max-h-[80vh] max-w-[90vw] object-contain rounded-2xl"
-              />
-            </div>
-
-            {/* Image counter */}
-            {galleryImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm">
-                {currentImageIndex + 1} / {galleryImages.length}
+                      <motion.div
+                        className="absolute top-4 right-4 bg-red-800/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        View
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <motion.div
+                  className="flex justify-center items-center gap-4 pt-8 border-t border-gray-200"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <motion.button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === 1
+                        ? "text-gray-300 cursor-not-allowed bg-gray-100"
+                        : "text-red-800 hover:bg-red-100 shadow-md hover:shadow-lg"
+                    }`}
+                    whileHover={currentPage !== 1 ? { scale: 1.1 } : {}}
+                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                  >
+                    <ChevronLeft size={20} />
+                  </motion.button>
+
+                  <div className="flex gap-2">
+                    {Array.from({ length: Math.min(5, totalPages) }).map(
+                      (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <motion.button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 rounded-full font-semibold transition-all text-sm ${
+                              currentPage === pageNum
+                                ? "bg-red-800 text-white shadow-lg shadow-red-800/30"
+                                : "text-gray-700 hover:bg-red-100 bg-gray-100"
+                            }`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {pageNum}
+                          </motion.button>
+                        );
+                      },
+                    )}
+                  </div>
+
+                  <motion.button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`p-3 rounded-full transition-all ${
+                      currentPage === totalPages
+                        ? "text-gray-300 cursor-not-allowed bg-red-100"
+                        : "text-red-800 hover:bg-red-800 hover:text-red-800 shadow-md hover:shadow-lg"
+                    }`}
+                    whileHover={
+                      currentPage !== totalPages ? { scale: 1.1 } : {}
+                    }
+                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                  >
+                    <ChevronRight size={20} />
+                  </motion.button>
+                </motion.div>
+              )}
+            </>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {selectedImage && (
+          <Lightbox
+            image={selectedImage}
+            onClose={closeLightbox}
+            onNext={goToNextImage}
+            onPrev={goToPreviousImage}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-export default GallerySection;
+const BehindScenePage = () => {
+  return (
+    <Suspense fallback={<GallerySkeleton />}>
+      <BehindSceneContent />
+    </Suspense>
+  );
+};
+
+export default BehindScenePage;
