@@ -332,23 +332,6 @@ body {
   transition: backdrop-filter 0.2s ease;
 }
 
-/* Border Styling (light and dark modes) */
-.border {
-  border-width: 1px;
-  border-color: hsl(var(--border)); /* Use CSS variable for consistency */
-}
-.border-transparent {
-  border-color: transparent;
-}
-.border-b-transparent {
-  border-bottom-color: transparent;
-}
-.dark .border-transparent {
-  border-color: transparent;
-}
-.dark .border-b-transparent {
-  border-bottom-color: transparent;
-}
 
 /* Smooth Scroll Utility */
 .scroll-smooth {

@@ -517,12 +517,12 @@ export default function Header() {
             y: isScrolled ? -1 : 0,
           }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className={`mx-auto flex max-w-[1440px] items-center justify-between rounded-[26px] border pl-5 pr-4 sm:pl-6 sm:pr-5 lg:pl-7 lg:pr-6 ${
+          className={`mx-auto flex max-w-[1440px] items-center justify-between rounded-[26px] pl-5 pr-4 sm:pl-6 sm:pr-5 lg:pl-7 lg:pr-6 ${
             isTransparentMode
-              ? "border-white/10 border  bg-black text-white shadow-md backdrop-blur-xl"
+              ? "bg-black/80 text-white shadow-md backdrop-blur-xl"
               : isScrolled
-                ? "border-red-100 bg-white text-[#1a1a1a] shadow-[0_14px_34px_rgba(15,23,42,0.08)]"
-                : "border-red-100 bg-white text-[#1a1a1a] shadow-[0_10px_26px_rgba(15,23,42,0.05)]"
+                ? "bg-white/95 text-[#1a1a1a] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-md"
+                : "bg-white text-[#1a1a1a] shadow-[0_10px_26px_rgba(15,23,42,0.05)]"
           } ${isScrolled ? "py-1.5" : "py-2"}`}
         >
           <Link
@@ -543,7 +543,7 @@ export default function Header() {
           </Link>
 
           <div className="hidden flex-1 items-center justify-center xl:flex">
-            <nav className="flex items-center gap-9 2xl:gap-10">
+            <nav className="flex items-center gap-9 2xl:gap-10 ">
               {navItems.map((item) => {
                 const hasSubmenu = item.id === "tech-programs";
                 const isActive = isNavItemActive(item.href, item.id);
