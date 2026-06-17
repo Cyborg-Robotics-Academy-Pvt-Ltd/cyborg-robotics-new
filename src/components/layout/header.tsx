@@ -400,10 +400,10 @@ export default function Header() {
         <Link href="/login">
           <Button
             size="sm"
-            className={`h-10 rounded-full border px-4 text-sm font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-red-500 ${
+            className={`h-10 rounded-full px-4 text-sm font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-red-500 ${
               isTransparentMode
-                ? "border-white/35 bg-white/10 text-white hover:bg-white hover:text-[#8f1518]"
-                : "border-red-100 bg-white text-[#1a1a1a] hover:border-red-200 hover:bg-red-50"
+                ? "bg-white/10 text-white hover:bg-white hover:text-[#8f1518]"
+                : "bg-red-50 text-[#1a1a1a] hover:bg-red-100"
             }`}
           >
             Log In
@@ -420,10 +420,10 @@ export default function Header() {
         <button
           type="button"
           onClick={() => setShowProfileMenu((current) => !current)}
-          className={`group flex h-10 items-center gap-2 rounded-full border px-1.5 pr-3 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+          className={`group flex h-10 items-center gap-2 rounded-full px-1.5 pr-3 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
             isTransparentMode
-              ? "border-white/20 bg-white/12 text-white hover:bg-white/18"
-              : "border-black/5 bg-white/85 text-[#1a1a1a] shadow-[0_8px_24px_rgba(15,23,42,0.08)] hover:border-red-100"
+              ? "bg-white/12 text-white hover:bg-white/18"
+              : "bg-white/85 text-[#1a1a1a] shadow-[0_8px_24px_rgba(15,23,42,0.08)]"
           }`}
           aria-label="Open account menu"
           aria-expanded={showProfileMenu}
@@ -630,10 +630,10 @@ export default function Header() {
                   setShowSuggestions(false);
                   setShowSearchPopup(true);
                 }}
-                className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isTransparentMode
-                    ? "border-white/20 bg-white/10 text-white hover:bg-white/16"
-                    : "border-red-100/70 bg-white/78 text-[#1a1a1a] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:border-red-100 hover:bg-red-50/70"
+                    ? "bg-white/10 text-white hover:bg-white/16"
+                    : "bg-red-50/70 text-[#1a1a1a] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-red-50/90"
                 }`}
                 aria-label="Open course search"
               >
@@ -644,7 +644,7 @@ export default function Header() {
 
               <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
-                  <Button className="h-10 rounded-full border border-white/20 bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-4 xl:px-5 text-xs xl:text-sm font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)]">
+                  <Button className="h-10 rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-4 xl:px-5 text-xs xl:text-sm font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)]">
                     <span className="flex items-center gap-1.5">
                       <span className="xl:hidden">Free Trial</span>
                       <span className="hidden xl:inline">
@@ -660,10 +660,10 @@ export default function Header() {
             <div className="flex items-center gap-2 lg:hidden">
               {renderAuthMenu(true)}
               <div
-                className={`rounded-2xl border p-0.5 shadow-sm transition-all duration-300 ${
+                className={`rounded-2xl p-0.5 shadow-sm transition-all duration-300 ${
                   isTransparentMode
-                    ? "border-white/20 bg-white/10 text-white"
-                    : "border-red-100/70 bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
+                    ? "bg-white/10 text-white"
+                    : "bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
                 }`}
               >
                 <HamburgerButton
@@ -675,10 +675,10 @@ export default function Header() {
 
             <div className="hidden lg:block">
               <div
-                className={`rounded-[10px] border p-0.5 shadow-sm transition-all duration-300 ${
+                className={`rounded-[10px] p-0.5 shadow-sm transition-all duration-300 ${
                   isTransparentMode
-                    ? "border-red-700 border-1 bg-red-800/20 text-white"
-                    : "border-red-100/70 bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
+                    ? "bg-red-800/20 text-white"
+                    : "bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
                 }`}
               >
                 <HamburgerButton
