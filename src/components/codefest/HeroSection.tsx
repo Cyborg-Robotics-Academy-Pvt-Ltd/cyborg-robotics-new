@@ -12,7 +12,8 @@ interface TimeLeft {
   minutes: number;
   seconds: number;
 }
-
+// Fixed target: August 16, 2025 at 00:00:00 IST
+const TARGET_DATE = new Date("2026-08-16T00:00:00+05:30").getTime();
 export default function HeroSection() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
@@ -26,15 +27,8 @@ export default function HeroSection() {
   useEffect(() => {
     setMounted(true);
 
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 12);
-    targetDate.setHours(targetDate.getHours() + 8);
-    targetDate.setMinutes(targetDate.getMinutes() + 45);
-    targetDate.setSeconds(targetDate.getSeconds() + 30);
-
     const updateTimer = () => {
-      const now = new Date().getTime();
-      const distance = targetDate.getTime() - now;
+      const distance = TARGET_DATE - Date.now();
 
       if (distance <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -51,10 +45,8 @@ export default function HeroSection() {
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
-
     return () => clearInterval(interval);
   }, []);
-
   const scrollToRegistration = () => {
     window.dispatchEvent(new Event("open-codefest-registration"));
   };
@@ -169,7 +161,7 @@ export default function HeroSection() {
 
             {/* Secondary CTA */}
             <button
-              onClick={() => window.open("/rulebook.pdf", "_blank")}
+              onClick={() => window.open("/CODE_FEST_RULEBOOK.pdf", "_blank")}
               className="
     group relative overflow-hidden
     border border-[#0d3b99]/30
@@ -284,7 +276,7 @@ export default function HeroSection() {
         <div className="relative flex justify-center lg:order-last lg:col-span-7">
           <div className="relative -z-10 h-[340px] w-full sm:h-[400px] lg:h-[540px]">
             <Image
-              src="/assets/codefest.png"
+              src="/assets/codefest/codefest.png"
               alt="Maze challenge illustration"
               fill
               className="object-contain scale-110 lg:scale-125"
