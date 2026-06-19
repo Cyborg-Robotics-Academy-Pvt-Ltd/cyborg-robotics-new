@@ -112,7 +112,7 @@ const initialFormData: CodefestRegistrationFormData = {
 };
 
 export default function RegistrationForm() {
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(

@@ -12,10 +12,12 @@ import {
 } from "@/components/codefest/index";
 import CodefestLiveSection from "@/components/codefest/CodefestLiveSection";
 import Header from "@/components/layout/header";
+import CodefestPopup from "@/components/codefest/CodefestPopup";
 
 export default function HomePage() {
   return (
     <main id="top" className="bg-[#f8f8f8] overflow-hidden">
+      <CodefestPopup />
       <Header />
       <HeroSection />
       <FeatureBar />
