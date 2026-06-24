@@ -111,8 +111,14 @@ const initialFormData: CodefestRegistrationFormData = {
   agreedToTerms: false,
 };
 
-export default function RegistrationForm() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface RegistrationFormProps {
+  initiallyOpen?: boolean;
+}
+
+export default function RegistrationForm({
+  initiallyOpen = false,
+}: RegistrationFormProps) {
+  const [isModalOpen, setIsModalOpen] = useState(initiallyOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(

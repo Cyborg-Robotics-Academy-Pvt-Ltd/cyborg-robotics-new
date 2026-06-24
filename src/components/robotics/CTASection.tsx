@@ -46,24 +46,19 @@ const CTASection = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <button className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
-              APPLY FOR PILOT BATCH
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </button>
-
-            <Link
-              href="/contact"
-              className="group flex items-center justify-center gap-2 rounded-2xl border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
-            >
-              SCHEDULE COUNSELLING
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
-          </div>
+          <Link
+            href="/registration/new"
+            className="group flex items-center gap-2"
+          >
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+              <button className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+                APPLY FOR PILOT BATCH
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </button>
+            </div>
+          </Link>
         </div>
       </div>
     </section>
