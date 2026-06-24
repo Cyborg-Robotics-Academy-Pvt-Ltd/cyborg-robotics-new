@@ -140,7 +140,7 @@ export default function RewardsSection() {
 
           <div
             className="
-              mt-2 space-y-4 overflow-y-auto pr-1 sm:pr-3
+              mt-2 space-y-4 overflow-y-auto pr-1 sm:pr-3 
               max-h-[65vh]
 
               [&::-webkit-scrollbar]:w-[6px]
