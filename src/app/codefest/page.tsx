@@ -9,10 +9,11 @@ import {
   FAQSection,
   FinalCTA,
   Footer,
+  RegistrationForm,
 } from "@/components/codefest/index";
 import CodefestLiveSection from "@/components/codefest/CodefestLiveSection";
 import Header from "@/components/layout/header";
-import CodefestPopup from "@/components/codefest/CodefestPopup";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -35,7 +36,6 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main id="top" className="bg-[#f8f8f8] overflow-hidden">
-      <CodefestPopup />
       <Header />
       <HeroSection />
       <FeatureBar />
@@ -57,6 +57,7 @@ export default function HomePage() {
         <FAQSection />
       </section>
       <FinalCTA />
+      <RegistrationForm initiallyOpen />
       <Footer />
     </main>
   );

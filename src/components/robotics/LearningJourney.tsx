@@ -2,10 +2,9 @@
 import { Cpu, Package, SquareDashedBottomCode, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import React from "react";
+import { roadmapPhases } from "@/data/roadmap";
 
 const BRAND = "#B82D33";
-
-// ... (keep your RobotIcon and DroneIcon as-is)
 
 const RobotIcon = () => (
   <svg
@@ -34,32 +33,27 @@ const DroneIcon = () => (
   </svg>
 );
 
-const phases = [
-  { phase: "Phase 01", name: "Mechanical Robotics", icon: <RobotIcon /> },
-  { phase: "Phase 02", name: "Electronics & Arduino", icon: <Cpu size={28} /> },
-  {
-    phase: "Phase 03",
-    name: "3D Printing & Design",
-    icon: <Package size={28} />,
-  },
-  {
-    phase: "Phase 04",
-    name: "Python & Game Dev",
-    icon: <SquareDashedBottomCode size={28} />,
-  },
-  { phase: "Phase 05", name: "Drone / AR-VR", icon: <DroneIcon /> },
-  {
-    phase: "Final",
-    name: "Innovation Expo & Certification",
-    isFinal: true,
-    icon: <Trophy size={28} />,
-  },
-];
+const ICON_MAP: Record<string, React.ReactNode> = {
+  Bot: <RobotIcon />,
+  Cpu: <Cpu size={28} />,
+  Box: <Package size={28} />,
+  Code2: <SquareDashedBottomCode size={28} />,
+  Plane: <DroneIcon />,
+  Trophy: <Trophy size={28} />,
+};
+
+const phases = roadmapPhases.map((p) => ({
+  ...p,
+  phase: p.label,
+  name: p.title,
+  icon: ICON_MAP[p.icon] ?? <Cpu size={28} />,
+}));
 
 const container = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08 } },
 };
+
 const item = {
   hidden: { opacity: 0, y: 12 },
   show: {
@@ -72,7 +66,7 @@ const item = {
 const LearningJourney = () => {
   return (
     <section className="py-6 px-4 font-sans">
-      {/* Header — unchanged */}
+      {/* Header */}
       <div className="text-center mb-10">
         <p className="text-[10px] font-semibold tracking-[0.22em] text-gray-400 uppercase mb-2">
           Curriculum Roadmap
@@ -87,17 +81,13 @@ const LearningJourney = () => {
         </div>
       </div>
 
-      {/* ── MOBILE: vertical timeline (default) ── */}
+      {/* Mobile: vertical timeline */}
       <div className="flex flex-col gap-0 md:hidden">
         {phases.map((p, i) => (
-          <div
-            key={p.phase}
-            className="flex items-start gap-4 relative pb-7 last:pb-0 "
-          >
-            {/* Left: node + connector */}
+          <div key={p.id} className="flex items-start gap-4 relative pb-6">
+            {/* Icon column */}
             <div className="flex flex-col items-center flex-shrink-0">
-              <motion.div
-                whileHover={{ scale: 1.07 }}
+              <div
                 className="w-14 h-14 rounded-full flex items-center justify-center border-[1.5px]"
                 style={{
                   borderColor: BRAND,
@@ -106,8 +96,7 @@ const LearningJourney = () => {
                 }}
               >
                 {p.icon}
-              </motion.div>
-              {/* Vertical connector (hidden on last item) */}
+              </div>
               {i < phases.length - 1 && (
                 <div
                   className="w-0.5 flex-1 mt-1 min-h-[20px]"
@@ -116,10 +105,10 @@ const LearningJourney = () => {
               )}
             </div>
 
-            {/* Right: badge + label */}
-            <div className="pt-2">
+            {/* Content column */}
+            <div className="pt-2 flex-1">
               <span
-                className="text-[9px] font-semibold tracking-[0.16em] uppercase px-2 py-0.5 rounded-full border"
+                className="text-[9px] font-semibold tracking-[0.16em] uppercase px-2 py-0.5 rounded-full border inline-block"
                 style={{
                   color: BRAND,
                   background: "rgba(184,45,51,0.08)",
@@ -136,56 +125,62 @@ const LearningJourney = () => {
         ))}
       </div>
 
-      {/* ── DESKTOP: horizontal track ── */}
-      <div className="hidden md:flex items-start justify-between relative gap-1">
-        {/* Dashed connector */}
-        <div
-          className="absolute top-7 left-[8%] right-[8%] border-t-2 border-dashed z-0"
-          style={{ borderColor: BRAND, opacity: 0.3 }}
-        />
-        <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-60px" }}
-          className="flex items-start justify-between w-full"
-        >
-          {phases.map((p) => (
-            <motion.div
-              key={p.phase}
-              variants={item}
-              className="flex flex-col items-center flex-1 z-10"
-            >
-              <motion.div
-                whileHover={{ y: -4, scale: 1.07 }}
-                transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                className="w-14 h-14 rounded-full flex items-center justify-center border-[1.5px]"
-                style={{
-                  borderColor: BRAND,
-                  backgroundColor: p.isFinal ? BRAND : "white",
-                  color: p.isFinal ? "white" : BRAND,
-                }}
+      {/* Desktop: horizontal timeline */}
+      <div className="hidden md:block">
+        <div className="flex items-start justify-between relative gap-1">
+          <div
+            className="absolute top-7 left-[8%] right-[8%] border-t-2 border-dashed z-0"
+            style={{ borderColor: BRAND, opacity: 0.3 }}
+          />
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="flex items-start justify-between w-full relative"
+          >
+            {phases.map((p) => (
+              <div
+                key={p.id}
+                className="flex flex-col items-center flex-1 z-10 relative"
               >
-                {p.icon}
-              </motion.div>
-              <span
-                className="mt-2.5 text-[9px] font-semibold tracking-[0.16em] uppercase px-2 py-0.5 rounded-full border"
-                style={{
-                  color: BRAND,
-                  background: "rgba(184,45,51,0.08)",
-                  borderColor: "rgba(184,45,51,0.2)",
-                }}
-              >
-                {p.phase}
-              </span>
-              <p className="mt-1.5 text-[11px] font-medium text-gray-800 text-center leading-snug max-w-[76px]">
-                {p.name}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
+                <motion.div
+                  variants={item}
+                  className="flex flex-col items-center"
+                >
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.07 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                    className="w-14 h-14 rounded-full flex items-center justify-center border-[1.5px]"
+                    style={{
+                      borderColor: BRAND,
+                      backgroundColor: p.isFinal ? BRAND : "white",
+                      color: p.isFinal ? "white" : BRAND,
+                    }}
+                  >
+                    {p.icon}
+                  </motion.div>
+                  <span
+                    className="mt-2.5 text-[9px] font-semibold tracking-[0.16em] uppercase px-2 py-0.5 rounded-full border"
+                    style={{
+                      color: BRAND,
+                      background: "rgba(184,45,51,0.08)",
+                      borderColor: "rgba(184,45,51,0.2)",
+                    }}
+                  >
+                    {p.phase}
+                  </span>
+                  <p className="mt-1 text-[11px] font-medium text-gray-800 text-center leading-snug max-w-[76px]">
+                    {p.name}
+                  </p>
+                </motion.div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );
 };
+
 export default LearningJourney;

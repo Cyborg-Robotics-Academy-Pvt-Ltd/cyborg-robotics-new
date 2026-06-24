@@ -140,7 +140,7 @@ export default function AboutChallenge() {
               animate="visible"
             >
               <Image
-                src="/assets/coding-boy-illustration.png"
+                src="/assets/codefest/coding-boy-illustration.png"
                 alt={COPY.imageAlt}
                 fill
                 className="object-contain"

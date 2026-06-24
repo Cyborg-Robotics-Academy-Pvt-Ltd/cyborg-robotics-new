@@ -105,7 +105,7 @@ export default function RewardsSection() {
                 "
               >
                 <Image
-                  src="/assets/winner-trophy-illustration.png"
+                  src="/assets/codefest/winner-trophy-illustration.png"
                   alt="Rewards Trophy"
                   fill
                   priority

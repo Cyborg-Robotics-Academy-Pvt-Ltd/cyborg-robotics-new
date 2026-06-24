@@ -4,130 +4,241 @@ import React, {
   useState,
   useEffect,
   Suspense,
-  useMemo,
   useCallback,
+  useMemo,
 } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  Trophy,
+  Images,
+} from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import Header from "@/components/layout/header";
 import GallerySkeleton from "@/components/gallery/GallerySkeleton";
 
-// Lightbox Component
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Photo {
+  id: string;
+  imageUrl?: string;
+  src?: string;
+  fileName?: string;
+  alt?: string;
+  category?: string;
+  uploadedAt?: any;
+  width?: number;
+  height?: number;
+}
+
+// ─── Image Dimension Cache ────────────────────────────────────────────────────
+const imageDimensionCache = new Map<
+  string,
+  { width: number; height: number }
+>();
+
+const getImageDimensions = (
+  src: string,
+): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve) => {
+    // Check cache first
+    if (imageDimensionCache.has(src)) {
+      resolve(imageDimensionCache.get(src)!);
+      return;
+    }
+
+    const img = new window.Image();
+    img.onload = () => {
+      const dimensions = { width: img.width, height: img.height };
+      imageDimensionCache.set(src, dimensions);
+      resolve(dimensions);
+    };
+    img.onerror = () => {
+      // Fallback to 4/3 if load fails
+      resolve({ width: 4, height: 3 });
+    };
+    img.src = src;
+  });
+};
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
 const Lightbox = React.memo(
   ({
     image,
+    index,
+    total,
     onClose,
     onNext,
     onPrev,
+    direction,
   }: {
-    image: any;
+    image: Photo;
+    index: number;
+    total: number;
     onClose: () => void;
     onNext: () => void;
     onPrev: () => void;
+    direction: number;
   }) => {
     if (!image) return null;
 
     return (
       <motion.div
-        className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+        className="fixed inset-0 z-50 flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.25 }}
       >
-        <motion.div
-          className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center"
-          onClick={(e) => e.stopPropagation()}
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.2 }}
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/95 backdrop-blur-md"
+          onClick={onClose}
+        />
+
+        {/* Close */}
+        <motion.button
+          className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-red-800 text-white flex items-center justify-center transition-colors duration-200 border border-white/20"
+          onClick={onClose}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Close lightbox"
         >
-          <motion.button
-            className="absolute top-4 right-4 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg"
-            onClick={onClose}
-            aria-label="Close lightbox"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <X className="w-6 h-6" />
-          </motion.button>
+          <X className="w-5 h-5" />
+        </motion.button>
 
-          <motion.button
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
-            onClick={onPrev}
-            aria-label="Previous image"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </motion.button>
+        {/* Counter */}
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-20 bg-white/10 border border-white/20 backdrop-blur-sm text-white text-sm font-medium px-4 py-1.5 rounded-full">
+          {index + 1} / {total}
+        </div>
 
-          <motion.div
-            className="w-full max-h-[80vh] flex items-center justify-center rounded-xl overflow-hidden"
-            key={image.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src={image.imageUrl || image.src}
-              alt={image.fileName || image.alt || "Gallery image"}
-              width={1200}
-              height={900}
-              className="max-h-[80vh] max-w-full object-contain"
-              priority
-              unoptimized
-            />
-          </motion.div>
+        {/* Prev */}
+        <motion.button
+          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-red-800 text-white flex items-center justify-center transition-colors duration-200 border border-white/20 shadow-xl"
+          onClick={onPrev}
+          whileHover={{ scale: 1.1, x: -2 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Previous image"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </motion.button>
 
-          <motion.button
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-red-800/80 hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center z-10 transition-colors shadow-lg hidden sm:flex"
-            onClick={onNext}
-            aria-label="Next image"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ChevronRight className="w-6 h-6" />
-          </motion.button>
-
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 sm:hidden text-white/70 text-xs">
-            <button
-              onClick={onPrev}
-              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+        {/* Image */}
+        <div className="relative z-10 w-full max-w-5xl px-16 sm:px-24 max-h-[85vh] flex flex-col items-center gap-4">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={image.id}
+              className="relative w-full max-h-[75vh] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, x: direction * 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -60 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
             >
-              ← Prev
-            </button>
-            <button
-              onClick={onNext}
-              className="bg-red-800/80 px-3 py-2 rounded-full hover:bg-red-800"
+              <Image
+                src={image.imageUrl || image.src || ""}
+                alt={image.fileName || image.alt || "Gallery image"}
+                width={image.width || 1200}
+                height={image.height || 900}
+                className="max-h-[75vh] max-w-full object-contain"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Caption */}
+          {image.fileName && (
+            <motion.p
+              className="text-white/50 text-xs text-center truncate max-w-md"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
             >
-              Next →
-            </button>
-          </div>
-        </motion.div>
+              {image.fileName}
+            </motion.p>
+          )}
+        </div>
+
+        {/* Next */}
+        <motion.button
+          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-red-800 text-white flex items-center justify-center transition-colors duration-200 border border-white/20 shadow-xl"
+          onClick={onNext}
+          whileHover={{ scale: 1.1, x: 2 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Next image"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </motion.button>
       </motion.div>
     );
   },
 );
+Lightbox.displayName = "Lightbox";
 
+// ─── Photo Card ───────────────────────────────────────────────────────────────
+const PhotoCard = React.memo(
+  ({
+    photo,
+    index,
+    onClick,
+    aspectRatio,
+  }: {
+    photo: Photo;
+    index: number;
+    onClick: () => void;
+    aspectRatio: string;
+  }) => (
+    <motion.div
+      className="group relative overflow-hidden rounded-2xl cursor-pointer bg-gray-100 w-full"
+      style={{ aspectRatio }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: (index % 8) * 0.05, ease: "easeOut" }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      onClick={onClick}
+    >
+      <Image
+        src={photo.imageUrl || photo.src || ""}
+        alt={photo.fileName || photo.alt || "Gallery image"}
+        fill
+        className="object-cover transition-transform duration-700 group-hover:scale-110"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        loading={index < 8 ? "eager" : "lazy"}
+        quality={75}
+        placeholder="blur"
+        blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23f3f4f6' width='400' height='400'/%3E%3C/svg%3E"
+      />
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      {/* Zoom Icon */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        initial={false}
+      >
+        <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
+          <ZoomIn className="w-5 h-5 text-white" />
+        </div>
+      </motion.div>
+    </motion.div>
+  ),
+);
+PhotoCard.displayName = "PhotoCard";
+
+// ─── Main Content ─────────────────────────────────────────────────────────────
 const BehindSceneContent = () => {
-  const [photos, setPhotos] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedImage, setSelectedImage] = useState<any>(null);
-  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(
-    new Set(),
-  );
-  const itemsPerPage = 12;
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState(1);
+  const [aspectRatios, setAspectRatios] = useState<Record<string, string>>({});
 
-  // Fetch photos once - only "Competition Glory" category
+  // Fetch photos from Firestore
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
@@ -135,17 +246,34 @@ const BehindSceneContent = () => {
           collection(db, "photo"),
           orderBy("uploadedAt", "desc"),
         );
-        const photosSnapshot = await getDocs(photosQuery);
-        const photosData = photosSnapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter((photo: any) => photo.category === "Competition Glory");
-        setPhotos(photosData);
+        const snap = await getDocs(photosQuery);
+        const data = snap.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }) as Photo)
+          .filter((p) => p.category === "Competition Glory");
+
+        setPhotos(data);
+
+        // Preload image dimensions
+        const ratios: Record<string, string> = {};
+        for (const photo of data) {
+          const src = photo.imageUrl || photo.src || "";
+          if (!src) continue;
+
+          try {
+            const dims =
+              photo.width && photo.height
+                ? { width: photo.width, height: photo.height }
+                : await getImageDimensions(src);
+            ratios[photo.id] = `${dims.width}/${dims.height}`;
+          } catch {
+            // Fallback to 4/3 on error
+            ratios[photo.id] = "4/3";
+          }
+        }
+        setAspectRatios(ratios);
       } catch (err) {
         console.error("Error fetching photos:", err);
-        setError("Failed to load photos");
+        setError("Failed to load photos. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -154,297 +282,164 @@ const BehindSceneContent = () => {
     fetchPhotos();
   }, []);
 
-  const { currentItems, totalPages } = useMemo(() => {
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = photos.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(photos.length / itemsPerPage);
-    return { currentItems, totalPages };
-  }, [photos, currentPage]);
+  const openLightbox = useCallback(
+    (index: number) => setSelectedIndex(index),
+    [],
+  );
 
-  // Preload current page images
+  const closeLightbox = useCallback(() => setSelectedIndex(null), []);
+
+  const goToNext = useCallback(() => {
+    setDirection(1);
+    setSelectedIndex((prev) =>
+      prev === null ? null : (prev + 1) % photos.length,
+    );
+  }, [photos.length]);
+
+  const goToPrev = useCallback(() => {
+    setDirection(-1);
+    setSelectedIndex((prev) =>
+      prev === null ? null : (prev - 1 + photos.length) % photos.length,
+    );
+  }, [photos.length]);
+
+  // Keyboard navigation
   useEffect(() => {
-    if (currentItems.length === 0) return;
+    if (selectedIndex === null) return;
 
-    currentItems.slice(0, 6).forEach((img) => {
-      if (!preloadedImages.has(img.id)) {
-        const link = document.createElement("link");
-        link.rel = "preload";
-        link.as = "image";
-        link.href = img.imageUrl || img.src;
-        document.head.appendChild(link);
-
-        setPreloadedImages((prev) => new Set([...prev, img.id]));
-      }
-    });
-  }, [currentItems, preloadedImages]);
-
-  // Preload next page images
-  useEffect(() => {
-    const nextPageStart = currentPage * itemsPerPage;
-    const nextPageEnd = nextPageStart + itemsPerPage;
-    const nextPageImages = photos.slice(nextPageStart, nextPageEnd);
-
-    const timer = setTimeout(() => {
-      nextPageImages.forEach((img) => {
-        if (!preloadedImages.has(img.id)) {
-          const link = document.createElement("link");
-          link.rel = "prefetch";
-          link.as = "image";
-          link.href = img.imageUrl || img.src;
-          document.head.appendChild(link);
-
-          setPreloadedImages((prev) => new Set([...prev, img.id]));
-        }
-      });
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [currentPage, photos, preloadedImages]);
-
-  const goToNextImage = useCallback(() => {
-    setSelectedImage((prev: any) => {
-      if (!prev) return null;
-      const currentIndex = photos.findIndex((img) => img.id === prev.id);
-      if (currentIndex === -1) return prev;
-      const nextIndex = (currentIndex + 1) % photos.length;
-      return photos[nextIndex];
-    });
-  }, [photos]);
-
-  const goToPreviousImage = useCallback(() => {
-    setSelectedImage((prev: any) => {
-      if (!prev) return null;
-      const currentIndex = photos.findIndex((img) => img.id === prev.id);
-      if (currentIndex === -1) return prev;
-      const prevIndex = (currentIndex - 1 + photos.length) % photos.length;
-      return photos[prevIndex];
-    });
-  }, [photos]);
-
-  const closeLightbox = useCallback(() => {
-    setSelectedImage(null);
-  }, []);
-
-  useEffect(() => {
-    if (!selectedImage) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeLightbox();
-      } else if (e.key === "ArrowRight") {
-        goToNextImage();
-      } else if (e.key === "ArrowLeft") {
-        goToPreviousImage();
-      }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowRight") goToNext();
+      else if (e.key === "ArrowLeft") goToPrev();
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, closeLightbox, goToNextImage, goToPreviousImage]);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selectedIndex, closeLightbox, goToNext, goToPrev]);
 
   if (loading) {
     return (
       <>
-        <Header />
         <GallerySkeleton />
       </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Header />
-      <div className="max-w-7xl mx-auto mt-10">
-        {/* Hero Section */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+    <div className="min-h-screen bg-[#fafafa]">
+      {/* ── Hero ── */}
+      <div className="relative overflow-hidden pt-28 pb-16 px-4 sm:px-6 lg:px-8">
+        {/* Ambient orbs */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-red-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        <div className="absolute -top-20 right-0 w-72 h-72 bg-blue-100 rounded-full blur-3xl opacity-40 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative">
           <motion.div
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="mb-4"
+            className="flex flex-col items-center text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            <span className="inline-block px-4 py-2 rounded-full bg-red-100 text-red-800 text-sm font-semibold mb-4">
-              Gallery
-            </span>
+            {/* Eyebrow */}
+            <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-700 text-sm font-semibold px-4 py-2 rounded-full mb-6">
+              <Trophy className="w-4 h-4" />
+              Competition Glory
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 tracking-tight leading-[1.05] mb-5">
+              Student{" "}
+              <span className="relative">
+                <span className="bg-gradient-to-r from-red-700 to-red-500 bg-clip-text text-transparent">
+                  Wins
+                </span>
+                <motion.span
+                  className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-red-700 to-red-400 rounded-full"
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
+                />
+              </span>
+            </h1>
+
+            <p className="text-lg text-gray-500 max-w-2xl font-light leading-relaxed mb-4">
+              Awards, podium moments, and competition highlights — every photo
+              is a story of skill built at Cyborg Robotics.
+            </p>
+
+            {photos.length > 0 && (
+              <motion.div
+                className="flex items-center gap-2 text-sm text-gray-400 font-medium"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Images className="w-4 h-4" />
+                {photos.length} photos
+              </motion.div>
+            )}
           </motion.div>
-
-          <h1 className="text-5xl md:text-6xl font-black mb-6 text-gray-900 leading-tight">
-            Student{" "}
-            <span className="bg-gradient-to-r from-red-800 via-red-700 to-red-600 bg-clip-text text-transparent">
-              Glory
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Celebrating our students' wins, awards, and standout moments from
-            competitions
-          </p>
-        </motion.div>
-
-        {/* Gallery Container */}
-        <motion.div
-          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-gray-200/50 p-8 md:p-10"
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {error ? (
-            <motion.div
-              className="text-center py-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <div className="text-5xl mb-4">⚠️</div>
-              <p className="text-red-600 text-lg font-medium">{error}</p>
-            </motion.div>
-          ) : photos.length === 0 ? (
-            <motion.div
-              className="text-center py-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <div className="text-6xl mb-4">📷</div>
-              <p className="text-gray-500 text-lg font-medium">
-                No photos available in this category.
-              </p>
-            </motion.div>
-          ) : (
-            <>
-              {/* Image Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <AnimatePresence mode="wait">
-                  {currentItems.map((img, index) => (
-                    <motion.div
-                      key={img.id}
-                      className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-square shadow-md hover:shadow-2xl transition-all duration-300"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2, delay: index * 0.03 }}
-                      whileHover={{ y: -6 }}
-                      onClick={() => setSelectedImage(img)}
-                    >
-                      <Image
-                        src={img.imageUrl || img.src}
-                        alt={img.fileName || img.alt}
-                        width={400}
-                        height={400}
-                        className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700"
-                        priority={index < 4}
-                        loading={index < 8 ? "eager" : "lazy"}
-                        quality={75}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23f3f4f6' width='400' height='400'/%3E%3C/svg%3E"
-                      />
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      <motion.div
-                        className="absolute top-4 right-4 bg-red-800/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        View
-                      </motion.div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <motion.div
-                  className="flex justify-center items-center gap-4 pt-8 border-t border-gray-200"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <motion.button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    disabled={currentPage === 1}
-                    className={`p-3 rounded-full transition-all ${
-                      currentPage === 1
-                        ? "text-gray-300 cursor-not-allowed bg-gray-100"
-                        : "text-red-800 hover:bg-red-100 shadow-md hover:shadow-lg"
-                    }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.1 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                  >
-                    <ChevronLeft size={20} />
-                  </motion.button>
-
-                  <div className="flex gap-2">
-                    {Array.from({ length: Math.min(5, totalPages) }).map(
-                      (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-
-                        return (
-                          <motion.button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`w-10 h-10 rounded-full font-semibold transition-all text-sm ${
-                              currentPage === pageNum
-                                ? "bg-red-800 text-white shadow-lg shadow-red-800/30"
-                                : "text-gray-700 hover:bg-red-100 bg-gray-100"
-                            }`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            {pageNum}
-                          </motion.button>
-                        );
-                      },
-                    )}
-                  </div>
-
-                  <motion.button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
-                    disabled={currentPage === totalPages}
-                    className={`p-3 rounded-full transition-all ${
-                      currentPage === totalPages
-                        ? "text-gray-300 cursor-not-allowed bg-red-100"
-                        : "text-red-800 hover:bg-red-800 hover:text-red-800 shadow-md hover:shadow-lg"
-                    }`}
-                    whileHover={
-                      currentPage !== totalPages ? { scale: 1.1 } : {}
-                    }
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                  >
-                    <ChevronRight size={20} />
-                  </motion.button>
-                </motion.div>
-              )}
-            </>
-          )}
-        </motion.div>
+        </div>
       </div>
 
-      {/* Lightbox */}
+      {/* ── Gallery Grid ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center text-2xl">
+              ⚠️
+            </div>
+            <p className="text-red-600 font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm text-gray-500 underline hover:text-gray-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : photos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-3xl">
+              📷
+            </div>
+            <p className="text-gray-500 font-medium">
+              No photos yet in this category.
+            </p>
+            <p className="text-gray-400 text-sm">
+              Check back after the next competition!
+            </p>
+          </div>
+        ) : (
+          <motion.div
+            className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {photos.map((photo, index) => (
+              <div key={photo.id} className="break-inside-avoid">
+                <PhotoCard
+                  photo={photo}
+                  index={index}
+                  onClick={() => openLightbox(index)}
+                  aspectRatio={aspectRatios[photo.id] || "4/3"}
+                />
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </div>
+
+      {/* ── Lightbox ── */}
       <AnimatePresence>
-        {selectedImage && (
+        {selectedIndex !== null && photos[selectedIndex] && (
           <Lightbox
-            image={selectedImage}
+            image={photos[selectedIndex]}
+            index={selectedIndex}
+            total={photos.length}
+            direction={direction}
             onClose={closeLightbox}
-            onNext={goToNextImage}
-            onPrev={goToPreviousImage}
+            onNext={goToNext}
+            onPrev={goToPrev}
           />
         )}
       </AnimatePresence>
@@ -452,12 +447,10 @@ const BehindSceneContent = () => {
   );
 };
 
-const BehindScenePage = () => {
-  return (
-    <Suspense fallback={<GallerySkeleton />}>
-      <BehindSceneContent />
-    </Suspense>
-  );
-};
+const BehindScenePage = () => (
+  <Suspense fallback={<GallerySkeleton />}>
+    <BehindSceneContent />
+  </Suspense>
+);
 
 export default BehindScenePage;

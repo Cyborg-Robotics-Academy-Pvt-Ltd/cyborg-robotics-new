@@ -195,8 +195,21 @@ const isWorkshopRecord = (record: FirestoreRecord) =>
   Boolean(record.workshopRegistrationDraft) ||
   Boolean(record.workshop);
 
+const isRenewalRecord = (record: FirestoreRecord) =>
+  normalizeText(record.paymentFlow) === "renewal" ||
+  normalizeText(record.paymentType) === "renewal" ||
+  Boolean(record.renewalDraft);
+
+const isOtherPaymentRecord = (record: FirestoreRecord) =>
+  normalizeText(record.paymentFlow) === "other" ||
+  normalizeText(record.paymentType) === "other" ||
+  Boolean(record.otherDraft);
+
 const isStudentRegistrationRecord = (record: FirestoreRecord) =>
-  !isWorkshopRecord(record) && !isCompetitionRecord(record);
+  !isWorkshopRecord(record) &&
+  !isCompetitionRecord(record) &&
+  !isRenewalRecord(record) &&
+  !isOtherPaymentRecord(record);
 
 const isFirestoreTimestampLike = (
   value: unknown,
