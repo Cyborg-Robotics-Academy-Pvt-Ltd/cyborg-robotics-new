@@ -217,8 +217,8 @@ export async function POST(req: Request) {
     if (cookieValue) {
       response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
         httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        secure: true,
         path: "/",
         maxAge: 60 * 60 * 8,
       });

@@ -19,7 +19,7 @@ export const INVOICE_BRAND = {
   name: "Cyborg Robotics Academy Pvt Ltd",
   location: "Pune, Maharashtra",
   email: "info@cyborgrobotics.com",
-  phone: "+91 7028511161",
+  phone: "+91 9049435363",
   logoPath: "/assets/Cyborg-logo.png",
 };
 

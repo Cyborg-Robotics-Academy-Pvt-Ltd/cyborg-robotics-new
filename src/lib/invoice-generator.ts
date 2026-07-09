@@ -382,8 +382,6 @@ function drawSummary(doc: PDFKit.PDFDocument, top: number, contentWidth: number,
   const amount = formatMoney(data.amount, data.currency);
 
   const lines = [
-    ["Subtotal", amount],
-    ["Tax", "Rs. 0.00"],
     ["Total", amount],
   ];
 

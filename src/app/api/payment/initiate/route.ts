@@ -189,8 +189,8 @@ export async function POST(req: Request) {
       if (cookieValue) {
         response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          sameSite: "none",
+          secure: true,
           path: "/",
           maxAge: 60 * 60 * 8,
         });
@@ -364,8 +364,8 @@ export async function POST(req: Request) {
       if (cookieValue) {
         response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          sameSite: "none",
+          secure: true,
           path: "/",
           maxAge: 60 * 60 * 8,
         });
@@ -599,15 +599,15 @@ export async function POST(req: Request) {
     const response = NextResponse.json({ success: true, paymentUrl, orderId });
 
     const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
-    if (cookieValue) {
-      response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        maxAge: 60 * 60 * 8,
-      });
-    }
+      if (cookieValue) {
+        response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+          path: "/",
+          maxAge: 60 * 60 * 8,
+        });
+      }
 
     return response;
   } catch (error) {
