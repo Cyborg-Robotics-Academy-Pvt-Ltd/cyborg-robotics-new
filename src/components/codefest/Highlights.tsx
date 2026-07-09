@@ -43,7 +43,7 @@ const items: HighlightItem[] = [
     icon: null,
     imageSrc: "/assets/social-icons/whatsapp.png",
     color: "#25D366",
-    href: "https://chat.whatsapp.com/your-invite-link",
+    href: "https://chat.whatsapp.com/CaNL7KBldoWFQzS3kR6orX",
   },
 ];
 
