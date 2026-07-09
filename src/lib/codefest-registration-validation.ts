@@ -21,7 +21,7 @@ const NAME_REGEX = /^[A-Za-z][A-Za-z\s.'-]{1,}$/;
 export const CODEFEST_COMPETITION = {
   key: "codefest-competition",
   name: "CodeFest 1.0 Maze Challenge",
-  amount: 499,
+  amount: 1,
 } as const;
 
 export function generateCompetitionHallTicketNumber(orderId: string): string {
