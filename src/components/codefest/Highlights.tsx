@@ -55,7 +55,6 @@ export default function Highlights() {
           {items.map((item, index) => {
             const Icon = item.icon;
             const Wrapper = item.href ? "a" : "div";
-
             return (
               <Wrapper
                 key={item.title}
@@ -66,28 +65,13 @@ export default function Highlights() {
                       rel: "noopener noreferrer",
                     }
                   : {})}
-                className={`
-                  flex min-h-[100px] items-center gap-4
-                  px-5 py-5
-                  transition-all
-
-                  sm:min-h-[110px] sm:px-6
-                  lg:h-[118px] lg:px-8
-
-                  ${item.href ? "cursor-pointer hover:bg-[#f6fef8]" : ""}
-
-                  border-b border-[#ececec]
-                  sm:border-b
-
-                  lg:border-b-0
+                className={`flex min-h-[100px] items-center gap-4 px-5 py-5 transition-all sm:min-h-[110px] sm:px-6 lg:h-[118px] lg:px-8 ${item.href ? "cursor-pointer hover:bg-[#f6fef8]" : ""} border-b border-[#ececec] sm:border-b lg:border-b-0
                   ${
                     index !== items.length - 1
                       ? "lg:border-r lg:border-[#ececec]"
                       : ""
                   }
-
                   ${index >= items.length - 1 ? "border-b-0" : ""}
-
                   ${index >= 2 ? "sm:border-b-0" : ""}
                 `}
               >

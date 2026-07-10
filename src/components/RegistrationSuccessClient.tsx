@@ -283,49 +283,6 @@ export default function RegistrationSuccessClient() {
   const competitionLabel = payment.courseName?.includes("Maze Challenge")
     ? "Maze Challenge"
     : payment.courseName || "CodeFest Challenge";
-  const hallTicketDetails = [
-    {
-      label: "PARTICIPANT",
-      value: payment.studentName || "Codefest Participant",
-      icon: <UserRound className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "COMPETITION",
-      value: competitionLabel,
-      icon: <Trophy className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "GRADE",
-      value: "To be shared",
-      highlight: true,
-      icon: <GraduationCap className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "PLATFORM",
-      value: "Scratch / PictoBlox",
-      icon: <MonitorSmartphone className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "VENUE",
-      value: "Shared on registered email",
-      icon: <MapPin className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "DEVICE",
-      value: "Laptop / Desktop",
-      icon: <LaptopMinimal className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "EXPERIENCE",
-      value: "All skill levels",
-      icon: <Brain className="h-5 w-5" strokeWidth={1.8} />,
-    },
-    {
-      label: "REPORTING TIME",
-      value: "Shared on registered email",
-      icon: <Clock3 className="h-5 w-5" strokeWidth={1.8} />,
-    },
-  ];
 
   const WhatsAppIcon = () => (
     <svg
