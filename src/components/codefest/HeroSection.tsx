@@ -161,7 +161,9 @@ export default function HeroSection() {
 
             {/* Secondary CTA */}
             <button
-              onClick={() => window.open("/CODE_FEST_RULEBOOK.pdf", "_blank")}
+              onClick={() =>
+                window.open("/assets/codefest/CODE_FEST_RULEBOOK.pdf", "_blank")
+              }
               className="
     group relative overflow-hidden
     border border-[#0d3b99]/30

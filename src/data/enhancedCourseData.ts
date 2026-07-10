@@ -451,7 +451,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description: "Learn electronics and coding with mini electronics projects",
     mode: "Offline",
     duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/Mini Electronics.pdf",
+    syllabusPath: "/assets/pdf/MINI ELECTRONICS.pdf",
     syllabusFileName: "MINI ELECTRONICS.pdf",
     imagePath: "/assets/classroom-course/mini-electronics.jpg",
     imageAlt: "Mini Electronics Course",
