@@ -22,11 +22,10 @@ const BulletItem = ({ text }: { text: string }) => (
 export const MentorCard = ({ mentor }: MentorCardProps) => {
   const { name, role, company, tags, image, linkedinUrl, specialtyIcon } =
     mentor;
-
   return (
-    <div className="relative bg-white rounded-[20px] border border-[#f0e0e0] overflow-visible transition-all duration-300 cursor-pointer hover:shadow-[0_16px_40px_rgba(168,27,30,0.12)] hover:-translate-y-1">
+    <div className="relative mx-auto w-64 bg-white rounded-[20px] border border-[#f0e0e0] overflow-visible transition-all duration-300 cursor-pointer hover:shadow-[0_16px_40px_rgba(168,27,30,0.12)] hover:-translate-y-1">
       {/* ── Photo Header ── */}
-      <div className="relative h-[260px] rounded-t-[20px] overflow-hidden bg-gradient-to-br from-[#fdeaea] to-[#fde0e0]">
+      <div className="relative h-[260px]  rounded-t-[20px] overflow-hidden bg-gradient-to-br from-[#fdeaea] to-[#fde0e0]">
         {image ? (
           <Image
             src={image}
