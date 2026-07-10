@@ -2,13 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  XCircle,
-  Clock,
-  RefreshCw,
-  Home,
-  ReceiptText,
-} from "lucide-react";
+import { XCircle, Clock, RefreshCw, Home, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { readOrderId } from "@/lib/order-id-storage";
@@ -161,7 +155,9 @@ export default function PaymentStatusClient() {
       const currentPayment = await fetchCurrentStatus();
 
       if (isSuccessfulPaymentStatus(currentPayment?.status)) {
-        router.replace(`/registration-success?orderId=${encodeURIComponent(orderId)}`);
+        router.replace(
+          `/registration-success?orderId=${encodeURIComponent(orderId)}`,
+        );
         return;
       }
 
@@ -182,7 +178,9 @@ export default function PaymentStatusClient() {
   useEffect(() => {
     if (!orderId || !isSuccessfulPaymentStatus(paymentData?.status)) return;
 
-    router.replace(`/registration-success?orderId=${encodeURIComponent(orderId)}`);
+    router.replace(
+      `/registration-success?orderId=${encodeURIComponent(orderId)}`,
+    );
   }, [orderId, paymentData?.status, router]);
 
   const currentStatus = normalizePaymentStatus(paymentData?.status);
@@ -211,7 +209,8 @@ export default function PaymentStatusClient() {
           <Clock className="mx-auto mb-3 h-10 w-10 text-[#8D0F11]" />
           <h1 className="text-xl font-semibold">Missing order ID</h1>
           <p className="mt-2 text-sm text-slate-600">
-            We could not verify this payment because the order reference is missing.
+            We could not verify this payment because the order reference is
+            missing.
           </p>
         </div>
       </div>
@@ -259,26 +258,30 @@ export default function PaymentStatusClient() {
         <h1 className="mt-4 text-2xl font-semibold text-slate-900">
           Payment failed
         </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {failureMessage}
-        </p>
+        <p className="mt-2 text-sm text-slate-600">{failureMessage}</p>
 
         <div className="mt-5 space-y-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-left">
           <div>
-            <p className="text-xs font-medium uppercase text-slate-500">Order ID</p>
+            <p className="text-xs font-medium uppercase text-slate-500">
+              Order ID
+            </p>
             <p className="mt-1 break-all font-mono text-xs text-slate-900">
               {orderId}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs font-medium uppercase text-slate-500">Amount</p>
+              <p className="text-xs font-medium uppercase text-slate-500">
+                Amount
+              </p>
               <p className="mt-1 text-sm font-semibold text-slate-900">
                 {amountLabel}
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium uppercase text-slate-500">Status</p>
+              <p className="text-xs font-medium uppercase text-slate-500">
+                Status
+              </p>
               <p className="mt-1 text-sm font-semibold text-red-600">
                 {currentStatus}
               </p>
@@ -295,31 +298,6 @@ export default function PaymentStatusClient() {
             </div>
           ) : null}
         </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link href="/registration/new">
-            <Button className="h-11 w-full rounded-full bg-[#8D0F11] text-white hover:bg-[#761012]">
-              Try again
-            </Button>
-          </Link>
-          <Link href="/contact-us">
-            <Button
-              variant="outline"
-              className="h-11 w-full rounded-full border-[#8D0F11]/20 text-[#8D0F11] hover:bg-[#fff3f3]"
-            >
-              <ReceiptText className="mr-2 h-4 w-4" />
-              Contact support
-            </Button>
-          </Link>
-        </div>
-
-        <Link
-          href="/"
-          className="mt-4 inline-flex items-center text-sm font-medium text-slate-500 hover:text-[#8D0F11]"
-        >
-          <Home className="mr-2 h-4 w-4" />
-          Back to home
-        </Link>
       </div>
     </div>
   );
