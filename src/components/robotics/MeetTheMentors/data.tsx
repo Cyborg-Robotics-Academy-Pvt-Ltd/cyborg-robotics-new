@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Briefcase,
   Drone,
+  Box,
 } from "lucide-react";
 import { Mentor, Stat } from "./types";
 
@@ -62,7 +63,7 @@ export const MENTORS: Mentor[] = [
     company: "BCA",
     image: "/assets/year-long-course/mentors/Anchal.png",
 
-    tags: ["Embedded Systems", "Coding", "Programming"],
+    tags: ["Embedded Systems", "Programming"],
     linkedinUrl: "https://www.linkedin.com/in/anchalmishra1/",
     specialtyIcon: <Cpu size={17} className="text-[#A81B1E]" />,
   },
@@ -74,6 +75,6 @@ export const MENTORS: Mentor[] = [
     company: "B.Tech Mechanical Engineering",
     tags: ["Electronics", "3D Printing", "Drones"],
     linkedinUrl: "https://www.linkedin.com/in/nileshjaiswar/",
-    specialtyIcon: <Zap size={17} className="text-[#A81B1E]" />,
+    specialtyIcon: <Box size={17} className="text-[#A81B1E]" />,
   },
 ];
