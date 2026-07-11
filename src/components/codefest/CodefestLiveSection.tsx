@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   limit,
   onSnapshot,
   orderBy,
@@ -14,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth-context";
 import { db } from "@/lib/firebase";
 
 import MiniChallenge from "./MiniChallenge";
@@ -74,10 +77,16 @@ function EnhancedLeaderboard({
   entries,
   loading,
   error,
+  isAdmin,
+  deletingId,
+  onDeleteEntry,
 }: {
   entries: LeaderboardEntry[];
   loading: boolean;
   error: string | null;
+  isAdmin: boolean;
+  deletingId: string | null;
+  onDeleteEntry: (id: string) => void;
 }) {
   const top3 = entries.slice(0, 3);
   const rest = entries.slice(3);
@@ -143,13 +152,25 @@ function EnhancedLeaderboard({
                       {fmtTime(entry.time)}
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-[15px] font-black ${m.text}`}>
-                      {fmtScore(entry.score)}
-                    </p>
-                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
-                      pts
-                    </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-right">
+                      <p className={`text-[15px] font-black ${m.text}`}>
+                        {fmtScore(entry.score)}
+                      </p>
+                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
+                        pts
+                      </p>
+                    </div>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteEntry(entry.id)}
+                        disabled={deletingId === entry.id}
+                        className="rounded-full border border-[#dbe1ea] px-2.5 py-1 text-[10px] font-semibold text-[#8B1A2B] transition-colors hover:bg-[#8B1A2B] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {deletingId === entry.id ? "..." : "Delete"}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -174,9 +195,21 @@ function EnhancedLeaderboard({
                     <p className="text-[11px] text-gray-400 font-medium shrink-0">
                       {fmtTime(entry.time)}
                     </p>
-                    <p className="text-[13px] font-bold text-[#082c78] shrink-0 w-20 text-right">
-                      {fmtScore(entry.score)} pts
-                    </p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <p className="text-[13px] font-bold text-[#082c78] w-20 text-right">
+                        {fmtScore(entry.score)} pts
+                      </p>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteEntry(entry.id)}
+                          disabled={deletingId === entry.id}
+                          className="rounded-full border border-[#dbe1ea] px-2.5 py-1 text-[10px] font-semibold text-[#8B1A2B] transition-colors hover:bg-[#8B1A2B] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {deletingId === entry.id ? "..." : "Delete"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -199,6 +232,9 @@ export default function CodefestLiveSection() {
   const [isSaving, setIsSaving] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { userRole } = useAuth();
+  const isAdmin = userRole === "admin";
 
   useEffect(() => {
     const recordsQuery = query(
@@ -235,6 +271,21 @@ export default function CodefestLiveSection() {
 
     return unsubscribe;
   }, []);
+
+  async function handleDeleteEntry(id: string) {
+    if (!isAdmin) return;
+
+    setDeletingId(id);
+    setLeaderboardError(null);
+
+    try {
+      await deleteDoc(doc(db, "codefestGameRecords", id));
+    } catch {
+      setLeaderboardError("Could not delete this score.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   async function handleScoreSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -292,6 +343,9 @@ export default function CodefestLiveSection() {
           entries={leaderboard}
           loading={leaderboardLoading}
           error={leaderboardError}
+          isAdmin={isAdmin}
+          deletingId={deletingId}
+          onDeleteEntry={handleDeleteEntry}
         />
       </section>
 

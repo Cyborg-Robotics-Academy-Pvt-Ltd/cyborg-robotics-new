@@ -91,11 +91,7 @@ const roleLinksMap: Record<
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
     },
-    {
-      label: "Assign Trainers",
-      href: "/admin-dashboard/assign-trainer",
-      icon: <IconUsers className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
+
     {
       label: "Access Control",
       href: "/admin-dashboard/access-control",

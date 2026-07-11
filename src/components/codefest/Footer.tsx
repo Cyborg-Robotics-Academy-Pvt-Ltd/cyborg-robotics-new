@@ -213,8 +213,27 @@ export default function Footer() {
         </Card>
       </div>
 
-      <div className="border-t-2 border-[#c0392b] py-4 text-center text-[11px] text-gray-400">
-        (c) 2024 Maze Challenge. All Rights Reserved.
+      {/* Copyright & Legal */}
+      <div className="py-8  flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-xs text-gray-600 mx-auto">
+          © {new Date().getFullYear()} CODE FEST 1.0 • THE LONGEST DAY
+          CHALLENGE
+        </p>
+        <div className="flex gap-4">
+          <Link
+            href="/terms-conditions"
+            className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Terms
+          </Link>
+          <span className="text-gray-300">•</span>
+          <Link
+            href="/privacy-policy"
+            className="text-xs text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Privacy
+          </Link>
+        </div>
       </div>
     </footer>
   );

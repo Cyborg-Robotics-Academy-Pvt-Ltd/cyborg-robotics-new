@@ -298,6 +298,14 @@ export default function PaymentStatusClient() {
             </div>
           ) : null}
         </div>
+
+        <Link
+          href="/"
+          className="mt-4 inline-flex items-center text-sm font-medium text-slate-500 hover:text-[#8D0F11]"
+        >
+          <Home className="mr-2 h-4 w-4" />
+          Back to home
+        </Link>
       </div>
     </div>
   );

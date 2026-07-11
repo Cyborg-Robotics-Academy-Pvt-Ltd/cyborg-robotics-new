@@ -144,6 +144,7 @@ export default function AboutChallenge() {
                 alt={COPY.imageAlt}
                 fill
                 className="object-contain"
+                sizes="(max-width: 640px) 260px, 320px"
                 quality={90}
                 priority
               />
@@ -215,10 +216,11 @@ export default function AboutChallenge() {
               animate="visible"
             >
               <Image
-                src="/assets/coding-boy-illustration.png"
+                src="/assets/codefest/coding-boy-illustration.png"
                 alt={COPY.imageAlt}
                 fill
                 className="object-contain object-bottom"
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 quality={90}
                 priority
               />

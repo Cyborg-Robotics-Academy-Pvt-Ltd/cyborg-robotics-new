@@ -170,13 +170,7 @@ export default function FinalCTA() {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 sm:pb-10">
       <Card
-        className="
-          relative overflow-hidden
-          rounded-[28px]
-          border-none
-
-          sm:rounded-3xl
-        "
+        className="relative overflow-hidden rounded-[28px] border-none sm:rounded-3xl"
         style={{
           background: "#0a2472",
           minHeight: 180,

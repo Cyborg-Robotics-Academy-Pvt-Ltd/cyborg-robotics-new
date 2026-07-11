@@ -110,6 +110,7 @@ export default function RewardsSection() {
                   fill
                   priority
                   className="object-contain"
+                  sizes="(max-width: 768px) 90vw, 45vw"
                 />
               </div>
             </div>
