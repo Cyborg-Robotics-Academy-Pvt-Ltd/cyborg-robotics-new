@@ -1,36 +1,20 @@
 import { NextRequest } from 'next/server';
-import { auth, db } from '@/lib/firebase';
-import { 
-  createUserWithEmailAndPassword, 
-  updateProfile
-} from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  collection, 
-  query, 
-  where, 
-  getDocs,
-  getDoc
-} from 'firebase/firestore';
-import { autoGenerateAndAssignPrn } from "@/lib/prn-utils";
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import {
+  generatePrnNumberAdmin,
+  normalizeCenterLocation,
+} from "@/lib/admin-prn";
 
 // Function to create a single user with proper error handling
 async function createSingleUser(userData: { fullName: string; email: string; password: string; role: string; center?: string }) {
   const { fullName, email, password, role, center } = userData;
 
-  // Create the user in Firebase Auth
-  const userCredential = await createUserWithEmailAndPassword(
-    auth,
+  const user = await adminAuth.createUser({
     email,
-    password
-  );
-
-  const user = userCredential.user;
-
-  // Update user profile with display name
-  await updateProfile(user, {
     displayName: fullName,
+    emailVerified: true,
+    password,
   });
 
   // Create user document in Firestore with verified status and active role
@@ -38,8 +22,8 @@ async function createSingleUser(userData: { fullName: string; email: string; pas
     uid: user.uid,
     email: email,
     fullName: fullName,
-    createdAt: new Date(),
-    lastLogin: new Date(),
+    createdAt: FieldValue.serverTimestamp(),
+    lastLogin: FieldValue.serverTimestamp(),
     status: "active", // Set status to active for admin-created accounts
     role: role, // Use selected role
     emailVerified: true, // Mark as verified since created by admin
@@ -48,12 +32,18 @@ async function createSingleUser(userData: { fullName: string; email: string; pas
 
   // Save to appropriate collection based on role
   const collectionName = `${role}s`; // students, trainers, admins
-  await setDoc(doc(db, collectionName, user.uid), firestoreUserData);
+  await adminDb.collection(collectionName).doc(user.uid).set(firestoreUserData);
   
   // Generate PRN for students
   if (role === "student" && center) {
     try {
-      await autoGenerateAndAssignPrn(user.uid, center);
+      const prnNumber = await generatePrnNumberAdmin(
+        normalizeCenterLocation(center),
+      );
+      await adminDb.collection("students").doc(user.uid).set(
+        { PrnNumber: prnNumber },
+        { merge: true },
+      );
     } catch (prnError) {
       console.error(`Error generating PRN for user ${user.uid}:`, prnError);
       // Don't fail the whole operation if PRN generation fails
@@ -73,8 +63,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the admin user exists in the admins collection
-    const adminDoc = await getDocs(query(collection(db, 'admins'), where('uid', '==', adminUid)));
-    if (adminDoc.empty) {
+    const adminSnapshot = await adminDb
+      .collection("admins")
+      .where("uid", "==", adminUid)
+      .limit(1)
+      .get();
+    const adminById = await adminDb.collection("admins").doc(adminUid).get();
+    if (adminSnapshot.empty && !adminById.exists) {
       return Response.json({ error: 'Unauthorized: Admin privileges required' }, { status: 403 });
     }
 
@@ -118,9 +113,11 @@ export async function POST(request: NextRequest) {
       let userExists = false;
       
       for (const checkRole of roles) {
-        const roleCollectionRef = collection(db, `${checkRole}s`);
-        const q = query(roleCollectionRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await adminDb
+          .collection(`${checkRole}s`)
+          .where("email", "==", email)
+          .limit(1)
+          .get();
 
         if (!querySnapshot.empty) {
           userExists = true;

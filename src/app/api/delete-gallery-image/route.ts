@@ -1,5 +1,4 @@
-import { getFirestore, doc, deleteDoc } from "firebase/firestore";
-import { app } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function DELETE(req: Request) {
   try {
@@ -12,12 +11,8 @@ export async function DELETE(req: Request) {
       return new Response(JSON.stringify({ error: "Missing image ID" }), { status: 400 });
     }
 
-    // Initialize Firestore
-    const db = getFirestore(app);
-    
     // Delete the document from the galleryImage collection
-    const galleryDocRef = doc(db, 'galleryImage', imageId);
-    await deleteDoc(galleryDocRef);
+    await adminDb.collection('galleryImage').doc(imageId).delete();
 
     // Return success response
     return new Response(JSON.stringify({ 
