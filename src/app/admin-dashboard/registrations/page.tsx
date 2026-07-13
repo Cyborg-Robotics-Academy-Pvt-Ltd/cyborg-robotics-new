@@ -10,7 +10,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { app } from "@/lib/firebase";
+import { app, auth } from "@/lib/firebase";
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
+  UserPlus,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ import { saveAs } from "file-saver";
 import { FaWhatsapp } from "react-icons/fa";
 import { normalizePaymentStatus } from "@/lib/payment-status";
 import { generateCompetitionHallTicketNumber } from "@/lib/codefest-registration-validation";
+import courses from "../../../../utils/courses";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -90,6 +92,19 @@ interface UnifiedRegistration {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const STATUS_OPTIONS = ["FAILED", "PENDING", "SUCCESS", "CASH_PAY"] as const;
+const CENTER_OPTIONS = [
+  "KALYANI NAGAR",
+  "VIMAN NAGAR",
+  "MAGARPATTA",
+  "KHARADI",
+] as const;
+
+const COURSES_BY_CENTER: Record<(typeof CENTER_OPTIONS)[number], string[]> = {
+  "KALYANI NAGAR": courses,
+  "VIMAN NAGAR": courses,
+  MAGARPATTA: courses,
+  KHARADI: courses,
+};
 
 const FILTER_OPTIONS: Array<{ value: RegistrationFilter; label: string }> = [
   { value: "all", label: "All Registrations" },
@@ -155,6 +170,11 @@ const normalizeText = (value: unknown) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
 
+const normalizeEmail = (value: unknown) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
 const pickFirstValue = <T,>(...values: T[]): T | undefined =>
   values.find((value) => {
     if (value === null || value === undefined) return false;
@@ -178,7 +198,60 @@ const normalizeAdminPaymentStatus = (status?: string | null) => {
     return "CASH_PAY";
   if (raw === "NEW") return "PENDING";
   if (raw === "PENDING_PAYMENT") return "PENDING_PAYMENT";
+  if (raw === "CONFIRMED" || raw === "PAID") return "SUCCESS";
   return normalizePaymentStatus(raw);
+};
+
+const getStatusPriority = (status?: string | null) => {
+  const normalized = normalizeAdminPaymentStatus(status);
+  if (
+    normalized === "SUCCESS" ||
+    normalized === "CHARGED" ||
+    normalized === "CASH_PAY"
+  ) {
+    return 3;
+  }
+  if (normalized === "FAILED") {
+    return 2;
+  }
+  if (normalized === "PENDING" || normalized === "PENDING_PAYMENT") {
+    return 1;
+  }
+  return 0;
+};
+
+const resolvePaymentStatus = (
+  fallbackStatus?: string | null,
+  paymentDoc?: FirestoreRecord | null,
+) => {
+  const paymentStatusFromDoc = normalizeAdminPaymentStatus(
+    paymentDoc?.status ||
+      paymentDoc?.paymentStatus ||
+      paymentDoc?.payment_status ||
+      paymentDoc?.paymentState ||
+      null,
+  );
+  const fallbackStatusNormalized = normalizeAdminPaymentStatus(fallbackStatus);
+
+  if (
+    paymentStatusFromDoc === "SUCCESS" ||
+    paymentStatusFromDoc === "CHARGED" ||
+    paymentStatusFromDoc === "CASH_PAY" ||
+    paymentStatusFromDoc === "FAILED"
+  ) {
+    return paymentStatusFromDoc;
+  }
+
+  if (
+    fallbackStatusNormalized === "SUCCESS" ||
+    fallbackStatusNormalized === "CHARGED" ||
+    fallbackStatusNormalized === "CASH_PAY" ||
+    fallbackStatusNormalized === "FAILED"
+  ) {
+    return fallbackStatusNormalized;
+  }
+
+  return paymentStatusFromDoc || fallbackStatusNormalized;
 };
 
 const getPaymentStatusColor = (status?: string) => {
@@ -231,7 +304,7 @@ const getWhatsAppFollowUpLink = (registration: UnifiedRegistration) => {
   const orderText = registration.orderId
     ? ` Order ID: ${registration.orderId}.`
     : "";
-  const message = `Hi, this is Cyborg Robotics. We noticed that the payment for ${studentName} - ${programName} is ${status}.${orderText} Please send us a screenshot of the payment so we can verify it and mark your order as paid. Let us know if you need any help completing the payment.`;
+  const message = `Hi, this is Cyborg Robotics. We would like to confirm whether the payment for ${studentName} - ${programName} has been completed.${orderText} If the payment has been made, please send us a screenshot of the transaction so we can verify it and update the payment status. If you have not completed the payment yet or need any assistance, please let us know.`;
 
   return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 };
@@ -313,22 +386,20 @@ const mergeRegistrationRecords = (
     paymentDocId: incoming.paymentDocId || base.paymentDocId,
   };
 
-  // Improved status merging: prefer terminal statuses (SUCCESS, FAILED) over PENDING
-  const baseStatus = base.paymentStatus || "";
-  const incomingStatus = incoming.paymentStatus || "";
+  const baseStatus = normalizeAdminPaymentStatus(base.paymentStatus);
+  const incomingStatus = normalizeAdminPaymentStatus(incoming.paymentStatus);
 
-  if (baseStatus === "SUCCESS" || baseStatus === "CHARGED") {
-    merged.paymentStatus = baseStatus;
-  } else if (incomingStatus === "SUCCESS" || incomingStatus === "CHARGED") {
-    merged.paymentStatus = incomingStatus;
-  } else if (baseStatus === "FAILED") {
-    merged.paymentStatus = baseStatus;
+  if (getStatusPriority(baseStatus) >= getStatusPriority(incomingStatus)) {
+    merged.paymentStatus = baseStatus || incomingStatus;
   } else {
     merged.paymentStatus = incomingStatus || baseStatus;
   }
 
   // Same for amount: if we have a success status, make sure we have the amount
-  if (merged.paymentStatus === "SUCCESS" || merged.paymentStatus === "CHARGED") {
+  if (
+    merged.paymentStatus === "SUCCESS" ||
+    merged.paymentStatus === "CHARGED"
+  ) {
     merged.amount = incoming.amount || base.amount;
   }
 
@@ -340,6 +411,7 @@ const mergeRegistrationRecords = (
 const normalizeNewRegistration = (
   record: FirestoreRecord,
   id: string,
+  paymentDoc?: FirestoreRecord | null,
 ): UnifiedRegistration => {
   const draft = record.registrationDraft || {};
   const course = record.course || {};
@@ -398,8 +470,9 @@ const normalizeNewRegistration = (
       course.name ||
       "",
     paymentType: record.paymentType || draft.paymentType || "",
-    paymentStatus: normalizeAdminPaymentStatus(
+    paymentStatus: resolvePaymentStatus(
       record.paymentStatus || record.status,
+      paymentDoc,
     ),
     amount:
       record.paidAmount ||
@@ -423,6 +496,7 @@ const normalizeNewRegistration = (
 const normalizeRenewal = (
   record: FirestoreRecord,
   id: string,
+  paymentDoc?: FirestoreRecord | null,
 ): UnifiedRegistration => {
   const paidAmount = pickFirstValue(
     record.paidAmount,
@@ -471,7 +545,7 @@ const normalizeRenewal = (
       .filter(Boolean)
       .join(" | "),
     paymentType: record.paymentType || record.modeOfPayment || "",
-    paymentStatus: normalizeAdminPaymentStatus(paymentStatus),
+    paymentStatus: resolvePaymentStatus(paymentStatus, paymentDoc),
     amount: paidAmount || "",
     remark: record.paymentRemark || record.remark || "",
     dateOfRegistration: record.dateOfRegistration || record.dateOfJoining || "",
@@ -482,13 +556,15 @@ const normalizeRenewal = (
 const normalizeWorkshop = (
   record: FirestoreRecord,
   id: string,
+  paymentDoc?: FirestoreRecord | null,
 ): UnifiedRegistration => {
   const draft = record.workshopRegistrationDraft || {};
   const workshop = record.workshop || {};
-  
+
   // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
   const rawStatus = record.paymentStatus || record.status || "";
-  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+  const statusToNormalize =
+    rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
 
   const normalizedPaymentStatus = normalizeAdminPaymentStatus(
     statusToNormalize ||
@@ -534,7 +610,7 @@ const normalizeWorkshop = (
       workshop.name ||
       "",
     paymentType: record.paymentType || "",
-    paymentStatus: normalizedPaymentStatus,
+    paymentStatus: resolvePaymentStatus(normalizedPaymentStatus, paymentDoc),
     amount: paidAmount || record.workshopFee || workshop.fee || "",
     remark: record.paymentRemark || "",
     dateOfRegistration:
@@ -548,15 +624,18 @@ const normalizeWorkshop = (
 const normalizeCompetition = (
   record: FirestoreRecord,
   id: string,
+  paymentDoc?: FirestoreRecord | null,
 ): UnifiedRegistration => {
   const draft = record.competitionRegistrationDraft || {};
   const competition = record.competition || {};
-  
+
   // Normalize status: treat "confirmed" as "SUCCESS" for display consistency
   const rawStatus = record.paymentStatus || record.status || "";
-  const statusToNormalize = rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
-  
-  const normalizedPaymentStatus = normalizeAdminPaymentStatus(statusToNormalize);
+  const statusToNormalize =
+    rawStatus.toLowerCase() === "confirmed" ? "SUCCESS" : rawStatus;
+
+  const normalizedPaymentStatus =
+    normalizeAdminPaymentStatus(statusToNormalize);
 
   const hallTicket =
     record.hallTicketNumber ||
@@ -598,7 +677,7 @@ const normalizeCompetition = (
       record.competitionName || record.courseName || competition.name || "",
     programDetail: hallTicket ? `Hall Ticket: ${hallTicket}` : "",
     paymentType: record.paymentType || "",
-    paymentStatus: normalizedPaymentStatus,
+    paymentStatus: resolvePaymentStatus(normalizedPaymentStatus, paymentDoc),
     amount: paidAmount || record.registrationFee || competition.fee || "",
     remark: record.paymentRemark || "",
     extraDetails: [
@@ -623,6 +702,7 @@ const normalizeCompetition = (
 const normalizeOther = (
   record: FirestoreRecord,
   id: string,
+  paymentDoc?: FirestoreRecord | null,
 ): UnifiedRegistration => ({
   id,
   registrationType: "other",
@@ -631,8 +711,9 @@ const normalizeOther = (
   programName:
     record.selectedCourseName || record.courseName || record.course || "Other",
   paymentType: record.paymentType || "other",
-  paymentStatus: normalizeAdminPaymentStatus(
+  paymentStatus: resolvePaymentStatus(
     record.paymentStatus || record.status || "PENDING",
+    paymentDoc,
   ),
   amount: record.paidAmount || record.amount || "",
   remark: record.paymentRemark || record.remark || "",
@@ -658,6 +739,19 @@ const Page = () => {
     string | null
   >(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [creatingRegistrationId, setCreatingRegistrationId] = useState<
+    string | null
+  >(null);
+  const [selectedCenterByRegistration, setSelectedCenterByRegistration] =
+    useState<Record<string, string>>({});
+  const [selectedCourseByRegistration, setSelectedCourseByRegistration] =
+    useState<Record<string, string>>({});
+  const [existingStudentsByEmail, setExistingStudentsByEmail] = useState<
+    Record<string, boolean>
+  >({});
+  const [registrationConfirmations, setRegistrationConfirmations] = useState<
+    Record<string, string>
+  >({});
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof UnifiedRegistration;
@@ -689,6 +783,15 @@ const Page = () => {
 
       const rows: UnifiedRegistration[] = [];
       const mergedByTypeAndOrder = new Map<string, UnifiedRegistration>();
+      const paymentLookup = new Map<string, FirestoreRecord>();
+
+      paymentsSnapshot.docs.forEach((entry) => {
+        const data = entry.data() as FirestoreRecord;
+        const orderId = String(data.orderId || "").trim();
+        if (orderId) {
+          paymentLookup.set(orderId, data);
+        }
+      });
 
       const appendMerged = (item: UnifiedRegistration) => {
         const key = `${item.registrationType}-${item.orderId || item.id}`;
@@ -707,65 +810,96 @@ const Page = () => {
         .filter(({ data }) => isStudentRegistrationRecord(data))
         .forEach(({ id, data }) =>
           appendMerged({
-            ...normalizeNewRegistration(data, id),
+            ...normalizeNewRegistration(
+              data,
+              id,
+              data.orderId ? paymentLookup.get(String(data.orderId)) : null,
+            ),
             firestoreId: id,
           }),
         );
 
       renewalsSnapshot.docs.forEach((entry) => {
+        const data = entry.data() as FirestoreRecord;
         rows.push({
-          ...normalizeRenewal(entry.data() as FirestoreRecord, entry.id),
+          ...normalizeRenewal(
+            data,
+            entry.id,
+            data.orderId ? paymentLookup.get(String(data.orderId)) : null,
+          ),
           firestoreId: entry.id,
         });
       });
 
       otherRegistrationsSnapshot.docs.forEach((entry) => {
+        const data = entry.data() as FirestoreRecord;
         rows.push({
-          ...normalizeOther(entry.data() as FirestoreRecord, entry.id),
+          ...normalizeOther(
+            data,
+            entry.id,
+            data.orderId ? paymentLookup.get(String(data.orderId)) : null,
+          ),
           firestoreId: entry.id,
         });
       });
 
-      workshopRegistrationsSnapshot.docs.forEach((entry) =>
+      workshopRegistrationsSnapshot.docs.forEach((entry) => {
+        const data = entry.data() as FirestoreRecord;
         appendMerged({
-          ...normalizeWorkshop(entry.data() as FirestoreRecord, entry.id),
+          ...normalizeWorkshop(
+            data,
+            entry.id,
+            data.orderId ? paymentLookup.get(String(data.orderId)) : null,
+          ),
           firestoreId: entry.id,
-        }),
-      );
+        });
+      });
 
-      competitionRegistrationsSnapshot.docs.forEach((entry) =>
+      competitionRegistrationsSnapshot.docs.forEach((entry) => {
+        const data = entry.data() as FirestoreRecord;
         appendMerged({
-          ...normalizeCompetition(entry.data() as FirestoreRecord, entry.id),
+          ...normalizeCompetition(
+            data,
+            entry.id,
+            data.orderId ? paymentLookup.get(String(data.orderId)) : null,
+          ),
           firestoreId: entry.id,
-        }),
-      );
+        });
+      });
 
       paymentsSnapshot.docs.forEach((entry) => {
         const data = entry.data() as FirestoreRecord;
+        const paymentRecord = data.orderId
+          ? paymentLookup.get(String(data.orderId))
+          : data;
         if (data.paymentFlow === "workshop") {
           appendMerged({
-            ...normalizeWorkshop(data, `payment-${entry.id}`),
+            ...normalizeWorkshop(data, `payment-${entry.id}`, paymentRecord),
             paymentDocId: entry.id,
           });
           return;
         }
         if (data.paymentFlow === "competition") {
           appendMerged({
-            ...normalizeCompetition(data, `payment-${entry.id}`),
+            ...normalizeCompetition(data, `payment-${entry.id}`, paymentRecord),
             paymentDocId: entry.id,
           });
           return;
         }
         if (data.paymentFlow === "other") {
           appendMerged({
-            ...normalizeOther(data, `payment-${entry.id}`),
+            ...normalizeOther(data, `payment-${entry.id}`, paymentRecord),
             paymentDocId: entry.id,
           });
           return;
         }
         if (isStudentRegistrationRecord(data)) {
           appendMerged({
-            ...normalizeNewRegistration(data, `payment-${entry.id}`),
+            ...normalizeNewRegistration(
+              data,
+              `payment-${entry.id}`,
+              paymentRecord,
+            ),
             paymentDocId: entry.id,
           });
         }
@@ -783,6 +917,57 @@ const Page = () => {
   useEffect(() => {
     fetchRegistrations();
   }, [fetchRegistrations]);
+
+  // Keep a client-side cache of which registration emails already exist in `students`
+  const fetchExistingStudentsByEmails = useCallback(
+    async (emails: string[]) => {
+      try {
+        if (!emails || emails.length === 0) return;
+        const firestore = getFirestore(app);
+        const studentsRef = collection(firestore, "students");
+        const found = new Set<string>();
+
+        // Firestore 'in' supports up to 10 values per query
+        for (let i = 0; i < emails.length; i += 10) {
+          const chunk = emails.slice(i, i + 10);
+          const q = query(studentsRef, where("email", "in", chunk));
+          const snap = await getDocs(q);
+          snap.forEach((d) => {
+            const data = d.data() as FirestoreRecord;
+            if (data?.email) found.add(normalizeEmail(data.email));
+          });
+        }
+
+        setExistingStudentsByEmail((prev) => {
+          const next = { ...prev };
+          emails.forEach((e) => {
+            const n = normalizeEmail(e);
+            if (!n) return;
+            next[n] = found.has(n);
+          });
+          return next;
+        });
+      } catch (err) {
+        console.error("Error checking existing students by email:", err);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const emails = Array.from(
+      new Set(
+        registrations
+          .map((r) => normalizeEmail(r.email))
+          .filter((e) => e && e.length > 0),
+      ),
+    );
+    if (emails.length === 0) {
+      setExistingStudentsByEmail({});
+      return;
+    }
+    void fetchExistingStudentsByEmails(emails);
+  }, [registrations, fetchExistingStudentsByEmails]);
 
   // ── Derived data ───────────────────────────────────────────────────────────
 
@@ -863,6 +1048,41 @@ const Page = () => {
     setExpandedRowId((prev) => (prev === id ? null : id));
   };
 
+  const getSelectedCenter = (registration: UnifiedRegistration) =>
+    selectedCenterByRegistration[registration.id] ||
+    CENTER_OPTIONS.find((center) =>
+      String(registration.location || "")
+        .toUpperCase()
+        .includes(center.split(" ")[0]),
+    ) ||
+    "";
+
+  const getAvailableCourses = (center: string) =>
+    COURSES_BY_CENTER[center as keyof typeof COURSES_BY_CENTER] || [];
+
+  const getSelectedCourse = (registration: UnifiedRegistration) =>
+    selectedCourseByRegistration[registration.id] ||
+    (registration.programName &&
+    getAvailableCourses(getSelectedCenter(registration)).includes(
+      registration.programName,
+    )
+      ? registration.programName
+      : "");
+
+  const handleCenterSelect = (registrationId: string, center: string) => {
+    const availableCourses = getAvailableCourses(center);
+    setSelectedCenterByRegistration((current) => ({
+      ...current,
+      [registrationId]: center,
+    }));
+    setSelectedCourseByRegistration((current) => ({
+      ...current,
+      [registrationId]: availableCourses.includes(current[registrationId])
+        ? current[registrationId]
+        : "",
+    }));
+  };
+
   const handleRemoveRegistration = useCallback(
     async (registration: UnifiedRegistration) => {
       const confirmed = window.confirm(
@@ -935,7 +1155,18 @@ const Page = () => {
             status: nextStatus,
           }),
         });
-        const data = await response.json();
+
+        const contentType = response.headers.get("content-type") || "";
+        let data: any;
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(
+            `Unexpected non-JSON response from server: ${text.slice(0, 200)}`,
+          );
+        }
+
         if (!response.ok || !data.success)
           throw new Error(
             data.message || "Failed to update registration status",
@@ -954,6 +1185,99 @@ const Page = () => {
       }
     },
     [],
+  );
+
+  const handleCreateRegistration = useCallback(
+    async (registration: UnifiedRegistration) => {
+      const currentAdminUid = auth.currentUser?.uid;
+      const center = getSelectedCenter(registration);
+      const course = getSelectedCourse(registration);
+
+      setRegistrationConfirmations((current) => ({
+        ...current,
+        [registration.id]: "",
+      }));
+
+      if (!currentAdminUid) {
+        setRegistrationConfirmations((current) => ({
+          ...current,
+          [registration.id]: "Admin session not found. Please log in again.",
+        }));
+        return;
+      }
+
+      if (!center || !course) {
+        setRegistrationConfirmations((current) => ({
+          ...current,
+          [registration.id]: "Select a center and course first.",
+        }));
+        return;
+      }
+
+      setCreatingRegistrationId(registration.id);
+      try {
+        const response = await fetch("/api/admin/create-student-registration", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adminUid: currentAdminUid,
+            center,
+            course,
+            registration,
+          }),
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        let data: any;
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(
+            `Unexpected non-JSON response from server: ${text.slice(0, 200)}`,
+          );
+        }
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to create registration");
+        }
+
+        setRegistrations((current) =>
+          current.map((item) =>
+            item.id === registration.id
+              ? {
+                  ...item,
+                  prn: data.prnNumber,
+                  location: center,
+                  programName: course,
+                  paymentStatus: "SUCCESS",
+                }
+              : item,
+          ),
+        );
+        setRegistrationConfirmations((current) => ({
+          ...current,
+          [registration.id]: `Created successfully. PRN: ${data.prnNumber}. Temporary password: ${data.temporaryPassword}`,
+        }));
+        // Mark this email as having an existing student so UI updates immediately
+        if (registration.email) {
+          setExistingStudentsByEmail((prev) => ({
+            ...prev,
+            [normalizeEmail(registration.email)]: true,
+          }));
+        }
+      } catch (createError: any) {
+        console.error("Failed to create student registration:", createError);
+        setRegistrationConfirmations((current) => ({
+          ...current,
+          [registration.id]:
+            createError?.message || "Failed to create registration.",
+        }));
+      } finally {
+        setCreatingRegistrationId(null);
+      }
+    },
+    [selectedCenterByRegistration, selectedCourseByRegistration],
   );
 
   const exportToExcel = async () => {
@@ -984,14 +1308,13 @@ const Page = () => {
           type: TYPE_LABELS[registration.registrationType],
           date: getDisplayDate(registration),
           name: registration.name || "",
-          classInfo:
-            registration.prn ||
-            [
-              registration.age ? `Age ${registration.age}` : "",
-              registration.className,
-            ]
-              .filter(Boolean)
-              .join(" / "),
+          classInfo: [
+            registration.prn ? `PRN: ${registration.prn}` : "",
+            registration.age ? `Age ${registration.age}` : "",
+            registration.className,
+          ]
+            .filter(Boolean)
+            .join(" / "),
           schoolName: registration.schoolName || "",
           programName: registration.programName || "",
           programDetail:
@@ -1053,6 +1376,11 @@ const Page = () => {
       label: "Payment",
       sortable: "paymentStatus",
       width: "w-[190px]",
+    },
+    {
+      key: "registrationAction",
+      label: "Create Registration",
+      width: "min-w-[260px]",
     },
     { key: "amount", label: "Amount", sortable: "amount", width: "w-[90px]" },
     { key: "actions", label: "", width: "w-[48px]" },
@@ -1212,6 +1540,24 @@ const Page = () => {
                         )
                           ? getWhatsAppFollowUpLink(registration)
                           : "";
+                        const selectedCenter = getSelectedCenter(registration);
+                        const availableCourses =
+                          getAvailableCourses(selectedCenter);
+                        const selectedCourse = getSelectedCourse(registration);
+                        const canCreateStudentRegistration =
+                          registration.registrationType === "new" &&
+                          ["SUCCESS", "CASH_PAY"].includes(
+                            normalizeAdminPaymentStatus(
+                              registration.paymentStatus,
+                            ),
+                          );
+                        const studentExists = Boolean(
+                          existingStudentsByEmail[
+                            normalizeEmail(registration.email)
+                          ],
+                        );
+                        const registrationConfirmation =
+                          registrationConfirmations[registration.id];
 
                         return (
                           <React.Fragment key={rowKey}>
@@ -1253,18 +1599,19 @@ const Page = () => {
                                       {registration.name || "—"}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-0.5">
-                                      {registration.prn
-                                        ? `PRN: ${registration.prn}`
-                                        : [
-                                            registration.age
-                                              ? `Age: ${registration.age}`
-                                              : "",
-                                            registration.className
-                                              ? `Class: ${registration.className}`
-                                              : "",
-                                          ]
-                                            .filter(Boolean)
-                                            .join(" · ") || "—"}
+                                      {[
+                                        registration.prn
+                                          ? `PRN: ${registration.prn}`
+                                          : "",
+                                        registration.age
+                                          ? `Age: ${registration.age}`
+                                          : "",
+                                        registration.className
+                                          ? `Class: ${registration.className}`
+                                          : "",
+                                      ]
+                                        .filter(Boolean)
+                                        .join(" · ") || "—"}
                                     </p>
                                   </div>
                                 </div>
@@ -1298,6 +1645,7 @@ const Page = () => {
                                   >
                                     <SelectTrigger
                                       className={`w-[130px] border text-xs font-semibold shadow-none ${getPaymentStatusColor(registration.paymentStatus)}`}
+                                      onClick={(e) => e.stopPropagation()}
                                     >
                                       <SelectValue>
                                         {updatingStatusId === registration.id
@@ -1338,6 +1686,124 @@ const Page = () => {
                                 <p className="text-[11px] text-gray-400 mt-1.5">
                                   {registration.paymentType || "—"}
                                 </p>
+                              </TableCell>
+
+                              {/* Create Registration */}
+                              <TableCell className="px-4 py-3">
+                                {registration.registrationType === "new" &&
+                                studentExists ? (
+                                  <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 border border-emerald-100">
+                                    Student Registered
+                                  </span>
+                                ) : canCreateStudentRegistration ? (
+                                  <div className="flex min-w-[240px] flex-col gap-2">
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                      <Select
+                                        value={selectedCenter || undefined}
+                                        onValueChange={(value) =>
+                                          handleCenterSelect(
+                                            registration.id,
+                                            value,
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger
+                                          className="h-9 border-gray-200 bg-white text-xs"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <SelectValue placeholder="Center" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {CENTER_OPTIONS.map((center) => (
+                                            <SelectItem
+                                              key={center}
+                                              value={center}
+                                            >
+                                              {center}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+
+                                      <Select
+                                        value={selectedCourse || undefined}
+                                        onValueChange={(value) =>
+                                          setSelectedCourseByRegistration(
+                                            (current) => ({
+                                              ...current,
+                                              [registration.id]: value,
+                                            }),
+                                          )
+                                        }
+                                        disabled={!selectedCenter}
+                                      >
+                                        <SelectTrigger
+                                          className="h-9 border-gray-200 bg-white text-xs"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <SelectValue placeholder="Course" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {availableCourses.map((course) => (
+                                            <SelectItem
+                                              key={course}
+                                              value={course}
+                                            >
+                                              {course}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    <Button
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        void handleCreateRegistration(
+                                          registration,
+                                        );
+                                      }}
+                                      disabled={
+                                        creatingRegistrationId ===
+                                          registration.id ||
+                                        !selectedCenter ||
+                                        !selectedCourse ||
+                                        Boolean(registration.prn) ||
+                                        studentExists
+                                      }
+                                      className="h-9 bg-red-800 text-xs text-white hover:bg-red-900"
+                                    >
+                                      {creatingRegistrationId ===
+                                      registration.id ? (
+                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                                      )}
+                                      Create Registration
+                                    </Button>
+
+                                    {registrationConfirmation && (
+                                      <p
+                                        className={`text-[11px] leading-snug ${
+                                          registrationConfirmation.startsWith(
+                                            "Created",
+                                          )
+                                            ? "text-emerald-700"
+                                            : "text-red-600"
+                                        }`}
+                                      >
+                                        {registrationConfirmation}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    {registration.registrationType === "new"
+                                      ? "Awaiting successful payment"
+                                      : "Not applicable"}
+                                  </span>
+                                )}
                               </TableCell>
 
                               {/* Amount */}
@@ -1383,7 +1849,7 @@ const Page = () => {
                                   className="bg-slate-50 hover:bg-slate-50"
                                 >
                                   <TableCell
-                                    colSpan={7}
+                                    colSpan={8}
                                     className="p-0 border-b border-gray-200"
                                   >
                                     <motion.div

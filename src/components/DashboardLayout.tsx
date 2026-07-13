@@ -119,7 +119,6 @@ const roleLinksMap: Record<
       href: "/user-profile",
       icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" />,
     },
-
     {
       label: "Student Record",
       href: "/student-list",

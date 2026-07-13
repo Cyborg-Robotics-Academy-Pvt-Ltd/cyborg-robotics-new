@@ -119,6 +119,22 @@ export async function GET(req: Request) {
     const paymentData = snapshot.docs[0].data();
     const ownershipCheck = verifyPaymentOwnership(req, orderId, paymentData);
     if (!ownershipCheck.ok) {
+      if (paymentData.status === "SUCCESS") {
+        return NextResponse.json({
+          success: true,
+          payment: {
+            orderId: paymentData.orderId,
+            amount: paymentData.amount,
+            status: paymentData.status,
+            transactionReference: paymentData.transactionReference,
+            studentName:
+              paymentData?.registrationDraft?.studentName || paymentData.studentName,
+            courseName: paymentData?.course?.name || paymentData.courseName,
+            invoiceNumber: paymentData.invoiceNumber,
+          },
+        });
+      }
+
       await safeWritePaymentAuditLog({
         eventType: "status_lookup",
         source: "payment_status_get",

@@ -121,11 +121,30 @@ export async function POST(req: Request) {
 
     let finalizedRegistrationId: string | null = null;
     if (orderId && (nextStatus === "SUCCESS" || nextStatus === "CASH_PAY")) {
-      const finalizeResult = await finalizeRegistrationForPayment(
-        orderId,
-        nextStatus === "CASH_PAY" ? "CASH_PAY" : "MANUAL_VERIFIED",
-      );
-      finalizedRegistrationId = finalizeResult.registrationId || null;
+      try {
+        const finalizeResult = await finalizeRegistrationForPayment(
+          orderId,
+          nextStatus === "CASH_PAY" ? "CASH_PAY" : "MANUAL_VERIFIED",
+        );
+        finalizedRegistrationId = finalizeResult.registrationId || null;
+      } catch (finalizeErr) {
+        // Log and continue — return JSON indicating finalize error so client doesn't receive HTML
+        console.error("finalizeRegistrationForPayment failed:", finalizeErr);
+        const finalizeErrorMessage =
+          finalizeErr && typeof finalizeErr === "object" && "message" in finalizeErr
+            ? (finalizeErr as any).message
+            : String(finalizeErr);
+        return NextResponse.json(
+          { 
+            success: false,
+            message: "Payment updated but finalization failed",
+            paymentStatus: nextStatus,
+            status: recordStatus,
+            finalizeError: String(finalizeErrorMessage),
+          },
+          { status: 200 },
+        );
+      }
     }
 
     return NextResponse.json({

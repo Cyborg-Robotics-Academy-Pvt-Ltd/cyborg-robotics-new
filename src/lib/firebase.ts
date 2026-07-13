@@ -1,5 +1,4 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -15,17 +14,23 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Authentication
-const auth = getAuth(app);
-// Enable persistent auth state
-setPersistence(auth, browserLocalPersistence);
-
 // Initialize Firestore
 const db = getFirestore(app);
 
-// Initialize Analytics only on the client side
+// Initialize Auth only on the client side
+let auth: any = null;
 let analytics = null;
+
 if (typeof window !== 'undefined') {
+  // Import auth-related modules only on client side
+  import('firebase/auth').then(({ getAuth, setPersistence, browserLocalPersistence }) => {
+    auth = getAuth(app);
+    // Enable persistent auth state
+    setPersistence(auth, browserLocalPersistence).catch(err => {
+      console.error('Failed to set auth persistence:', err);
+    });
+  });
+
   // Import analytics only on client side
   import('firebase/analytics').then(({ getAnalytics }) => {
     analytics = getAnalytics(app);
