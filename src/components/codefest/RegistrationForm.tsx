@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -30,6 +30,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveOrderId } from "@/lib/order-id-storage";
+import {
+  isInAppBrowser,
+  isAndroid,
+  escapeToSystemBrowser,
+} from "@/lib/in-app-browser";
 import {
   CODEFEST_COMPETITION,
   normalizeCodefestRegistrationForm,
@@ -126,6 +131,27 @@ export default function RegistrationForm({
   );
   const [formData, setFormData] =
     useState<CodefestRegistrationFormData>(initialFormData);
+  const [isIosInApp, setIsIosInApp] = useState(false);
+
+  useEffect(() => {
+    console.log("UA:", navigator.userAgent);
+    const iab = isInAppBrowser();
+    const android = isAndroid();
+    console.log("Is IAB:", iab);
+    console.log("Is Android:", android);
+
+    if (iab) {
+      if (android) {
+        // Automatically escape Android Instagram browser to Google Chrome
+        const currentUrl = window.location.href;
+        const stripped = currentUrl.replace(/^https?:\/\//, "");
+        window.location.href = `intent://${stripped}#Intent;scheme=https;package=com.android.chrome;end`;
+      } else {
+        // iOS In-App Browser detected
+        setIsIosInApp(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const openRegistrationForm = () => {
@@ -147,7 +173,6 @@ export default function RegistrationForm({
     setFormError("");
     setIsModalOpen(true);
   };
-
   const handleInputChange = (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -172,7 +197,7 @@ export default function RegistrationForm({
     setFormData((current) => ({ ...current, agreedToTerms: checked }));
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
@@ -204,6 +229,26 @@ export default function RegistrationForm({
         if (data.orderId) {
           saveOrderId(data.orderId);
         }
+
+        // Instagram/Facebook in-app browsers frequently fail to redirect
+        // back after a UPI app-switch (WebView JS context gets suspended
+        // or reset). Escape to the system browser before payment starts.
+        if (isInAppBrowser()) {
+          if (isAndroid()) {
+            escapeToSystemBrowser(data.paymentUrl);
+            return;
+          }
+
+          // iOS in-app browsers cannot be force-escaped (Apple restriction).
+          // Show the user how to open in Safari instead of risking a
+          // payment that can't redirect back to the confirmation page.
+          setFormError(
+            "You're viewing this inside Instagram. Please tap the ⋮ menu (top right) and choose 'Open in Browser' before proceeding, so your payment confirmation loads correctly.",
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
         window.location.href = data.paymentUrl;
         return;
       }
@@ -465,6 +510,25 @@ export default function RegistrationForm({
               </div>
             )}
 
+            {isIosInApp && (
+              <div className="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-[0_4px_12px_rgba(217,119,6,0.1)]">
+                <div className="flex gap-3">
+                  <div className="text-xl">⚠️</div>
+                  <div className="space-y-2">
+                    <h4 className="text-[14px] font-bold text-amber-900 uppercase tracking-wide">
+                      Instagram Browser Detected (iOS)
+                    </h4>
+                    <p className="text-[13px] leading-relaxed font-semibold text-amber-800">
+                      Payment confirmation and ticket generation will fail if completed inside Instagram. 
+                    </p>
+                    <p className="text-[12px] leading-relaxed text-amber-700 font-medium">
+                      To register successfully, please tap the <span className="font-bold bg-amber-200/60 px-1 py-0.5 rounded">•••</span> or <span className="font-bold bg-amber-200/60 px-1 py-0.5 rounded">⋮</span> icon in the top-right corner, then select <span className="font-bold text-[#b3202a]">"Open in Browser"</span> (Safari) before continuing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {textFields.map(
@@ -657,13 +721,21 @@ export default function RegistrationForm({
               <div className="space-y-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white"
+                  disabled={isSubmitting || isIosInApp}
+                  className={`cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white ${
+                    isIosInApp
+                      ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed opacity-75"
+                      : ""
+                  }`}
                 >
-                  {isSubmitting
-                    ? "🔄 Processing..."
-                    : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`}
-                  {!isSubmitting && <ArrowRight size={18} className="ml-2" />}
+                  {isIosInApp ? (
+                    "⚠️ Open in Safari to Register & Pay"
+                  ) : isSubmitting ? (
+                    "🔄 Processing..."
+                  ) : (
+                    `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`
+                  )}
+                  {!isSubmitting && !isIosInApp && <ArrowRight size={18} className="ml-2" />}
                 </Button>
 
                 <p className="text-center text-[13px] font-semibold text-gray-500">
