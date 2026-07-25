@@ -24,8 +24,8 @@ const courses = [
     "PeeCee",
     "Quarky",
     "AI with Pictoblox",
-    "Competition"
-    
+    "Competition",
+  "Customized Courses",
   ];
   
   export default courses;

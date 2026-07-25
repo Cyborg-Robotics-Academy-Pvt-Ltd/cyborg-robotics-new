@@ -147,7 +147,7 @@ export async function POST(req: Request) {
     const centerLocation = normalizeCenterLocation(selectedCenter);
     const prnNumber = await generatePrnNumberForServerClient(centerLocation);
     // const temporaryPassword = makeTemporaryPassword();
-    const temporaryPassword = "Pass@1234567";
+    const temporaryPassword = "Pass@123456";
 
     const userCredential = await createUserWithEmailAndPassword(
       serverClientAuth,
