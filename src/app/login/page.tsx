@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signOut, reload } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { auth, db } from "@/lib/firebase";
@@ -11,6 +11,7 @@ import {
   query,
   where,
   getDocs,
+  limit,
 } from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
 import { Button } from "@/components/ui/button";
@@ -28,74 +29,85 @@ import {
   Shield,
   Eye,
   EyeOff,
-  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
+type Role = "student" | "trainer" | "admin";
+const VALID_ROLES: Role[] = ["student", "trainer", "admin"];
+
+const ROLE_META: Record<
+  Role,
+  { label: string; icon: React.ElementType; color: string }
+> = {
+  student: { label: "Student", icon: BookOpen, color: "text-red-600" },
+  trainer: { label: "Trainer", icon: Users, color: "text-red-700" },
+  admin: { label: "Administrator", icon: Shield, color: "text-red-800" },
+};
+
 const LoginPage = () => {
-  const [selectedRole, setSelectedRole] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const router = useRouter();
   const { user, userRole, loading: authLoading } = useAuth();
 
-  // Helper function to find user by email across all collections
+  // Looks up a user document by email across role-based and intake collections.
+  // NOTE: sequential scan across 5 collections per attempt — see migration note.
   const findUserByEmail = async (userEmail: string) => {
     try {
-      // First, try to find in standard role-based collections
-      const roles = ["student", "trainer", "admin"];
-      for (const role of roles) {
+      for (const role of VALID_ROLES) {
         const roleCollectionRef = collection(db, `${role}s`);
-        const q = query(roleCollectionRef, where("email", "==", userEmail));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
+        const q = query(
+          roleCollectionRef,
+          where("email", "==", userEmail),
+          limit(1),
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const doc = snap.docs[0];
           return {
-            data: userDoc.data(),
-            ref: userDoc.ref,
+            data: doc.data(),
+            ref: doc.ref,
             collection: `${role}s`,
-            role: role,
+            role,
           };
         }
       }
 
-      const collections = ["registrations", "renewals"]; // Add other collection names as needed
-
-      for (const collectionName of collections) {
+      const fallbackCollections = ["registrations", "renewals"];
+      for (const collectionName of fallbackCollections) {
         const collectionRef = collection(db, collectionName);
-        const q = query(collectionRef, where("email", "==", userEmail));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          const userData = userDoc.data();
+        const q = query(
+          collectionRef,
+          where("email", "==", userEmail),
+          limit(1),
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const doc = snap.docs[0];
+          const data = doc.data();
           return {
-            data: userData,
-            ref: userDoc.ref,
+            data,
+            ref: doc.ref,
             collection: collectionName,
-            role: userData.role || null,
+            role: data.role as string | undefined,
           };
         }
       }
 
       return null;
-    } catch (error) {
-      console.error("Error finding user by email:", error);
+    } catch (err) {
+      console.error("Error finding user by email:", err);
       return null;
     }
   };
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (authLoading) return;
-
     if (user && userRole) {
       switch (userRole) {
         case "student":
@@ -111,90 +123,92 @@ const LoginPage = () => {
     }
   }, [user, userRole, authLoading, router]);
 
+  const redirectForRole = (role: Role) => {
+    setTimeout(() => {
+      switch (role) {
+        case "student":
+          router.push("/student-dashboard");
+          break;
+        case "trainer":
+          router.push("/trainer-dashboard");
+          break;
+        case "admin":
+          router.push("/admin-dashboard");
+          break;
+      }
+    }, 300);
+  };
+
+  const isValidRole = (role: unknown): role is Role =>
+    typeof role === "string" && (VALID_ROLES as string[]).includes(role);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    if (!selectedRole) {
-      setError("Please select a role");
-      toast.error("Please select a role");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // STEP 1: Check Firestore FIRST (before Firebase auth)
+      // STEP 1: Look up the account by email — role is derived, not selected.
       const userInfo = await findUserByEmail(email);
 
       if (!userInfo) {
-        toast.error("User not found in the system. Please register first.");
-        setError("User not found in the system. Please register first.");
+        const msg = "User not found in the system. Please register first.";
+        setError(msg);
+        toast.error(msg);
         setIsLoading(false);
         return;
       }
 
-      // STEP 2: Validate role match
-      if (userInfo.role !== selectedRole) {
-        toast.error(
-          `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`,
-        );
-        setError(
-          `Access denied. You are registered as ${userInfo.role}, not ${selectedRole}.`,
-        );
+      // STEP 2: Resolve + validate the role that was found.
+      if (!isValidRole(userInfo.role)) {
+        const msg =
+          "Your account role isn't configured correctly. Please contact Cyborg Team.";
+        setError(msg);
+        toast.error(msg);
         setIsLoading(false);
         return;
       }
+      const resolvedRole = userInfo.role;
 
-      // STEP 3: Check account status
+      // STEP 3: Account status checks
       if (userInfo.data.status === "pending") {
-        toast.error(
-          "Your account is pending admin approval. Please contact Cyborg Team.",
-        );
-        setError(
-          "Your account is pending admin approval. Please contact Cyborg Team.",
-        );
+        const msg =
+          "Your account is pending admin approval. Please contact Cyborg Team.";
+        setError(msg);
+        toast.error(msg);
         setIsLoading(false);
         return;
       }
-
       if (userInfo.data.status === "inactive") {
-        toast.error(
-          "Your account access has been revoked. Please contact Cyborg Team.",
-        );
-        setError(
-          "Your account access has been revoked. Please contact Cyborg Team.",
-        );
+        const msg =
+          "Your account access has been revoked. Please contact Cyborg Team.";
+        setError(msg);
+        toast.error(msg);
         setIsLoading(false);
         return;
       }
 
-      // STEP 4: NOW attempt Firebase auth
-      let userCredential;
+      // STEP 4: Firebase auth
       try {
-        userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password,
-        );
+        await signInWithEmailAndPassword(auth, email, password);
       } catch (authError: unknown) {
         if (authError instanceof FirebaseError) {
           if (
             authError.code === "auth/invalid-credential" ||
             authError.code === "auth/wrong-password"
           ) {
-            const err =
+            const msg =
               "Invalid email or password. Please check your credentials.";
-            setError(err);
-            toast.error(err);
+            setError(msg);
+            toast.error(msg);
           } else if (authError.code === "auth/too-many-requests") {
-            const err = "Too many failed attempts. Please try again later.";
-            setError(err);
-            toast.error(err);
+            const msg = "Too many failed attempts. Please try again later.";
+            setError(msg);
+            toast.error(msg);
           } else if (authError.code === "auth/network-request-failed") {
-            const err = "Network error. Please check your connection.";
-            setError(err);
-            toast.error(err);
+            const msg = "Network error. Please check your connection.";
+            setError(msg);
+            toast.error(msg);
           } else {
             setError(authError.message || "Authentication failed.");
             toast.error(authError.message || "Authentication failed.");
@@ -207,7 +221,7 @@ const LoginPage = () => {
         return;
       }
 
-      // STEP 5: Update last login
+      // STEP 5: Update last login (non-blocking on failure)
       try {
         await setDoc(
           userInfo.ref,
@@ -216,130 +230,50 @@ const LoginPage = () => {
         );
       } catch (updateError) {
         console.error("Could not update last login time:", updateError);
-        // Continue with login even if update fails
       }
 
-      // STEP 6: Store role in localStorage
-      localStorage.setItem("userRole", selectedRole);
+      // STEP 6: Persist role for client-side UX only (not an auth boundary)
+      localStorage.setItem("userRole", resolvedRole);
 
-      // Show success message
+      const RoleIcon = ROLE_META[resolvedRole].icon;
       toast.success(
-        `Welcome back! Redirecting to ${selectedRole} dashboard...`,
+        `Welcome back! Redirecting to your ${ROLE_META[resolvedRole].label} dashboard...`,
       );
 
-      // STEP 7: Redirect based on role (with small delay for state sync)
-      setTimeout(() => {
-        switch (selectedRole) {
-          case "student":
-            router.push("/student-dashboard");
-            break;
-          case "trainer":
-            router.push("/trainer-dashboard");
-            break;
-          case "admin":
-            router.push("/admin-dashboard");
-            break;
-          default:
-            toast.error("Invalid role selected");
-        }
-      }, 300);
-    } catch (error: unknown) {
-      console.error("Login error:", error);
-      const errorMsg =
-        error instanceof Error
-          ? error.message
+      redirectForRole(resolvedRole);
+    } catch (err: unknown) {
+      console.error("Login error:", err);
+      const msg =
+        err instanceof Error
+          ? err.message
           : "Failed to login. Please try again.";
-      setError(errorMsg);
-      toast.error(errorMsg);
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "student":
-        return <BookOpen className="h-4 w-4 text-red-600" />;
-      case "trainer":
-        return <Users className="h-4 w-4 text-red-700" />;
-      case "admin":
-        return <Shield className="h-4 w-4 text-red-800" />;
-      default:
-        return <User className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const roleOptions = [
-    {
-      value: "student",
-      label: "Student",
-      icon: BookOpen,
-      description: "Access student dashboard and course materials",
-      color: "text-red-600",
-    },
-    {
-      value: "trainer",
-      label: "Trainer",
-      icon: Users,
-      description: "Manage courses and student progress",
-      color: "text-red-700",
-    },
-    {
-      value: "admin",
-      label: "Administrator",
-      icon: Shield,
-      description: "Full system administration access",
-      color: "text-red-800",
-    },
-  ];
-
-  const handleRoleSelect = (roleValue: string) => {
-    setSelectedRole(roleValue);
-    setIsDropdownOpen(false);
-  };
-
-  const getSelectedRole = () => {
-    return roleOptions.find((role) => role.value === selectedRole);
-  };
-
-  // Show loading indicator while checking auth status
   if (authLoading) {
     return <AuthLoadingSpinner />;
   }
 
-  // Only render login form after auth check is complete
   return (
     <div className="min-h-screen bg-white relative overflow-hidden ">
-      {/* Animated background elements */}
       <div className="absolute inset-0 ">
         <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           className="absolute top-1/4 left-1/4 w-64 h-64   "
         />
         <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          animate={{ scale: [1.2, 1, 1.2], rotate: [360, 180, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="absolute bottom-1/4 right-1/4 w-80 h-80 "
         />
       </div>
 
       <div className="relative z-10 flex min-h-screen">
-        {/* Left column - Logo and illustration */}
         <div className="hidden md:flex md:w-1/2 lg:w-2/5 flex-col items-center justify-center p-8 bg-gradient-to-br from-red-50 to-white">
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
@@ -358,7 +292,6 @@ const LoginPage = () => {
             </Link>
           </motion.div>
 
-          {/* Illustration image */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -366,7 +299,7 @@ const LoginPage = () => {
             className="mb-10"
           >
             <Image
-              src="/assets/login-illustration.png" // Replace with your illustration path
+              src="/assets/login-illustration.png"
               alt="Robotics Education Illustration"
               width={450}
               height={450}
@@ -374,7 +307,6 @@ const LoginPage = () => {
             />
           </motion.div>
 
-          {/* Welcome message */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -390,7 +322,6 @@ const LoginPage = () => {
           </motion.div>
         </div>
 
-        {/* Right column - Login form */}
         <div className="w-full md:w-1/2 lg:w-3/5 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -399,11 +330,9 @@ const LoginPage = () => {
             className="w-full max-w-md"
           >
             <Card className="bg-gradient-to-br from-white to-red-50 border border-red-100 shadow-xl overflow-hidden">
-              {/* Top accent line */}
               <div className="h-1 bg-gradient-to-r from-red-600 via-red-700 to-red-800"></div>
 
               <CardHeader className="space-y-2 pb-2 pt-4 px-6">
-                {/* Mobile logo - only show on small screens */}
                 <div className="md:hidden flex justify-center mb-2">
                   <Image
                     src="/assets/Cyborg-logo.png"
@@ -423,7 +352,6 @@ const LoginPage = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6, duration: 0.6 }}
                 >
-                  {/* Registration section - above login */}
                   <div className="space-y-4">
                     <div className="text-center">
                       <h2 className="text-gray-800 text-lg font-semibold mb-3">
@@ -456,7 +384,7 @@ const LoginPage = () => {
                     </div>
                   </div>
 
-                  {/* Existing user section */}
+                  {/* Existing user section — role selection removed; role is auto-resolved from the account on submit */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-2">
                       <User className="h-4 w-4 text-red-700" />
@@ -465,159 +393,6 @@ const LoginPage = () => {
                       </h3>
                     </div>
 
-                    {/* Custom Role Selection Dropdown */}
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.7, duration: 0.5 }}
-                      className="space-y-1"
-                    >
-                      <Label className="text-gray-600 text-sm font-medium">
-                        Select your role:
-                      </Label>
-
-                      <div className="relative">
-                        {/* Dropdown Trigger */}
-                        <div
-                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className={`relative group cursor-pointer`}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-100 rounded-xl blur opacity-0 group-hover:opacity-50 transition-all duration-300"></div>
-                          <div
-                            className={`relative flex items-center w-full pl-10 pr-10 py-2.5 bg-white border-2 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md font-medium ${
-                              isDropdownOpen
-                                ? "border-red-400 ring-2 ring-red-200 bg-red-50"
-                                : selectedRole
-                                  ? "border-red-200 text-gray-800"
-                                  : "border-gray-300 text-gray-500"
-                            }`}
-                          >
-                            {/* Role icon */}
-                            <div className="absolute left-3 z-10">
-                              {selectedRole ? (
-                                getRoleIcon(selectedRole)
-                              ) : (
-                                <User className="h-4 w-4 text-gray-400" />
-                              )}
-                            </div>
-
-                            {/* Selected role display */}
-                            <div className="flex-1 text-left text-sm">
-                              {selectedRole ? (
-                                <span className="flex items-center gap-2 text-gray-800">
-                                  <span>{getSelectedRole()?.label}</span>
-                                </span>
-                              ) : (
-                                <span className="text-gray-500">
-                                  Choose your role
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Enhanced chevron with animation */}
-                            <motion.div
-                              animate={{
-                                rotate: isDropdownOpen ? 180 : 0,
-                                scale: isDropdownOpen ? 1.1 : 1,
-                              }}
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
-                              className="absolute right-3"
-                            >
-                              <ChevronDown
-                                className={`h-4 w-4 transition-colors duration-300 ${
-                                  isDropdownOpen
-                                    ? "text-red-600"
-                                    : selectedRole
-                                      ? "text-red-600"
-                                      : "text-gray-400"
-                                }`}
-                              />
-                            </motion.div>
-                          </div>
-
-                          {/* Selection indicator */}
-                          {selectedRole && !isDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.3 }}
-                              className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full"
-                            />
-                          )}
-                        </div>
-
-                        {/* Dropdown Menu */}
-                        {isDropdownOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute top-full mt-1 w-full bg-white border-2 border-red-200 rounded-xl shadow-xl z-50 overflow-hidden"
-                          >
-                            {roleOptions.map((role, index) => (
-                              <motion.div
-                                key={role.value}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{
-                                  delay: index * 0.05,
-                                  duration: 0.2,
-                                }}
-                                onClick={() => handleRoleSelect(role.value)}
-                                className={`flex items-center justify-center gap-3 px-3 py-3 cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-l-4 hover:border-l-red-500 ${
-                                  selectedRole === role.value
-                                    ? "bg-red-50 border-l-4 border-l-red-600"
-                                    : ""
-                                } ${index !== roleOptions.length - 1 ? "border-b border-gray-100" : ""}`}
-                              >
-                                {/* Role Icon */}
-                                <div className="flex-shrink-0">
-                                  <role.icon
-                                    className={`h-4 w-4 ${role.color}`}
-                                  />
-                                </div>
-
-                                {/* Role Info */}
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium text-sm text-gray-800">
-                                      {role.label}
-                                    </span>
-                                    {selectedRole === role.value && (
-                                      <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="ml-auto"
-                                      >
-                                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
-                                      </motion.div>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-0.5">
-                                    {role.description}
-                                  </p>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </div>
-
-                      {/* Role description for selected item */}
-                      {selectedRole && !isDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="text-xs text-gray-600 pl-1"
-                        >
-                          {getSelectedRole()?.description}
-                        </motion.div>
-                      )}
-                    </motion.div>
-
-                    {/* Email input */}
                     <motion.div
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -641,13 +416,12 @@ const LoginPage = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className={`pl-10 pr-3 py-3 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-500 focus:bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all duration-300 border border-red-200 shadow-sm`}
+                            className="pl-10 pr-3 py-3 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-500 focus:bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all duration-300 border border-red-200 shadow-sm"
                           />
                         </div>
                       </div>
                     </motion.div>
 
-                    {/* Password input */}
                     <motion.div
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -671,7 +445,7 @@ const LoginPage = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             placeholder="Enter your password"
-                            className={`pl-10 pr-10 py-3 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-500 focus:bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all duration-300 border border-red-200 shadow-sm`}
+                            className="pl-10 pr-10 py-3 text-sm bg-white rounded-xl text-gray-800 placeholder-gray-500 focus:bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all duration-300 border border-red-200 shadow-sm"
                           />
                           <button
                             type="button"
@@ -689,7 +463,6 @@ const LoginPage = () => {
                     </motion.div>
                   </div>
 
-                  {/* Error message */}
                   {error && (
                     <motion.div
                       className="text-red-700 text-sm text-center bg-red-50 py-3 rounded-xl border border-red-200 shadow-sm"
@@ -701,7 +474,6 @@ const LoginPage = () => {
                     </motion.div>
                   )}
 
-                  {/* Sign in button */}
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -739,7 +511,6 @@ const LoginPage = () => {
                     </motion.div>
                   </motion.div>
 
-                  {/* Forgot password and Sign up links */}
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -768,7 +539,6 @@ const LoginPage = () => {
               </CardContent>
             </Card>
 
-            {/* Footer text */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
