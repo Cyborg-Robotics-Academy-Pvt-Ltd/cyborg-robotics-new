@@ -2006,23 +2006,21 @@ const Page = ({
                             {task.status}
                           </span>
                           {/* Edit and Delete buttons for admin */}
-                          {(userRole === "admin" ||
-                            userRole === "superAdmin") && (
-                            <div className="flex space-x-2 mt-2">
-                              <button
-                                onClick={() => handleEditTask(index, task)}
-                                className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteTask(index, task)}
-                                className="text-red-600 hover:text-red-800 text-xs font-medium"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
+
+                          <div className="flex space-x-2 mt-2">
+                            <button
+                              onClick={() => handleEditTask(index, task)}
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(index, task)}
+                              className="text-red-600 hover:text-red-800 text-xs font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
