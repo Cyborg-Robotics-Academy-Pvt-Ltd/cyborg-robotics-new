@@ -192,7 +192,12 @@ const chartConfig = {
   },
 };
 
-const SUCCESS_PAYMENT_STATUSES = new Set(["SUCCESS", "CHARGED"]);
+const SUCCESS_PAYMENT_STATUSES = new Set([
+  "SUCCESS",
+  "CHARGED",
+  "CONFIRMED",
+  "CASH_PAY",
+]);
 const PENDING_PAYMENT_STATUSES = new Set([
   "PENDING",
   "CREATED",
@@ -1246,10 +1251,33 @@ const AdminDashboard = () => {
         (doc) => !hasTrainerAssignment(doc.data() as Record<string, any>),
       ).length;
 
-      const totalRevenue = successfulPayments.reduce(
-        (sum, doc) => sum + extractAmount(doc.data().amount),
-        0,
+      const currentMonthStart = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        1,
       );
+      const currentMonthEnd = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+
+      const totalRevenue = successfulPayments
+        .filter((doc) => {
+          const paymentDate = getTimestampDate(
+            doc.data().updatedAt || doc.data().createdAt,
+          );
+          return (
+            paymentDate &&
+            paymentDate >= currentMonthStart &&
+            paymentDate <= currentMonthEnd
+          );
+        })
+        .reduce((sum, doc) => sum + extractAmount(doc.data().amount), 0);
 
       const conversionRate =
         studentsSnapshot.size > 0
@@ -1524,7 +1552,11 @@ const AdminDashboard = () => {
 
       for (let i = 11; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthStart = new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1,
+        );
         const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
         const enrollments = students.filter((student) => {
