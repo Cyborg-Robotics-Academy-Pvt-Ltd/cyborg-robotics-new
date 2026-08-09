@@ -25,45 +25,45 @@ export default function WhatsAppWidget({
   }, [resolvedPhone, welcomeMessage]);
 
   const socialLinks = [
-    {
-      href: "https://www.instagram.com/cyborgroboticsacademy",
-      label: "Instagram",
-      icon: (
-        <Image
-          src="/assets/social-icons/instagram.webp"
-          alt="Instagram"
-          width={24}
-          height={24}
-          className="h-8 w-8 rounded-full object-contain"
-        />
-      ),
-    },
-    {
-      href: "https://www.facebook.com/cyborgrobotics/",
-      label: "Facebook",
-      icon: (
-        <Image
-          src="/assets/social-icons/Facebook.webp"
-          alt="Facebook"
-          width={24}
-          height={24}
-          className="h-8 w-8 rounded-full object-contain"
-        />
-      ),
-    },
-    {
-      href: "https://www.youtube.com/@cyborgroboticsacademy",
-      label: "YouTube",
-      icon: (
-        <Image
-          src="/assets/social-icons/youtube.png"
-          alt="YouTube"
-          width={24}
-          height={24}
-          className="h-8 w-8 object-contain"
-        />
-      ),
-    },
+    // {
+    //   href: "https://www.instagram.com/cyborgroboticsacademy",
+    //   label: "Instagram",
+    //   icon: (
+    //     <Image
+    //       src="/assets/social-icons/instagram.webp"
+    //       alt="Instagram"
+    //       width={24}
+    //       height={24}
+    //       className="h-8 w-8 rounded-full object-contain"
+    //     />
+    //   ),
+    // },
+    // {
+    //   href: "https://www.facebook.com/cyborgrobotics/",
+    //   label: "Facebook",
+    //   icon: (
+    //     <Image
+    //       src="/assets/social-icons/Facebook.webp"
+    //       alt="Facebook"
+    //       width={24}
+    //       height={24}
+    //       className="h-8 w-8 rounded-full object-contain"
+    //     />
+    //   ),
+    // },
+    // {
+    //   href: "https://www.youtube.com/@cyborgroboticsacademy",
+    //   label: "YouTube",
+    //   icon: (
+    //     <Image
+    //       src="/assets/social-icons/youtube.png"
+    //       alt="YouTube"
+    //       width={24}
+    //       height={24}
+    //       className="h-8 w-8 object-contain"
+    //     />
+    //   ),
+    // },
     {
       href: chatHref,
       label: "WhatsApp",
@@ -80,7 +80,7 @@ export default function WhatsAppWidget({
   ];
 
   return (
-    <div className="fixed md:bottom-6 bottom-20 right-4 md:right-4 z-50 flex flex-col items-end">
+    <div className="fixed md:bottom-24 bottom-20 right-4 md:right-4 z-50 flex flex-col items-end">
       <div className="flex flex-col items-end gap-2">
         {socialLinks.map((link, index) => (
           <motion.a
