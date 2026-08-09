@@ -33,7 +33,7 @@ const ScrollButton = () => {
   return (
     <button
       onClick={handleButtonClick}
-      className="fixed z-50 bottom-5 md:bottom-4 md:right-20 right-4 rounded-full bg-white p-2 shadow-lg flex items-center justify-center"
+      className="fixed z-50 bottom-5 md:bottom-4 md:right-24 right-4 rounded-full bg-white p-2 shadow-lg flex items-center justify-center"
       style={{
         width: "50px",
         height: "50px",
