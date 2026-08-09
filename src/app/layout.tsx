@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebsiteLoadingProvider } from "@/components/WebsiteLoading";
 import { Toaster } from "react-hot-toast";
 import { GoogleTagManager } from "@next/third-parties/google";
+import TawkWidget from "@/components/widgets/TawkWidget";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Analytics />
             <SpeedInsights />
             <Toaster position="top-right" />
+            <TawkWidget />
           </AuthProvider>
         </WebsiteLoadingProvider>
       </body>
