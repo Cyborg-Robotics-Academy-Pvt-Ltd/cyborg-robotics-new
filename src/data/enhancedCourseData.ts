@@ -1041,7 +1041,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     badge: "Drone Building Course",
     description: "Learn to build and fly drones with LEGO Education SPIKE",
     mode: "Offline",
-    duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+    duration: "12 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/DRONE1.pdf",
     syllabusFileName: "DRONE1.pdf",
     imagePath: "/assets/classroom-course/Drone.png",
