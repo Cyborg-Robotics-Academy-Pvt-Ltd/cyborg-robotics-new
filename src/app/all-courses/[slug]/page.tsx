@@ -927,7 +927,7 @@ const mockData: Record<string, CourseData> = {
     description:
       "Learn the fundamentals of drone technology and build your own drone",
     mode: "Offline",
-    duration: "12 CLASSES (x1 LEVEL) (1 HOUR PER CLASS)",
+    duration: "12 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/DRONE1.pdf",
     syllabusFileName: "DRONE1.pdf",
     imagePath: "/assets/classroom-course/Drone.png",
