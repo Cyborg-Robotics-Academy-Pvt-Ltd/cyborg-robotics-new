@@ -1,12 +1,5 @@
 "use client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import React, {
   useEffect,
   useState,
@@ -41,9 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-  AlertCircle,
   Clock,
-  CheckCircle2,
   UserCheck,
   BookPlus,
 } from "lucide-react";
@@ -163,6 +154,60 @@ function normalizeTrainerValue(value?: string | null) {
     .toLowerCase();
 }
 
+function normalizeCourseName(value?: string | null) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function isCourseComplete(course: Course) {
+  return (
+    course.completed === true || course.status?.toLowerCase() === "complete"
+  );
+}
+
+function getCourseDisplayLabel(course?: Course | null) {
+  if (!course) return "";
+  return `${course.name || "Untitled course"}${course.level ? ` L${course.level}` : ""}`;
+}
+
+function getLastCompletedCourse(student: Student, lastTask?: Task) {
+  const studentCourses = (student.courses || []).filter(
+    (course): course is Course => typeof course !== "string",
+  );
+  const completedCourses = studentCourses.filter(isCourseComplete);
+
+  if (lastTask) {
+    const lastTaskCourse = normalizeCourseName(lastTask.course);
+    const matchingCompletedCourse = completedCourses.find(
+      (course) => normalizeCourseName(course.name) === lastTaskCourse,
+    );
+
+    if (matchingCompletedCourse) return matchingCompletedCourse;
+  }
+
+  return completedCourses[completedCourses.length - 1] || null;
+}
+
+function getLastClassProgress(student: Student, lastTask?: Task) {
+  if (!lastTask) return null;
+
+  const lastTaskCourse = normalizeCourseName(lastTask.course);
+  const matchingCourse = (student.courses || []).find(
+    (course) => normalizeCourseName(course.name) === lastTaskCourse,
+  );
+  const completedForCourse = (student.tasks || []).filter(
+    (task) =>
+      task.status?.toLowerCase() === "complete" &&
+      normalizeCourseName(task.course) === lastTaskCourse,
+  ).length;
+
+  return {
+    completed: completedForCourse || student.completedTasks,
+    total: matchingCourse?.classNumber || "",
+  };
+}
+
 function getLatestClassDate(student: Student) {
   const taskDates = (student.tasks || [])
     .map((task) => parseDateValue(task.dateTime))
@@ -174,7 +219,9 @@ function getLatestClassDate(student: Student) {
   return null;
 }
 
-function getActivityStatus(student: Student): ActivityStatus {
+function getActivityStatus(student: Student): ActivityStatus | null {
+  if (getDerivedStatus(student) === "completed") return null;
+
   const latestClassDate = getLatestClassDate(student);
   if (!latestClassDate) return "active";
 
@@ -459,6 +506,8 @@ function Btn({
 // ─── PAGE SIZES ───────────────────────────────────────────────────────────────
 const PAGE_SIZES = [20, 50, 100];
 const STUDENT_LIST_FILTERS_KEY = "student-list-filters";
+const STUDENT_LIST_SEARCH_HISTORY_KEY = "student-list-search-history";
+const MAX_SEARCH_HISTORY_ITEMS = 8;
 
 // ══════════════════════════════════════════════════════════════════════════════
 const Page = () => {
@@ -474,6 +523,8 @@ const Page = () => {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [trainerFilter, setTrainerFilter] = useState("");
   const [centerFilter, setCenterFilter] = useState("");
   const [activityFilter, setActivityFilter] = useState<ActivityStatus | "">("");
@@ -490,13 +541,21 @@ const Page = () => {
   // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [filtersRestored, setFiltersRestored] = useState(false);
 
   // Selection (bulk)
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Dropdown
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [hoveredPreviewStudentId, setHoveredPreviewStudentId] = useState<
+    string | null
+  >(null);
+  const [previewCardPlacement, setPreviewCardPlacement] = useState<
+    "top" | "bottom"
+  >("bottom");
   const actionBtnRefs = useRef<{ [id: string]: HTMLButtonElement | null }>({});
+  const skipNextFilterResetRef = useRef(true);
 
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -588,6 +647,47 @@ const Page = () => {
     setDateTime(format(nextDate, "yyyy-MM-dd'T'HH:mm"));
   };
 
+  const saveSearchHistory = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+
+    setSearchHistory((previous) => {
+      const next = [
+        trimmed,
+        ...previous.filter(
+          (item) => item.toLowerCase() !== trimmed.toLowerCase(),
+        ),
+      ].slice(0, MAX_SEARCH_HISTORY_ITEMS);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          STUDENT_LIST_SEARCH_HISTORY_KEY,
+          JSON.stringify(next),
+        );
+      }
+
+      return next;
+    });
+  }, []);
+
+  const applySearchHistory = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+      setShowSearchHistory(false);
+      saveSearchHistory(value);
+    },
+    [saveSearchHistory],
+  );
+
+  const clearSearchHistory = useCallback(() => {
+    setSearchHistory([]);
+    setShowSearchHistory(false);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STUDENT_LIST_SEARCH_HISTORY_KEY);
+    }
+  }, []);
+
   // ── Data functions (ALL PRESERVED) ──────────────────────────────────────────
   const fetchStudents = useCallback(async () => {
     setLoading(true);
@@ -668,7 +768,10 @@ const Page = () => {
     const savedFilters = window.sessionStorage.getItem(
       STUDENT_LIST_FILTERS_KEY,
     );
-    if (!savedFilters) return;
+    if (!savedFilters) {
+      setFiltersRestored(true);
+      return;
+    }
 
     try {
       const parsed = JSON.parse(savedFilters) as {
@@ -694,6 +797,8 @@ const Page = () => {
       setPageSize(parsed.pageSize || 20);
     } catch (error) {
       console.error("Failed to restore student list filters:", error);
+    } finally {
+      setFiltersRestored(true);
     }
   }, []);
 
@@ -701,6 +806,43 @@ const Page = () => {
     fetchStudents();
     fetchTrainers();
   }, [fetchStudents, fetchTrainers]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const savedHistory = window.localStorage.getItem(
+        STUDENT_LIST_SEARCH_HISTORY_KEY,
+      );
+      if (!savedHistory) return;
+
+      const parsed = JSON.parse(savedHistory);
+      if (!Array.isArray(parsed)) return;
+
+      setSearchHistory(
+        parsed
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .slice(0, MAX_SEARCH_HISTORY_ITEMS),
+      );
+    } catch (error) {
+      console.error("Failed to restore student search history:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!filtersRestored) return;
+
+    const trimmed = searchTerm.trim();
+    if (!trimmed) return;
+
+    const historyTimer = window.setTimeout(() => {
+      saveSearchHistory(trimmed);
+    }, 800);
+
+    return () => window.clearTimeout(historyTimer);
+  }, [searchTerm, filtersRestored, saveSearchHistory]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -714,6 +856,7 @@ const Page = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!filtersRestored) return;
 
     window.sessionStorage.setItem(
       STUDENT_LIST_FILTERS_KEY,
@@ -739,10 +882,17 @@ const Page = () => {
     activeTab,
     page,
     pageSize,
+    filtersRestored,
   ]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
+    if (!filtersRestored) return;
+    if (skipNextFilterResetRef.current) {
+      skipNextFilterResetRef.current = false;
+      return;
+    }
+
     setPage(1);
   }, [
     searchTerm,
@@ -754,6 +904,7 @@ const Page = () => {
     activeTab,
     sortColumn,
     sortDirection,
+    filtersRestored,
   ]);
 
   // ── Filtering + sorting (PRESERVED logic, extended) ───────────────────────
@@ -874,6 +1025,7 @@ const Page = () => {
                 (c.status && c.status.toLowerCase() === "complete"),
             )
           );
+        if (activeTab === "no_course") return s.courses.length === 0;
         return true;
       })
       .filter((s) => {
@@ -1304,7 +1456,12 @@ const Page = () => {
   };
 
   const handleSubmit = async () => {
-    if (!task.trim()) {
+    const taskLines = task
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (taskLines.length === 0) {
       toast.error("Task cannot be empty");
       return;
     }
@@ -1320,6 +1477,41 @@ const Page = () => {
       toast.error("No student selected");
       return;
     }
+
+    const newTasks = [] as Array<{
+      task: string;
+      dateTime: string;
+      status: "ongoing" | "complete";
+      course: string;
+    }>;
+
+    for (let index = 0; index < taskLines.length; index += 1) {
+      const line = taskLines[index];
+      const separatorIndex = line.indexOf("|");
+      const taskText =
+        separatorIndex >= 0 ? line.slice(0, separatorIndex).trim() : line;
+      const rawDate =
+        separatorIndex >= 0 ? line.slice(separatorIndex + 1).trim() : "";
+
+      if (!taskText) {
+        toast.error(`Task description required on line ${index + 1}`);
+        return;
+      }
+
+      let lineDateTime = dateTime;
+      if (rawDate) {
+        const normalizedDate = rawDate.replace(" ", "T");
+        const parsed = new Date(normalizedDate);
+        if (Number.isNaN(parsed.getTime())) {
+          toast.error(`Invalid date/time on line ${index + 1}`);
+          return;
+        }
+        lineDateTime = format(parsed, "yyyy-MM-dd'T'HH:mm");
+      }
+
+      newTasks.push({ task: taskText, dateTime: lineDateTime, status, course });
+    }
+
     try {
       const db = getFirestore(app);
       const q = query(
@@ -1327,16 +1519,18 @@ const Page = () => {
         where("PrnNumber", "==", selectedStudent.PrnNumber),
       );
       const snap = await getDocs(q);
-      console.log(snap);
+      // console.log(snap);
 
       if (!snap.empty) {
         const ref = doc(db, "students", snap.docs[0].id);
         const d = snap.docs[0].data() as StudentData;
         await updateDoc(ref, {
-          tasks: [...(d.tasks || []), { task, dateTime, status, course }],
+          tasks: [...(d.tasks || []), ...newTasks],
         });
         toast.success(
-          `Class "${task}" for ${course} added for ${selectedStudent.username}`,
+          newTasks.length === 1
+            ? `Class "${newTasks[0].task}" for ${course} added for ${selectedStudent.username}`
+            : `${newTasks.length} classes added for ${selectedStudent.username}`,
         );
         setIsModalOpen(false);
         resetForm();
@@ -1534,7 +1728,7 @@ const Page = () => {
           where("PrnNumber", "==", editingStudent.PrnNumber),
         ),
       );
-      console.log(snap);
+      // console.log(snap);
       if (!snap.empty) {
         const current = [...(snap.docs[0].data().courses || [])];
         current.splice(idx, 1);
@@ -1632,6 +1826,7 @@ const Page = () => {
     { key: "all", label: "All" },
     { key: "ongoing", label: "Ongoing" },
     { key: "hold", label: "Completed" },
+    { key: "no_course", label: "No Course" },
   ];
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -1689,13 +1884,6 @@ const Page = () => {
               color: "text-gray-700",
               bg: "bg-white",
             },
-            {
-              label: "Needs Trainer",
-              value: statCounts.needsTrainer,
-              icon: AlertCircle,
-              color: "text-[#9F0712]",
-              bg: "bg-[#9F0712]/10",
-            },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div
               key={label}
@@ -1725,17 +1913,67 @@ const Page = () => {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSearchHistory(true);
+                }}
+                onFocus={() => setShowSearchHistory(true)}
+                onBlur={() => {
+                  window.setTimeout(() => setShowSearchHistory(false), 150);
+                  saveSearchHistory(searchTerm);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    saveSearchHistory(searchTerm);
+                    setShowSearchHistory(false);
+                  }
+                }}
                 placeholder="Search name or PRN…"
                 className="w-full pl-8 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-[#9F0712] transition-all"
               />
               {searchTerm && (
                 <button
                   className="absolute right-2.5 top-1/2 -translate-y-1/2"
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setShowSearchHistory(true);
+                  }}
                 >
                   <XCircle className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
                 </button>
+              )}
+              {showSearchHistory && searchHistory.length > 0 && (
+                <div
+                  className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+                    <span className="text-xs font-semibold text-gray-500">
+                      Recent searches
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearSearchHistory}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-gray-400 hover:text-[#9F0712]"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Clear
+                    </button>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto py-1">
+                    {searchHistory.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => applySearchHistory(item)}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-[#9F0712]/5 hover:text-[#9F0712]"
+                      >
+                        <Clock className="h-3.5 w-3.5 text-gray-400" />
+                        <span className="truncate">{item}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
             <select
@@ -1962,8 +2200,9 @@ const Page = () => {
                     const derivedStatus = getDerivedStatus(student);
                     const latestClassDate = getLatestClassDate(student);
                     const activityStatus = getActivityStatus(student);
-                    const activityStatusConfig =
-                      ACTIVITY_STATUS_CONFIG[activityStatus];
+                    const activityStatusConfig = activityStatus
+                      ? ACTIVITY_STATUS_CONFIG[activityStatus]
+                      : null;
                     const usesFollowUp = shouldUseFollowUp(student);
                     const followUpDisplayLabel = usesFollowUp
                       ? getFollowUpDisplayLabel(student)
@@ -1979,11 +2218,72 @@ const Page = () => {
                           new Date(b.dateTime).getTime() -
                           new Date(a.dateTime).getTime(),
                       )[0];
+                    const lastClassProgress = getLastClassProgress(
+                      student,
+                      lastTask,
+                    );
+                    const lastCompletedCourse = getLastCompletedCourse(
+                      student,
+                      lastTask,
+                    );
                     const activeCourses = student.courses.filter(
                       (c) =>
                         c.completed !== true &&
                         (!c.status || c.status.toLowerCase() !== "complete"),
                     );
+                    const trainerEntries = getTrainerColumnEntries(student);
+                    const lastCompletedCourseLabel =
+                      getCourseDisplayLabel(lastCompletedCourse);
+                    const lastCompletedTrainerLabel =
+                      lastCompletedCourse?.trainerName?.trim() ||
+                      student.trainerName ||
+                      "Unassigned";
+                    const previewCourseEntries =
+                      activeCourses.length > 0
+                        ? activeCourses.map((course) => {
+                            const courseLabel = getCourseDisplayLabel(course);
+                            const trainerLabel =
+                              course.trainerName?.trim() ||
+                              trainerEntries.find(
+                                (entry) => entry.courseLabel === courseLabel,
+                              )?.trainerLabel ||
+                              student.trainerName ||
+                              "Unassigned";
+
+                            return { courseLabel, trainerLabel };
+                          })
+                        : lastCompletedCourse
+                          ? [
+                              {
+                                courseLabel: lastCompletedCourseLabel,
+                                trainerLabel: lastCompletedTrainerLabel,
+                              },
+                            ]
+                          : [
+                              {
+                                courseLabel:
+                                  student.courses.length > 0
+                                    ? "All courses completed"
+                                    : "No course assigned",
+                                trainerLabel:
+                                  student.trainerName || "Unassigned",
+                              },
+                            ];
+                    const showStudentPreview =
+                      hoveredPreviewStudentId === student.id;
+                    const openStudentPreview = (
+                      event:
+                        | React.MouseEvent<HTMLDivElement>
+                        | React.FocusEvent<HTMLDivElement>,
+                    ) => {
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      setPreviewCardPlacement(
+                        window.innerHeight - rect.bottom < 340
+                          ? "top"
+                          : "bottom",
+                      );
+                      setHoveredPreviewStudentId(student.id);
+                    };
                     const isChecked = selected.has(student.id);
 
                     return (
@@ -2013,14 +2313,28 @@ const Page = () => {
 
                         {/* Student */}
                         <td className="px-3 py-3 min-w-[180px]">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d]  text-white flex items-center justify-center flex-shrink-0">
+                          <div
+                            className="relative flex items-center gap-2.5"
+                            onMouseEnter={openStudentPreview}
+                            onMouseLeave={() =>
+                              setHoveredPreviewStudentId((current) =>
+                                current === student.id ? null : current,
+                              )
+                            }
+                            onFocus={openStudentPreview}
+                            onBlur={() =>
+                              setHoveredPreviewStudentId((current) =>
+                                current === student.id ? null : current,
+                              )
+                            }
+                          >
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#991b1b] to-[#7f1d1d]  text-white flex items-center justify-center flex-shrink-0">
                               {student.profileimage ? (
                                 <Image
                                   src={student.profileimage}
                                   alt={student.username}
-                                  width={32}
-                                  height={32}
+                                  width={50}
+                                  height={50}
                                   className="w-full h-full object-cover rounded-full"
                                   onError={(e) => {
                                     const target = e.target as HTMLImageElement;
@@ -2070,8 +2384,8 @@ const Page = () => {
                               )}
                             </div>
                           ) : student.courses.length > 0 ? (
-                            <span className="text-xs text-gray-400 italic">
-                              All completed
+                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md font-medium whitespace-nowrap">
+                              {lastCompletedCourseLabel || "All completed"}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400 italic">
@@ -2082,45 +2396,48 @@ const Page = () => {
 
                         {/* Trainer */}
                         <td className="px-3 py-3 hidden lg:table-cell">
-                          {getTrainerColumnEntries(student).some(
-                            (item) => item.trainerLabel,
-                          ) ? (
+                          {trainerEntries.some((item) => item.trainerLabel) ? (
                             <div className="space-y-0.5">
-                              {getTrainerColumnEntries(student)
-                                .slice(0, 2)
-                                .map((c, i) => (
-                                  <p
-                                    key={i}
-                                    className="text-xs text-gray-700 font-medium"
-                                    title={c.title}
-                                  >
-                                    {getTrainerColumnEntries(student).length >
-                                    1 ? (
-                                      c.trainerLabel ? (
-                                        <>
-                                          <span>{c.courseLabel}</span>
-                                          {" - "}
-                                          <span className="font-semibold text-gray-900">
-                                            {c.trainerLabel}
-                                          </span>
-                                        </>
-                                      ) : (
+                              {trainerEntries.slice(0, 2).map((c, i) => (
+                                <p
+                                  key={i}
+                                  className="text-xs text-gray-700 font-medium"
+                                  title={c.title}
+                                >
+                                  {trainerEntries.length > 1 ? (
+                                    c.trainerLabel ? (
+                                      <>
                                         <span>{c.courseLabel}</span>
-                                      )
+                                        {" - "}
+                                        <span className="font-semibold text-gray-900">
+                                          {c.trainerLabel}
+                                        </span>
+                                      </>
                                     ) : (
-                                      <span className="font-semibold text-gray-900">
-                                        {c.trainerLabel || "Unassigned"}
-                                      </span>
-                                    )}
-                                  </p>
-                                ))}
-                              {getTrainerColumnEntries(student).length > 2 && (
+                                      <span>{c.courseLabel}</span>
+                                    )
+                                  ) : (
+                                    <span className="font-semibold text-gray-900">
+                                      {c.trainerLabel || "Unassigned"}
+                                    </span>
+                                  )}
+                                </p>
+                              ))}
+                              {trainerEntries.length > 2 && (
                                 <p className="text-[11px] text-gray-400 font-medium">
-                                  +{getTrainerColumnEntries(student).length - 2}{" "}
-                                  more
+                                  +{trainerEntries.length - 2} more
                                 </p>
                               )}
                             </div>
+                          ) : lastCompletedCourse ? (
+                            <p
+                              className="text-xs text-gray-700 font-medium"
+                              title={`${lastCompletedCourseLabel} - ${lastCompletedTrainerLabel}`}
+                            >
+                              <span className="font-semibold text-gray-900">
+                                {lastCompletedTrainerLabel}
+                              </span>
+                            </p>
                           ) : activeCourses.length > 0 ? (
                             canAssignTrainer ? (
                               <button
@@ -2145,6 +2462,19 @@ const Page = () => {
                         <td className="px-3 py-3 max-w-[200px]">
                           {lastTask ? (
                             <div>
+                              {lastClassProgress && (
+                                <p className="inline-flex items-center gap-1 rounded-md bg-[#9F0712]/10 px-1 py-0.5 text-[10px] font-semibold text-[#9F0712] mt-1">
+                                  <span className="uppercase tracking-wide">
+                                    Class No.
+                                  </span>
+                                  <span>
+                                    {lastClassProgress.completed}
+                                    {lastClassProgress.total
+                                      ? `/${lastClassProgress.total}`
+                                      : ""}
+                                  </span>
+                                </p>
+                              )}
                               <p className="text-xs text-gray-700 truncate">
                                 {lastTask.task}
                               </p>
@@ -2154,7 +2484,7 @@ const Page = () => {
                                   "dd MMM yyyy",
                                 )}
                               </p>
-                              {latestClassDate && (
+                              {latestClassDate && activityStatusConfig && (
                                 <>
                                   <span
                                     className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold mt-1 ${activityStatusConfig.cls}`}
@@ -2283,7 +2613,7 @@ const Page = () => {
                                     : student.id,
                                 );
                               }}
-                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors dropdown-trigger"
+                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors dropdown-trigger shadow-md shadow-gray-400 mx-auto"
                             >
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </button>
@@ -2319,7 +2649,19 @@ const Page = () => {
                                       >
                                         {[
                                           {
-                                            label: "Add Class",
+                                            label: "View Details",
+                                            icon: Eye,
+                                            onClick: () => {
+                                              const courseDetailUrl =
+                                                getStudentCourseDetailUrl(
+                                                  student,
+                                                );
+                                              if (!courseDetailUrl) return;
+                                              router.push(courseDetailUrl);
+                                            },
+                                          },
+                                          {
+                                            label: "Record Class",
                                             icon: MdAdd,
                                             onClick: () => {
                                               handleAddClass(student);
@@ -2329,16 +2671,10 @@ const Page = () => {
                                           {
                                             label: usesFollowUp
                                               ? "Follow-up"
-                                              : "Remark",
+                                              : "Add Remark",
                                             icon: BookOpen,
                                             onClick: () =>
                                               openRemarkModal(student),
-                                          },
-                                          {
-                                            label: "Edit Profile",
-                                            icon: UserPlus,
-                                            onClick: () =>
-                                              handleEditStudent(student),
                                           },
                                           {
                                             label: "Add Course",
@@ -2373,16 +2709,10 @@ const Page = () => {
                                               ]
                                             : []),
                                           {
-                                            label: "View Details",
-                                            icon: Eye,
-                                            onClick: () => {
-                                              const courseDetailUrl =
-                                                getStudentCourseDetailUrl(
-                                                  student,
-                                                );
-                                              if (!courseDetailUrl) return;
-                                              router.push(courseDetailUrl);
-                                            },
+                                            label: "Edit Student",
+                                            icon: UserPlus,
+                                            onClick: () =>
+                                              handleEditStudent(student),
                                           },
                                         ].map(
                                           ({ label, icon: Icon, onClick }) => (
@@ -2599,14 +2929,19 @@ const Page = () => {
             </select>
           </div>
           <div>
-            <label className={labelCls}>Task Description</label>
-            <input
-              type="text"
+            <label className={labelCls}>Task Description(s)</label>
+            <textarea
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              placeholder="Describe the task"
-              className={inputCls}
+              placeholder="Enter one task per line"
+              rows={5}
+              className={inputCls + " resize-none h-auto"}
             />
+            <p className="mt-2 text-xs text-gray-400">
+              Add multiple tasks by placing each task on a new line. Use
+              <span className="font-mono"> | YYYY-MM-DD HH:mm</span> after a
+              task to set a custom date/time.
+            </p>
           </div>
         </div>
       </Modal>
