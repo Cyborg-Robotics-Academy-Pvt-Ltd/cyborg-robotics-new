@@ -1,291 +1,63 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-} from "firebase/firestore";
+import { FormEvent, useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { Trophy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/lib/auth-context";
 import { db } from "@/lib/firebase";
 
 import MiniChallenge from "./MiniChallenge";
 import RegistrationForm from "./RegistrationForm";
 import RewardsSection from "./RewardsSection";
 
-type LeaderboardEntry = {
-  id: string;
-  name: string;
-  score: number;
-  time: number;
-};
-
 type PendingResult = {
   score: number;
   time: number;
 };
 
-type GameRecordData = {
-  name?: unknown;
-  score?: unknown;
-  time?: unknown;
-};
-
-// ─── Safe formatters ─────────────────────────────────────────────────────────
 const fmtTime = (v: unknown) =>
-  typeof v === "number" && isFinite(v) ? v.toFixed(1) + "s" : "—";
+  typeof v === "number" && isFinite(v) ? v.toFixed(1) + "s" : "-";
 const fmtScore = (v: unknown) =>
   typeof v === "number" && isFinite(v) ? v.toLocaleString() : "0";
 
-// ─── Medal colors for top 3 ──────────────────────────────────────────────────
-const MEDAL = [
-  {
-    bg: "bg-amber-50",
-    border: "border-amber-400",
-    text: "text-amber-600",
-    badge: "🥇",
-    ring: "ring-2 ring-amber-400",
-  },
-  {
-    bg: "bg-slate-50",
-    border: "border-slate-400",
-    text: "text-slate-500",
-    badge: "🥈",
-    ring: "ring-2 ring-slate-400",
-  },
-  {
-    bg: "bg-orange-50",
-    border: "border-orange-300",
-    text: "text-orange-500",
-    badge: "🥉",
-    ring: "ring-2 ring-orange-300",
-  },
-];
-
-// ─── Inline Leaderboard ───────────────────────────────────────────────────────
-function EnhancedLeaderboard({
-  entries,
-  loading,
-  error,
-  isAdmin,
-  deletingId,
-  onDeleteEntry,
-}: {
-  entries: LeaderboardEntry[];
-  loading: boolean;
-  error: string | null;
-  isAdmin: boolean;
-  deletingId: string | null;
-  onDeleteEntry: (id: string) => void;
-}) {
-  const top3 = entries.slice(0, 3);
-  const rest = entries.slice(3);
-
+function ResultAnnouncement() {
   return (
-    <div className="flex flex-col h-full rounded-[20px] border border-[#dbe1ea] bg-white shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-5 pt-5 pb-3 border-b border-[#f0f2f5]">
+    <div className="flex h-full min-h-[320px] flex-col overflow-hidden rounded-[20px] border border-[#dbe1ea] bg-white shadow-sm">
+      <div className="border-b border-[#f0f2f5] px-5 pb-3 pt-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8B1A2B]">
-          Live Rankings
+          Result
         </p>
-        <h2 className="mt-1 text-xl font-black text-[#082c78]">Leaderboard</h2>
+        <h2 className="mt-1 text-xl font-black text-[#082c78]">
+          Results Coming Soon
+        </h2>
       </div>
 
-      {loading && (
-        <div className="flex-1 flex items-center justify-center py-10">
-          <div className="flex gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="w-2 h-2 rounded-full bg-[#8B1A2B] animate-bounce"
-                style={{ animationDelay: `${i * 0.15}s` }}
-              />
-            ))}
-          </div>
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-10 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B1A2B]/10 text-3xl">
+          <Trophy className="h-8 w-8 text-[#8B1A2B]" />
         </div>
-      )}
-
-      {error && !loading && (
-        <div className="flex-1 flex items-center justify-center py-10 text-sm text-red-500 px-5">
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && entries.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center py-10 gap-2">
-          <span className="text-3xl">🎮</span>
-          <p className="text-sm text-gray-400 font-medium">
-            No scores yet. Be the first!
-          </p>
-        </div>
-      )}
-
-      {!loading && !error && entries.length > 0 && (
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Top 3 Podium */}
-          <div className="px-4 pt-4 pb-2 flex flex-col gap-2">
-            {top3.map((entry, idx) => {
-              const m = MEDAL[idx];
-              return (
-                <div
-                  key={entry.id}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${m.bg} ${m.border} ${m.ring}`}
-                >
-                  <span className="text-2xl leading-none">{m.badge}</span>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-[13px] font-bold truncate text-[#082c78]`}
-                    >
-                      {entry.name}
-                    </p>
-                    <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                      {fmtTime(entry.time)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right">
-                      <p className={`text-[15px] font-black ${m.text}`}>
-                        {fmtScore(entry.score)}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
-                        pts
-                      </p>
-                    </div>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={() => onDeleteEntry(entry.id)}
-                        disabled={deletingId === entry.id}
-                        className="rounded-full border border-[#dbe1ea] px-2.5 py-1 text-[10px] font-semibold text-[#8B1A2B] transition-colors hover:bg-[#8B1A2B] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {deletingId === entry.id ? "..." : "Delete"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Rest — scrollable */}
-          {rest.length > 0 && (
-            <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0 max-h-48">
-              <div className="flex flex-col gap-1 mt-1">
-                {rest.map((entry, idx) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-50 border border-[#f0f2f5] hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="w-5 text-center text-[12px] font-bold text-gray-400">
-                      {idx + 4}
-                    </span>
-                    <p className="flex-1 text-[13px] font-semibold text-gray-700 truncate">
-                      {entry.name}
-                    </p>
-                    <p className="text-[11px] text-gray-400 font-medium shrink-0">
-                      {fmtTime(entry.time)}
-                    </p>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <p className="text-[13px] font-bold text-[#082c78] w-20 text-right">
-                        {fmtScore(entry.score)} pts
-                      </p>
-                      {isAdmin && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteEntry(entry.id)}
-                          disabled={deletingId === entry.id}
-                          className="rounded-full border border-[#dbe1ea] px-2.5 py-1 text-[10px] font-semibold text-[#8B1A2B] transition-colors hover:bg-[#8B1A2B] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {deletingId === entry.id ? "..." : "Delete"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        <p className="text-lg font-black text-[#082c78]">
+          We will declare the result soon.
+        </p>
+        <p className="max-w-md text-sm leading-relaxed text-gray-500">
+          Thank you to everyone who participated in CodeFest 1.0. Final results
+          are being reviewed and will be announced here.
+        </p>
+      </div>
     </div>
   );
 }
 
-// ─── Main Section ─────────────────────────────────────────────────────────────
 export default function CodefestLiveSection() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(
     null,
   );
   const [playerName, setPlayerName] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { userRole } = useAuth();
-  const isAdmin = userRole === "admin";
-
-  useEffect(() => {
-    const recordsQuery = query(
-      collection(db, "codefestGameRecords"),
-      orderBy("score", "desc"),
-      limit(10),
-    );
-
-    const unsubscribe = onSnapshot(
-      recordsQuery,
-      (snapshot) => {
-        const entries: LeaderboardEntry[] = snapshot.docs.map((recordDoc) => {
-          const data = recordDoc.data() as GameRecordData;
-          return {
-            id: recordDoc.id,
-            name:
-              typeof data.name === "string" && data.name.trim()
-                ? data.name
-                : "Player",
-            score: typeof data.score === "number" ? data.score : 0,
-            time: typeof data.time === "number" ? data.time : 0,
-          };
-        });
-
-        setLeaderboard(entries);
-        setLeaderboardError(null);
-        setLeaderboardLoading(false);
-      },
-      () => {
-        setLeaderboardError("Could not load game records.");
-        setLeaderboardLoading(false);
-      },
-    );
-
-    return unsubscribe;
-  }, []);
-
-  async function handleDeleteEntry(id: string) {
-    if (!isAdmin) return;
-
-    setDeletingId(id);
-    setLeaderboardError(null);
-
-    try {
-      await deleteDoc(doc(db, "codefestGameRecords", id));
-    } catch {
-      setLeaderboardError("Could not delete this score.");
-    } finally {
-      setDeletingId(null);
-    }
-  }
 
   async function handleScoreSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -310,10 +82,6 @@ export default function CodefestLiveSection() {
         createdAt: serverTimestamp(),
       });
 
-      // ✅ FIX: Do NOT manually update leaderboard state here.
-      // onSnapshot will fire automatically and update it correctly
-      // with proper ranking. Manual update caused the duplicate.
-
       setPendingResult(null);
       setPlayerName("");
     } catch {
@@ -325,7 +93,7 @@ export default function CodefestLiveSection() {
 
   return (
     <>
-      <section className="max-w-7xl mx-auto grid lg:grid-cols-[5fr_6fr] gap-3 px-6 py-6 items-stretch">
+      <section className="mx-auto grid max-w-7xl items-stretch gap-3 px-6 py-6 lg:grid-cols-[5fr_6fr]">
         <MiniChallenge
           onFinish={(score, elapsed) => {
             setPendingResult({ score, time: elapsed });
@@ -337,22 +105,15 @@ export default function CodefestLiveSection() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-6 px-6 py-4">
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 py-4 lg:grid-cols-2">
         <RewardsSection />
-        <EnhancedLeaderboard
-          entries={leaderboard}
-          loading={leaderboardLoading}
-          error={leaderboardError}
-          isAdmin={isAdmin}
-          deletingId={deletingId}
-          onDeleteEntry={handleDeleteEntry}
-        />
+        <ResultAnnouncement />
       </section>
 
       {pendingResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6 sm:px-6">
           <Card className="w-full max-w-md rounded-[24px] border border-white/10 bg-white shadow-2xl sm:rounded-[28px]">
-            <CardHeader className="pb-3 px-5 pt-5 sm:px-6 sm:pt-6">
+            <CardHeader className="px-5 pb-3 pt-5 sm:px-6 sm:pt-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8B1A2B] sm:text-xs sm:tracking-[0.3em]">
                 Challenge Complete
               </p>
@@ -361,8 +122,8 @@ export default function CodefestLiveSection() {
               </CardTitle>
               <p className="text-[13px] leading-relaxed text-gray-500 sm:text-sm">
                 You finished in {fmtTime(pendingResult.time)} with{" "}
-                {fmtScore(pendingResult.score)} points. Enter your name to add
-                this run to the live leaderboard.
+                {fmtScore(pendingResult.score)} points. Enter your name to save
+                this run for CodeFest review.
               </p>
             </CardHeader>
 

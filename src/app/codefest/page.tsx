@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 import {
   HeroSection,
   FeatureBar,
@@ -19,7 +17,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Codefest 1.0 | Online Coding Competitions For Students",
   description:
-    "Join CodeFest 2026, a Pan-India online coding competition for school students. Win cash prizes worth ₹20,000, build coding skills, and compete nationwide. Register now for just ₹499.",
+    "CodeFest 2026 registrations are closed. Results for the Pan-India online coding competition for school students will be declared soon.",
   keywords: [
     "Online Coding Competition for Students",
     "Coding Competition India",
@@ -33,6 +31,7 @@ export const metadata: Metadata = {
     "CodeFest 2026",
   ],
 };
+
 export default function HomePage() {
   return (
     <main id="top" className="bg-[#f8f8f8] overflow-hidden">
@@ -57,7 +56,7 @@ export default function HomePage() {
         <FAQSection />
       </section>
       <FinalCTA />
-      <RegistrationForm initiallyOpen />
+
       <Footer />
     </main>
   );

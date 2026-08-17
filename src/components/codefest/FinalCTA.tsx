@@ -163,10 +163,6 @@ function MazeSVG({ side }: { side: "left" | "right" }) {
 }
 
 export default function FinalCTA() {
-  const scrollToRegistration = () => {
-    window.dispatchEvent(new Event("open-codefest-registration"));
-  };
-
   return (
     <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 sm:pb-10">
       <Card
@@ -249,7 +245,6 @@ export default function FinalCTA() {
           {/* CTA */}
           <div className="w-full sm:w-auto">
             <Button
-              onClick={scrollToRegistration}
               className="
                 h-[54px] w-full
                 rounded-2xl
@@ -268,7 +263,7 @@ export default function FinalCTA() {
                 sm:w-auto
               "
             >
-              Register Now
+              Registrations Closed
               <ArrowRight size={16} strokeWidth={3} className="ml-1" />
             </Button>
           </div>
