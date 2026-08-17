@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface TimeLeft {
   days: number;
@@ -47,10 +48,6 @@ export default function HeroSection() {
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, []);
-  const scrollToRegistration = () => {
-    window.dispatchEvent(new Event("open-codefest-registration"));
-  };
-
   // Square dot pattern grid
   const SquareDotPattern = ({
     position,
@@ -115,24 +112,7 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-4 w-full sm:w-auto">
             {/* Primary CTA */}
             <button
-              onClick={scrollToRegistration}
-              className="
-      group relative overflow-hidden
-      bg-gradient-to-r from-red-600 via-red-700 to-red-800
-      hover:from-red-500 hover:via-red-600 hover:to-red-700
-      active:scale-[0.98]
-      text-white
-      px-8 sm:px-10 py-3.5 sm:py-4
-      rounded-xl sm:rounded-2xl
-      font-semibold tracking-wide
-      flex items-center justify-center gap-2
-      shadow-[0_10px_30px_rgba(220,38,38,0.35)]
-      hover:shadow-[0_15px_40px_rgba(220,38,38,0.45)]
-      border border-red-500/30
-      transition-all duration-300
-      whitespace-nowrap
-      text-sm sm:text-base
-      backdrop-blur-md
+              className="h-[58px] w-auto rounded-2xl bg-gray-300 text-[16px] font-bold text-gray-700 shadow-none hover:bg-gray-300   
     "
             >
               {/* Shine Effect */}
@@ -148,15 +128,12 @@ export default function HeroSection() {
                 />
               </span>
 
-              <span className="relative z-10">Register Now</span>
-
-              <ArrowRight
-                className="
-        relative z-10 h-5 w-5
-        transition-transform duration-300
-        group-hover:translate-x-1
-      "
-              />
+              <Button
+                disabled
+                className="h-[58px] w-full rounded-2xl bg-gray-300 text-[16px] font-bold text-gray-700 shadow-none hover:bg-gray-300"
+              >
+                Registrations Closed
+              </Button>
             </button>
 
             {/* Secondary CTA */}
@@ -199,78 +176,10 @@ export default function HeroSection() {
       relative z-10 h-5 w-5
       transition-transform duration-300
       group-hover:rotate-6
+      text-blue-800
     "
               />
             </button>
-          </div>
-
-          {/* Compact Countdown Timer */}
-          <div className=" relative overflow-hidden rounded-2xl border border-white/20 bg-white/80 backdrop-blur-xl px-4 py-3 shadow-lg max-w-[340px]">
-            {/* Header */}
-            <div className="mb-3 flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse" />
-
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-red-700">
-                The Maze Opens In
-              </p>
-            </div>
-
-            {mounted ? (
-              <div className="flex items-center justify-between gap-1.5 ">
-                {/* Timer Box */}
-                {[
-                  { label: "D", value: timeLeft.days, red: true },
-                  { label: "H", value: timeLeft.hours, red: false },
-                  { label: "M", value: timeLeft.minutes, red: true },
-                  { label: "S", value: timeLeft.seconds, red: false },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`min-w-[58px] rounded-xl px-3 py-2 shadow-md border ${item.red ? "bg-gradient-to-b from-red-700 to-red-900 border-red-500/20" : "bg-gradient-to-b from-[#082c78] to-[#041a4d] border-blue-400/20"}`}
-                      >
-                        <h3 className="text-2xl sm:text-3xl font-bold text-white leading-none text-center">
-                          {String(item.value).padStart(2, "0")}
-                        </h3>
-                      </div>
-
-                      <p
-                        className="
-                mt-1
-                text-[9px]
-                font-bold
-                uppercase
-                tracking-wider
-                text-gray-500
-              "
-                      >
-                        {item.label}
-                      </p>
-                    </div>
-
-                    {i !== 3 && (
-                      <span className="text-lg font-black text-red-700 -mt-4">
-                        :
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                {[0, 0, 0, 0].map((_, i) => (
-                  <div
-                    key={i}
-                    className="
-            h-14 w-full
-            rounded-xl
-            bg-gray-200/70
-            animate-pulse
-          "
-                  />
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

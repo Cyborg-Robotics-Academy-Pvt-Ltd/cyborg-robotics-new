@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
-  BadgeCheck,
   GraduationCap,
   Laptop,
   Mail,
   MapPin,
   Phone,
-  School,
   ShieldCheck,
-  Trophy,
   User,
 } from "lucide-react";
 
@@ -30,11 +27,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveOrderId } from "@/lib/order-id-storage";
-import {
-  isInAppBrowser,
-  isAndroid,
-  escapeToSystemBrowser,
-} from "@/lib/in-app-browser";
 import {
   CODEFEST_COMPETITION,
   normalizeCodefestRegistrationForm,
@@ -123,7 +115,10 @@ interface RegistrationFormProps {
 export default function RegistrationForm({
   initiallyOpen = false,
 }: RegistrationFormProps) {
-  const [isModalOpen, setIsModalOpen] = useState(initiallyOpen);
+  const registrationClosed = true;
+  const [isModalOpen, setIsModalOpen] = useState(
+    registrationClosed ? false : initiallyOpen,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(
@@ -131,30 +126,10 @@ export default function RegistrationForm({
   );
   const [formData, setFormData] =
     useState<CodefestRegistrationFormData>(initialFormData);
-  const [isIosInApp, setIsIosInApp] = useState(false);
-
-  useEffect(() => {
-    console.log("UA:", navigator.userAgent);
-    const iab = isInAppBrowser();
-    const android = isAndroid();
-    console.log("Is IAB:", iab);
-    console.log("Is Android:", android);
-
-    if (iab) {
-      if (android) {
-        // Automatically escape Android Instagram browser to Google Chrome
-        const currentUrl = window.location.href;
-        const stripped = currentUrl.replace(/^https?:\/\//, "");
-        window.location.href = `intent://${stripped}#Intent;scheme=https;package=com.android.chrome;end`;
-      } else {
-        // iOS In-App Browser detected
-        setIsIosInApp(true);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const openRegistrationForm = () => {
+      if (registrationClosed) return;
       setFormError("");
       setIsModalOpen(true);
     };
@@ -167,12 +142,14 @@ export default function RegistrationForm({
         openRegistrationForm,
       );
     };
-  }, []);
+  }, [registrationClosed]);
 
   const openModal = () => {
+    if (registrationClosed) return;
     setFormError("");
     setIsModalOpen(true);
   };
+
   const handleInputChange = (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -197,7 +174,7 @@ export default function RegistrationForm({
     setFormData((current) => ({ ...current, agreedToTerms: checked }));
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
@@ -229,26 +206,6 @@ export default function RegistrationForm({
         if (data.orderId) {
           saveOrderId(data.orderId);
         }
-
-        // Instagram/Facebook in-app browsers frequently fail to redirect
-        // back after a UPI app-switch (WebView JS context gets suspended
-        // or reset). Escape to the system browser before payment starts.
-        if (isInAppBrowser()) {
-          if (isAndroid()) {
-            escapeToSystemBrowser(data.paymentUrl);
-            return;
-          }
-
-          // iOS in-app browsers cannot be force-escaped (Apple restriction).
-          // Show the user how to open in Safari instead of risking a
-          // payment that can't redirect back to the confirmation page.
-          setFormError(
-            "You're viewing this inside Instagram. Please tap the ⋮ menu (top right) and choose 'Open in Browser' before proceeding, so your payment confirmation loads correctly.",
-          );
-          setIsSubmitting(false);
-          return;
-        }
-
         window.location.href = data.paymentUrl;
         return;
       }
@@ -267,6 +224,98 @@ export default function RegistrationForm({
       setIsSubmitting(false);
     }
   };
+
+  if (registrationClosed) {
+    return (
+      <Card className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-gray-50/50 shadow-md sm:rounded-[28px]">
+        <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-[#b3202a]/[0.03] to-[#c73e1d]/[0.02] px-4 py-5 sm:px-6 sm:py-5">
+          <div className="max-w-4xl space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b3202a]/70 sm:text-xs">
+              Registration Closed
+            </p>
+
+            <CardTitle className="text-2xl font-black leading-[0.95] tracking-tight text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
+              CODEFEST 1.0
+              <br />
+              <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text font-bold text-transparent">
+                Registrations Closed
+              </span>
+            </CardTitle>
+
+            <p className="pt-1 text-sm leading-relaxed text-gray-600 sm:text-[15px]">
+              Thank you for the overwhelming response. CodeFest 1.0
+              registrations are now closed.
+            </p>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-5 px-4 py-5 sm:px-6 sm:py-7">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                label: "Status",
+                value: "Registration Closed",
+                icon: "Closed",
+              },
+              {
+                label: "Platforms",
+                value: "Scratch & PictoBlox",
+                icon: "Code",
+              },
+              {
+                label: "Result",
+                value: "Coming Soon",
+                icon: "Soon",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-red-100 bg-gradient-to-br from-white to-[#fafaf9] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg"
+              >
+                <div className="text-sm font-black uppercase tracking-[0.14em] text-[#b3202a]">
+                  {item.icon}
+                </div>
+
+                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
+                  {item.label}
+                </p>
+
+                <p className="mt-2 text-sm font-bold leading-snug text-gray-900 sm:text-[15px]">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-green-50/40 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-sm">
+                <ShieldCheck size={20} />
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm font-bold uppercase tracking-[0.1em] text-green-900">
+                  Result Update
+                </p>
+
+                <p className="mt-1.5 text-sm leading-relaxed text-green-800/80">
+                  We will declare the CodeFest 1.0 result soon. Please keep an
+                  eye on this page for the official announcement.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            disabled
+            className="h-[58px] w-full rounded-2xl bg-gray-300 text-[16px] font-bold text-gray-700 shadow-none hover:bg-gray-300"
+          >
+            Registrations Closed
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -454,7 +503,7 @@ export default function RegistrationForm({
             onClick={openModal}
             className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white transition-all duration-300"
           >
-            Open Registration Form
+            Register Now
             <ArrowRight size={18} className="ml-2" />
           </Button>
         </CardContent>
@@ -507,25 +556,6 @@ export default function RegistrationForm({
             {formError && (
               <div className="error-badge mb-5 rounded-xl border border-red-200/50 bg-red-50 px-4 py-3 text-[13px] font-semibold text-red-700 shadow-[0_2px_8px_rgba(220,38,38,0.1)]">
                 ⚠️ {formError}
-              </div>
-            )}
-
-            {isIosInApp && (
-              <div className="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-[0_4px_12px_rgba(217,119,6,0.1)]">
-                <div className="flex gap-3">
-                  <div className="text-xl">⚠️</div>
-                  <div className="space-y-2">
-                    <h4 className="text-[14px] font-bold text-amber-900 uppercase tracking-wide">
-                      Instagram Browser Detected (iOS)
-                    </h4>
-                    <p className="text-[13px] leading-relaxed font-semibold text-amber-800">
-                      Payment confirmation and ticket generation will fail if completed inside Instagram. 
-                    </p>
-                    <p className="text-[12px] leading-relaxed text-amber-700 font-medium">
-                      To register successfully, please tap the <span className="font-bold bg-amber-200/60 px-1 py-0.5 rounded">•••</span> or <span className="font-bold bg-amber-200/60 px-1 py-0.5 rounded">⋮</span> icon in the top-right corner, then select <span className="font-bold text-[#b3202a]">"Open in Browser"</span> (Safari) before continuing.
-                    </p>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -721,21 +751,13 @@ export default function RegistrationForm({
               <div className="space-y-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || isIosInApp}
-                  className={`cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white ${
-                    isIosInApp
-                      ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed opacity-75"
-                      : ""
-                  }`}
+                  disabled={isSubmitting}
+                  className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white"
                 >
-                  {isIosInApp ? (
-                    "⚠️ Open in Safari to Register & Pay"
-                  ) : isSubmitting ? (
-                    "🔄 Processing..."
-                  ) : (
-                    `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`
-                  )}
-                  {!isSubmitting && !isIosInApp && <ArrowRight size={18} className="ml-2" />}
+                  {isSubmitting
+                    ? "🔄 Processing..."
+                    : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`}
+                  {!isSubmitting && <ArrowRight size={18} className="ml-2" />}
                 </Button>
 
                 <p className="text-center text-[13px] font-semibold text-gray-500">

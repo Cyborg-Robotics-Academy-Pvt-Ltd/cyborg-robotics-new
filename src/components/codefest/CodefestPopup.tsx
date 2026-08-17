@@ -18,7 +18,6 @@ export default function CodefestPopup() {
   const close = () => setIsOpen(false);
   const openRegistration = () => {
     close();
-    window.dispatchEvent(new Event("open-codefest-registration"));
   };
 
   return (
@@ -60,14 +59,14 @@ export default function CodefestPopup() {
                 className="absolute inset-0 h-full w-full object-cover rounded-xl"
                 onError={(e) => (e.currentTarget.style.display = "none")}
               />
-              {/* Register button */}
+              {/* Status button */}
               <div className="bg-[#062341] px-4 py-3 flex justify-center">
                 <button
                   type="button"
                   onClick={openRegistration}
                   className="w-full text-center bg-[#A81B1E] hover:bg-[#8f1618] text-white font-semibold text-sm py-2.5 rounded-lg transition-colors duration-200"
                 >
-                  Register Now
+                  Registrations Closed
                 </button>
               </div>
             </div>
