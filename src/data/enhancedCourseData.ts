@@ -4,6 +4,7 @@ import { CourseData } from "./courseData";
 export interface EnhancedCourseData extends CourseData {
   ageRange: string;
   category: string;
+  onlineCourseUrl?: string;
 }
 
 // Define course categories
@@ -29,6 +30,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Learn the world's fastest-growing programming language for web development, data science, AI and more",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://pratima2795.graphy.com/courses/PYTHON-PROGRAMMING-6a7efa7587f6a5463de04d1e",
     duration: "16 CLASSES(x6 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/PYTHON.pdf",
     syllabusFileName: "PYTHON.pdf",
@@ -173,6 +175,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Learn to build beautiful, responsive and interactive websites with HTML and CSS",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://your-academy.graphy.com/courses/web-designing",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/WEB DESIGN.pdf",
     syllabusFileName: "WEB DESIGN.pdf",
@@ -222,6 +225,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Master object-oriented programming with Java for enterprise applications and Android development",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://your-academy.graphy.com/courses/java",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/JAVA.pdf",
     syllabusFileName: "JAVA.pdf",
@@ -674,6 +678,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Introduce young minds to programming with fun, interactive coding activities",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://your-academy.graphy.com/courses/bambino-coding",
     duration: "14 CLASSES (x1 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/BAMBINO CODING.pdf",
     syllabusFileName: "BAMBINO CODING.pdf",
@@ -720,6 +725,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Create stunning animations and visual effects through programming",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://pratima2795.graphy.com/coaching/ANIMATION--CODING-6a7ef42baad80047e57e4541",
     duration: "14 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/ANIMATION AND CODING.pdf",
     syllabusFileName: "ANIMATION CODING.pdf",
@@ -765,6 +771,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Design beautiful and functional mobile applications with modern UI/UX principles",
     mode: "Online & Offline",
+    onlineCourseUrl: "https://your-academy.graphy.com/courses/app-designing",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/APP DESIGNING.pdf",
     syllabusFileName: "APP DESIGNING.pdf",
@@ -1126,6 +1133,8 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     badge: "Coding with AI Course",
     description: "Learn to code using AI and Pictoblox",
     mode: "Online & Offline",
+    onlineCourseUrl:
+      "https://your-academy.graphy.com/courses/coding-ai-pictoblox",
     duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/AI-with-Pictoblox.pdf",
     syllabusFileName: "AI-with-Pictoblox.pdf",

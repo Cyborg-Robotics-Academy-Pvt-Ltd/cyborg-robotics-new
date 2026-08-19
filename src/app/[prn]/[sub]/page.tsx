@@ -22,7 +22,6 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  PieLabel,
 } from "recharts";
 import {
   ClipboardCheck,
@@ -42,6 +41,7 @@ import {
   X,
 } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox";
+import { getCourseTaskTemplates } from "../../../data/courseTasks";
 import Head from "next/head";
 
 import { toast } from "react-hot-toast";
@@ -74,6 +74,15 @@ interface Student {
     classNumber: string;
     completed?: boolean;
     certificate?: boolean;
+    rubric1Given?: boolean;
+    rubric2Given?: boolean;
+    rubric3Given?: boolean;
+    media1Given?: boolean;
+    media2Given?: boolean;
+    media3Given?: boolean;
+    media4Given?: boolean;
+    media5Given?: boolean;
+    trainerId?: string;
   }[];
   nextCourse?: string;
   profileimage?: string;
@@ -284,7 +293,7 @@ const Page = ({
 }: {
   params: Promise<{ prn: string; sub: string }>;
 }) => {
-  const { userRole } = useAuth();
+  const { user, userRole } = useAuth();
   const [resolvedParams, setResolvedParams] = useState<{
     prn: string;
     sub: string;
@@ -302,6 +311,7 @@ const Page = ({
     { name: string; value: number }[]
   >([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const [ongoingTasks, setOngoingTasks] = useState<Task[]>([]);
   const [assignedClasses, setAssignedClasses] = useState<string | number>(
     "N/A",
   );
@@ -310,6 +320,18 @@ const Page = ({
   const [classNumber, setClassNumber] = useState("");
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
   const [isCertificateIssued, setIsCertificateIssued] = useState(false);
+  const [rubricsGiven, setRubricsGiven] = useState({
+    rubric1Given: false,
+    rubric2Given: false,
+    rubric3Given: false,
+  });
+  const [studentMediaGiven, setStudentMediaGiven] = useState({
+    media1Given: false,
+    media2Given: false,
+    media3Given: false,
+    media4Given: false,
+    media5Given: false,
+  });
   const [showNextCourseModal, setShowNextCourseModal] = useState(false);
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
@@ -319,6 +341,8 @@ const Page = ({
   const [nextCourseComment, setNextCourseComment] = useState("");
   const [joinSoonTime, setJoinSoonTime] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const canViewOngoingTab =
+    userRole === "admin" || userRole === "superAdmin" || userRole === "trainer";
 
   useEffect(() => {
     params.then(setResolvedParams);
@@ -341,6 +365,77 @@ const Page = ({
   }, [selectedPhoto]);
 
   const courseName = resolvedParams ? fromSlug(resolvedParams.sub) : "";
+  const currentCourseAssignment = student?.courses?.find((course) => {
+    if (!course.name) return false;
+
+    const { courseName: currentCourseName, level: currentLevel } =
+      extractCourseAndLevel(courseName);
+
+    return isSameCourseAndLevel(
+      course.name,
+      course.level,
+      currentCourseName,
+      currentLevel,
+    );
+  });
+  const canCompleteOngoingTask =
+    userRole === "admin" ||
+    userRole === "superAdmin" ||
+    (userRole === "trainer" &&
+      Boolean(user?.uid) &&
+      currentCourseAssignment?.trainerId === user?.uid);
+
+  const refreshCourseTaskLists = (tasks: Task[]) => {
+    const { courseName: currentCourseName, level: currentLevel } =
+      extractCourseAndLevel(courseName);
+
+    const filtered = tasks.filter((task) => {
+      if (!task.course) return false;
+      const { courseName: taskCourseName, level: taskLevel } =
+        extractCourseAndLevel(task.course);
+      return isSameCourseAndLevel(
+        taskCourseName,
+        taskLevel,
+        currentCourseName,
+        currentLevel,
+      );
+    });
+
+    const completedTasksForCourse = filtered.filter(
+      (task) => (task.status || "").toLowerCase() === "complete",
+    );
+    const savedOngoingTasksForCourse = filtered.filter(
+      (task) => (task.status || "").toLowerCase() !== "complete",
+    );
+    const savedTaskNames = new Set(
+      filtered.map((task) => task.task.toLowerCase().trim()),
+    );
+    const courseLabel = currentLevel
+      ? `${currentCourseName} Level ${currentLevel}`
+      : currentCourseName;
+    const templateOngoingTasks = getCourseTaskTemplates(
+      currentCourseName,
+      currentLevel,
+    )
+      .filter(
+        (template) => !savedTaskNames.has(template.task.toLowerCase().trim()),
+      )
+      .map((template) => ({
+        course: courseLabel,
+        task: template.task,
+        dateTime: "",
+        status: "ongoing",
+      }));
+    const ongoingTasksForCourse = [
+      ...savedOngoingTasksForCourse,
+      ...templateOngoingTasks,
+    ];
+
+    setCompletedTasks(completedTasksForCourse);
+    setOngoingTasks(ongoingTasksForCourse);
+
+    return { filtered, completedTasksForCourse, ongoingTasksForCourse };
+  };
 
   const handleCompletedChange = async (checked: boolean | "indeterminate") => {
     if (!student) return;
@@ -439,6 +534,107 @@ const Page = ({
     } catch (error) {
       console.error("[Checkbox] Error updating certificate status:", error);
       toast.error("Failed to update certificate status");
+    }
+  };
+
+  const handleRubricChange = async (
+    rubricKey: "rubric1Given" | "rubric2Given" | "rubric3Given",
+    checked: boolean | "indeterminate",
+  ) => {
+    if (!student) return;
+
+    const newRubricState = checked === true;
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+      const updatedCourses = student.courses?.map((course) => {
+        if (!course.name) return course;
+
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        const courseNameMatches =
+          course.name.toLowerCase().trim() ===
+          currentCourseName.toLowerCase().trim();
+        const levelMatches = course.level === currentLevel;
+
+        if (courseNameMatches && levelMatches) {
+          return { ...course, [rubricKey]: newRubricState };
+        }
+
+        return course;
+      });
+
+      await updateDoc(studentRef, { courses: updatedCourses });
+
+      setStudent((prev) =>
+        prev ? { ...prev, courses: updatedCourses } : null,
+      );
+      setRubricsGiven((current) => ({
+        ...current,
+        [rubricKey]: newRubricState,
+      }));
+      toast.success(
+        newRubricState
+          ? "Rubric marked as given!"
+          : "Rubric marked as not given!",
+      );
+    } catch (error) {
+      console.error("[Checkbox] Error updating rubric status:", error);
+      toast.error("Failed to update rubric status");
+    }
+  };
+
+  const handleStudentMediaChange = async (
+    mediaKey:
+      | "media1Given"
+      | "media2Given"
+      | "media3Given"
+      | "media4Given"
+      | "media5Given",
+    checked: boolean | "indeterminate",
+  ) => {
+    if (!student) return;
+
+    const newMediaState = checked === true;
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+      const updatedCourses = student.courses?.map((course) => {
+        if (!course.name) return course;
+
+        const { courseName: currentCourseName, level: currentLevel } =
+          extractCourseAndLevel(courseName);
+
+        const courseNameMatches =
+          course.name.toLowerCase().trim() ===
+          currentCourseName.toLowerCase().trim();
+        const levelMatches = course.level === currentLevel;
+
+        if (courseNameMatches && levelMatches) {
+          return { ...course, [mediaKey]: newMediaState };
+        }
+
+        return course;
+      });
+
+      await updateDoc(studentRef, { courses: updatedCourses });
+
+      setStudent((prev) =>
+        prev ? { ...prev, courses: updatedCourses } : null,
+      );
+      setStudentMediaGiven((current) => ({
+        ...current,
+        [mediaKey]: newMediaState,
+      }));
+      toast.success(
+        newMediaState
+          ? "Student media marked as given!"
+          : "Student media marked as not given!",
+      );
+    } catch (error) {
+      console.error("[Checkbox] Error updating student media status:", error);
+      toast.error("Failed to update student media status");
     }
   };
 
@@ -649,14 +845,13 @@ const Page = ({
           );
         });
 
-        const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete",
+        const { completedTasksForCourse } = refreshCourseTaskLists(
+          studentData.tasks || [],
         );
 
         // Log task filtering results for debugging
 
         // Only show tasks that match the specific course and level - no fallback
-        setCompletedTasks(completedTasksForCourse);
         // Status data for pie chart
         const statusCount: Record<string, number> = {};
         filtered.forEach((task) => {
@@ -823,6 +1018,18 @@ const Page = ({
             setClassNumber(currentCourse.classNumber);
             setIsCourseCompleted(currentCourse.completed || false);
             setIsCertificateIssued(currentCourse.certificate || false);
+            setRubricsGiven({
+              rubric1Given: currentCourse.rubric1Given || false,
+              rubric2Given: currentCourse.rubric2Given || false,
+              rubric3Given: currentCourse.rubric3Given || false,
+            });
+            setStudentMediaGiven({
+              media1Given: currentCourse.media1Given || false,
+              media2Given: currentCourse.media2Given || false,
+              media3Given: currentCourse.media3Given || false,
+              media4Given: currentCourse.media4Given || false,
+              media5Given: currentCourse.media5Given || false,
+            });
 
             // Note: Auto-complete logic moved to a separate useEffect to avoid
             // referencing `completedTasks.length` inside this fetch effect and
@@ -936,45 +1143,29 @@ const Page = ({
       );
 
       if (taskIndex !== -1) {
-        // Combine edited fields with the original course field
         currentTasks[taskIndex] = {
           ...currentTasks[taskIndex],
           task: editedTask.task,
           dateTime: editedTask.dateTime,
           status: editedTask.status,
         };
-
-        await updateDoc(studentRef, { tasks: currentTasks });
-
-        // Update local state
-        setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
-
-        // Refresh completed tasks for this course
-        const { courseName: currentCourseName, level: currentLevel } =
-          extractCourseAndLevel(courseName);
-
-        const filtered = currentTasks.filter((t) => {
-          if (!t.course) return false;
-          const { courseName: taskCourseName, level: taskLevel } =
-            extractCourseAndLevel(t.course);
-          return isSameCourseAndLevel(
-            taskCourseName,
-            taskLevel,
-            currentCourseName,
-            currentLevel,
-          );
+      } else {
+        currentTasks.push({
+          course: editingTask.task.course,
+          task: editedTask.task,
+          dateTime: editedTask.dateTime,
+          status: editedTask.status || "ongoing",
         });
-
-        const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete",
-        );
-
-        setCompletedTasks(completedTasksForCourse);
-
-        toast.success("Task updated successfully!");
-        setEditingTask(null);
-        setEditedTask({ course: "", task: "", dateTime: "", status: "" });
       }
+
+      await updateDoc(studentRef, { tasks: currentTasks });
+
+      setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
+      refreshCourseTaskLists(currentTasks);
+
+      toast.success("Task updated successfully!");
+      setEditingTask(null);
+      setEditedTask({ course: "", task: "", dateTime: "", status: "" });
     } catch (error) {
       console.error("Error updating task:", error);
       toast.error("Failed to update task");
@@ -1018,32 +1209,52 @@ const Page = ({
         setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
 
         // Refresh completed tasks for this course
-        const { courseName: currentCourseName, level: currentLevel } =
-          extractCourseAndLevel(courseName);
-
-        const filtered = currentTasks.filter((t) => {
-          if (!t.course) return false;
-          const { courseName: taskCourseName, level: taskLevel } =
-            extractCourseAndLevel(t.course);
-          return isSameCourseAndLevel(
-            taskCourseName,
-            taskLevel,
-            currentCourseName,
-            currentLevel,
-          );
-        });
-
-        const completedTasksForCourse = filtered.filter(
-          (t) => t.status === "complete",
-        );
-
-        setCompletedTasks(completedTasksForCourse);
+        refreshCourseTaskLists(currentTasks);
 
         toast.success("Task deleted successfully!");
       }
     } catch (error) {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
+    }
+  };
+
+  const handleCompleteOngoingTask = async (task: Task) => {
+    if (!student || !canCompleteOngoingTask) return;
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+      const currentTasks = [...(student.tasks || [])];
+      const completedAt = new Date().toISOString();
+      const taskIndex = currentTasks.findIndex(
+        (t) =>
+          t.course === task.course &&
+          t.task === task.task &&
+          t.dateTime === task.dateTime &&
+          t.status === task.status,
+      );
+
+      if (taskIndex === -1) {
+        currentTasks.push({
+          ...task,
+          dateTime: completedAt,
+          status: "complete",
+        });
+      } else {
+        currentTasks[taskIndex] = {
+          ...currentTasks[taskIndex],
+          dateTime: completedAt,
+          status: "complete",
+        };
+      }
+
+      await updateDoc(studentRef, { tasks: currentTasks });
+      setStudent((prev) => (prev ? { ...prev, tasks: currentTasks } : null));
+      refreshCourseTaskLists(currentTasks);
+      toast.success("Task marked complete!");
+    } catch (error) {
+      console.error("Error completing ongoing task:", error);
+      toast.error("Failed to complete task");
     }
   };
 
@@ -1276,34 +1487,122 @@ const Page = ({
               <div className="flex flex-col items-end gap-3">
                 {/* Status Checkboxes - Only for non-students */}
                 {userRole !== "student" && (
-                  <div className="flex gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox
-                        id="completed"
-                        checked={isCourseCompleted}
-                        onCheckedChange={handleCompletedChange}
-                        className="border-white data-[state=checked]:bg-green-500 data-[state=checked]:text-white h-4 w-4"
-                      />
-                      <label
-                        htmlFor="completed"
-                        className="text-xs font-medium cursor-pointer whitespace-nowrap"
-                      >
-                        Completed
-                      </label>
+                  <div className="flex flex-col gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
+                    <div className="flex gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox
+                          id="completed"
+                          checked={isCourseCompleted}
+                          onCheckedChange={handleCompletedChange}
+                          className="border-white data-[state=checked]:bg-green-500 data-[state=checked]:text-white h-4 w-4"
+                        />
+                        <label
+                          htmlFor="completed"
+                          className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                        >
+                          Completed
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox
+                          id="certificate"
+                          checked={isCertificateIssued}
+                          onCheckedChange={handleCertificateChange}
+                          className="border-white data-[state=checked]:bg-blue-500 data-[state=checked]:text-white h-4 w-4"
+                        />
+                        <label
+                          htmlFor="certificate"
+                          className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                        >
+                          Certificate
+                        </label>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox
-                        id="certificate"
-                        checked={isCertificateIssued}
-                        onCheckedChange={handleCertificateChange}
-                        className="border-white data-[state=checked]:bg-blue-500 data-[state=checked]:text-white h-4 w-4"
-                      />
-                      <label
-                        htmlFor="certificate"
-                        className="text-xs font-medium cursor-pointer whitespace-nowrap"
-                      >
-                        Certificate
-                      </label>
+                    <div className="flex gap-3">
+                      {[
+                        {
+                          id: "rubric1Given",
+                          label: "Rubric 1",
+                        },
+                        {
+                          id: "rubric2Given",
+                          label: "Rubric 2",
+                        },
+                        {
+                          id: "rubric3Given",
+                          label: "Rubric 3",
+                        },
+                      ].map(({ id, label }) => (
+                        <div key={id} className="flex items-center gap-1.5">
+                          <Checkbox
+                            id={id}
+                            checked={
+                              rubricsGiven[id as keyof typeof rubricsGiven]
+                            }
+                            onCheckedChange={(checked) =>
+                              handleRubricChange(
+                                id as keyof typeof rubricsGiven,
+                                checked,
+                              )
+                            }
+                            className="border-white data-[state=checked]:bg-yellow-500 data-[state=checked]:text-white h-4 w-4"
+                          />
+                          <label
+                            htmlFor={id}
+                            className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                          >
+                            {label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        {
+                          id: "media1Given",
+                          label: "Media 1",
+                        },
+                        {
+                          id: "media2Given",
+                          label: "Media 2",
+                        },
+                        {
+                          id: "media3Given",
+                          label: "Media 3",
+                        },
+                        {
+                          id: "media4Given",
+                          label: "Media 4",
+                        },
+                        {
+                          id: "media5Given",
+                          label: "Media 5",
+                        },
+                      ].map(({ id, label }) => (
+                        <div key={id} className="flex items-center gap-1.5">
+                          <Checkbox
+                            id={id}
+                            checked={
+                              studentMediaGiven[
+                                id as keyof typeof studentMediaGiven
+                              ]
+                            }
+                            onCheckedChange={(checked) =>
+                              handleStudentMediaChange(
+                                id as keyof typeof studentMediaGiven,
+                                checked,
+                              )
+                            }
+                            className="border-white data-[state=checked]:bg-purple-500 data-[state=checked]:text-white h-4 w-4"
+                          />
+                          <label
+                            htmlFor={id}
+                            className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                          >
+                            {label}
+                          </label>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -1690,6 +1989,19 @@ const Page = ({
                 <CheckSquare className="w-5 h-5" />
                 Completed Classes
               </button>
+              {canViewOngoingTab && (
+                <button
+                  className={`px-4 py-3 text-base font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${
+                    activeTab === 2
+                      ? "text-red-700 border-b-2 border-red-700"
+                      : "text-gray-500 hover:text-red-700"
+                  }`}
+                  onClick={() => setActiveTab(2)}
+                >
+                  <Clock className="w-5 h-5" />
+                  Ongoing Classes
+                </button>
+              )}
             </nav>
           </div>
         </div>
@@ -2034,6 +2346,111 @@ const Page = ({
                   </h3>
                   <p className="mt-1 text-gray-500">
                     Completed classes will appear here once available.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {canViewOngoingTab && activeTab === 2 && (
+            <div className="bg-white rounded-2xl shadow-md p-5">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                Ongoing Classes ({ongoingTasks.length})
+              </h2>
+
+              {ongoingTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {ongoingTasks.map((task, index) => {
+                    const taskDate = new Date(task.dateTime);
+                    const isValid = !isNaN(taskDate.getTime());
+                    const today = new Date();
+                    const isToday =
+                      isValid &&
+                      today.toDateString() === taskDate.toDateString();
+                    const statusColor = STATUS_COLORS[task.status] || "#FBBF24";
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center p-4 border-l-4 rounded-r-lg bg-gradient-to-r from-gray-50 to-white shadow-sm transition-all hover:shadow-md"
+                        style={{ borderLeftColor: statusColor }}
+                      >
+                        <div className="mr-4 flex-shrink-0">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-800 font-bold text-sm">
+                            {index + 1}
+                          </div>
+                        </div>
+                        <div className="flex-1 mr-4">
+                          <div className="font-medium text-gray-900">
+                            {task?.task}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1 flex items-center">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            {isValid ? (
+                              <>
+                                {isToday ? "Today, " : ""}
+                                {taskDate.toLocaleString(undefined, {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </>
+                            ) : (
+                              "Date not specified"
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="mb-2 text-sm font-medium py-1.5 px-3 bg-red-50 text-red-700 rounded-full flex items-center gap-1.5">
+                            <BookOpen className="h-3.5 w-3.5" />
+                            {task.course}
+                          </span>
+                          <span
+                            className="px-3 py-1.5 text-xs font-medium rounded-full"
+                            style={{
+                              backgroundColor: `${statusColor}20`,
+                              color: statusColor,
+                            }}
+                          >
+                            {task.status || "ongoing"}
+                          </span>
+                          <div className="flex flex-wrap justify-end gap-2 mt-2">
+                            {canCompleteOngoingTask && (
+                              <button
+                                type="button"
+                                onClick={() => handleCompleteOngoingTask(task)}
+                                className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition-colors"
+                              >
+                                Quick Complete
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleEditTask(index, task)}
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(index, task)}
+                              className="text-red-600 hover:text-red-800 text-xs font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <Clock className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    No ongoing classes
+                  </h3>
+                  <p className="mt-1 text-gray-500">
+                    Ongoing classes will appear here once available.
                   </p>
                 </div>
               )}

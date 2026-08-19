@@ -746,6 +746,13 @@ const Page = () => {
     useState<Record<string, string>>({});
   const [selectedCourseByRegistration, setSelectedCourseByRegistration] =
     useState<Record<string, string>>({});
+  const [selectedTrainerByRegistration, setSelectedTrainerByRegistration] =
+    useState<Record<string, string>>({});
+  const [courseNumberByRegistration, setCourseNumberByRegistration] =
+    useState<Record<string, string>>({});
+  const [trainers, setTrainers] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
   const [existingStudentsByEmail, setExistingStudentsByEmail] = useState<
     Record<string, boolean>
   >({});
@@ -914,9 +921,31 @@ const Page = () => {
     }
   }, []);
 
+  const fetchTrainers = useCallback(async () => {
+    try {
+      const firestore = getFirestore(app);
+      const trainerSnapshot = await getDocs(collection(firestore, "trainers"));
+      const trainerOptions = trainerSnapshot.docs
+        .map((doc) => {
+          const data = doc.data() as {
+            name?: string;
+            fullName?: string;
+            email?: string;
+          };
+          const name = String(data.name || data.fullName || doc.id).trim();
+          return { id: doc.id, name: name || doc.id };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setTrainers(trainerOptions);
+    } catch (trainerError) {
+      console.error("Failed to load trainers:", trainerError);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchRegistrations();
-  }, [fetchRegistrations]);
+    void fetchRegistrations();
+    void fetchTrainers();
+  }, [fetchRegistrations, fetchTrainers]);
 
   // Keep a client-side cache of which registration emails already exist in `students`
   const fetchExistingStudentsByEmails = useCallback(
@@ -1192,6 +1221,9 @@ const Page = () => {
       const currentAdminUid = auth.currentUser?.uid;
       const center = getSelectedCenter(registration);
       const course = getSelectedCourse(registration);
+      const trainerId = selectedTrainerByRegistration[registration.id] || "";
+      const courseNumber = courseNumberByRegistration[registration.id] || "";
+      const trainerName = trainers.find((trainer) => trainer.id === trainerId)?.name || "";
 
       setRegistrationConfirmations((current) => ({
         ...current,
@@ -1223,6 +1255,9 @@ const Page = () => {
             adminUid: currentAdminUid,
             center,
             course,
+            trainerId,
+            trainerName,
+            courseNumber,
             registration,
           }),
         });
@@ -1277,7 +1312,7 @@ const Page = () => {
         setCreatingRegistrationId(null);
       }
     },
-    [selectedCenterByRegistration, selectedCourseByRegistration],
+    [selectedCenterByRegistration, selectedCourseByRegistration, selectedTrainerByRegistration, courseNumberByRegistration, trainers],
   );
 
   const exportToExcel = async () => {
@@ -1508,15 +1543,16 @@ const Page = () => {
                     <TableHeader className="sticky top-0 z-10 border-b border-gray-200 bg-gray-50">
                       <TableRow>
                         {tableColumns.map((col) => (
+                          // TableHead for Actions column
                           <TableHead
                             key={col.key}
-                            onClick={() =>
-                              col.sortable && handleSort(col.sortable)
-                            }
                             className={[
                               "px-4 py-3 text-xs font-semibold text-gray-700",
                               col.sortable
                                 ? "cursor-pointer transition-colors hover:bg-gray-100"
+                                : "",
+                              col.key === "actions"
+                                ? "sticky right-0 z-20 bg-gray-50"
                                 : "",
                               col.width ?? "",
                             ].join(" ")}
@@ -1544,6 +1580,10 @@ const Page = () => {
                         const availableCourses =
                           getAvailableCourses(selectedCenter);
                         const selectedCourse = getSelectedCourse(registration);
+                        const selectedTrainer =
+                          selectedTrainerByRegistration[registration.id] || "";
+                        const selectedCourseNumber =
+                          courseNumberByRegistration[registration.id] || "";
                         const canCreateStudentRegistration =
                           registration.registrationType === "new" &&
                           ["SUCCESS", "CASH_PAY"].includes(
@@ -1756,6 +1796,52 @@ const Page = () => {
                                       </Select>
                                     </div>
 
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                      <Select
+                                        value={selectedTrainer || undefined}
+                                        onValueChange={(value) =>
+                                          setSelectedTrainerByRegistration(
+                                            (current) => ({
+                                              ...current,
+                                              [registration.id]: value,
+                                            }),
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger
+                                          className="h-9 border-gray-200 bg-white text-xs"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <SelectValue placeholder="Assign Trainer" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {trainers.map((trainer) => (
+                                            <SelectItem
+                                              key={trainer.id}
+                                              value={trainer.id}
+                                            >
+                                              {trainer.name}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+
+                                      <Input
+                                        value={selectedCourseNumber}
+                                        onChange={(e) =>
+                                          setCourseNumberByRegistration(
+                                            (current) => ({
+                                              ...current,
+                                              [registration.id]: e.target.value,
+                                            }),
+                                          )
+                                        }
+                                        placeholder="Course Number"
+                                        className="h-9 border-gray-200 bg-white text-xs"
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+
                                     <Button
                                       size="sm"
                                       onClick={(e) => {
@@ -1814,7 +1900,7 @@ const Page = () => {
                               </TableCell>
 
                               {/* Delete */}
-                              <TableCell className="px-3 py-3 text-center">
+                              <TableCell className="px-1 py-3 text-center  sticky right-0 z-10">
                                 <Button
                                   variant="ghost"
                                   size="sm"

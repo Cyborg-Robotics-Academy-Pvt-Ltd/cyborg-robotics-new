@@ -105,6 +105,9 @@ export async function POST(req: Request) {
     const registration = body?.registration || {};
     const selectedCenter = String(body?.center || "").trim();
     const selectedCourse = String(body?.course || "").trim();
+    const selectedTrainerId = String(body?.trainerId || "").trim();
+    const selectedTrainerName = String(body?.trainerName || "").trim();
+    const selectedCourseNumber = String(body?.courseNumber || "").trim();
 
     if (!(await assertAdmin(adminUid))) {
       return NextResponse.json(
@@ -162,7 +165,10 @@ export async function POST(req: Request) {
     const courseRecord = {
       name: selectedCourse,
       level: "1",
-      classNumber: "",
+      classNumber: selectedCourseNumber,
+      courseNumber: selectedCourseNumber,
+      trainerId: selectedTrainerId,
+      trainerName: selectedTrainerName,
       status: "ongoing",
       enrolledAt: new Date(),
     };
@@ -179,6 +185,8 @@ export async function POST(req: Request) {
       center: centerLocation,
       location: centerLocation,
       courses: [courseRecord],
+      trainerId: selectedTrainerId,
+      trainerName: selectedTrainerName,
       parentName: registration.parentName || "",
       parentEmail: email,
       contact: registration.contact || "",
@@ -205,6 +213,9 @@ export async function POST(req: Request) {
       location: centerLocation,
       selectedCourseName: selectedCourse,
       courseName: selectedCourse,
+      trainerId: selectedTrainerId,
+      trainerName: selectedTrainerName,
+      courseNumber: selectedCourseNumber,
       registrationAccountCreated: true,
       registrationAccountCreatedAt: serverTimestamp(),
       status: "confirmed",
