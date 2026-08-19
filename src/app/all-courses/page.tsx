@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +12,20 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, X, Filter } from "lucide-react";
+import {
+  Search,
+  X,
+  Filter,
+  ArrowRight,
+  Users,
+  Code2,
+  BarChart3,
+  Monitor,
+  Cpu,
+  Palette,
+  Bot,
+  type LucideIcon,
+} from "lucide-react";
 import {
   enhancedCourseData,
   COURSE_CATEGORIES,
@@ -44,11 +57,9 @@ const courseList = Object.entries(enhancedCourseData).map(([slug, course]) => ({
 // Get unique age ranges and sort them
 const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
   (a, b) => {
-    // Extract the first number from each age range for comparison
     const firstNumA = parseInt(a.match(/\d+/)?.[0] || "0");
     const firstNumB = parseInt(b.match(/\d+/)?.[0] || "0");
 
-    // If first numbers are equal, compare the second number (if exists)
     if (firstNumA === firstNumB) {
       const secondNumA = parseInt(
         a.match(/\d+-(\d+)/)?.[1] || a.match(/\d+/g)?.[1] || "0",
@@ -63,6 +74,142 @@ const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
   },
 );
 
+/**
+ * Category → icon + brand gradient. Extend this as COURSE_CATEGORIES grows;
+ * falls back to a generic icon so a new category never renders blank.
+ */
+const CATEGORY_STYLE: Record<string, { icon: LucideIcon; gradient: string }> = {
+  Programming: { icon: Code2, gradient: "from-indigo-500 to-purple-600" },
+  Robotics: { icon: Bot, gradient: "from-red-500 to-orange-500" },
+  "Web Design": { icon: Palette, gradient: "from-blue-500 to-indigo-500" },
+  Electronics: { icon: Cpu, gradient: "from-emerald-500 to-teal-600" },
+};
+const DEFAULT_CATEGORY_STYLE = {
+  icon: Code2,
+  gradient: "from-indigo-500 to-purple-600",
+};
+
+/**
+ * Simple debounce hook — keeps the filtered list from recomputing on
+ * every keystroke once the catalog grows past a couple hundred items.
+ */
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+
+  return debounced;
+}
+
+/** Single course card. Extracted so it's independently testable / memoizable. */
+const CourseCard = ({ course }: { course: (typeof courseList)[number] }) => {
+  const { icon: CategoryIcon, gradient } =
+    CATEGORY_STYLE[course.category] ?? DEFAULT_CATEGORY_STYLE;
+
+  const [imgSrc, setImgSrc] = useState(course.imagePath);
+  const detailsHref = `/all-courses/${course.slug}`;
+  const onlineCourseHref = course.onlineCourseUrl;
+
+  return (
+    <article
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200
+                 bg-white shadow-sm transition-all duration-300 ease-out
+                 hover:-translate-y-1 hover:border-red-200 hover:shadow-xl"
+    >
+      {/* Image */}
+      <div className="relative h-44 w-full overflow-hidden bg-gray-100">
+        <Image
+          src={imgSrc}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          alt={course.title}
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+          onError={() => setImgSrc("/assets/placeholder-image.png")}
+        />
+
+        {/* Gradient overlay on hover for depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Mode badge */}
+        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-gray-800 shadow-sm backdrop-blur-sm">
+          {course.mode}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 flex-col p-5">
+        {/* Category icon + title */}
+        <div className="flex items-start gap-3 ">
+          <span
+            className={`mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-white shadow-sm`}
+          >
+            <CategoryIcon className="h-5 w-5" />
+          </span>
+          <h3 className="min-h-[3.25rem] line-clamp-2 pt-1 text-lg font-bold leading-tight  text-gray-900 transition-colors group-hover:text-red-600">
+            {course.title}
+          </h3>
+        </div>
+
+        <p className=" min-h-[2.5rem] line-clamp-2 text-sm text-gray-600">
+          {course.description}
+        </p>
+
+        {/* Icon-led attribute pills */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          <Badge className="flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+            <Users className="h-3.5 w-3.5" />
+            Age: {course.ageRange}
+          </Badge>
+          <Badge className="flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
+            <Code2 className="h-3.5 w-3.5" />
+            {course.category}
+          </Badge>
+          <Badge className="flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+            <BarChart3 className="h-3.5 w-3.5" />
+            {course.levels}
+          </Badge>
+        </div>
+
+        {/* CTA pinned to bottom regardless of content above */}
+        <div className="mt-auto pt-4">
+          <div className="grid gap-2">
+            <Link
+              href={detailsHref}
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg
+                         bg-gradient-to-r from-red-700 to-red-800 px-4 py-3 text-sm font-bold
+                         text-white shadow-md transition-all duration-300
+                         hover:from-red-800 hover:to-red-900 hover:shadow-lg
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            >
+              View Details
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+
+            {onlineCourseHref && (
+              <Link
+                href={onlineCourseHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg
+                           border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold
+                           text-blue-700 transition-all duration-300
+                           hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                <Monitor className="h-4 w-4" />
+                Online Course
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
+
 const AllCoursesPageContent = () => {
   // State for search and filter
   const [search, setSearch] = useState("");
@@ -71,12 +218,15 @@ const AllCoursesPageContent = () => {
   const [modeFilter, setModeFilter] = useState("");
   const [levelsFilter, setLevelsFilter] = useState("");
 
+  // Debounce free-text search only — dropdowns are discrete, no need to debounce those
+  const debouncedSearch = useDebouncedValue(search, 200);
+
   // Get search params from URL
   const searchParams = useSearchParams();
   const urlSearchParam = searchParams.get("search");
 
   // Set initial search state from URL param and update when URL changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (urlSearchParam !== null) {
       setSearch(urlSearchParam);
     }
@@ -87,11 +237,12 @@ const AllCoursesPageContent = () => {
 
   // Filter logic
   const filteredCourses = useMemo(() => {
+    const searchLower = debouncedSearch.toLowerCase();
     return courseList.filter(
       (course) =>
-        (search === "" ||
-          course.title.toLowerCase().includes(search.toLowerCase()) ||
-          course.description.toLowerCase().includes(search.toLowerCase())) &&
+        (searchLower === "" ||
+          course.title.toLowerCase().includes(searchLower) ||
+          course.description.toLowerCase().includes(searchLower)) &&
         (ageFilter === "" || course.ageRange === ageFilter) &&
         (categoryFilter === "" || course.category === categoryFilter) &&
         (modeFilter === "" ||
@@ -113,7 +264,7 @@ const AllCoursesPageContent = () => {
           (levelsFilter === "6 levels" &&
             course.duration.toLowerCase().includes("x6 levels"))),
     );
-  }, [search, ageFilter, categoryFilter, modeFilter, levelsFilter]);
+  }, [debouncedSearch, ageFilter, categoryFilter, modeFilter, levelsFilter]);
 
   // Group courses by category
   const coursesByCategory = useMemo(() => {
@@ -155,7 +306,7 @@ const AllCoursesPageContent = () => {
           </p>
         </div>
 
-        {/* Search + Filter bar - Enhanced */}
+        {/* Search + Filter bar */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-6">
             <Filter className="h-5 w-5 text-red-600" />
@@ -320,7 +471,7 @@ const AllCoursesPageContent = () => {
             </div>
           </div>
 
-          {/* Active filters display - Improved */}
+          {/* Active filters display */}
           {hasActiveFilters && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex flex-wrap items-center gap-3">
@@ -415,7 +566,7 @@ const AllCoursesPageContent = () => {
           )}
         </div>
 
-        {/* Results count - Enhanced */}
+        {/* Results count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-base text-gray-600">
             Showing{" "}
@@ -445,90 +596,15 @@ const AllCoursesPageContent = () => {
                   </h2>
                 </div>
 
-                {/* Grid layout for courses */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {courses.map((course) => (
-                    <div
-                      key={course.slug}
-                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group relative"
-                    >
-                      {/* Brand Logo in Top Right Corner */}
-                      <div className="absolute top-3 right-3 z-10">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-full p-[1px] shadow-md border border-red-100">
-                          <Image
-                            src="/assets/logo1.png"
-                            width={100}
-                            height={100}
-                            alt="Cyborg Robotics"
-                            className="w-8 h-8 object-contain"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.onerror = null;
-                              target.style.display = "none";
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="relative h-48 overflow-hidden">
-                        <Image
-                          src={course.imagePath}
-                          width={500}
-                          height={300}
-                          alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = "/assets/placeholder-image.png";
-                          }}
-                        />
-                      </div>
-                      <div className="p-5">
-                        <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-red-600 line-clamp-2">
-                          {course.title}
-                        </h3>
-
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {course.description}
-                        </p>
-
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <Badge
-                            variant="secondary"
-                            className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200 font-medium"
-                          >
-                            Age: {course.ageRange}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className="text-xs py-1 px-3 rounded-full border-red-200 text-red-700 font-medium"
-                          >
-                            {course.category}
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs py-1 px-3 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200 font-medium"
-                          >
-                            {course.levels}
-                          </Badge>
-                        </div>
-
-                        <Link
-                          href={`/all-courses/${course.slug}`}
-                          className="w-full bg-gradient-to-r from-red-800 to-red-700 text-white px-4 py-2.5 rounded-lg hover:from-red-800 hover:to-red-900 transition-all duration-300 text-center text-sm font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 block"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    </div>
+                    <CourseCard key={course.slug} course={course} />
                   ))}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          // Enhanced empty state
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mb-6">
               <Search className="w-12 h-12 text-red-600" />

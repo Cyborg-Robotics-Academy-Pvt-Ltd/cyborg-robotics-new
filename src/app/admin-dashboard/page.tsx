@@ -1760,7 +1760,6 @@ const AdminDashboard = () => {
       delay: 0.1,
       trend: "up",
       emphasis: "primary",
-      helper: `${overviewData.conversionRate}% activation rate`,
     },
     {
       title: "Monthly Revenue",
