@@ -12,6 +12,7 @@ import { db } from "@/lib/firebase";
 import MiniChallenge from "./MiniChallenge";
 import RegistrationForm from "./RegistrationForm";
 import RewardsSection from "./RewardsSection";
+import Image from "next/image";
 
 type PendingResult = {
   score: number;
@@ -31,16 +32,13 @@ const TOP_5: TopParticipant[] = [
   { name: "Keerat Goyal", state: "Haryana", initials: "KG" },
   { name: "Nimrat Pahwa", state: "Maharashtra", initials: "NP" },
 ];
-
-// red/coral, royal blue, red/coral, blue, purple — per spec
 const AVATAR_GRADIENTS = [
-  "from-[#E24B4A] to-[#F0997B]",
-  "from-[#0855AB] to-[#062341]",
-  "from-[#E24B4A] to-[#F0997B]",
-  "from-[#378ADD] to-[#0855AB]",
-  "from-[#7F77DD] to-[#534AB7]",
+  "from-[#C81E1E] to-[#E24B4A]", // AM — deep red → coral
+  "from-[#1E3A8A] to-[#1E40AF]", // AA — royal navy
+  "from-[#C81E1E] to-[#E24B4A]", // VS — deep red → coral
+  "from-[#1D4ED8] to-[#2563EB]", // KG — brighter blue, distinct from AA
+  "from-[#6D28D9] to-[#BE185D]", // NP — purple → magenta/pink
 ];
-
 const CONFETTI_COLORS = ["#FAC775", "#F0997B", "#AFA9EC", "#85B7EB"];
 
 const fmtTime = (v: unknown) =>
@@ -80,61 +78,19 @@ function Confetti({ seed, className }: { seed: number; className?: string }) {
 
 function TrophyIllustration() {
   return (
-    <div className="relative hidden h-[150px] w-[160px] shrink-0 items-end justify-center sm:flex">
+    <div className="relative hidden h-[150px] w-[180px] shrink-0 items-center justify-center sm:flex">
       <Confetti seed={0} className="scale-125" />
 
-      {/* soft ambient glow */}
-      <div className="pointer-events-none absolute bottom-6 left-1/2 h-24 w-24 -translate-x-1/2 rounded-full bg-[#FAC775]/25 blur-2xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-24 w-24 -translate-x-1/2 rounded-full bg-[#FAC775]/25 blur-2xl" />
 
-      {/* laurel leaves */}
-      <svg
-        viewBox="0 0 150 140"
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        aria-hidden="true"
-      >
-        <path
-          d="M75 118 C 45 108, 28 82, 34 52 C 40 62, 48 74, 60 84"
-          fill="none"
-          stroke="#85B7EB"
-          strokeWidth="4"
-          strokeLinecap="round"
-          opacity="0.55"
+      <div className="trophy-float relative z-[1] h-full w-full">
+        <Image
+          src="/assets/codefest/trophy-illustration.png"
+          alt="Trophy illustration"
+          fill
+          className="object-contain"
+          priority
         />
-        <path
-          d="M75 118 C 33 104, 30 78, 40 58 C 43 68, 48 76, 55 82"
-          fill="none"
-          stroke="#B5D4F4"
-          strokeWidth="3"
-          strokeLinecap="round"
-          opacity="0.4"
-        />
-        <path
-          d="M75 118 C 105 108, 122 82, 116 52 C 110 62, 102 74, 90 84"
-          fill="none"
-          stroke="#85B7EB"
-          strokeWidth="4"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
-        <path
-          d="M75 118 C 117 104, 120 78, 110 58 C 107 68, 102 76, 95 82"
-          fill="none"
-          stroke="#B5D4F4"
-          strokeWidth="3"
-          strokeLinecap="round"
-          opacity="0.4"
-        />
-      </svg>
-
-      {/* podium — two-step base for a touch more dimension */}
-      <div className="relative z-[1] flex flex-col items-center">
-        <div className="h-3 w-24 rounded-t-md bg-gradient-to-r from-[#9AA5E8] to-[#0855AB]" />
-        <div className="h-7 w-20 rounded-t-lg bg-gradient-to-br from-[#7F77DD] to-[#0855AB] shadow-sm" />
-      </div>
-
-      {/* trophy badge */}
-      <div className="trophy-float absolute bottom-9 z-[2] flex h-[70px] w-[70px] items-center justify-center rounded-full bg-gradient-to-br from-[#FFE7A8] to-[#FAC775] shadow-[0_6px_16px_rgba(133,95,10,0.25)] ring-4 ring-white">
-        <Trophy className="h-8 w-8 text-[#854F0B]" strokeWidth={2} />
       </div>
 
       <style jsx>{`
@@ -233,7 +189,7 @@ function ResultAnnouncement() {
 
             {/* name + state */}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-bold text-[#082c78] sm:text-2xl">
+              <p className="truncate text-lg font-bold text-[#0a2664] sm:text-2xl">
                 {p.name}
               </p>
               <div className="mt-1 flex items-center gap-1.5">
