@@ -26,6 +26,7 @@ const courses = [
     "AI with Pictoblox",
     "Competition",
   "Customized Courses",
+  "Year Long Program",
   ];
   
   export default courses;
