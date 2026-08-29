@@ -16,6 +16,11 @@ type ImageData = {
   courseName?: string;
 };
 
+// New helper — detects video by file extension in the Cloudinary URL.
+// Does not alter any existing function's behavior.
+const isVideoUrl = (url: string): boolean =>
+  /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url);
+
 const Page = () => {
   const { user, userRole, loading: authLoading } = useAuth();
   const [images, setImages] = useState<ImageData[]>([]);
@@ -79,7 +84,7 @@ const Page = () => {
         console.error("Error fetching student data:", err);
         setError("Failed to fetch your media. Please try again later.");
         setLoading(false);
-      }
+      },
     );
 
     // Clean up the listener when component unmounts
@@ -120,7 +125,7 @@ const Page = () => {
         });
       }
     },
-    [filteredImages.length, selectedImage]
+    [filteredImages.length, selectedImage],
   );
 
   // Handle keyboard navigation
@@ -176,6 +181,7 @@ const Page = () => {
   // Large image view mode
   if (viewMode === "large" && selectedImage !== null) {
     const currentImage = filteredImages[selectedImage];
+    const currentIsVideo = isVideoUrl(currentImage.url);
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col">
@@ -212,21 +218,29 @@ const Page = () => {
             <ArrowLeft className="w-8 h-8" />
           </button>
 
-          {/* Fixed: Removed layout="fill" and used width/height props instead */}
           <div className="flex items-center justify-center h-full w-full">
-            <Image
-              src={currentImage.url}
-              alt={`Full view of image ${selectedImage + 1}`}
-              className="max-h-[65vh] max-w-[75vw] object-contain shadow-2xl"
-              width={800}
-              height={600}
-              onError={(e) => {
-                console.error("Image failed to load:", currentImage.url);
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = "/api/placeholder/800/600";
-                e.currentTarget.alt = "Image failed to load";
-              }}
-            />
+            {currentIsVideo ? (
+              <video
+                src={currentImage.url}
+                controls
+                autoPlay
+                className="max-h-[65vh] max-w-[75vw] object-contain shadow-2xl"
+              />
+            ) : (
+              <Image
+                src={currentImage.url}
+                alt={`Full view of image ${selectedImage + 1}`}
+                className="max-h-[65vh] max-w-[75vw] object-contain shadow-2xl"
+                width={800}
+                height={600}
+                onError={(e) => {
+                  console.error("Image failed to load:", currentImage.url);
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/api/placeholder/800/600";
+                  e.currentTarget.alt = "Image failed to load";
+                }}
+              />
+            )}
           </div>
 
           <button
@@ -313,56 +327,66 @@ const Page = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
-                {filteredImages.map((image, index) => (
-                  <div
-                    key={image.id}
-                    className="group bg-white rounded-2xl shadow-lg border border-[#991b1b]/10 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.04] hover:border-[#991b1b]/30 cursor-pointer animate-fadein"
-                    onClick={() => handleImageClick(index)}
-                  >
-                    <div className="relative aspect-w-16 aspect-h-12 h-52">
-                      {/* Fixed: Using proper Next.js Image component setup for grid items */}
-                      <div className="w-full h-full relative">
-                        <Image
-                          src={image.url}
-                          alt={`Gallery image ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          className="transition-all duration-300 group-hover:scale-105 group-hover:brightness-80"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/api/placeholder/400/320";
-                            e.currentTarget.alt = "Image failed to load";
-                          }}
-                        />
-                      </div>
-                      <div className="absolute inset-0   group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                          <svg
-                            className="w-12 h-12 text-white drop-shadow-lg"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                            ></path>
-                          </svg>
+                {filteredImages.map((image, index) => {
+                  const thumbIsVideo = isVideoUrl(image.url);
+                  return (
+                    <div
+                      key={image.id}
+                      className="group bg-white rounded-2xl shadow-lg border border-[#991b1b]/10 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.04] hover:border-[#991b1b]/30 cursor-pointer animate-fadein"
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <div className="relative aspect-w-16 aspect-h-12 h-52">
+                        <div className="w-full h-full relative">
+                          {thumbIsVideo ? (
+                            <video
+                              src={image.url}
+                              muted
+                              className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-80"
+                            />
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Gallery image ${index + 1}`}
+                              fill
+                              className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-80"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src =
+                                  "/api/placeholder/400/320";
+                                e.currentTarget.alt = "Image failed to load";
+                              }}
+                            />
+                          )}
+                        </div>
+                        <div className="absolute inset-0   group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
+                          <div className="transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                            <svg
+                              className="w-12 h-12 text-white drop-shadow-lg"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                              ></path>
+                            </svg>
+                          </div>
                         </div>
                       </div>
+                      {image.courseName && (
+                        <div className="px-4 py-2 bg-[#991b1b]/5 border-t border-[#991b1b]/10">
+                          <p className="text-xs font-medium text-[#991b1b] truncate">
+                            {image.courseName}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    {image.courseName && (
-                      <div className="px-4 py-2 bg-[#991b1b]/5 border-t border-[#991b1b]/10">
-                        <p className="text-xs font-medium text-[#991b1b] truncate">
-                          {image.courseName}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

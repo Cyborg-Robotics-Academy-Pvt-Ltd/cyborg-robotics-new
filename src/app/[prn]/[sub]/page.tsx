@@ -185,6 +185,10 @@ function fromSlug(slug: string) {
   return courseName;
 }
 
+// New helper — detects video by file extension in the Cloudinary URL.
+const isVideoUrl = (url: string): boolean =>
+  /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url);
+
 function getLevelColor(level: string) {
   switch (level.toLowerCase()) {
     case "1":
@@ -341,6 +345,9 @@ const Page = ({
   const [nextCourseComment, setNextCourseComment] = useState("");
   const [joinSoonTime, setJoinSoonTime] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
+    null,
+  );
   const canViewOngoingTab =
     userRole === "admin" || userRole === "superAdmin" || userRole === "trainer";
 
@@ -1846,6 +1853,67 @@ const Page = ({
           </div>
         )}
 
+        {selectedMediaIndex !== null && student.imageUrls && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
+            onClick={() => setSelectedMediaIndex(null)}
+          >
+            <div
+              className="relative max-h-[85vh] max-w-[85vw] flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isVideoUrl(student.imageUrls[selectedMediaIndex]) ? (
+                <video
+                  src={student.imageUrls[selectedMediaIndex]}
+                  controls
+                  autoPlay
+                  className="max-h-[85vh] max-w-[85vw] rounded-lg shadow-2xl"
+                />
+              ) : (
+                <Image
+                  src={student.imageUrls[selectedMediaIndex]}
+                  alt={`Media ${selectedMediaIndex + 1}`}
+                  width={900}
+                  height={700}
+                  className="max-h-[85vh] max-w-[85vw] w-auto h-auto object-contain rounded-lg shadow-2xl"
+                />
+              )}
+
+              {selectedMediaIndex > 0 && (
+                <button
+                  onClick={() =>
+                    setSelectedMediaIndex((i) => (i !== null ? i - 1 : i))
+                  }
+                  className="absolute left-2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full"
+                  aria-label="Previous media"
+                >
+                  <ArrowLeftCircle className="w-6 h-6" />
+                </button>
+              )}
+              {selectedMediaIndex < student.imageUrls.length - 1 && (
+                <button
+                  onClick={() =>
+                    setSelectedMediaIndex((i) => (i !== null ? i + 1 : i))
+                  }
+                  className="absolute right-2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full"
+                  aria-label="Next media"
+                >
+                  <ArrowLeftCircle className="w-6 h-6 rotate-180" />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setSelectedMediaIndex(null)}
+                className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-red-800 text-white shadow-md"
+                aria-label="Close media preview"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Task Edit Modal */}
         {editingTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -2002,6 +2070,17 @@ const Page = ({
                   Ongoing Classes
                 </button>
               )}
+              <button
+                className={`px-4 py-3 text-base font-medium rounded-t-lg focus:outline-none transition-colors flex items-center gap-2 ${
+                  activeTab === 3
+                    ? "text-red-700 border-b-2 border-red-700"
+                    : "text-gray-500 hover:text-red-700"
+                }`}
+                onClick={() => setActiveTab(3)}
+              >
+                <ClipboardCheck className="w-5 h-5" />
+                Media ({student.imageUrls?.length || 0})
+              </button>
             </nav>
           </div>
         </div>
@@ -2451,6 +2530,72 @@ const Page = ({
                   </h3>
                   <p className="mt-1 text-gray-500">
                     Ongoing classes will appear here once available.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 3 && (
+            <div className="bg-white rounded-2xl shadow-md p-5">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+                Media for PRN: {student.PrnNumber} (
+                {student.imageUrls?.length || 0})
+              </h2>
+
+              {student.imageUrls && student.imageUrls.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {student.imageUrls.map((url, index) => {
+                    const isVideo = isVideoUrl(url);
+                    return (
+                      <div
+                        key={index}
+                        className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => setSelectedMediaIndex(index)}
+                      >
+                        {isVideo ? (
+                          <video
+                            src={url}
+                            muted
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={url}
+                            alt={`Media ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = "/api/placeholder/300/300";
+                            }}
+                          />
+                        )}
+                        {isVideo && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <svg
+                              className="w-8 h-8 text-white drop-shadow-lg"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <ClipboardCheck className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                    No media uploaded yet
+                  </h3>
+                  <p className="mt-1 text-gray-500">
+                    Photos and videos for this student will appear here once
+                    uploaded.
                   </p>
                 </div>
               )}

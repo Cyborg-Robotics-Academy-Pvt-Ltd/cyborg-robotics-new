@@ -93,7 +93,7 @@ const compressImage = (file: File, maxSizeKB: number = 100): Promise<File> => {
             }
           },
           file.type,
-          quality
+          quality,
         );
       };
 
@@ -115,7 +115,7 @@ const MediaSection = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null
+    null,
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   // New states for PRN auto-search functionality
@@ -126,20 +126,22 @@ const MediaSection = () => {
     setLoading(true);
     setError("");
 
+    const isVideo = file.type.startsWith("video/");
+
     try {
-      // Compress the file first
-      const compressedFile = await compressImage(file, 100);
+      // Only compress images; video is uploaded as-is
+      const uploadFile = isVideo ? file : await compressImage(file, 100);
 
       const formData = new FormData();
-      formData.append("file", compressedFile);
+      formData.append("file", uploadFile);
       formData.append("upload_preset", "cyborg_robotics");
 
       const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dgbbkclfa/image/upload",
+        `https://api.cloudinary.com/v1_1/dgbbkclfa/${isVideo ? "video" : "image"}/upload`,
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       const data = await response.json();
@@ -154,11 +156,9 @@ const MediaSection = () => {
         name: file.name,
         type: file.type,
         size: file.size,
-        compressedSize: compressedFile.size,
+        compressedSize: uploadFile.size,
         secure_url: data.secure_url,
-        preview: file.type.startsWith("image/")
-          ? URL.createObjectURL(file)
-          : null,
+        preview: URL.createObjectURL(file),
         status: "complete",
       };
     } catch (err) {
@@ -170,7 +170,7 @@ const MediaSection = () => {
 
   // Refactor handleFileChange to accept File[] directly
   const handleFileChange = async (
-    selectedFiles: File[] | React.ChangeEvent<HTMLInputElement>
+    selectedFiles: File[] | React.ChangeEvent<HTMLInputElement>,
   ) => {
     let filesArray: File[] = [];
     if (Array.isArray(selectedFiles)) {
@@ -179,77 +179,78 @@ const MediaSection = () => {
       filesArray = Array.from(selectedFiles.target.files);
     }
 
-    // Filter only image files
-    const imageFiles = filesArray.filter((file) =>
-      file.type.startsWith("image/")
+    // Accept image and video files
+    const acceptedFiles = filesArray.filter(
+      (file) =>
+        file.type.startsWith("image/") || file.type.startsWith("video/"),
     );
 
-    // Check if any non-image files were rejected
-    const nonImageFiles = filesArray.filter(
-      (file) => !file.type.startsWith("image/")
+    // Check if any unsupported files were rejected
+    const rejectedFiles = filesArray.filter(
+      (file) =>
+        !file.type.startsWith("image/") && !file.type.startsWith("video/"),
     );
-    if (nonImageFiles.length > 0) {
+    if (rejectedFiles.length > 0) {
       setError(
-        `${nonImageFiles.length} non-image file(s) were rejected. Only image files are allowed.`
+        `${rejectedFiles.length} file(s) were rejected. Only image or video files are allowed.`,
       );
     }
 
-    if (!imageFiles.length) return;
+    if (!acceptedFiles.length) return;
 
     setLoading(true);
     const uploadPromises: Promise<FileData | null>[] = [];
     const newFiles: FileData[] = [];
 
     // Process files and create preview
-    for (let i = 0; i < imageFiles.length; i++) {
-      const file = imageFiles[i];
+    for (let i = 0; i < acceptedFiles.length; i++) {
+      const file = acceptedFiles[i];
       newFiles.push({
         name: file.name,
         type: file.type,
         size: file.size,
-        preview: file.type.startsWith("image/")
-          ? URL.createObjectURL(file)
-          : null,
+        preview: URL.createObjectURL(file),
         file: file,
         status: "compressing",
       });
     }
 
     // Update UI with files that are being processed
-    setFiles([...files, ...newFiles]);
+    setFiles((prev) => [...prev, ...newFiles]);
 
-    // Compress and upload each file
-    for (let i = 0; i < imageFiles.length; i++) {
-      uploadPromises.push(handleUpload(imageFiles[i]));
+    // Compress/upload each file
+    for (let i = 0; i < acceptedFiles.length; i++) {
+      uploadPromises.push(handleUpload(acceptedFiles[i]));
     }
 
     try {
       const results = await Promise.all(uploadPromises);
       const successfulUploads = results.filter(
-        (f): f is FileData => f !== null
+        (f): f is FileData => f !== null,
       );
       setUploadedImages((prev) => [...prev, ...successfulUploads]);
       setMessage(
         successfulUploads.length > 0
           ? `Uploaded ${successfulUploads.length} file(s) successfully!`
-          : "No files uploaded."
+          : "No files uploaded.",
       );
       // Update file status for completed uploads (fix for stuck 'compressing')
-      const updatedFiles = [...files, ...newFiles].map((file) => {
-        const uploadResult = successfulUploads.find(
-          (result) => result.name === file.name && result.size === file.size
-        );
-        if (uploadResult) {
-          return {
-            ...file,
-            status: "complete",
-            secure_url: uploadResult.secure_url,
-            compressedSize: uploadResult.compressedSize,
-          };
-        }
-        return file;
-      });
-      setFiles(updatedFiles as FileData[]);
+      setFiles((prev) =>
+        prev.map((file) => {
+          const uploadResult = successfulUploads.find(
+            (result) => result.name === file.name && result.size === file.size,
+          );
+          if (uploadResult) {
+            return {
+              ...file,
+              status: "complete",
+              secure_url: uploadResult.secure_url,
+              compressedSize: uploadResult.compressedSize,
+            };
+          }
+          return file;
+        }),
+      );
     } catch (err) {
       console.error("Upload error:", err);
       setError("An error occurred during upload.");
@@ -286,8 +287,8 @@ const MediaSection = () => {
     if (newFiles[index].secure_url) {
       setUploadedImages(
         uploadedImages.filter(
-          (img) => img.secure_url !== newFiles[index].secure_url
-        )
+          (img) => img.secure_url !== newFiles[index].secure_url,
+        ),
       );
     }
 
@@ -325,7 +326,7 @@ const MediaSection = () => {
       // Remove duplicates based on PRN
       const uniquePrnList = prnList.filter(
         (item, index, self) =>
-          index === self.findIndex((t) => t.prn === item.prn)
+          index === self.findIndex((t) => t.prn === item.prn),
       );
 
       setAllPrns(uniquePrnList);
@@ -362,7 +363,7 @@ const MediaSection = () => {
         .filter(
           (suggestion) =>
             (suggestion.prn && suggestion.prn.trim() !== "") ||
-            (suggestion.username && suggestion.username.trim() !== "")
+            (suggestion.username && suggestion.username.trim() !== ""),
         ); // Filter out completely empty entries
 
       // Limit to 10 suggestions to prevent performance issues
@@ -378,7 +379,7 @@ const MediaSection = () => {
     setPrnSuggestions([]);
   };
   const findStudentByPRN = async (
-    prnNumber: string
+    prnNumber: string,
   ): Promise<StudentData | null> => {
     try {
       // Initialize Firestore
@@ -453,7 +454,7 @@ const MediaSection = () => {
 
       // Successfully verified student and stored URL
       setMessage(
-        `Image successfully stored for student with PRN: ${prnNumber}`
+        `Image successfully stored for student with PRN: ${prnNumber}`,
       );
       setPrnNumber(""); // Clear the PRN input after successful verification
 
@@ -469,13 +470,13 @@ const MediaSection = () => {
 
         // Filter out the assigned image from uploadedImages
         const updatedUploadedImages = uploadedImages.filter(
-          (img, index) => index !== selectedImageIndex
+          (img, index) => index !== selectedImageIndex,
         );
         setUploadedImages(updatedUploadedImages);
 
         // Also filter out the same image from files
         const updatedFiles = files.filter(
-          (file) => file.secure_url !== imageToAssign?.secure_url
+          (file) => file.secure_url !== imageToAssign?.secure_url,
         );
         setFiles(updatedFiles);
 
@@ -490,7 +491,7 @@ const MediaSection = () => {
         if (files.length > 0) {
           const imageToAssign = uploadedImages[0];
           const updatedFiles = files.filter(
-            (file) => file.secure_url !== imageToAssign?.secure_url
+            (file) => file.secure_url !== imageToAssign?.secure_url,
           );
           setFiles(updatedFiles);
         }
@@ -502,7 +503,7 @@ const MediaSection = () => {
       console.error("Error storing image URL:", error);
       setError(
         "Failed to store image URL: " +
-          (error instanceof Error ? error.message : "Unknown error")
+          (error instanceof Error ? error.message : "Unknown error"),
       );
     } finally {
       setIsSaving(false);
@@ -568,11 +569,18 @@ const MediaSection = () => {
                     className="border rounded-xl p-3 bg-white shadow-md hover:shadow-lg transition-shadow"
                   >
                     <div className="relative pb-[70%] mb-3 bg-gray-100 rounded-lg overflow-hidden">
-                      {file.preview ? (
+                      {file.type.startsWith("video/") ? (
+                        <video
+                          src={file.preview ?? undefined}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          muted
+                          controls
+                        />
+                      ) : file.preview ? (
                         <Image
                           src={file.preview}
                           alt={file.name}
-                          layout="fill"
+                          fill
                           className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : (
@@ -580,18 +588,18 @@ const MediaSection = () => {
                           {/* Removed Image icon */}
                         </div>
                       )}
-                      <Tooltip content="Remove file">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFile(index);
-                          }}
-                          className="absolute top-2 right-2 p-1.5 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full shadow-sm transition-all"
-                          disabled={loading}
-                        >
-                          <X className="w-4 h-4 text-gray-700" />
-                        </button>
-                      </Tooltip>
+                      <button
+                        data-tooltip-id="remove-file-tooltip"
+                        data-tooltip-content="Remove file"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile(index);
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full shadow-sm transition-all"
+                        disabled={loading}
+                      >
+                        <X className="w-4 h-4 text-gray-700" />
+                      </button>
                     </div>
                     <div className="px-1">
                       <p
@@ -638,6 +646,7 @@ const MediaSection = () => {
                   </div>
                 ))}
               </div>
+              <Tooltip id="remove-file-tooltip" place="top" />
             </div>
           </div>
         )}
@@ -703,12 +712,20 @@ const MediaSection = () => {
                         onClick={() => setSelectedImageIndex(index)}
                       >
                         <div className="relative pb-[70%] mb-1">
-                          <Image
-                            src={img.secure_url || "/placeholder.png"}
-                            alt={img.name || `Image ${index}`}
-                            layout="fill"
-                            className="absolute inset-0 w-full h-full object-cover rounded"
-                          />
+                          {img.type?.startsWith("video/") ? (
+                            <video
+                              src={img.secure_url}
+                              className="absolute inset-0 w-full h-full object-cover rounded"
+                              muted
+                            />
+                          ) : (
+                            <Image
+                              src={img.secure_url || "/placeholder.png"}
+                              alt={img.name || `Image ${index}`}
+                              fill
+                              className="absolute inset-0 w-full h-full object-cover rounded"
+                            />
+                          )}
                           {selectedImageIndex === index && (
                             <div className="absolute top-1 right-1 bg-[#991b1b] rounded-full p-1">
                               <CheckCircle className="w-4 h-4 text-white" />
