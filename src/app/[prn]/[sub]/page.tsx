@@ -329,13 +329,6 @@ const Page = ({
     rubric2Given: false,
     rubric3Given: false,
   });
-  const [studentMediaGiven, setStudentMediaGiven] = useState({
-    media1Given: false,
-    media2Given: false,
-    media3Given: false,
-    media4Given: false,
-    media5Given: false,
-  });
   const [showNextCourseModal, setShowNextCourseModal] = useState(false);
   const [nextCourseInput, setNextCourseInput] = useState("");
   const [isEditingNextCourse, setIsEditingNextCourse] = useState(false);
@@ -442,6 +435,14 @@ const Page = ({
     setOngoingTasks(ongoingTasksForCourse);
 
     return { filtered, completedTasksForCourse, ongoingTasksForCourse };
+  };
+  const mediaCount = student?.imageUrls?.length || 0;
+  const studentMediaGiven = {
+    media1Given: mediaCount >= 1,
+    media2Given: mediaCount >= 2,
+    media3Given: mediaCount >= 3,
+    media4Given: mediaCount >= 4,
+    media5Given: mediaCount >= 5,
   };
 
   const handleCompletedChange = async (checked: boolean | "indeterminate") => {
@@ -589,59 +590,6 @@ const Page = ({
     } catch (error) {
       console.error("[Checkbox] Error updating rubric status:", error);
       toast.error("Failed to update rubric status");
-    }
-  };
-
-  const handleStudentMediaChange = async (
-    mediaKey:
-      | "media1Given"
-      | "media2Given"
-      | "media3Given"
-      | "media4Given"
-      | "media5Given",
-    checked: boolean | "indeterminate",
-  ) => {
-    if (!student) return;
-
-    const newMediaState = checked === true;
-
-    try {
-      const studentRef = doc(db, "students", student.id);
-      const updatedCourses = student.courses?.map((course) => {
-        if (!course.name) return course;
-
-        const { courseName: currentCourseName, level: currentLevel } =
-          extractCourseAndLevel(courseName);
-
-        const courseNameMatches =
-          course.name.toLowerCase().trim() ===
-          currentCourseName.toLowerCase().trim();
-        const levelMatches = course.level === currentLevel;
-
-        if (courseNameMatches && levelMatches) {
-          return { ...course, [mediaKey]: newMediaState };
-        }
-
-        return course;
-      });
-
-      await updateDoc(studentRef, { courses: updatedCourses });
-
-      setStudent((prev) =>
-        prev ? { ...prev, courses: updatedCourses } : null,
-      );
-      setStudentMediaGiven((current) => ({
-        ...current,
-        [mediaKey]: newMediaState,
-      }));
-      toast.success(
-        newMediaState
-          ? "Student media marked as given!"
-          : "Student media marked as not given!",
-      );
-    } catch (error) {
-      console.error("[Checkbox] Error updating student media status:", error);
-      toast.error("Failed to update student media status");
     }
   };
 
@@ -1029,13 +977,6 @@ const Page = ({
               rubric1Given: currentCourse.rubric1Given || false,
               rubric2Given: currentCourse.rubric2Given || false,
               rubric3Given: currentCourse.rubric3Given || false,
-            });
-            setStudentMediaGiven({
-              media1Given: currentCourse.media1Given || false,
-              media2Given: currentCourse.media2Given || false,
-              media3Given: currentCourse.media3Given || false,
-              media4Given: currentCourse.media4Given || false,
-              media5Given: currentCourse.media5Given || false,
             });
 
             // Note: Auto-complete logic moved to a separate useEffect to avoid
@@ -1565,26 +1506,11 @@ const Page = ({
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {[
-                        {
-                          id: "media1Given",
-                          label: "Media 1",
-                        },
-                        {
-                          id: "media2Given",
-                          label: "Media 2",
-                        },
-                        {
-                          id: "media3Given",
-                          label: "Media 3",
-                        },
-                        {
-                          id: "media4Given",
-                          label: "Media 4",
-                        },
-                        {
-                          id: "media5Given",
-                          label: "Media 5",
-                        },
+                        { id: "media1Given", label: "Media 1" },
+                        { id: "media2Given", label: "Media 2" },
+                        { id: "media3Given", label: "Media 3" },
+                        { id: "media4Given", label: "Media 4" },
+                        { id: "media5Given", label: "Media 5" },
                       ].map(({ id, label }) => (
                         <div key={id} className="flex items-center gap-1.5">
                           <Checkbox
@@ -1594,17 +1520,12 @@ const Page = ({
                                 id as keyof typeof studentMediaGiven
                               ]
                             }
-                            onCheckedChange={(checked) =>
-                              handleStudentMediaChange(
-                                id as keyof typeof studentMediaGiven,
-                                checked,
-                              )
-                            }
-                            className="border-white data-[state=checked]:bg-purple-500 data-[state=checked]:text-white h-4 w-4"
+                            disabled
+                            className="border-white data-[state=checked]:bg-green-500 data-[state=checked]:text-white h-4 w-4  cursor-default"
                           />
                           <label
                             htmlFor={id}
-                            className="text-xs font-medium cursor-pointer whitespace-nowrap"
+                            className="text-xs font-medium whitespace-nowrap "
                           >
                             {label}
                           </label>
