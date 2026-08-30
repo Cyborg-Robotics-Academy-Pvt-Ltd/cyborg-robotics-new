@@ -39,6 +39,8 @@ import {
   Clock,
   Target,
   X,
+  Delete,
+  Trash2,
 } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { getCourseTaskTemplates } from "../../../data/courseTasks";
@@ -592,7 +594,39 @@ const Page = ({
       toast.error("Failed to update rubric status");
     }
   };
+  // Handler for deleting a media item
+  const handleDeleteMedia = async (index: number) => {
+    if (!student || !student.imageUrls) return;
 
+    if (!window.confirm("Are you sure you want to delete this media item?")) {
+      return;
+    }
+
+    try {
+      const studentRef = doc(db, "students", student.id);
+      const updatedImageUrls = student.imageUrls.filter((_, i) => i !== index);
+
+      await updateDoc(studentRef, { imageUrls: updatedImageUrls });
+
+      setStudent((prev) =>
+        prev ? { ...prev, imageUrls: updatedImageUrls } : null,
+      );
+
+      // Close the fullscreen preview if the deleted item was open,
+      // or shift the index down if a later item was open
+      setSelectedMediaIndex((prev) => {
+        if (prev === null) return prev;
+        if (prev === index) return null;
+        if (prev > index) return prev - 1;
+        return prev;
+      });
+
+      toast.success("Media deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      toast.error("Failed to delete media");
+    }
+  };
   const handleSaveNextCourse = async () => {
     if (!student) {
       toast.error("No student found");
@@ -2471,9 +2505,22 @@ const Page = ({
                     return (
                       <div
                         key={index}
-                        className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
+                        className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow group"
                         onClick={() => setSelectedMediaIndex(index)}
                       >
+                        {userRole !== "student" && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMedia(index);
+                            }}
+                            className="absolute top-1.5 right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                            aria-label="Delete media"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                         {isVideo ? (
                           <video
                             src={url}
