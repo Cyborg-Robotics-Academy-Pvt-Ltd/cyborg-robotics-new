@@ -172,11 +172,6 @@ function ResultAnnouncement() {
             className="participant-row flex items-center gap-3 rounded-[16px] border border-[#eef1f6] bg-white px-4 py-2.5 shadow-[0_2px_10px_rgba(8,44,120,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#cfe0f7] hover:shadow-[0_10px_24px_rgba(8,44,120,0.09)] sm:gap-4 sm:px-6 w-auto"
             style={{ animationDelay: `${i * 90}ms` }}
           >
-            {/* rank number instead of star badge */}
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-xs font-bold text-[#0855AB]">
-              {i + 1}
-            </div>
-
             {/* avatar — smaller */}
             <div
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-black text-white shadow-sm ring-2 ring-white sm:h-10 sm:w-10 ${AVATAR_GRADIENTS[i]}`}
