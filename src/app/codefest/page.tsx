@@ -13,6 +13,7 @@ import CodefestLiveSection from "@/components/codefest/CodefestLiveSection";
 import Header from "@/components/layout/header";
 
 import type { Metadata } from "next";
+import WinnerAnnouncement from "@/components/codefest/WinnerAnnouncement";
 
 export const metadata: Metadata = {
   title: "Codefest 1.0 | Online Coding Competitions For Students",
@@ -37,26 +38,8 @@ export default function HomePage() {
     <main id="top" className="bg-[#f8f8f8] overflow-hidden">
       <Header />
       <HeroSection />
-      <FeatureBar />
-      <section className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[5fr_8fr] lg:gap-3 lg:px-6">
-        <div id="about" className="scroll-mt-24 w-full">
-          <AboutChallenge />
-        </div>
-
-        <div id="how-it-works" className="scroll-mt-24 w-full">
-          <HowItWorks />
-        </div>
-      </section>
-
+      <WinnerAnnouncement />
       <CodefestLiveSection />
-
-      <Highlights />
-
-      <section id="faq" className="scroll-mt-24">
-        <FAQSection />
-      </section>
-      <FinalCTA />
-
       <Footer />
     </main>
   );
