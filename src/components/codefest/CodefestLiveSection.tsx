@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { Gift, MapPin, Megaphone, Star, Trophy, Users } from "lucide-react";
+import { Gift, MapPin, Megaphone, Star, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,13 @@ const AVATAR_GRADIENTS = [
   "from-[#6D28D9] to-[#BE185D]", // NP — purple → magenta/pink
 ];
 const CONFETTI_COLORS = ["#FAC775", "#F0997B", "#AFA9EC", "#85B7EB"];
+
+// Loose client-side sanity bounds. This does NOT make the leaderboard
+// tamper-proof (client score is still trusted) — it only blocks obviously
+// broken/garbage writes before they hit "final review". Real integrity
+// needs a Firestore security rule + manual/server verification.
+const MAX_PLAUSIBLE_SCORE = 100_000;
+const MIN_PLAUSIBLE_TIME = 0.1;
 
 const fmtTime = (v: unknown) =>
   typeof v === "number" && isFinite(v) ? v.toFixed(1) + "s" : "-";
@@ -80,8 +87,6 @@ function TrophyIllustration() {
   return (
     <div className="relative hidden h-[150px] w-[180px] shrink-0 items-center justify-center sm:flex">
       <Confetti seed={0} className="scale-125" />
-
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-24 w-24 -translate-x-1/2 rounded-full bg-[#FAC775]/25 blur-2xl" />
 
       <div className="trophy-float relative z-[1] h-full w-full">
         <Image
@@ -127,9 +132,9 @@ function TrophyIllustration() {
 
 function ResultAnnouncement() {
   return (
-    <div className="mx-auto flex w-full max-w-[1280px] flex-col overflow-hidden rounded-[30px] border border-[#e3ecfa] bg-white shadow-[0_8px_30px_rgba(8,44,120,0.08)]">
-      {/* HERO HEADER — ~25% of card height */}
-      <div className="relative flex flex-col gap-6 overflow-hidden bg-gradient-to-br from-white to-[#f2f7ff] px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-10">
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col overflow-hidden rounded-[24px] border border-[#e3ecfa] bg-white shadow-[0_8px_30px_rgba(8,44,120,0.08)]">
+      {/* HERO HEADER — compact, smaller type */}
+      <div className="relative flex flex-col gap-3 overflow-hidden bg-gradient-to-br from-white to-[#f2f7ff] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
@@ -140,83 +145,67 @@ function ResultAnnouncement() {
         />
 
         <div className="relative min-w-0">
-          <span className="inline-flex items-center rounded-full bg-[#e6f1fb] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#082c78]">
+          <span className="inline-flex items-center rounded-full bg-[#e6f1fb] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#082c78]">
             Result
           </span>
 
-          <h2 className="mt-3 text-3xl font-extrabold leading-tight text-[#082c78] sm:text-[3rem]">
+          <h2 className="mt-2 text-xl font-extrabold leading-tight text-[#082c78] sm:text-2xl">
             Top 5 Participants
           </h2>
 
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#e6f1fb] py-2 pl-2 pr-4 ring-1 ring-[#cfe0f7]">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0855AB]">
-              <Megaphone
-                className="h-3.5 w-3.5 text-white"
-                strokeWidth={2.25}
-              />
+          <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#e6f1fb] py-1 pl-1.5 pr-3 ring-1 ring-[#cfe0f7]">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0855AB]">
+              <Megaphone className="h-3 w-3 text-white" strokeWidth={2.25} />
             </span>
-            <p className="text-sm font-semibold text-[#0c447c]">
+            <p className="text-xs font-semibold text-[#0c447c]">
               Final results will be announced soon
             </p>
           </div>
         </div>
-
-        <div className="relative">
-          <TrophyIllustration />
-        </div>
       </div>
 
-      {/* PARTICIPANT LIST */}
-      <div className="flex flex-col gap-4 px-6 py-8 sm:px-10">
+      {/* PARTICIPANT LIST — tighter rows, no decorative icons */}
+      <div className="flex flex-col gap-2 px-6 py-3 sm:px-8">
         {TOP_5.map((p, i) => (
           <div
             key={p.name}
-            className="participant-row flex min-h-[100px] items-center gap-4 rounded-[20px] border border-[#eef1f6] bg-white px-5 py-4 shadow-[0_2px_10px_rgba(8,44,120,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#cfe0f7] hover:shadow-[0_10px_24px_rgba(8,44,120,0.09)] sm:gap-6 sm:px-8 sm:py-5"
+            className="participant-row flex items-center gap-3 rounded-[16px] border border-[#eef1f6] bg-white px-4 py-2.5 shadow-[0_2px_10px_rgba(8,44,120,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#cfe0f7] hover:shadow-[0_10px_24px_rgba(8,44,120,0.09)] sm:gap-4 sm:px-6 w-auto"
             style={{ animationDelay: `${i * 90}ms` }}
           >
-            {/* star badge */}
-            <div className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fdf3e3] sm:flex">
-              <Confetti seed={i} />
-              <Star className="h-5 w-5 fill-[#FAC775] text-[#FAC775]" />
+            {/* rank number instead of star badge */}
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2f7ff] text-xs font-bold text-[#0855AB]">
+              {i + 1}
             </div>
 
-            {/* avatar */}
+            {/* avatar — smaller */}
             <div
-              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-base font-black text-white shadow-sm ring-4 ring-white transition-transform duration-300 sm:h-16 sm:w-16 sm:text-lg ${AVATAR_GRADIENTS[i]}`}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm font-black text-white shadow-sm ring-2 ring-white sm:h-10 sm:w-10 ${AVATAR_GRADIENTS[i]}`}
             >
               {p.initials}
             </div>
 
             {/* name + state */}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-bold text-[#0a2664] sm:text-2xl">
+              <p className="truncate text-sm font-bold text-[#0a2664] sm:text-base">
                 {p.name}
               </p>
-              <div className="mt-1 flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 shrink-0 text-[#5f6b85]" />
-                <p className="truncate text-sm font-medium text-[#5f6b85] sm:text-base">
+              <div className="mt-0.5 flex items-center gap-1">
+                <MapPin className="h-3 w-3 shrink-0 text-[#5f6b85]" />
+                <p className="truncate text-xs font-medium text-[#5f6b85]">
                   {p.state}
                 </p>
               </div>
-            </div>
-
-            {/* right decoration */}
-            <div className="relative hidden h-10 w-10 shrink-0 items-center justify-center sm:flex">
-              <Confetti seed={i + 2} />
-              <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#fbeaf0]">
-                <Users className="h-5 w-5 text-[#993556]" />
-              </span>
             </div>
           </div>
         ))}
       </div>
 
       {/* FOOTER */}
-      <div className="flex items-center gap-3 border-t border-[#eef1f6] bg-[#f2f7ff] px-6 py-4 sm:px-10">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e6f1fb]">
-          <Gift className="h-4.5 w-4.5 text-[#0855AB]" />
+      <div className="flex items-center gap-2.5 border-t border-[#eef1f6] bg-[#f2f7ff] px-6 py-3 sm:px-8">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e6f1fb]">
+          <Gift className="h-[14px] w-[14px] text-[#0855AB]" />
         </span>
-        <p className="text-sm font-medium text-[#0c447c]">
+        <p className="text-xs font-medium text-[#0c447c]">
           Winners&apos; certificates and prizes to be shared after final review
         </p>
       </div>
@@ -228,7 +217,7 @@ function ResultAnnouncement() {
         @keyframes rowFadeUp {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(8px);
           }
           to {
             opacity: 1;
@@ -244,7 +233,6 @@ function ResultAnnouncement() {
     </div>
   );
 }
-
 export default function CodefestLiveSection() {
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(
     null,
@@ -264,6 +252,20 @@ export default function CodefestLiveSection() {
       return;
     }
 
+    // Loose client-side guard against garbage/broken values. This is NOT
+    // anti-cheat — the score/time are still fully client-controlled and a
+    // motivated user can spoof them via devtools. Real protection needs a
+    // Firestore security rule bounding these fields server-side, and/or
+    // computing the score from a server-verified move log.
+    if (
+      pendingResult.score < 0 ||
+      pendingResult.score > MAX_PLAUSIBLE_SCORE ||
+      pendingResult.time < MIN_PLAUSIBLE_TIME
+    ) {
+      setSaveError("Something looks off with your result. Please try again.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       setSaveError(null);
@@ -273,12 +275,14 @@ export default function CodefestLiveSection() {
         score: pendingResult.score,
         time: pendingResult.time,
         game: "escape-the-maze",
+        verified: false, // flip to true during manual/admin review before prize decisions
         createdAt: serverTimestamp(),
       });
 
       setPendingResult(null);
       setPlayerName("");
-    } catch {
+    } catch (err) {
+      console.error("Failed to save CodeFest score:", err);
       setSaveError("Could not save your score. Please try again.");
     } finally {
       setIsSaving(false);
@@ -287,7 +291,7 @@ export default function CodefestLiveSection() {
 
   return (
     <>
-      <section className="mx-auto grid max-w-7xl items-stretch gap-3 px-6 py-6 lg:grid-cols-[5fr_6fr]">
+      <section className="mx-auto h-auto grid w-full items-stretch gap-3 px-6 py-1 lg:grid-cols-[5fr_6fr]">
         <MiniChallenge
           onFinish={(score, elapsed) => {
             setPendingResult({ score, time: elapsed });
@@ -295,16 +299,8 @@ export default function CodefestLiveSection() {
           }}
         />
         <div id="codefest-registration" className="scroll-mt-28">
-          <RegistrationForm />
+          <ResultAnnouncement />
         </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-4">
-        <ResultAnnouncement />
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-4">
-        <RewardsSection />
       </section>
 
       {pendingResult && (
