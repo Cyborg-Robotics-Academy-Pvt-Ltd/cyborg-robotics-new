@@ -190,6 +190,10 @@ const chartConfig = {
     label: "Courses",
     color: "#8B1A1B",
   },
+  revenue: {
+    label: "Revenue",
+    color: "#059669",
+  },
 };
 
 const SUCCESS_PAYMENT_STATUSES = new Set([
@@ -396,6 +400,9 @@ const getRegistrationCreatedDate = (registration: Record<string, any>) =>
 const getPaymentCreatedDate = (payment: Record<string, any>) =>
   getTimestampDate(payment.registrationCreatedAt || payment.createdAt);
 
+const getPaymentSuccessDate = (payment: Record<string, any>) =>
+  getTimestampDate(payment.updatedAt || payment.createdAt);
+
 const formatDateLabel = (value?: string | null) => {
   if (!value) return "";
   const date = new Date(value);
@@ -483,11 +490,24 @@ const AdminDashboard = () => {
   } | null>(null);
 
   const [drilldownOpen, setDrilldownOpen] = useState(false);
+  const [revenuePopupOpen, setRevenuePopupOpen] = useState(false);
+  const [selectedRevenuePoint, setSelectedRevenuePoint] = useState<{
+    month: string;
+    revenue: number;
+  } | null>(null);
   const [selectedDrilldownPoint, setSelectedDrilldownPoint] = useState<{
     label: string;
     periodStart: string;
     periodEnd: string;
   } | null>(null);
+  const openRevenueDetail = useCallback((payload?: Record<string, any>) => {
+    if (!payload) return;
+    setSelectedRevenuePoint({
+      month: String(payload.month || "Selected period"),
+      revenue: Number(payload.revenue) || 0,
+    });
+    setRevenuePopupOpen(true);
+  }, []);
 
   // Effect to trigger welcome notification once per session
   useEffect(() => {
@@ -672,6 +692,21 @@ const AdminDashboard = () => {
     return () => window.removeEventListener("keydown", handleSearchShortcut);
   }, []);
 
+  const getRevenueForPeriod = useCallback(
+    (start: Date, end: Date) =>
+      paymentRecords
+        .filter((p) => {
+          if (
+            !SUCCESS_PAYMENT_STATUSES.has(String(p.status || "").toUpperCase())
+          )
+            return false;
+          const d = getPaymentSuccessDate(p);
+          return d && d >= start && d <= end;
+        })
+        .reduce((sum, p) => sum + extractAmount(p.amount), 0),
+    [paymentRecords],
+  );
+
   const filteredEnrollmentTrends = useMemo(() => {
     if (enrollmentTrendStudents.length === 0) {
       return enrollmentTrends;
@@ -737,6 +772,7 @@ const AdminDashboard = () => {
           }),
           enrollments,
           courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          revenue: getRevenueForPeriod(dayStart, dayEnd),
           periodStart: dayStart.toISOString(),
           periodEnd: dayEnd.toISOString(),
         });
@@ -776,6 +812,7 @@ const AdminDashboard = () => {
           })}`,
           enrollments,
           courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          revenue: getRevenueForPeriod(weekStart, weekEnd),
           periodStart: weekStart.toISOString(),
           periodEnd: weekEnd.toISOString(),
         });
@@ -817,6 +854,7 @@ const AdminDashboard = () => {
           month: `Q${Math.floor(quarterStart.getMonth() / 3) + 1} ${quarterStart.getFullYear()}`,
           enrollments,
           courses: Math.max(10, Math.floor(enrollments * 0.3)),
+          revenue: getRevenueForPeriod(quarterStart, quarterEnd),
           periodStart: quarterStart.toISOString(),
           periodEnd: quarterEnd.toISOString(),
         });
@@ -852,6 +890,7 @@ const AdminDashboard = () => {
         }),
         enrollments,
         courses: Math.max(10, Math.floor(enrollments * 0.3)),
+        revenue: getRevenueForPeriod(monthStart, monthEnd),
         periodStart: monthStart.toISOString(),
         periodEnd: monthEnd.toISOString(),
       });
@@ -866,6 +905,7 @@ const AdminDashboard = () => {
     enrollmentTrainerFilter,
     enrollmentTrendStudents,
     enrollmentTrends,
+    getRevenueForPeriod,
   ]);
 
   const drilldownDetails = useMemo(() => {
@@ -2389,6 +2429,24 @@ const AdminDashboard = () => {
                           stopOpacity={0}
                         />
                       </linearGradient>
+                      <linearGradient
+                        id="colorRevenue"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#059669"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#059669"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -2412,6 +2470,7 @@ const AdminDashboard = () => {
                       dy={10}
                     />
                     <YAxis
+                      yAxisId="enrollments"
                       label={{
                         value: "Enrollments",
                         angle: -90,
@@ -2425,11 +2484,24 @@ const AdminDashboard = () => {
                         fontSize: 12,
                       }}
                     />
+                    <YAxis
+                      yAxisId="revenue"
+                      orientation="right"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{
+                        fill: "currentColor",
+                        opacity: 0.5,
+                        fontSize: 12,
+                      }}
+                      tickFormatter={(v) => formatCurrency(v)}
+                    />
                     <ChartTooltip
                       content={<ChartTooltipContent indicator="line" />}
                     />
                     <Area
                       type="monotone"
+                      yAxisId="enrollments"
                       dataKey="enrollments"
                       stroke="#AB2F30"
                       strokeWidth={3}
@@ -2461,6 +2533,40 @@ const AdminDashboard = () => {
                         />
                       )}
                     />
+                    <Area
+                      type="monotone"
+                      yAxisId="revenue"
+                      dataKey="revenue"
+                      stroke="#059669"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                      activeDot={(props: any) => (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={6}
+                          fill="#059669"
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => openRevenueDetail(props.payload)}
+                        />
+                      )}
+                      dot={(props: any) => (
+                        <circle
+                          key={`revenue-dot-${props.index || props.cx}-${props.cy}`}
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={4}
+                          fill="#059669"
+                          stroke="#ffffff"
+                          strokeWidth={1.5}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => openRevenueDetail(props.payload)}
+                        />
+                      )}
+                    />
                   </AreaChart>
                 </ChartContainer>
               </CardContent>
@@ -2470,8 +2576,8 @@ const AdminDashboard = () => {
                   <TrendingUp className="h-4 w-4" />
                 </div>
                 <div className="leading-none text-muted-foreground">
-                  Click any point to open matching students, registrations,
-                  pending payments, and unassigned students.
+                  Click any red point for enrollment details, or any green point
+                  for revenue collected that period.
                 </div>
                 <div className="leading-none text-muted-foreground">
                   Showing total enrollments across{" "}
@@ -2946,6 +3052,26 @@ const AdminDashboard = () => {
             </div>
           </DialogContent>
         </Dialog>
+        <Dialog open={revenuePopupOpen} onOpenChange={setRevenuePopupOpen}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Revenue Detail</DialogTitle>
+              <DialogDescription>
+                Revenue collected for the selected period
+              </DialogDescription>
+            </DialogHeader>
+            {selectedRevenuePoint ? (
+              <div className="mt-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 text-center">
+                <p className="text-sm font-medium text-emerald-700">
+                  {selectedRevenuePoint.month}
+                </p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">
+                  {formatCurrency(selectedRevenuePoint.revenue)}
+                </p>
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
       </main>
 
       {notification && (
@@ -3066,5 +3192,5 @@ const ActionItem = ({ name, description, time, icon }: any) => {
     </div>
   );
 };
-
+export { ActionItem };
 export default AdminDashboard;
