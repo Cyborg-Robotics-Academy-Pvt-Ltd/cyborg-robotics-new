@@ -74,7 +74,9 @@ import {
   SpikeEssentialCurriculum,
   kuboCurriculum,
   MiniElectronicsCurriculum,
+  WeDoRoboticsCurriculum,
 } from "../../../../utils/curriculum";
+
 import Header from "@/components/layout/header";
 // Define the type for key features
 interface KeyFeature {
@@ -1303,6 +1305,8 @@ export default async function SlugPage({
         return ev3Curriculum;
       case "kubo":
         return kuboCurriculum;
+      case "wedo-robotics":
+        return WeDoRoboticsCurriculum;
       case "coding-ai-pictoblox":
         // Transform CodingAIWithPictoBloxCurriculum to match CurriculumLevel[] structure
         return CodingAIWithPictoBloxCurriculum.levels.map((level: any) => ({
