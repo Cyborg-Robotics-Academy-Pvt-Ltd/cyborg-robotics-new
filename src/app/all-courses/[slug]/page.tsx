@@ -1043,6 +1043,50 @@ const mockData: Record<string, CourseData> = {
       },
     ],
   },
+  "wedo-robotics": {
+    id: "wedoRobotics",
+    title: "WEDO ROBOTICS",
+    subtitle: "Learn robotics and coding with LEGO Education WeDo",
+    badge: "Educational Robotics Course",
+    description:
+      "WeDo introduces young learners to STEAM through hands-on model building and block-based visual programming, building confidence to design, build, test, and program robotic solutions.",
+    mode: "Online",
+    duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+    syllabusPath: "/assets/pdf/WeDo Robotics.pdf",
+    syllabusFileName: "WEDO ROBOTICS.pdf",
+    imagePath: "/assets/courses/wedo.png",
+    imageAlt: "WeDo Robotics Course",
+    price: 6999,
+    originalPrice: 11999,
+    currency: "INR",
+    locale: "en-IN",
+    keyFeatures: [
+      {
+        title: "Block-based Programming",
+        description:
+          "Learn programming concepts using intuitive drag-and-drop blocks",
+        iconName: "Blocks",
+      },
+      {
+        title: "STEAM Learning",
+        description:
+          "Integrate Science, Technology, Engineering, Arts and Mathematics",
+        iconName: "GraduationCap",
+      },
+      {
+        title: "Mechanical Engineering",
+        description:
+          "Build with gears, wheels, axles, levers, and structures to understand real-world machines",
+        iconName: "Cog",
+      },
+      {
+        title: "Sensor-Based Automation",
+        description:
+          "Program sensor-driven behaviors and conditional logic for smart robots",
+        iconName: "Radar",
+      },
+    ],
+  },
   "spike-essential": {
     id: "spikeEssential",
     title: "SPIKE ESSENTIAL",

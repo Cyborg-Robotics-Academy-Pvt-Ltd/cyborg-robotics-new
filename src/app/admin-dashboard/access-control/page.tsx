@@ -34,8 +34,11 @@ import {
   RefreshCw,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Search,
   ArrowLeft,
+  AlertTriangle,
 } from "lucide-react";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
@@ -48,10 +51,22 @@ interface UserData {
   createdAt: Date;
   profileimage?: string;
   superAdmin?: boolean;
+  authOnly?: boolean;
 }
 
 const CROP_PREVIEW_SIZE = 256;
 const CROPPED_IMAGE_SIZE = 512;
+const PAGE_SIZE = 10;
+
+// Fixed set of Tailwind classes so the JIT compiler can statically detect
+// them. Template-literal class names like `w-${size}` are silently purged
+// in production builds and render as 0x0 elements.
+const AVATAR_SIZE_CLASSES: Record<number, string> = {
+  8: "w-8 h-8",
+  10: "w-10 h-10",
+  12: "w-12 h-12",
+  14: "w-14 h-14",
+};
 
 const getSafeCreatedAt = (value: unknown): Date => {
   if (!value) return new Date();
@@ -85,23 +100,29 @@ const RoleBadge = ({
         dot: "bg-amber-400",
         label: "Super Admin",
       }
-    : role === "admin"
+    : role === "unassigned"
       ? {
-          bg: "bg-violet-50 border-violet-200 text-violet-700",
-          dot: "bg-violet-400",
-          label: "Admin",
+          bg: "bg-gray-50 border-gray-200 text-gray-700",
+          dot: "bg-gray-400",
+          label: "No profile",
         }
-      : role === "trainer"
+      : role === "admin"
         ? {
-            bg: "bg-emerald-50 border-emerald-200 text-emerald-700",
-            dot: "bg-emerald-400",
-            label: "Trainer",
+            bg: "bg-violet-50 border-violet-200 text-violet-700",
+            dot: "bg-violet-400",
+            label: "Admin",
           }
-        : {
-            bg: "bg-sky-50 border-sky-200 text-sky-700",
-            dot: "bg-sky-400",
-            label: "Student",
-          };
+        : role === "trainer"
+          ? {
+              bg: "bg-emerald-50 border-emerald-200 text-emerald-700",
+              dot: "bg-emerald-400",
+              label: "Trainer",
+            }
+          : {
+              bg: "bg-sky-50 border-sky-200 text-sky-700",
+              dot: "bg-sky-400",
+              label: "Student",
+            };
 
   return (
     <span
@@ -113,6 +134,8 @@ const RoleBadge = ({
   );
 };
 
+// Pulse is reserved for "pending" — a state that genuinely needs attention.
+// Pulsing every row regardless of status was visual noise on a dense table.
 const StatusBadge = ({ status }: { status: string }) => {
   const config =
     status === "active"
@@ -132,7 +155,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${config.bg}`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full animate-pulse ${config.dot}`}
+        className={`w-1.5 h-1.5 rounded-full ${status === "pending" ? "animate-pulse" : ""} ${config.dot}`}
       />
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
@@ -149,7 +172,7 @@ const Avatar = ({
   size?: number;
 }) => (
   <div
-    className={`flex-shrink-0 w-${size} h-${size} rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center`}
+    className={`flex-shrink-0 ${AVATAR_SIZE_CLASSES[size] ?? AVATAR_SIZE_CLASSES[10]} rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center`}
   >
     {src ? (
       <Image
@@ -185,19 +208,123 @@ const SortIcon = ({
     <ChevronDown className="w-3.5 h-3.5 text-gray-300" />
   );
 
+// Reusable confirm dialog, styled to match the app's existing modal shell
+// (crop/camera modals) instead of falling back to the native window.confirm.
+const ConfirmDialog = ({
+  title,
+  message,
+  confirmLabel = "Confirm",
+  danger = true,
+  busy = false,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  danger?: boolean;
+  busy?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+      <div className="px-5 py-5 flex gap-3">
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${danger ? "bg-red-50" : "bg-amber-50"}`}
+        >
+          <AlertTriangle
+            className={`w-5 h-5 ${danger ? "text-red-600" : "text-amber-600"}`}
+          />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <p className="text-sm text-gray-500 mt-1">{message}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+        <button
+          onClick={onCancel}
+          disabled={busy}
+          className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={busy}
+          className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm disabled:opacity-60 ${
+            danger
+              ? "bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700"
+              : "bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800"
+          }`}
+        >
+          {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+          {confirmLabel}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Lightweight skeleton rows shown while the table data is loading, so the
+// layout doesn't jump the way a full-page spinner does.
+const SkeletonRows = ({ rows = 6 }: { rows?: number }) => (
+  <>
+    {Array.from({ length: rows }).map((_, i) => (
+      <tr key={i} className="animate-pulse">
+        <td className="px-5 py-3.5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-200" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-32 bg-gray-200 rounded" />
+              <div className="h-2.5 w-40 bg-gray-100 rounded" />
+            </div>
+          </div>
+        </td>
+        <td className="px-5 py-3.5">
+          <div className="h-5 w-20 bg-gray-200 rounded-md" />
+        </td>
+        <td className="px-5 py-3.5">
+          <div className="h-5 w-16 bg-gray-200 rounded-md" />
+        </td>
+        <td className="px-5 py-3.5">
+          <div className="h-3 w-20 bg-gray-200 rounded" />
+        </td>
+        <td className="px-5 py-3.5">
+          <div className="h-4 w-12 bg-gray-100 rounded ml-auto" />
+        </td>
+      </tr>
+    ))}
+  </>
+);
+
 const AccessControlPage = () => {
   const router = useRouter();
   const { user, userRole, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<UserData>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [fetchError, setFetchError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // Edit is now a modal instead of an inline table row — keeps the table
+  // compact and avoids layout shift when a row is being edited.
+  const [editModalUser, setEditModalUser] = useState<UserData | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<UserData>>({});
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Delete confirmation, replacing window.confirm with an in-app dialog.
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    role: string;
+    name: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const [uploadingPhotoForUserId, setUploadingPhotoForUserId] = useState<
     string | null
   >(null);
@@ -237,6 +364,10 @@ const AccessControlPage = () => {
     key: string;
     direction: "asc" | "desc";
   }>({ key: "createdAt", direction: "desc" });
+
+  // Pagination — data is already fetched in full client-side, so we just
+  // slice the filtered/sorted array instead of re-rendering hundreds of rows.
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (authLoading) return;
@@ -295,6 +426,46 @@ const AccessControlPage = () => {
           });
         } catch (collectionError) {
           console.error(`Error fetching ${collectionName}:`, collectionError);
+        }
+      }
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch("/api/admin/auth-users", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok)
+            throw new Error("Unable to load authentication users");
+          const { users: authUsers } = (await response.json()) as {
+            users: Array<{
+              id: string;
+              name: string;
+              email: string;
+              disabled: boolean;
+              createdAt: string;
+            }>;
+          };
+          const existingUserIds = new Set(
+            allUsers.map((existingUser) => existingUser.id),
+          );
+          allUsers.push(
+            ...authUsers
+              .filter((authUser) => !existingUserIds.has(authUser.id))
+              .map((authUser) => ({
+                id: authUser.id,
+                name: authUser.name || "No profile",
+                email: authUser.email,
+                role: "unassigned",
+                status: authUser.disabled ? "inactive" : "active",
+                createdAt: getSafeCreatedAt(authUser.createdAt),
+                authOnly: true,
+              })),
+          );
+        } catch (authUsersError) {
+          console.error(
+            "Error fetching Firebase Authentication users:",
+            authUsersError,
+          );
         }
       }
       const filteredUsersList = allUsers.filter(
@@ -357,30 +528,47 @@ const AccessControlPage = () => {
       return 0;
     });
     setFilteredUsers(result);
+    // Any change to the underlying result set can invalidate the current
+    // page (e.g. searching down to 2 results while on page 3).
+    setCurrentPage(1);
   }, [searchTerm, roleFilter, statusFilter, users, sortConfig]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   const handleEditClick = (user: UserData) => {
+    if (user.authOnly) {
+      alert(
+        "This account has no Firestore profile. Create its profile before editing access details.",
+      );
+      return;
+    }
     if (user.superAdmin && !isSuperAdmin) {
       alert("You cannot edit super admin users.");
       return;
     }
-    setEditingUserId(user.id);
+    setEditModalUser(user);
     setEditFormData({ ...user });
   };
 
   const handleCancelEdit = () => {
-    setEditingUserId(null);
+    setEditModalUser(null);
     setEditFormData({});
   };
 
   const handleSaveChanges = async () => {
-    if (!editingUserId) return;
+    if (!editModalUser) return;
+    const editingUserId = editModalUser.id;
     const userBeingEdited = users.find((user) => user.id === editingUserId);
     if (userBeingEdited?.superAdmin && !isSuperAdmin) {
       alert("You cannot edit super admin users.");
       return;
     }
     try {
+      setSavingEdit(true);
       const originalUser = users.find((user) => user.id === editingUserId);
       if (!originalUser) {
         alert(
@@ -399,6 +587,7 @@ const AccessControlPage = () => {
           const newDocData: any = {
             ...originalData,
             name: editFormData.name || originalData.name,
+            email: editFormData.email || originalData.email,
             status: editFormData.status || originalData.status,
             role: editFormData.role,
             updatedAt: new Date(),
@@ -416,6 +605,8 @@ const AccessControlPage = () => {
         const updateData: any = { updatedAt: new Date() };
         if (editFormData.name !== undefined)
           updateData.name = editFormData.name;
+        if (editFormData.email !== undefined)
+          updateData.email = editFormData.email;
         if (editFormData.status !== undefined) {
           updateData.status = editFormData.status;
           if (
@@ -457,6 +648,7 @@ const AccessControlPage = () => {
             ? ({
                 ...user,
                 name: editFormData.name || user.name,
+                email: editFormData.email || user.email,
                 status: editFormData.status || user.status,
                 role: editFormData.role || user.role,
                 profileimage:
@@ -467,7 +659,7 @@ const AccessControlPage = () => {
             : user,
         ),
       );
-      setEditingUserId(null);
+      setEditModalUser(null);
       setEditFormData({});
     } catch (error) {
       console.error("Error updating user:", error);
@@ -475,17 +667,28 @@ const AccessControlPage = () => {
         "Error updating user. Please try again. Details: " +
           (error as Error).message,
       );
+    } finally {
+      setSavingEdit(false);
     }
   };
 
-  const handleDeleteUser = async (userId: string, role: string) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+  const requestDeleteUser = (userId: string, role: string, name: string) => {
+    setDeleteTarget({ id: userId, role, name });
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deleteTarget) return;
     try {
-      const collectionName = `${role}s`;
-      await deleteDoc(doc(db, collectionName, userId));
-      setUsers(users.filter((user) => user.id !== userId));
+      setDeleting(true);
+      const collectionName = `${deleteTarget.role}s`;
+      await deleteDoc(doc(db, collectionName, deleteTarget.id));
+      setUsers((prev) => prev.filter((user) => user.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (error) {
       console.error("Error deleting user:", error);
+      alert("Failed to delete user. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -771,7 +974,10 @@ const AccessControlPage = () => {
     }));
   };
 
-  if (authLoading || loading) return <AuthLoadingSpinner />;
+  // Only block the whole page while we don't yet know who the user is.
+  // Once auth resolves, data loading is shown as an in-page skeleton instead
+  // so the header/filters/layout don't disappear and reflow on every refetch.
+  if (authLoading) return <AuthLoadingSpinner />;
 
   const statsData = [
     {
@@ -811,6 +1017,9 @@ const AccessControlPage = () => {
   const thClass =
     "px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none";
 
+  const editingIsStudent = editModalUser?.role === "student";
+  const editIsLockedSuperAdmin = !!(editModalUser?.superAdmin && !isSuperAdmin);
+
   return (
     <div className="min-h-screen bg-gray-50/80">
       {/* Top bar */}
@@ -832,9 +1041,12 @@ const AccessControlPage = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={fetchUsers}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-60"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </button>
             <button
@@ -851,24 +1063,41 @@ const AccessControlPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {statsData.map(({ label, value, icon: Icon, color, bg, border }) => (
-            <div
-              key={label}
-              className={`bg-white rounded-xl border ${border} p-4 flex items-center gap-3 hover:shadow-md transition-shadow`}
-            >
-              <div
-                className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
-              >
-                <Icon className={`w-5 h-5 ${color}`} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">{label}</p>
-                <p className="text-2xl font-bold text-gray-900 leading-tight">
-                  {value}
-                </p>
-              </div>
-            </div>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3 animate-pulse"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0" />
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-16 bg-gray-200 rounded" />
+                    <div className="h-5 w-10 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              ))
+            : statsData.map(
+                ({ label, value, icon: Icon, color, bg, border }) => (
+                  <div
+                    key={label}
+                    className={`bg-white rounded-xl border ${border} p-4 flex items-center gap-3 hover:shadow-md transition-shadow`}
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
+                    >
+                      <Icon className={`w-5 h-5 ${color}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">
+                        {label}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 leading-tight">
+                        {value}
+                      </p>
+                    </div>
+                  </div>
+                ),
+              )}
         </div>
 
         {/* Error */}
@@ -919,10 +1148,18 @@ const AccessControlPage = () => {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
-              {filteredUsers.length}{" "}
-              <span className="text-gray-400 font-normal">
-                user{filteredUsers.length !== 1 ? "s" : ""} found
-              </span>
+              {loading ? (
+                <span className="text-gray-400 font-normal">
+                  Loading users…
+                </span>
+              ) : (
+                <>
+                  {filteredUsers.length}{" "}
+                  <span className="text-gray-400 font-normal">
+                    user{filteredUsers.length !== 1 ? "s" : ""} found
+                  </span>
+                </>
+              )}
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -974,7 +1211,9 @@ const AccessControlPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredUsers.length === 0 ? (
+                {loading ? (
+                  <SkeletonRows rows={6} />
+                ) : paginatedUsers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-5 py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
@@ -991,234 +1230,330 @@ const AccessControlPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((user) => (
+                  paginatedUsers.map((user) => (
                     <tr
                       key={user.id}
-                      className={`hover:bg-gray-50/80 transition-colors group ${editingUserId === user.id ? "bg-blue-50/30" : ""}`}
+                      className="hover:bg-gray-50/80 transition-colors group"
                     >
-                      {editingUserId === user.id ? (
-                        <>
-                          <td className="px-5 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="relative flex-shrink-0 w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center">
-                                {editFormData.profileimage ||
-                                user.profileimage ? (
-                                  <Image
-                                    src={
-                                      editFormData.profileimage ||
-                                      user.profileimage ||
-                                      ""
-                                    }
-                                    alt={user.name}
-                                    width={40}
-                                    height={40}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src =
-                                        "/assets/logo1.png";
-                                    }}
-                                  />
-                                ) : (
-                                  <User className="w-4 h-4 text-red-700" />
-                                )}
-                                {user.role === "student" && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleOpenPhotoSourceMenu(user)
-                                    }
-                                    disabled={
-                                      uploadingPhotoForUserId === user.id ||
-                                      (user.superAdmin && !isSuperAdmin)
-                                    }
-                                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
-                                  >
-                                    {uploadingPhotoForUserId === user.id ? (
-                                      <Loader2 className="w-4 h-4 text-white animate-spin" />
-                                    ) : (
-                                      <Camera className="w-4 h-4 text-white" />
-                                    )}
-                                  </button>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                {user.superAdmin && !isSuperAdmin ? (
-                                  <p className="text-xs text-amber-600 italic font-medium">
-                                    Unchangeable
-                                  </p>
-                                ) : (
-                                  <input
-                                    type="text"
-                                    value={editFormData.name || ""}
-                                    placeholder="Enter name"
-                                    onChange={(e) =>
-                                      setEditFormData({
-                                        ...editFormData,
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    className="block w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
-                                  />
-                                )}
-                                <p className="text-xs text-gray-400 mt-0.5 truncate">
-                                  {user.email}
-                                </p>
-                                {user.role === "student" && (
-                                  <>
-                                    <input
-                                      id={`student-photo-${user.id}`}
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      disabled={
-                                        uploadingPhotoForUserId === user.id ||
-                                        (user.superAdmin && !isSuperAdmin)
-                                      }
-                                      onChange={(e) =>
-                                        void handlePhotoSelection(e, user.id)
-                                      }
-                                    />
-                                    {editFormData.profileimage && (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          setEditFormData((prev) => ({
-                                            ...prev,
-                                            profileimage: "",
-                                          }))
-                                        }
-                                        className="text-xs text-red-500 hover:text-red-700 mt-1"
-                                      >
-                                        Remove photo
-                                      </button>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3">
-                            {user.superAdmin && !isSuperAdmin ? (
-                              <span className="text-xs text-amber-600 italic font-medium">
-                                Super Admin (restricted)
-                              </span>
-                            ) : (
-                              <select
-                                value={editFormData.role || ""}
-                                onChange={(e) =>
-                                  handleRoleChange(e.target.value)
-                                }
-                                className="px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
-                              >
-                                <option value="admin">Admin</option>
-                                <option value="trainer">Trainer</option>
-                                <option value="student">Student</option>
-                              </select>
-                            )}
-                          </td>
-                          <td className="px-5 py-3">
-                            {user.superAdmin && !isSuperAdmin ? (
-                              <span className="text-xs text-amber-600 italic font-medium">
-                                Unchangeable
-                              </span>
-                            ) : (
-                              <select
-                                value={editFormData.status || ""}
-                                onChange={(e) =>
-                                  handleStatusChange(e.target.value)
-                                }
-                                className="px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
-                              >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="pending">Pending</option>
-                              </select>
-                            )}
-                          </td>
-                          <td className="px-5 py-3 text-sm text-gray-500">
-                            {user.createdAt.toLocaleDateString()}
-                          </td>
-                          <td className="px-5 py-3">
-                            <div className="flex items-center justify-end gap-1">
-                              <button
-                                onClick={handleSaveChanges}
-                                disabled={user.superAdmin && !isSuperAdmin}
-                                className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                title="Save"
-                              >
-                                <Save className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-                                title="Cancel"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <Avatar
-                                src={user.profileimage}
-                                name={user.name}
-                              />
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
-                                  {user.name}
-                                </p>
-                                <p className="text-xs text-gray-400 truncate">
-                                  {user.email}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <RoleBadge
-                              role={user.role}
-                              superAdmin={user.superAdmin}
-                            />
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <StatusBadge status={user.status} />
-                          </td>
-                          <td className="px-5 py-3.5 text-sm text-gray-500">
-                            {user.createdAt.toLocaleDateString()}
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => handleEditClick(user)}
-                                disabled={user.superAdmin && !isSuperAdmin}
-                                className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                title="Edit"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteUser(user.id, user.role)
-                                }
-                                className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      )}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <Avatar src={user.profileimage} name={user.name} />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <RoleBadge
+                          role={user.role}
+                          superAdmin={user.superAdmin}
+                        />
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <StatusBadge status={user.status} />
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500">
+                        {user.createdAt.toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {/* Always visible — the previous opacity-0/group-hover
+                            approach made these unreachable on touch devices,
+                            which have no hover state. */}
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            disabled={
+                              user.authOnly ||
+                              (user.superAdmin && !isSuperAdmin)
+                            }
+                            className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              requestDeleteUser(user.id, user.role, user.name)
+                            }
+                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {!loading && filteredUsers.length > 0 && (
+            <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
+              <p className="text-xs text-gray-500">
+                Showing{" "}
+                <span className="font-medium text-gray-700">
+                  {(currentPage - 1) * PAGE_SIZE + 1}
+                </span>
+                –
+                <span className="font-medium text-gray-700">
+                  {Math.min(currentPage * PAGE_SIZE, filteredUsers.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium text-gray-700">
+                  {filteredUsers.length}
+                </span>
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-gray-500 px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Edit User Modal — z-40, deliberately lower than the photo-source
+          menu / crop modal / camera modal (z-50) it can trigger, so those
+          render on top instead of being covered (and their buttons blocked
+          from receiving clicks) by this modal's own overlay. */}
+      {editModalUser && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Edit User
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Update role, status, and profile details
+                </p>
+              </div>
+              <button
+                onClick={handleCancelEdit}
+                disabled={savingEdit}
+                className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="px-5 py-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center">
+                  {editFormData.profileimage || editModalUser.profileimage ? (
+                    <Image
+                      src={
+                        editFormData.profileimage ||
+                        editModalUser.profileimage ||
+                        ""
+                      }
+                      alt={editModalUser.name}
+                      width={56}
+                      height={56}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          "/assets/logo1.png";
+                      }}
+                    />
+                  ) : (
+                    <User className="w-6 h-6 text-red-700" />
+                  )}
+                  {editingIsStudent && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenPhotoSourceMenu(editModalUser)}
+                      disabled={
+                        uploadingPhotoForUserId === editModalUser.id ||
+                        editIsLockedSuperAdmin
+                      }
+                      className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-xl"
+                    >
+                      {uploadingPhotoForUserId === editModalUser.id ? (
+                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4 text-white" />
+                      )}
+                    </button>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {editModalUser.name || "Unnamed user"}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {editModalUser.email}
+                  </p>
+                  {editingIsStudent && editFormData.profileimage && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          profileimage: "",
+                        }))
+                      }
+                      className="text-xs text-red-500 hover:text-red-700 mt-1"
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {editingIsStudent && (
+                <input
+                  id={`student-photo-${editModalUser.id}`}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={
+                    uploadingPhotoForUserId === editModalUser.id ||
+                    editIsLockedSuperAdmin
+                  }
+                  onChange={(e) =>
+                    void handlePhotoSelection(e, editModalUser.id)
+                  }
+                />
+              )}
+
+              {editIsLockedSuperAdmin ? (
+                <p className="text-xs text-amber-600 italic font-medium bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                  This is a Super Admin account — only another Super Admin can
+                  change it.
+                </p>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.name || ""}
+                      placeholder="Enter name"
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          name: e.target.value,
+                        })
+                      }
+                      className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={editFormData.email || ""}
+                      placeholder="Enter email"
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          email: e.target.value,
+                        })
+                      }
+                      className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Role
+                      </label>
+                      <select
+                        value={editFormData.role || ""}
+                        onChange={(e) => handleRoleChange(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="trainer">Trainer</option>
+                        <option value="student">Student</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Status
+                      </label>
+                      <select
+                        value={editFormData.status || ""}
+                        onChange={(e) => handleStatusChange(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+              <button
+                onClick={handleCancelEdit}
+                disabled={savingEdit}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                disabled={savingEdit || editIsLockedSuperAdmin}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-700 to-red-600 rounded-lg hover:from-red-800 hover:to-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                {savingEdit ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this user?"
+          message={`This permanently removes ${deleteTarget.name || "this user"}'s ${deleteTarget.role} profile. This can't be undone.`}
+          confirmLabel="Delete"
+          danger
+          busy={deleting}
+          onConfirm={confirmDeleteUser}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
 
       {/* Crop Modal */}
       {cropModalOpen && selectedImageSrc && (

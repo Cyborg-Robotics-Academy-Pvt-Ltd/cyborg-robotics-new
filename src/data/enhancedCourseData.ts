@@ -71,6 +71,55 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     ageRange: "11-16",
     category: "Programming",
   },
+  "wedo-robotics": {
+  id: "wedoRobotics",
+  title: "WEDO ROBOTICS",
+  subtitle:
+    "Introduce young learners to robotics and coding with LEGO Education WeDo",
+  badge: "Educational Robotics Course",
+  description:
+    "Introduce young learners to robotics and coding with LEGO Education WeDo",
+  mode: "Online",
+  duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
+  syllabusPath: "/assets/pdf/WeDo Robotics.pdf",
+  syllabusFileName: "WEDO ROBOTICS.pdf",
+  imagePath: "/assets/courses/wedo.png",
+  imageAlt: "WeDo Robotics Course",
+  price: 6999,
+  originalPrice: 11999,
+  currency: "INR",
+  locale: "en-IN",
+  keyFeatures: [
+    {
+      title: "Block-based Programming",
+      description:
+        "Learn programming concepts using intuitive drag-and-drop blocks",
+      iconName: "Blocks",
+    },
+    {
+      title: "STEAM Learning",
+      description:
+        "Integrate Science, Technology, Engineering, Arts and Mathematics",
+      iconName: "GraduationCap",
+    },
+    {
+      title: "Mechanical Engineering",
+      description:
+        "Build with gears, wheels, axles, levers, and structures to understand real-world machines",
+      iconName: "Cog",
+    },
+    {
+      title: "Sensor-Based Automation",
+      description:
+        "Program sensor-driven behaviors and conditional logic for smart robots",
+      iconName: "Radar",
+    },
+  ],
+  courseOverview:
+    "WeDo is an engaging robotics program that introduces young learners to STEAM through hands-on model building and block-based visual programming. Across two progressive levels, students construct interactive robotic models, explore mechanical concepts like gears, wheels, levers, and pulleys, and bring their creations to life with intuitive drag-and-drop coding covering movement, sensors, sounds, lights, loops, and decision-making. Level 1 builds foundational skills through topics like motion, structures, flight, and environmental and agricultural robotics. Level 2 advances into sensor-based automation, mechanical advantage, biomimicry, and a capstone engineering project. Every session blends scientific exploration, computational thinking, and creative problem-solving, helping students confidently design, build, test, and improve their own robotic solutions.",
+  ageRange: "6-10",
+  category: "Robotics",
+},
   kubo: {
     id: "kubo",
     title: "KUBO Robotics",
@@ -83,7 +132,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     duration: "12 DAYS (x2 LEVELS) (1 HOUR PER SESSION)",
     syllabusPath: "/assets/pdf/KUBO.pdf",
     syllabusFileName: "KUBO.pdf",
-    imagePath: "/assets/classroom-course/kubo.png",
+    imagePath: "/assets/courses/kubo.png",
     imageAlt: "KUBO Robotics Course",
     price: 7499,
     originalPrice: 9999,

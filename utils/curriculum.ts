@@ -67,7 +67,44 @@ export const javaCurriculum = [
   },
 ];
 
-
+export const WeDoRoboticsCurriculum = [
+  {
+    id: "1",
+    title: "Level 1",
+    subtitle: [
+      "Day 1: Learn robot basics, motors, and movement. Create simple robot actions with visual block programming.",
+      "Day 2: Explore wheels and axles. Program robots with speed and directional control.",
+      "Day 3: Learn how gears transfer force and motion. Build gear-driven mechanisms.",
+      "Day 4: Discover levers, cranks, and linkages. Program repetitive movements using loops.",
+      "Day 5: Explore structures, stability, and load distribution through build challenges.",
+      "Day 6: Understand lifting and material handling. Program simple automated tasks.",
+      "Day 7: Learn lift, thrust, and rotational motion. Control motor speed for flight mechanisms.",
+      "Day 8: Discover robotics for recycling and sustainability. Build automated environmental solutions.",
+      "Day 9: Explore robotics in farming. Program repetitive actions for agricultural systems.",
+      "Day 10: Learn how robots sense surroundings. Program basic sensor-controlled behaviors.",
+      "Day 11: Understand robotic arms and precision engineering. Program multi-step automated movements.",
+      "Day 12: Solve a design challenge using mechanical and coding concepts. Build creativity and teamwork."
+    ],
+  },
+  {
+    id: "2",
+    title: "Level 2",
+    subtitle: [
+      "Day 1: Explore robotics for planetary exploration. Program autonomous movement for tough terrains.",
+      "Day 2: Investigate earthquakes and structural strength. Design and test engineering solutions.",
+      "Day 3: Understand pulleys and force multiplication. Apply them to lifting and climbing.",
+      "Day 4: Explore sound and human-robot interaction. Program interactive robot behaviors.",
+      "Day 5: Learn how sensors enable decisions. Program autonomous robots with conditional logic.",
+      "Day 6: Explore gears and lifting systems. Program robots for accurate, efficient operation.",
+      "Day 7: Understand friction, gear ratios, and speed. Compare robot performance through testing.",
+      "Day 8: Learn object detection and counting. Use variables and logic to solve challenges.",
+      "Day 9: Discover how nature inspires robot design. Program coordinated movement patterns.",
+      "Day 10: Explore patterns, measurements, and geometry. Apply math through robotics projects.",
+      "Day 11: Follow the engineering design process. Improve solutions through testing and iteration.",
+      "Day 12: Integrate mechanical design, coding, and STEAM into a final capstone project."
+    ],
+  },
+];
   // export const MachineLearningCurriculum = [
   //   {
   //     id: "1",

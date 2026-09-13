@@ -63,7 +63,7 @@ export function WhyChooseUs() {
   return (
     <section
       id="why-us"
-      className="w-full bg-background py-4 md:py-4 lg:py-4 mt-10"
+      className="w-full bg-white py-4 md:py-4 lg:py-4 mt-10"
       ref={sectionRef}
     >
       <div className="container px-4 md:px-6 mx-auto">

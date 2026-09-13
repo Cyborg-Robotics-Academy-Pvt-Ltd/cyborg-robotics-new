@@ -53,9 +53,9 @@ export const GlowingCard: React.FC<GlowingCardProps> = ({
     <div
       className={cn(
         "relative flex-1 min-w-[14rem] p-6 rounded-2xl text-black dark:text-white",
-        "bg-background border ",
+        "bg-white border ",
         "transition-all duration-400 ease-out",
-        className
+        className,
       )}
       style={
         {
@@ -142,14 +142,14 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
         ref={containerRef}
         className={cn(
           "relative max-w-[var(--max-width)] mx-auto ",
-          "px-6 py-2"
+          "px-6 py-2",
         )}
         style={{ padding: "var(--padding)" }} // String literal
       >
         <div
           className={cn(
             "flex items-center justify-center flex-wrap gap-[var(--gap)]",
-            responsive && "flex-col sm:flex-row "
+            responsive && "flex-col sm:flex-row ",
           )}
         >
           {children}
@@ -160,7 +160,7 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
             ref={overlayRef}
             className={cn(
               "absolute inset-0 pointer-events-none select-none",
-              "opacity-0 transition-all duration-[var(--animation-duration)] ease-out"
+              "opacity-0 transition-all duration-[var(--animation-duration)] ease-out",
             )}
             style={{
               // String concatenation for WebkitMask and mask
@@ -173,7 +173,7 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
             <div
               className={cn(
                 "flex items-center justify-center flex-wrap gap-[var(--gap)] max-w-[var(--max-width)] center mx-auto",
-                responsive && "flex-col sm:flex-row"
+                responsive && "flex-col sm:flex-row",
               )}
               style={{ padding: "var(--padding)" }} // String literal
             >
@@ -187,7 +187,7 @@ export const GlowingCards: React.FC<GlowingCardsProps> = ({
                     className: cn(
                       typedChild.props.className,
                       "bg-opacity-15 dark:bg-opacity-15",
-                      "border-opacity-100 dark:border-opacity-100"
+                      "border-opacity-100 dark:border-opacity-100",
                     ),
                     style: {
                       ...(typedChild.props.style || {}),

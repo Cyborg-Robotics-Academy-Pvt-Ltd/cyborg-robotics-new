@@ -200,7 +200,7 @@ const CourseCard = ({ course }: { course: (typeof courseList)[number] }) => {
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <Monitor className="h-4 w-4" />
-                Online Course
+                Buy Now
               </Link>
             )}
           </div>

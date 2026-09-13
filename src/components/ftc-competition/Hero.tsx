@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="relative w-full min-h-[400px]  md:min-h-[500px] lg:min-h-[600px] xl:min-h-[700px] max-h-[800px] bg-background overflow-hidden">
+    <section className="relative w-full min-h-[400px]  md:min-h-[500px] lg:min-h-[600px] xl:min-h-[700px] max-h-[800px] bg-white overflow-hidden">
       <Image
         src="/assets/events/ftc-thumbnail1.png"
         alt="FTC Competition"
