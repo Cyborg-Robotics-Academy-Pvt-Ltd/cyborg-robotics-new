@@ -37,9 +37,9 @@ const RoboticsButton: React.FC<RoboticsButtonProps> = ({
     secondary:
       "bg-gradient-to-r from-blue-600 to-blue-700 text-white border border-blue-600 hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500",
     outline:
-      "bg-transparent text-red-700 border-2 border-red-600 hover:bg-red-800 hover:text-white focus:ring-red-500",
+      "bg-white text-red-700 border-2 border-red-600 hover:bg-red-800 hover:text-white focus:ring-red-500",
     ghost:
-      "bg-transparent text-gray-700 hover:text-red-800 hover:bg-red-50 focus:ring-red-800",
+      "bg-white text-gray-700 hover:text-red-800 hover:bg-red-50 focus:ring-red-800",
   };
 
   return (
@@ -49,7 +49,7 @@ const RoboticsButton: React.FC<RoboticsButtonProps> = ({
         baseClasses,
         sizeClasses[size],
         variantClasses[variant],
-        className
+        className,
       )}
       onClick={onClick}
       disabled={disabled}

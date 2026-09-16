@@ -162,7 +162,7 @@ export const FileUpload = ({
             {!files.length && (
               <motion.div
                 variants={secondaryVariant}
-                className="absolute opacity-0 border border-dashed border-sky-400 inset-0 z-30 bg-transparent flex items-center justify-center h-32 mt-4 w-full max-w-[8rem] mx-auto rounded-md"
+                className="absolute opacity-0 border border-dashed border-sky-400 inset-0 z-30 bg-white flex items-center justify-center h-32 mt-4 w-full max-w-[8rem] mx-auto rounded-md"
               />
             )}
           </div>

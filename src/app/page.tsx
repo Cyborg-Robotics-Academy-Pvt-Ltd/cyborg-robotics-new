@@ -1,6 +1,7 @@
 import HomePage from "@/components/home/HomePage";
 import { ScrollButton, WhatsAppWidget } from "@/components/widgets";
 import MouseFollower from "@/components/widgets/MouseFollower";
+import TawkWidget from "@/components/widgets/TawkWidget";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ const Home = () => {
         <HomePage />
       </div>
       <WhatsAppWidget />
+      <TawkWidget />
       <ScrollButton />
     </>
   );

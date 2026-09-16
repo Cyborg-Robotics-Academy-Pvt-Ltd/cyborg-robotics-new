@@ -13,6 +13,7 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
+import { auth } from "@/lib/firebase";
 import { Tooltip } from "react-tooltip";
 import { FileUpload } from "@/components/gallery/file-upload";
 
@@ -40,7 +41,32 @@ interface PrnSuggestion {
   username: string;
 }
 
+// --- Upload limits, matched to Cloudinary's actual plan caps ---
+// Image cap: plan allows 10MB, we stay under it.
+// Video cap: plan's max VIDEO TRANSFORMATION size is 40MB (not the 100MB raw
+// upload cap) — anything larger than that will fail eager transforms server
+// side, so 38MB keeps a safety buffer under that real ceiling.
+const MAX_IMAGE_MB = 8;
+const MAX_VIDEO_MB = 38;
+
+// Builds a Cloudinary delivery URL that requests a small, auto-optimized
+// thumbnail instead of the full-size original. Only used for on-screen grid
+// previews — the original secure_url is still what gets stored against the
+// student record, so no functionality changes there.
+const getThumbUrl = (url?: string): string | undefined => {
+  if (!url) return url;
+  if (!url.includes("/upload/")) return url;
+  return url.replace("/upload/", "/upload/w_300,h_300,c_fill,q_auto,f_auto/");
+};
+
 // Compression utility function
+// NOTE: canvas.toBlob() ignores the `quality` argument for "image/png" —
+// quality only takes effect for "image/jpeg" and "image/webp". Previously
+// this function passed `file.type` straight through, so PNG uploads never
+// actually shrank (every iteration produced an identically-sized blob).
+// Fix: always re-encode as JPEG for the compression pass, regardless of
+// input type. A white background is painted first since JPEG has no alpha
+// channel (avoids transparent PNGs turning black).
 const compressImage = (file: File, maxSizeKB: number = 100): Promise<File> => {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
@@ -63,11 +89,18 @@ const compressImage = (file: File, maxSizeKB: number = 100): Promise<File> => {
       canvas.width = width;
       canvas.height = height;
 
-      // Draw image on canvas
-      ctx?.drawImage(img, 0, 0, width, height);
+      // Always compress via JPEG encoding so quality reduction actually works
+      const outputType = "image/jpeg";
+
+      if (ctx) {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+      }
 
       // Start with high quality and reduce until file size is acceptable
       let quality = 0.9;
+      const minQuality = 0.1;
 
       const compressWithQuality = () => {
         canvas.toBlob(
@@ -79,10 +112,10 @@ const compressImage = (file: File, maxSizeKB: number = 100): Promise<File> => {
 
             const sizeKB = blob.size / 1024;
 
-            if (sizeKB <= maxSizeKB || quality <= 0.1) {
+            if (sizeKB <= maxSizeKB || quality <= minQuality) {
               // Create new file with compressed data
               const compressedFile = new File([blob], file.name, {
-                type: file.type,
+                type: outputType,
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -92,7 +125,7 @@ const compressImage = (file: File, maxSizeKB: number = 100): Promise<File> => {
               compressWithQuality();
             }
           },
-          file.type,
+          outputType,
           quality,
         );
       };
@@ -132,12 +165,49 @@ const MediaSection = () => {
       // Only compress images; video is uploaded as-is
       const uploadFile = isVideo ? file : await compressImage(file, 100);
 
+      // Signed upload: get a server-generated signature so the API secret
+      // never reaches the client and the preset can be locked to "Signed"
+      // mode in Cloudinary (prevents the unsigned-preset abuse that got the
+      // account disabled).
+      const timestamp = Math.round(Date.now() / 1000);
+      const paramsToSign = {
+        timestamp,
+        upload_preset: "cyborg_robotics",
+      };
+
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("You must be logged in to upload files");
+      }
+      const idToken = await currentUser.getIdToken();
+
+      const sigRes = await fetch("/api/cloudinary-signature", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ paramsToSign }),
+      });
+
+      if (!sigRes.ok) {
+        throw new Error("Failed to get upload signature");
+      }
+
+      const { signature } = await sigRes.json();
+
       const formData = new FormData();
       formData.append("file", uploadFile);
+      formData.append("timestamp", String(timestamp));
       formData.append("upload_preset", "cyborg_robotics");
+      formData.append(
+        "api_key",
+        process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || "",
+      );
+      formData.append("signature", signature);
 
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/dgbbkclfa/${isVideo ? "video" : "image"}/upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${isVideo ? "video" : "image"}/upload`,
         {
           method: "POST",
           body: formData,
@@ -180,7 +250,7 @@ const MediaSection = () => {
     }
 
     // Accept image and video files
-    const acceptedFiles = filesArray.filter(
+    const typeAccepted = filesArray.filter(
       (file) =>
         file.type.startsWith("image/") || file.type.startsWith("video/"),
     );
@@ -194,6 +264,33 @@ const MediaSection = () => {
       setError(
         `${rejectedFiles.length} file(s) were rejected. Only image or video files are allowed.`,
       );
+    }
+
+    // Enforce size limits before anything gets compressed/uploaded, so an
+    // oversized file never touches the network or Cloudinary's credits.
+    const oversizedNames: string[] = [];
+    const acceptedFiles = typeAccepted.filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      const sizeMB = file.size / (1024 * 1024);
+
+      if (isImage && sizeMB > MAX_IMAGE_MB) {
+        oversizedNames.push(
+          `${file.name} (${sizeMB.toFixed(1)}MB > ${MAX_IMAGE_MB}MB image limit)`,
+        );
+        return false;
+      }
+      if (isVideo && sizeMB > MAX_VIDEO_MB) {
+        oversizedNames.push(
+          `${file.name} (${sizeMB.toFixed(1)}MB > ${MAX_VIDEO_MB}MB video limit)`,
+        );
+        return false;
+      }
+      return true;
+    });
+
+    if (oversizedNames.length > 0) {
+      setError(`File(s) too large: ${oversizedNames.join(", ")}`);
     }
 
     if (!acceptedFiles.length) return;
@@ -720,7 +817,10 @@ const MediaSection = () => {
                             />
                           ) : (
                             <Image
-                              src={img.secure_url || "/placeholder.png"}
+                              src={
+                                getThumbUrl(img.secure_url) ||
+                                "/placeholder.png"
+                              }
                               alt={img.name || `Image ${index}`}
                               fill
                               className="absolute inset-0 w-full h-full object-cover rounded"

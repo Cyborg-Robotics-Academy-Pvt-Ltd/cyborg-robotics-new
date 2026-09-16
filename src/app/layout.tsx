@@ -76,7 +76,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Analytics />
             <SpeedInsights />
             <Toaster position="top-right" />
-            <TawkWidget />
           </AuthProvider>
         </WebsiteLoadingProvider>
       </body>

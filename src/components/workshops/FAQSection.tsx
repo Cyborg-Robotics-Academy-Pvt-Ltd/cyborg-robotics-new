@@ -42,7 +42,7 @@ const FAQSection = ({ faqs }: Props) => {
             >
               <button
                 onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                className="flex w-full items-center justify-between gap-4 border-0 bg-transparent px-4 py-4 text-left cursor-pointer sm:px-6"
+                className="flex w-full items-center justify-between gap-4 border-0 bg-white px-4 py-4 text-left cursor-pointer sm:px-6"
               >
                 <span className="text-[15px] font-bold text-[#1a1a1a]">
                   {faq.q}

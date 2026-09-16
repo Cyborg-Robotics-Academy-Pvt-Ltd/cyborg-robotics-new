@@ -153,19 +153,22 @@ export function About() {
             {/* Removed redundant ftcImage check */}
             <motion.div
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative group cursor-pointer w-full max-w-2xl"
+              className="relative group cursor-pointer w-[80%] max-w-2xl"
             >
               <Card className="overflow-hidden rounded-3xl mt-10 shadow-xl bg-gradient-to-br from-zinc-100 to-zinc-200">
                 <CardContent className="p-0 relative">
-                  {/* Replaced GIF with YouTube embed */}
+                  {/* FTC starter bot video */}
                   <div className="relative w-full md:h-[20rem] h-[14rem] rounded-3xl overflow-hidden">
-                    <iframe
-                      src="https://www.youtube.com/embed/K_PuWjr7qcM"
+                    <video
+                      src="https://res.cloudinary.com/dqiarwxml/video/upload/v1789298856/2026-2027_REV_DUO_FTC_Starter_Bot_2026-Sep-13_11-04-12AM-000_CustomizedView431915834_mp4_hbapxd.mp4"
+                      controls
+                      playsInline
+                      autoPlay
                       title="FTC Competition"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
                       className="w-full h-full"
-                    />
+                    >
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
 
                   <div className="absolute bottom-12 left-4 bg-white/20 backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg">

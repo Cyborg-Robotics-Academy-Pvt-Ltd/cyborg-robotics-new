@@ -1338,13 +1338,7 @@ const Page = () => {
           c.completed === true ||
           (c.status && c.status.toLowerCase() === "complete"),
       );
-    const base = searchTerm
-      ? students.filter(
-          (s) =>
-            s.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            s.PrnNumber?.toLowerCase().includes(searchTerm.toLowerCase()),
-        )
-      : students;
+    const base = filteredStudents;
     const headers = [
       "PRN Number",
       "Student Name",
@@ -1373,39 +1367,42 @@ const Page = () => {
                 completed: "",
               },
             ]
-        ).map(
-          (c) =>
-            ({
+        ).map((c) => {
+          const courseName = typeof c === "string" ? c : c?.name || "";
+          const courseTasks = (s.tasks || []).filter(
+            (t) => normalizeCourseName(t.course) === normalizeCourseName(courseName),
+          );
+
+          return {
               "PRN Number": s.PrnNumber,
               "Student Name": s.username,
-              Course: typeof c === "string" ? c : c?.name || "",
+              Course: courseName,
               Level: typeof c === "string" ? "" : c?.level || "",
               "Class Number": typeof c === "string" ? "" : c?.classNumber || "",
               "Course Status": typeof c === "string" ? "" : c?.status || "",
               "Course Completed":
-                typeof c === "string" ? "" : c?.completed ? "Yes" : "No",
-              "Assigned Classes": (s.tasks || [])
-                .filter(
-                  (t) => t.course === (typeof c === "string" ? c : c?.name),
-                )
-                .map((t) => t.task)
-                .join(", "),
-              "Completed Classes": s.completedTasks,
-              "Ongoing Classes": s.ongoingTasks,
-              "Completed Classes List": (s.tasks || [])
-                .filter(
-                  (t) =>
-                    t.status?.toLowerCase() === "complete" &&
-                    t.course === (typeof c === "string" ? c : c?.name),
-                )
+                typeof c === "string" || !courseName
+                  ? ""
+                  : c?.completed
+                    ? "Yes"
+                    : "No",
+              "Assigned Classes": courseTasks.map((t) => t.task).join(", "),
+              "Completed Classes": courseTasks.filter(
+                (t) => t.status?.toLowerCase() === "complete",
+              ).length,
+              "Ongoing Classes": courseTasks.filter(
+                (t) => t.status?.toLowerCase() === "ongoing",
+              ).length,
+              "Completed Classes List": courseTasks
+                .filter((t) => t.status?.toLowerCase() === "complete")
                 .map((t) => t.task)
                 .join(", "),
               Remark: s.remark || "",
               "Remark Updated At": s.remarkUpdatedAt
                 ? format(new Date(s.remarkUpdatedAt), "dd MMM yyyy hh:mm a")
                 : "",
-            }) as Record<string, string | number>,
-        ),
+            } as Record<string, string | number>;
+        }),
       );
     const wb = new ExcelJS.Workbook();
     const addSheet = (name: string, data: Student[]) => {

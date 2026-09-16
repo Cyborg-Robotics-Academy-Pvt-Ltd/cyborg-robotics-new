@@ -55,7 +55,7 @@ const ThreeDCarousel = ({
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsInView(entry.isIntersecting),
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
     return () => observer.disconnect();
   }, []);
@@ -91,7 +91,7 @@ const ThreeDCarousel = ({
   return (
     <section
       id="ThreeDCarousel"
-      className="bg-transparent min-w-full mx-aut 
+      className="bg-white min-w-full mx-aut 
     flex items-center justify-center"
     >
       <div
@@ -112,7 +112,7 @@ const ThreeDCarousel = ({
               <div
                 key={item.id}
                 className={`absolute top-0 w-full max-w-md transform transition-all duration-500 ${getCardAnimationClass(
-                  index
+                  index,
                 )}`}
               >
                 <Card

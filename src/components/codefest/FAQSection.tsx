@@ -184,7 +184,7 @@ export default function FAQSection() {
         sm:px-6 sm:py-16
       "
     >
-      <Card className="border-none bg-transparent shadow-none">
+      <Card className="border-none bg-white shadow-none">
         <CardHeader className="mb-6 px-0">
           <p
             className="
@@ -230,7 +230,7 @@ export default function FAQSection() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="
                 min-w-0 flex-1
-                bg-transparent text-sm outline-none
+                bg-white text-sm outline-none
                 placeholder:text-gray-400
                 sm:text-base
               "

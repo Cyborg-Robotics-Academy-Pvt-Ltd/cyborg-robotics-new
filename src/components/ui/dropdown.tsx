@@ -45,7 +45,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedValues, setSelectedValues] = useState<string[]>(
-    multiple ? (value ? [value] : []) : []
+    multiple ? (value ? [value] : []) : [],
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -61,14 +61,14 @@ const Dropdown: React.FC<DropdownProps> = ({
     default:
       "border-2 border-gray-200 bg-white hover:border-[#AB2F30]/50 focus:border-[#AB2F30] focus:ring-4 focus:ring-[#AB2F30]/20",
     outlined:
-      "border-2 border-gray-300 bg-transparent hover:border-[#AB2F30] focus:border-[#AB2F30] focus:ring-4 focus:ring-[#AB2F30]/20",
+      "border-2 border-gray-300 bg-white hover:border-[#AB2F30] focus:border-[#AB2F30] focus:ring-4 focus:ring-[#AB2F30]/20",
     filled:
       "border-2 border-transparent bg-gray-50 hover:bg-gray-100 focus:bg-white focus:border-[#AB2F30] focus:ring-4 focus:ring-[#AB2F30]/20",
   };
 
   // Filter options based on search term
   const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Get selected option for single selection
@@ -136,7 +136,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           variantClasses[variant],
           disabled && "opacity-50 cursor-not-allowed bg-gray-100",
           error && "border-[#AB2F30] focus:ring-[#AB2F30]/20",
-          isOpen && "border-[#AB2F30] ring-4 ring-[#AB2F30]/20"
+          isOpen && "border-[#AB2F30] ring-4 ring-[#AB2F30]/20",
         )}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
@@ -188,7 +188,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                 <span
                   className={cn(
                     "truncate",
-                    !selectedSingleOption && "text-gray-400"
+                    !selectedSingleOption && "text-gray-400",
                   )}
                 >
                   {selectedSingleOption?.label || placeholder}
@@ -199,7 +199,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           <ChevronDown
             className={cn(
               "h-5 w-5 text-gray-400 transition-transform duration-200",
-              isOpen && "rotate-180 text-[#AB2F30]"
+              isOpen && "rotate-180 text-[#AB2F30]",
             )}
           />
         </div>
@@ -240,7 +240,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                       "flex items-center justify-between px-4 py-3  cursor-pointer transition-colors duration-200 hover:bg-gray-50",
                       isSelected && "bg-[#AB2F30]/10 text-[#AB2F30]",
                       option.disabled &&
-                        "opacity-50 cursor-not-allowed hover:bg-transparent"
+                        "opacity-50 cursor-not-allowed hover:bg-white",
                     )}
                     onClick={() =>
                       !option.disabled && handleOptionClick(option.value)

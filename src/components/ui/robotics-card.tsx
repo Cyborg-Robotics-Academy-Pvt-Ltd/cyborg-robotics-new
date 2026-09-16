@@ -25,7 +25,7 @@ const RoboticsCard: React.FC<RoboticsCardProps> = ({
     default: "bg-white border border-gray-200 shadow-md hover:shadow-xl",
     elevated:
       "bg-white border border-gray-200 shadow-lg hover:shadow-2xl hover:-translate-y-1",
-    outlined: "bg-transparent border-2 border-gray-300 ",
+    outlined: "bg-white border-2 border-gray-300 ",
   };
 
   const interactiveClasses = interactive
@@ -39,7 +39,7 @@ const RoboticsCard: React.FC<RoboticsCardProps> = ({
         variantClasses[variant],
         interactiveClasses,
         "group",
-        className
+        className,
       )}
       onClick={onClick}
     >

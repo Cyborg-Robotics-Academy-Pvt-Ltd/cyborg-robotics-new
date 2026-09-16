@@ -87,6 +87,11 @@ const roleLinksMap: Record<
         ].some((path) => pathname.startsWith(path)),
     },
     {
+      label: "Enquire form",
+      href: "/enquire-form",
+      icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" />,
+    },
+    {
       label: "Student Media",
       href: "/media",
       icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,

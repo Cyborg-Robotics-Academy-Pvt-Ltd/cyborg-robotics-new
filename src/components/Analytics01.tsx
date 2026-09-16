@@ -101,7 +101,7 @@ const chartConfig = {
 
 const Analytics01 = () => {
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 bg-background text-foreground">
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 bg-white text-foreground">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

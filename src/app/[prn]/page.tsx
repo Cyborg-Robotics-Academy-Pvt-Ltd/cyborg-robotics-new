@@ -865,12 +865,9 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
     "10 May 2026",
   );
   const centerName = student.center || student.branch || "Pune";
-  const studentAge = student.age || "16";
+
   const latestCourse = courses[courses.length - 1];
-  const nextClassDate = formatDisplayValue(
-    latestCourse?.lastClassDate,
-    "3 Aug",
-  );
+
   const latestCompletedTask = [...(student.tasks || [])]
     .filter((studentTask) => studentTask.status?.toLowerCase() === "complete")
     .sort(
@@ -992,7 +989,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                     <span className="hidden h-4 w-px bg-slate-300 sm:block" />
                     <span>Center: {centerName}</span>
                     <span className="hidden h-4 w-px bg-slate-300 sm:block" />
-                    <span>Age: {studentAge}</span>
                   </div>
                 </div>
               </div>
@@ -1022,15 +1018,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                     sublabel: "Issued",
                     color: "text-orange-500",
                     bg: "bg-orange-50",
-                  },
-
-                  {
-                    icon: CalendarDays,
-                    value: nextClassDate,
-                    label: "Next Class",
-                    sublabel: "In 2 days",
-                    color: "text-blue-600",
-                    bg: "bg-blue-50",
                   },
                 ].map((item) => (
                   <div
@@ -1283,22 +1270,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                                   className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-[width] duration-500 ease-out"
                                   style={{ width: `${courseProgress}%` }}
                                 />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-y-4 text-xs text-[#061341]">
-                              <div className="border-r border-gray-200 pr-3">
-                                <div className="mb-1 flex items-center gap-2">
-                                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50">
-                                    <CalendarDays className="h-4 w-4 text-blue-600" />
-                                  </span>
-                                  <span className="font-semibold">
-                                    Last Class
-                                  </span>
-                                </div>
-                                <p className="pl-9 text-slate-600">
-                                  {lastClassDate}
-                                </p>
                               </div>
                             </div>
 

@@ -643,7 +643,7 @@ const AllCoursesPageContent = () => {
             </Link>
             <Link
               href="/all-courses"
-              className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
+              className="bg-white border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
             >
               Browse All Courses
             </Link>

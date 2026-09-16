@@ -61,7 +61,7 @@ export default function FutureTech() {
                       key={item.title}
                       className="flex flex-col items-center text-center"
                     >
-                      <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl border border-orange-100 bg-orange-50 lg:h-auto lg:w-auto lg:rounded-none lg:border-0 lg:bg-transparent">
+                      <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl border border-orange-100 bg-orange-50 lg:h-auto lg:w-auto lg:rounded-none lg:border-0 lg:bg-white">
                         <Icon
                           size={28}
                           className="text-red-600"

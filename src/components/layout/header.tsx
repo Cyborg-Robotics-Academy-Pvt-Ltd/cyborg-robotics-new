@@ -642,7 +642,7 @@ export default function Header() {
 
               {renderAuthMenu()}
 
-              <Link href="https://wa.me/917028511161?text=Hello%20Cyborg,%20I%20am%20looking%20for%20some%20help!%20(Enquiry)">
+              <Link href="/free-trial">
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
                   <Button className="h-10 rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-4 xl:px-5 text-xs xl:text-sm font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)]">
                     <span className="flex items-center gap-1.5">

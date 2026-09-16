@@ -124,7 +124,7 @@ const StudentClassManagement = () => {
           <div className="overflow-x-auto">
             <Table className="min-w-full divide-y divide-gray-200">
               <TableHeader>
-                <TableRow className="hover:bg-transparent">
+                <TableRow className="hover:bg-white">
                   <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     PRN Number
                   </TableHead>

@@ -86,7 +86,7 @@ const ScheduleSection = ({
                 </div>
                 <button
                   onClick={onRegister}
-                  className="mt-1 inline-flex cursor-pointer border-0 bg-transparent text-[11px] font-bold text-[#8D0F11] underline underline-offset-2"
+                  className="mt-1 inline-flex cursor-pointer border-0 bg-white text-[11px] font-bold text-[#8D0F11] underline underline-offset-2"
                 >
                   Book Now →
                 </button>

@@ -37,7 +37,7 @@ const StickyNav = ({
                 className={`shrink-0 inline-flex items-center gap-[6px] rounded-xl border px-3 py-[7px] text-[12px] font-bold transition-all duration-200 cursor-pointer ${
                   activeLocationId === location.id
                     ? "border-[#8D0F11] bg-[#8D0F11] text-white shadow-[0_4px_14px_rgba(141,15,17,0.35)]"
-                    : "border-[rgba(141,15,17,0.15)] bg-transparent text-[#666] hover:border-[#8D0F11] hover:text-[#8D0F11]"
+                    : "border-[rgba(141,15,17,0.15)] bg-white text-[#666] hover:border-[#8D0F11] hover:text-[#8D0F11]"
                 }`}
               >
                 {location.name}
@@ -56,7 +56,7 @@ const StickyNav = ({
                 className={`shrink-0 rounded-lg border px-2.5 py-[6px] text-[11px] font-bold transition-all duration-200 cursor-pointer ${
                   selectedAge === age
                     ? "border-[#8D0F11] bg-[#8D0F11] text-white shadow-[0_3px_10px_rgba(141,15,17,0.3)]"
-                    : "border-[rgba(141,15,17,0.15)] bg-transparent text-[#666] hover:border-[#8D0F11] hover:text-[#8D0F11]"
+                    : "border-[rgba(141,15,17,0.15)] bg-white text-[#666] hover:border-[#8D0F11] hover:text-[#8D0F11]"
                 }`}
               >
                 {age}
