@@ -71,6 +71,12 @@ export function useTrialRegistrations() {
               ? firestoreData.locationName
               : "";
 
+          const preferredCenter =
+            typeof firestoreData.preferredCenter === "string" &&
+            firestoreData.preferredCenter.trim()
+              ? firestoreData.preferredCenter.trim()
+              : null;
+
           const followUpHistory: FollowUpEntry[] = Array.isArray(
             firestoreData.followUpHistory,
           )
@@ -102,6 +108,8 @@ export function useTrialRegistrations() {
             locationId,
 
             locationName,
+
+            preferredCenter,
 
             status: (firestoreData.status as TrialStatus) || "booked",
 

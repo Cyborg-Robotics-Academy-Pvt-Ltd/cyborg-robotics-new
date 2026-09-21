@@ -135,6 +135,16 @@ const LOCATIONS: TrialLocation[] = [
 const MAX_OFFLINE_DISTANCE_KM = 20;
 
 /* -------------------------------------------------------------------------- */
+/* CONTINUE-AFTER-TRIAL CENTER OPTIONS                                       */
+/* -------------------------------------------------------------------------- */
+
+const CONTINUE_CENTERS: { id: string; label: string }[] = [
+  { id: "kalyani-nagar", label: "Kalyani Nagar, Pune" },
+  { id: "magarpatta", label: "Magarpatta, Pune" },
+  { id: "kharadi", label: "Kharadi, Pune" },
+];
+
+/* -------------------------------------------------------------------------- */
 /* HERO STATS                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -324,6 +334,13 @@ const HeroSection = () => {
   );
 
   /* ------------------------------------------------------------------------ */
+  /* CONTINUE-AFTER-TRIAL CENTER PREFERENCE                                  */
+  /* ------------------------------------------------------------------------ */
+
+  const [preferredCenter, setPreferredCenter] = useState<string | null>(null);
+  const [preferredCenterError, setPreferredCenterError] = useState("");
+
+  /* ------------------------------------------------------------------------ */
   /* API STATE                                                                */
   /* ------------------------------------------------------------------------ */
 
@@ -339,6 +356,9 @@ const HeroSection = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   /* ------------------------------------------------------------------------ */
   /* UI                                                                       */
@@ -416,6 +436,9 @@ const HeroSection = () => {
     setLocationLoading(false);
     setLocationVerified(false);
     setLocationMessage("");
+
+    setPreferredCenter(null);
+    setPreferredCenterError("");
 
     setLeadId(null);
     setSavingLead(false);
@@ -664,6 +687,17 @@ const HeroSection = () => {
   };
 
   /* ------------------------------------------------------------------------ */
+  /* CONTINUE-CENTER CHECKBOX                                                */
+  /* ------------------------------------------------------------------------ */
+
+  const handlePreferredCenterToggle = (id: string) => {
+    // Single-select behaviour via checkboxes: picking one clears the rest.
+    setPreferredCenter((current) => (current === id ? null : id));
+    setPreferredCenterError("");
+    setNotice(null);
+  };
+
+  /* ------------------------------------------------------------------------ */
   /* VALIDATE STEP 1                                                         */
   /* ------------------------------------------------------------------------ */
 
@@ -709,11 +743,66 @@ const HeroSection = () => {
 
     setFieldErrors(errors);
 
-    return Object.keys(errors).length === 0;
+    let preferredCenterOk = true;
+
+    if (!preferredCenter) {
+      setPreferredCenterError(
+        "Please select which center you'd like to continue at.",
+      );
+      preferredCenterOk = false;
+    } else {
+      setPreferredCenterError("");
+    }
+
+    return Object.keys(errors).length === 0 && preferredCenterOk;
   };
 
   /* ------------------------------------------------------------------------ */
-  /* SAVE LEAD -> GO TO SLOTS                                                 */
+  /* BUILD PAYLOAD (shared by both save paths)                               */
+  /* ------------------------------------------------------------------------ */
+
+  const buildPayload = (options: {
+    status: "incomplete" | "booked";
+    trialDate: string | null;
+    trialTime: string | null;
+  }) => ({
+    studentName: form.studentName.trim(),
+    age: Number(form.age),
+    contactNumber: form.contactNumber.trim(),
+    email: form.email.trim().toLowerCase(),
+
+    location: form.location.trim(),
+
+    latitude: detectedLocation?.lat ?? null,
+    longitude: detectedLocation?.lng ?? null,
+
+    trialMode: trial,
+
+    locationId: trial === "offline" ? (selectedLocation?.id ?? null) : null,
+
+    locationName:
+      trial === "offline" ? (selectedLocation?.shortName ?? null) : "Online",
+
+    // Which center the student wants to continue classes at after the
+    // (headquarters) trial. Stored as-is, no other behaviour depends on it
+    // except gating the time-slot step below.
+    preferredCenter,
+
+    trialDate: options.trialDate,
+    trialTime: options.trialTime,
+
+    status: options.status,
+
+    nextFollowUpDate: null,
+    assignedTo: null,
+    remark: "",
+
+    source: "website",
+    createdFrom: "free-trial-page",
+  });
+
+  /* ------------------------------------------------------------------------ */
+  /* SAVE LEAD -> GO TO SLOTS (or finalize directly)                          */
   /* ------------------------------------------------------------------------ */
 
   const handleNextFromStep1 = async () => {
@@ -743,39 +832,18 @@ const HeroSection = () => {
       return;
     }
 
+    // Only students continuing at Kalyani Nagar go on to pick a trial
+    // date/time slot. Everyone else is saved directly, no slot step.
+    const skipTimeSlot = preferredCenter !== "kalyani-nagar";
+
     setSavingLead(true);
     setNotice(null);
 
-    const payload = {
-      studentName: form.studentName.trim(),
-      age: Number(form.age),
-      contactNumber: form.contactNumber.trim(),
-      email: form.email.trim().toLowerCase(),
-
-      location: form.location.trim(),
-
-      latitude: detectedLocation?.lat ?? null,
-      longitude: detectedLocation?.lng ?? null,
-
-      trialMode: trial,
-
-      locationId: trial === "offline" ? (selectedLocation?.id ?? null) : null,
-
-      locationName:
-        trial === "offline" ? (selectedLocation?.shortName ?? null) : "Online",
-
-      trialDate: null,
-      trialTime: null,
-
-      status: "incomplete",
-
-      nextFollowUpDate: null,
-      assignedTo: null,
-      remark: "",
-
-      source: "website",
-      createdFrom: "free-trial-page",
-    };
+    const payload = buildPayload(
+      skipTimeSlot
+        ? { status: "booked", trialDate: null, trialTime: null }
+        : { status: "incomplete", trialDate: null, trialTime: null },
+    );
 
     console.log("STEP 1 PAYLOAD:", payload);
 
@@ -824,10 +892,38 @@ const HeroSection = () => {
         setLocationId(null);
       }
 
-      setSelectedDate(undefined);
-      setSelectedTime(null);
-      setStep(2);
-      setNotice(null);
+      if (skipTimeSlot) {
+        // No time slot for non-Kalyani-Nagar preference — done here.
+        setStep(1);
+        setForm(initialForm);
+        setSelectedDate(undefined);
+        setSelectedTime(null);
+        setLeadId(null);
+
+        setTrial("online");
+        setLocationId(null);
+
+        setDetectedLocation(null);
+        setLocationMessage("");
+        setLocationVerified(false);
+
+        setPreferredCenter(null);
+        setPreferredCenterError("");
+
+        setFieldErrors({});
+        setNotice(null);
+
+        setOpen(false);
+        setSuccessMessage(
+          "Your trial is booked successfully. Our team will contact you shortly.",
+        );
+        setSuccessOpen(true);
+      } else {
+        setSelectedDate(undefined);
+        setSelectedTime(null);
+        setStep(2);
+        setNotice(null);
+      }
     } catch (error) {
       console.error("Lead save error:", error);
 
@@ -911,36 +1007,11 @@ const HeroSection = () => {
     setSubmitting(true);
     setNotice(null);
 
-    const payload = {
-      studentName: form.studentName.trim(),
-      age: Number(form.age),
-      contactNumber: form.contactNumber.trim(),
-      email: form.email.trim().toLowerCase(),
-
-      location: form.location.trim(),
-
-      latitude: detectedLocation?.lat ?? null,
-      longitude: detectedLocation?.lng ?? null,
-
-      trialMode: trial,
-
-      locationId: trial === "offline" ? (selectedLocation?.id ?? null) : null,
-
-      locationName:
-        trial === "offline" ? (selectedLocation?.shortName ?? null) : "Online",
-
+    const payload = buildPayload({
+      status: "booked",
       trialDate,
       trialTime: selectedTime,
-
-      status: "booked",
-
-      nextFollowUpDate: null,
-      assignedTo: null,
-      remark: "",
-
-      source: "website",
-      createdFrom: "free-trial-page",
-    };
+    });
 
     console.log("FINAL BOOKING PAYLOAD:", payload);
 
@@ -975,13 +1046,17 @@ const HeroSection = () => {
       setLocationMessage("");
       setLocationVerified(false);
 
-      setFieldErrors({});
+      setPreferredCenter(null);
+      setPreferredCenterError("");
 
-      setNotice({
-        type: "success",
-        message:
-          "Your trial is booked successfully. Our team will contact you shortly.",
-      });
+      setFieldErrors({});
+      setNotice(null);
+
+      setOpen(false);
+      setSuccessMessage(
+        "Your trial is booked successfully. Our team will contact you shortly.",
+      );
+      setSuccessOpen(true);
     } catch (error) {
       console.error("Registration error:", error);
 
@@ -1598,6 +1673,55 @@ const HeroSection = () => {
                   )}
                 </div>
 
+                {/* CONTINUE-AFTER-TRIAL CENTER */}
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
+                  <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
+                      <MapPin className="h-3.5 w-3.5" />
+                    </span>
+                    Continue classes after the trial
+                  </span>
+
+                  <p className="mb-3 text-xs leading-relaxed text-gray-500">
+                    The trial itself happens at our headquarters. Which center
+                    would you like to continue at afterwards?
+                  </p>
+
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {CONTINUE_CENTERS.map((center) => {
+                      const checked = preferredCenter === center.id;
+
+                      return (
+                        <label
+                          key={center.id}
+                          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
+                            checked
+                              ? "border-red-700 bg-red-50 text-red-800"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50/40"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              handlePreferredCenterToggle(center.id)
+                            }
+                            className="h-4 w-4 shrink-0 rounded border-gray-300 text-red-700 focus:ring-red-600"
+                          />
+                          {center.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {preferredCenterError && (
+                    <span className="mt-2 block text-xs text-red-600">
+                      {preferredCenterError}
+                    </span>
+                  )}
+                </div>
+
                 {/* NOTICE */}
 
                 {notice && (
@@ -1636,6 +1760,11 @@ const HeroSection = () => {
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
+                    </>
+                  ) : preferredCenter && preferredCenter !== "kalyani-nagar" ? (
+                    <>
+                      Confirm registration
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   ) : (
                     <>
@@ -1804,6 +1933,38 @@ const HeroSection = () => {
               </div>
             )}
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* SUCCESS MODAL                                                       */}
+      {/* ------------------------------------------------------------------ */}
+
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-sm overflow-hidden rounded-2xl border-none bg-white p-0 text-center">
+          <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-8">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+              <CheckCircle2 className="h-9 w-9 text-green-600" />
+            </div>
+
+            <div>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Trial booked!
+              </DialogTitle>
+
+              <DialogDescription className="mt-2 text-sm leading-relaxed text-gray-600">
+                {successMessage}
+              </DialogDescription>
+            </div>
+
+            <Button
+              type="button"
+              onClick={() => setSuccessOpen(false)}
+              className="h-11 w-full rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
+            >
+              Done
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </section>
