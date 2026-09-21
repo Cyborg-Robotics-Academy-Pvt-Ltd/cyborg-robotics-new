@@ -79,7 +79,7 @@ export default function FTCPcompetitionPage() {
           Swap videoSrc for your real 9:16 video file's path. */}
 
       <VideoIntroModal
-        videoSrc="/assets/competition/ftc/ftc.mov"
+        videoSrc="https://res.cloudinary.com/dqiarwxml/video/upload/v1789996372/IMG_0338_1_soaccj.mov"
         alwaysShow
         autoPlayDelayMs={5000}
         unmuteDelayMs={4000}

@@ -1231,7 +1231,7 @@ const HeroSection = () => {
           {/* background video */}
           <video
             ref={reelVideoRef}
-            src="https://res.cloudinary.com/dqiarwxml/video/upload/v1787381371/Dropping_seeds_of_innovation_literally_Say_hello_to_Chlorofy_s_plantable_thank-you_cards._We_piwgee.mp4"
+            src="https://res.cloudinary.com/dqiarwxml/video/upload/v1789994845/a_01007515905417569596144750_2_896025210_hiqll3.mp4"
             poster="/images/cyborg-hero-poster.jpg"
             className="absolute inset-0 h-full w-full cursor-pointer object-cover"
             muted
