@@ -45,7 +45,6 @@ const FtcDetails = () => {
             quality={75}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-black/60" />
         </div>
 
         {/* RIGHT — What is FTC */}
