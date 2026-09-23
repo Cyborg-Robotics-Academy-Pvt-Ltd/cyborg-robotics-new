@@ -1052,7 +1052,7 @@ const mockData: Record<string, CourseData> = {
     badge: "Educational Robotics Course",
     description:
       "WeDo introduces young learners to STEAM through hands-on model building and block-based visual programming, building confidence to design, build, test, and program robotic solutions.",
-    mode: "Online",
+    mode: "Offline",
     duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/WeDo Robotics.pdf",
     syllabusFileName: "WEDO ROBOTICS.pdf",
