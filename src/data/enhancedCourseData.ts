@@ -79,7 +79,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
   badge: "Educational Robotics Course",
   description:
     "Introduce young learners to robotics and coding with LEGO Education WeDo",
-  mode: "Online",
+  mode: "Offline",
   duration: "16 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
   syllabusPath: "/assets/pdf/WeDo Robotics.pdf",
   syllabusFileName: "WEDO ROBOTICS.pdf",
