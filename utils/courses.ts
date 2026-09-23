@@ -27,6 +27,7 @@ const courses = [
     "Competition",
   "Customized Courses",
   "Year Long Program",
+  "weDo Robotics",
   ];
   
   export default courses;
