@@ -1054,7 +1054,7 @@ const mockData: Record<string, CourseData> = {
       "WeDo introduces young learners to STEAM through hands-on model building and block-based visual programming, building confidence to design, build, test, and program robotic solutions.",
     mode: "Offline",
     duration: "12 CLASSES (x2 LEVELS) (1 HOUR PER CLASS)",
-    syllabusPath: "/assets/pdf/WeDo Robotics.pdf",
+    syllabusPath: "/assets/pdf/WEDO.pdf",
     syllabusFileName: "WEDO ROBOTICS.pdf",
     imagePath: "/assets/courses/wedo.png",
     imageAlt: "WeDo Robotics Course",
