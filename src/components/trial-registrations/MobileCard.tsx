@@ -425,8 +425,18 @@ export function MobileCard({
           </div>
         </div>
 
-        {/* NEXT FOLLOW-UP */}
+        {registration.preferredCenter && (
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 shrink-0 text-orange-500" />
+            <span>
+              {registration.preferredCenter === "kalyani-nagar"
+                ? "Kalyani Nagar HQ trial"
+                : "Unable to visit HQ"}
+            </span>
+          </div>
+        )}
 
+        {/* NEXT FOLLOW-UP */}
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}

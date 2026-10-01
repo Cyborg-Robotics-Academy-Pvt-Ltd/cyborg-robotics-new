@@ -192,6 +192,18 @@ export function DesktopRow({
         </div>
       </TableCell>
 
+      {/* VISIT OPTION */}
+
+      <TableCell>
+        <span className="text-sm text-stone-700">
+          {registration.preferredCenter === "kalyani-nagar"
+            ? "Kalyani Nagar HQ trial"
+            : registration.preferredCenter === "unable-to-visit-hq"
+              ? "Unable to visit HQ"
+              : "—"}
+        </span>
+      </TableCell>
+
       {/* MODE */}
 
       <TableCell>

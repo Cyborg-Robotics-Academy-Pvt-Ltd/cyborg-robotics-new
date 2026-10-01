@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Inbox, Loader2, RefreshCw } from "lucide-react";
 
 import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
@@ -18,6 +18,8 @@ import { DeleteAlertDialog } from "@/components/trial-registrations/DeleteAlertD
 import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDialog";
 
 import { TrialRegistration } from "./types";
+
+const ENQUIRIES_PER_PAGE = 10;
 
 const Page = () => {
   const {
@@ -59,6 +61,32 @@ const Page = () => {
     hasActiveFilters,
     clearFilters,
   } = useRegistrationFilters(registrations);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filtered.length / ENQUIRIES_PER_PAGE),
+  );
+
+  const paginatedRegistrations = useMemo(() => {
+    const start = (currentPage - 1) * ENQUIRIES_PER_PAGE;
+    return filtered.slice(start, start + ENQUIRIES_PER_PAGE);
+  }, [currentPage, filtered]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    locationFilter,
+    leadTempFilter,
+    leadOutcomeFilter,
+    trialDateFilter,
+    followUpDateFilter,
+    sortField,
+    sortDir,
+  ]);
 
   /* DIALOG TARGETS */
 
@@ -205,7 +233,7 @@ const Page = () => {
         ) : (
           <>
             <DesktopTable
-              registrations={filtered}
+              registrations={paginatedRegistrations}
               hasShowRows={hasShowRows}
               hasClosedRows={hasClosedRows}
               sortField={sortField}
@@ -222,7 +250,7 @@ const Page = () => {
             />
 
             <MobileList
-              registrations={filtered}
+              registrations={paginatedRegistrations}
               onStatusChange={handleStatusChange}
               onLeadTempChange={updateLeadTemp}
               onLeadOutcomeChange={updateLeadOutcome}
@@ -232,6 +260,34 @@ const Page = () => {
               onEdit={setEditTarget}
               onDelete={setDeleteTarget}
             />
+
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <p className="text-sm text-stone-500">
+                  Page {currentPage} of {totalPages} · {filtered.length} enquiries
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => page - 1)}
+                    disabled={currentPage === 1}
+                    className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => page + 1)}
+                    disabled={currentPage === totalPages}
+                    className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

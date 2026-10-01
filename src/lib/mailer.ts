@@ -112,7 +112,7 @@ function parentEmailHtml(data: TrialBookingEmailData) {
 
         <div style="margin-top:24px;padding:16px 18px;background:#fff7f0;border-left:3px solid ${BRAND_RED};border-radius:8px;">
           <p style="margin:0;font-size:13px;color:#7a3b1e;line-height:1.5;">
-            Our team will call you on <strong>${contactNumber}</strong> shortly before the session to confirm.
+          FOR ANY ASSISTANCE, PLEASE CONTACT 9175159292. THANK YOU!
           </p>
         </div>
       </td>

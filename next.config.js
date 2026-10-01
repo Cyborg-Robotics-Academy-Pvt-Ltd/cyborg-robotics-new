@@ -7,6 +7,7 @@ const nextConfig = {
   allowedDevOrigins: [
     "filamentary-max-segmental.ngrok-free.dev",
     "poker-unrelated-prevail.ngrok-free.dev",
+    "192.168.1.40",
   ],
   images: {
     remotePatterns: [
@@ -18,7 +19,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "example.com", // replace with your domain
+        hostname: "thumb.wikimedia.org",
         port: "",
         pathname: "/**",
       },

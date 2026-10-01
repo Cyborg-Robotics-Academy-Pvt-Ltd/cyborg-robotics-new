@@ -213,6 +213,12 @@ export async function PATCH(
       getTrimmedString(body.trialDate).length > 0 &&
       getTrimmedString(body.trialTime).length > 0;
 
+    const preferredCenter =
+      body.preferredCenter === "kalyani-nagar" ||
+      body.preferredCenter === "unable-to-visit-hq"
+        ? body.preferredCenter
+        : null;
+
     /* =====================================================
        STEP 1
     ===================================================== */
@@ -232,6 +238,8 @@ export async function PATCH(
         locationId: locationResult.locationId,
 
         locationName: locationResult.locationName,
+
+        preferredCenter,
 
         distanceFromCenterKm:
           locationResult.distanceKm,
@@ -521,6 +529,8 @@ export async function PATCH(
 
             locationName:
               locationResult.locationName,
+
+            preferredCenter,
 
             distanceFromCenterKm:
               locationResult.distanceKm,

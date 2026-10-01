@@ -20,15 +20,7 @@ import {
   validateCoreFields,
   validateSlotFields,
 } from "@/lib/free-trial-validation";
-
-/* -------------------------------------------------------------------------- */
-/* KALYANI NAGAR - ONLY TRIAL CENTER                                         */
-/* -------------------------------------------------------------------------- */
-
-const TRIAL_CENTER = {
-  id: "kalyani-nagar-pune",
-  name: "Kalyani Nagar, Pune",
-};
+import { getTrialModeFromCoordinates } from "@/lib/trial-location";
 
 /* -------------------------------------------------------------------------- */
 /* SIMPLE SERVER CACHE                                                       */
@@ -68,6 +60,17 @@ function normalizeCacheValue(value: string) {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, "");
+}
+
+function getNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -300,14 +303,6 @@ export async function POST(req: Request) {
     /* 2. GET USER LOCATION                                                   */
     /* ====================================================================== */
 
-    /**
-     * We still accept location/userLocation
-     * so old frontend code does not break.
-     *
-     * BUT:
-     * Trial center is ALWAYS Kalyani Nagar.
-     */
-
     const userLocation =
       getTrimmedString(
         body.location ??
@@ -333,18 +328,23 @@ export async function POST(req: Request) {
     }
 
     /* ====================================================================== */
-    /* 3. ALWAYS USE KALYANI NAGAR                                            */
+    /* 3. CALCULATE TRIAL MODE FROM LOCATION                                  */
     /* ====================================================================== */
 
-    const locationResult = {
-      trialMode: "offline" as const,
+    const latitude = getNumber(body.latitude ?? body.locationLat);
+    const longitude = getNumber(body.longitude ?? body.locationLng);
 
-      locationId:
-        TRIAL_CENTER.id,
+    if (latitude === null || longitude === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please wait for your location to be verified.",
+        },
+        { status: 400 },
+      );
+    }
 
-      locationName:
-        TRIAL_CENTER.name,
-    };
+    const locationResult = getTrialModeFromCoordinates(latitude, longitude);
 
     console.log(
       "🏫 TRIAL CENTER:",
@@ -433,6 +433,12 @@ export async function POST(req: Request) {
         .toISOString()
         .split("T")[0];
 
+    const preferredCenter =
+      body.preferredCenter === "kalyani-nagar" ||
+      body.preferredCenter === "unable-to-visit-hq"
+        ? body.preferredCenter
+        : null;
+
     /* ====================================================================== */
     /* STEP 1 - SAVE INCOMPLETE LEAD                                          */
     /* ====================================================================== */
@@ -463,6 +469,8 @@ export async function POST(req: Request) {
 
         locationName:
           locationResult.locationName,
+
+        preferredCenter,
 
         trialDate: null,
 
@@ -627,6 +635,8 @@ export async function POST(req: Request) {
 
       locationName:
         locationResult.locationName,
+
+      preferredCenter,
 
       trialDate: date,
 

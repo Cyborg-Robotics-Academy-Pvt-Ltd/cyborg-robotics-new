@@ -973,12 +973,6 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                     PRN: {student.PrnNumber}
                   </p>
                   <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
-                    {userChecked && isAdmin && (
-                      <span className="inline-flex items-center justify-center gap-2 sm:justify-start">
-                        <Phone className="h-4 w-4 shrink-0 text-slate-500" />
-                        <span className="truncate">{contactPhone}</span>
-                      </span>
-                    )}
                     <span className="inline-flex items-center justify-center gap-2 sm:justify-start">
                       <Mail className="h-4 w-4 shrink-0 text-slate-500" />
                       <span className="truncate">{contactEmail}</span>

@@ -1,7 +1,5 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-
 import { Vision } from "@/components/ftc-competition/Vision";
 import { ProgramStructure } from "@/components/ftc-competition/Program-structure";
 import { OfficialPartnerBadge } from "@/components/ftc-competition/OfficialPartnerBadge";
@@ -103,7 +101,7 @@ export default function FTCPcompetitionPage() {
       <CompetitionField />
       <MeetTheMentors />
       <ProgramStructure />
-      <FtcGallery />
+      {/* <FtcGallery /> */}
       <FtcFooter />
     </>
   );

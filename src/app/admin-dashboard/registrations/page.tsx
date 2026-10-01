@@ -748,8 +748,9 @@ const Page = () => {
     useState<Record<string, string>>({});
   const [selectedTrainerByRegistration, setSelectedTrainerByRegistration] =
     useState<Record<string, string>>({});
-  const [courseNumberByRegistration, setCourseNumberByRegistration] =
-    useState<Record<string, string>>({});
+  const [courseNumberByRegistration, setCourseNumberByRegistration] = useState<
+    Record<string, string>
+  >({});
   const [trainers, setTrainers] = useState<Array<{ id: string; name: string }>>(
     [],
   );
@@ -1223,7 +1224,8 @@ const Page = () => {
       const course = getSelectedCourse(registration);
       const trainerId = selectedTrainerByRegistration[registration.id] || "";
       const courseNumber = courseNumberByRegistration[registration.id] || "";
-      const trainerName = trainers.find((trainer) => trainer.id === trainerId)?.name || "";
+      const trainerName =
+        trainers.find((trainer) => trainer.id === trainerId)?.name || "";
 
       setRegistrationConfirmations((current) => ({
         ...current,
@@ -1312,7 +1314,13 @@ const Page = () => {
         setCreatingRegistrationId(null);
       }
     },
-    [selectedCenterByRegistration, selectedCourseByRegistration, selectedTrainerByRegistration, courseNumberByRegistration, trainers],
+    [
+      selectedCenterByRegistration,
+      selectedCourseByRegistration,
+      selectedTrainerByRegistration,
+      courseNumberByRegistration,
+      trainers,
+    ],
   );
 
   const exportToExcel = async () => {
@@ -1836,7 +1844,7 @@ const Page = () => {
                                             }),
                                           )
                                         }
-                                        placeholder="Course Number"
+                                        placeholder="Assigned Total Classes"
                                         className="h-9 border-gray-200 bg-white text-xs"
                                         onClick={(e) => e.stopPropagation()}
                                       />

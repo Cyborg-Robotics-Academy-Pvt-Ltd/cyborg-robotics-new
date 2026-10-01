@@ -43,7 +43,6 @@ export async function POST(req: Request) {
         body.parentGuardianContactNumber,
         "parentGuardianContactNumber",
       ),
-      requireString(body.preferredCodingPlatform, "preferredCodingPlatform"),
     ].filter(Boolean);
 
     if (missingFields.length > 0) {

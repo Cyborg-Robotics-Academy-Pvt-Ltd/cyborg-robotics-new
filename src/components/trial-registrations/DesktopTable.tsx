@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -43,9 +43,62 @@ export function DesktopTable({
   onToggleSort,
   ...rowHandlers
 }: Props) {
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const [tableWidth, setTableWidth] = useState(0);
+  const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
+
+  useEffect(() => {
+    const tableScroller = tableScrollRef.current;
+
+    if (!tableScroller) return;
+
+    const updateScrollWidth = () => {
+      setTableWidth(tableScroller.scrollWidth);
+      setHasHorizontalOverflow(
+        tableScroller.scrollWidth > tableScroller.clientWidth,
+      );
+    };
+
+    updateScrollWidth();
+
+    const resizeObserver = new ResizeObserver(updateScrollWidth);
+    resizeObserver.observe(tableScroller);
+
+    return () => resizeObserver.disconnect();
+  }, [registrations, hasShowRows, hasClosedRows]);
+
+  const syncTopScroll = () => {
+    if (topScrollRef.current && tableScrollRef.current) {
+      tableScrollRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+    }
+  };
+
+  const syncTableScroll = () => {
+    if (topScrollRef.current && tableScrollRef.current) {
+      topScrollRef.current.scrollLeft = tableScrollRef.current.scrollLeft;
+    }
+  };
+
   return (
-    <div className="hidden w-[85%] overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm md:block">
-      <Table>
+    <div className="hidden w-[85%] md:block">
+      {hasHorizontalOverflow && (
+        <div
+          ref={topScrollRef}
+          onScroll={syncTopScroll}
+          className="sticky top-0 z-20 mb-2 overflow-x-auto rounded-md border border-stone-200 bg-white shadow-sm"
+          aria-label="Scroll table columns horizontally"
+        >
+          <div style={{ width: tableWidth, height: 12 }} />
+        </div>
+      )}
+
+      <div
+        ref={tableScrollRef}
+        onScroll={syncTableScroll}
+        className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <Table className="text-xs [&_th]:h-8 [&_th]:px-1.5 [&_th]:text-xs [&_td]:px-1.5 [&_td]:py-1.5 [&_td]:text-xs [&_td_*]:text-xs">
         <TableHeader className="bg-stone-50">
           <TableRow className="border-stone-200 hover:bg-white">
             <SortableHead
@@ -67,6 +120,7 @@ export function DesktopTable({
             />
 
             <TableHead className="text-stone-500">Location</TableHead>
+            <TableHead className="text-stone-500">Visit Option</TableHead>
             <TableHead className="text-stone-500">Mode</TableHead>
             <TableHead className="text-stone-500">Trial Status</TableHead>
 
@@ -99,7 +153,8 @@ export function DesktopTable({
             />
           ))}
         </TableBody>
-      </Table>
+        </Table>
+      </div>
     </div>
   );
 }

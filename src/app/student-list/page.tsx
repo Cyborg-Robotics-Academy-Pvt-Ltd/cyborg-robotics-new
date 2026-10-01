@@ -1043,6 +1043,7 @@ const Page = () => {
           return s.courses.some(
             (c) =>
               typeof c !== "string" &&
+              !String(c.trainerId || "").trim() &&
               (!c.trainerName || c.trainerName.trim() === "") &&
               c.completed !== true &&
               (!c.status || c.status.toLowerCase() !== "complete"),
@@ -1370,38 +1371,39 @@ const Page = () => {
         ).map((c) => {
           const courseName = typeof c === "string" ? c : c?.name || "";
           const courseTasks = (s.tasks || []).filter(
-            (t) => normalizeCourseName(t.course) === normalizeCourseName(courseName),
+            (t) =>
+              normalizeCourseName(t.course) === normalizeCourseName(courseName),
           );
 
           return {
-              "PRN Number": s.PrnNumber,
-              "Student Name": s.username,
-              Course: courseName,
-              Level: typeof c === "string" ? "" : c?.level || "",
-              "Class Number": typeof c === "string" ? "" : c?.classNumber || "",
-              "Course Status": typeof c === "string" ? "" : c?.status || "",
-              "Course Completed":
-                typeof c === "string" || !courseName
-                  ? ""
-                  : c?.completed
-                    ? "Yes"
-                    : "No",
-              "Assigned Classes": courseTasks.map((t) => t.task).join(", "),
-              "Completed Classes": courseTasks.filter(
-                (t) => t.status?.toLowerCase() === "complete",
-              ).length,
-              "Ongoing Classes": courseTasks.filter(
-                (t) => t.status?.toLowerCase() === "ongoing",
-              ).length,
-              "Completed Classes List": courseTasks
-                .filter((t) => t.status?.toLowerCase() === "complete")
-                .map((t) => t.task)
-                .join(", "),
-              Remark: s.remark || "",
-              "Remark Updated At": s.remarkUpdatedAt
-                ? format(new Date(s.remarkUpdatedAt), "dd MMM yyyy hh:mm a")
-                : "",
-            } as Record<string, string | number>;
+            "PRN Number": s.PrnNumber,
+            "Student Name": s.username,
+            Course: courseName,
+            Level: typeof c === "string" ? "" : c?.level || "",
+            "Class Number": typeof c === "string" ? "" : c?.classNumber || "",
+            "Course Status": typeof c === "string" ? "" : c?.status || "",
+            "Course Completed":
+              typeof c === "string" || !courseName
+                ? ""
+                : c?.completed
+                  ? "Yes"
+                  : "No",
+            "Assigned Classes": courseTasks.map((t) => t.task).join(", "),
+            "Completed Classes": courseTasks.filter(
+              (t) => t.status?.toLowerCase() === "complete",
+            ).length,
+            "Ongoing Classes": courseTasks.filter(
+              (t) => t.status?.toLowerCase() === "ongoing",
+            ).length,
+            "Completed Classes List": courseTasks
+              .filter((t) => t.status?.toLowerCase() === "complete")
+              .map((t) => t.task)
+              .join(", "),
+            Remark: s.remark || "",
+            "Remark Updated At": s.remarkUpdatedAt
+              ? format(new Date(s.remarkUpdatedAt), "dd MMM yyyy hh:mm a")
+              : "",
+          } as Record<string, string | number>;
         }),
       );
     const wb = new ExcelJS.Workbook();

@@ -84,6 +84,11 @@ export type TrialRegistration = {
   locationName: string;
 
   /**
+   * The visit option selected before booking a trial slot.
+   */
+  preferredCenter: string | null;
+
+  /**
    * Trial Status.
    *
    * booked / show / no-show / reschedule / cancelled
@@ -123,13 +128,14 @@ export type TrialRegistration = {
   closeRemark: string;
 
   dateOfRegistration: string;
+  createdAt: number;
 };
 
 /* =========================================================
    SORT / FILTER TYPES
 ========================================================= */
 
-export type SortField = "studentName" | "trialDate";
+export type SortField = "studentName" | "trialDate" | "createdAt";
 export type SortDir = "asc" | "desc";
 
 export type LocationFilter = "all" | "online" | "offline";
