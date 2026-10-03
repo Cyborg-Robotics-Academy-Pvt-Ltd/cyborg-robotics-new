@@ -135,13 +135,30 @@ const LOCATIONS: TrialLocation[] = [
 const MAX_OFFLINE_DISTANCE_KM = 20;
 
 /* -------------------------------------------------------------------------- */
-/* CONTINUE-AFTER-TRIAL CENTER OPTIONS                                       */
+/* TRIAL VISIT OPTIONS                                                        */
 /* -------------------------------------------------------------------------- */
 
-const CONTINUE_CENTERS: { id: string; label: string }[] = [
-  { id: "kalyani-nagar", label: "Kalyani Nagar, Pune" },
-  { id: "magarpatta", label: "Magarpatta, Pune" },
-  { id: "kharadi", label: "Kharadi, Pune" },
+const TRIAL_VISIT_OPTIONS: { id: string; label: React.ReactNode }[] = [
+  {
+    id: "kalyani-nagar",
+    label: (
+      <>
+        <strong>Strongly Recommended:</strong> Free Trial at{" "}
+        <strong>Kalyani Nagar HQ + Assessment &amp; Counselling</strong> to find
+        the right program for your child. Post trial you can then choose your
+        preferred location and learning mode.
+      </>
+    ),
+  },
+  {
+    id: "unable-to-visit-hq",
+    label: (
+      <>
+        We are unable to visit HQ. Please <strong>suggest another</strong>{" "}
+        possibility.
+      </>
+    ),
+  },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -237,7 +254,7 @@ function getMinBookableDate() {
 /* COMPONENT                                                                  */
 /* -------------------------------------------------------------------------- */
 
-const HeroSection = () => {
+const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* ------------------------------------------------------------------------ */
   /* DIALOG / STEP                                                            */
   /* ------------------------------------------------------------------------ */
@@ -486,6 +503,13 @@ const HeroSection = () => {
   useEffect(() => {
     setOpen(true);
   }, []);
+
+  useEffect(() => {
+    if (openRequest > 0) {
+      resetScheduleState();
+      setOpen(true);
+    }
+  }, [openRequest]);
 
   /* ------------------------------------------------------------------------ */
   /* HERO OBSERVER                                                            */
@@ -745,11 +769,13 @@ const HeroSection = () => {
 
     let preferredCenterOk = true;
 
-    if (!preferredCenter) {
-      setPreferredCenterError(
-        "Please select which center you'd like to continue at.",
-      );
-      preferredCenterOk = false;
+    if (trial === "offline") {
+      if (!preferredCenter) {
+        setPreferredCenterError("Please select an option.");
+        preferredCenterOk = false;
+      } else {
+        setPreferredCenterError("");
+      }
     } else {
       setPreferredCenterError("");
     }
@@ -783,9 +809,8 @@ const HeroSection = () => {
     locationName:
       trial === "offline" ? (selectedLocation?.shortName ?? null) : "Online",
 
-    // Which center the student wants to continue classes at after the
-    // (headquarters) trial. Stored as-is, no other behaviour depends on it
-    // except gating the time-slot step below.
+    // Chosen trial visit option. Stored as-is and used to decide whether the
+    // student should proceed to time-slot selection.
     preferredCenter,
 
     trialDate: options.trialDate,
@@ -832,9 +857,9 @@ const HeroSection = () => {
       return;
     }
 
-    // Only students continuing at Kalyani Nagar go on to pick a trial
-    // date/time slot. Everyone else is saved directly, no slot step.
-    const skipTimeSlot = preferredCenter !== "kalyani-nagar";
+    // Everyone — offline (either HQ preference) or online — proceeds to
+    // step 2 to pick a date/time slot.
+    const skipTimeSlot = false;
 
     setSavingLead(true);
     setNotice(null);
@@ -915,7 +940,7 @@ const HeroSection = () => {
 
         setOpen(false);
         setSuccessMessage(
-          "Your trial is booked successfully. Our team will contact you shortly.",
+          "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292.",
         );
         setSuccessOpen(true);
       } else {
@@ -1054,7 +1079,9 @@ const HeroSection = () => {
 
       setOpen(false);
       setSuccessMessage(
-        "Your trial is booked successfully. Our team will contact you shortly.",
+        trial === "online"
+          ? "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292."
+          : "Your trial is booked successfully. ",
       );
       setSuccessOpen(true);
     } catch (error) {
@@ -1078,8 +1105,9 @@ const HeroSection = () => {
 
   return (
     <section
+      id="home"
       ref={sectionRef}
-      className="relative w-full overflow-hidden bg-white px-6 py-8 font-sans md:pt-20 lg:flex lg:min-h-screen lg:items-center"
+      className="relative w-full overflow-hidden bg-gradient-to-r from-red-300/40 via-white to-orange-50/40 px-6 py-8 font-sans md:pt-20 lg:flex lg:min-h-screen lg:items-center"
     >
       {/* ------------------------------------------------------------------ */}
       {/* HERO OVERLAY                                                        */}
@@ -1134,52 +1162,71 @@ const HeroSection = () => {
       {/* HERO CONTENT                                                        */}
       {/* ------------------------------------------------------------------ */}
 
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-14">
+      <div className="relative z-10 mx-auto md:py-4 py-20 grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-14">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-5 py-1.5 text-xs font-bold uppercase tracking-wide md:text-sm">
-            <span>LEARN</span>
+            <span>Robotics</span>
             <span className="h-1 w-1 rounded-full bg-red-600" />
-            <span>BUILD</span>
+            <span>Coding</span>
             <span className="h-1 w-1 rounded-full bg-red-600" />
-            <span>INNOVATE</span>
+            <span>STEM | ages 4-25</span>
+          </div>
+          <div className="flex min-w-0 flex-col">
+            <h1 className="text-balance text-[clamp(2rem,4.2vw,3.5rem)] font-black uppercase leading-[1.05] tracking-tight text-neutral-950 motion-safe:animate-fadeUp">
+              Where Curiosity{" "}
+              <span className="relative inline-block whitespace-nowrap">
+                <span className="text-[#E8401C]">Becomes Creation</span>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 200 12"
+                  preserveAspectRatio="none"
+                  className="absolute -bottom-1.5 left-0 h-2 w-full text-[#E8401C]/70"
+                >
+                  <path
+                    d="M2 8 Q 50 1, 100 6 T 198 5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </h1>
+
+            <p
+              className="mt-5 mb-6 max-w-md text-pretty text-base leading-relaxed text-neutral-700 motion-safe:animate-fadeUp lg:text-lg"
+              style={{ animationDelay: "120ms" }}
+            >
+              Hands-on robotics and coding programs designed to help children{" "}
+              <strong className="font-semibold text-neutral-950">
+                build, experiment, solve problems
+              </strong>{" "}
+              and create, online and offline.
+            </p>
           </div>
 
-          <h1 className="mb-4 mt-4 text-3xl font-extrabold uppercase leading-[1.05] tracking-tight lg:text-4xl">
-            Robotics, Coding & AI
-            <br />
-            classes your child joins
-            <br />
-            <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              From Home
-            </span>
-            <br />
-          </h1>
+          <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:flex sm:gap-0 sm:divide-x sm:divide-gray-200">
+            {STATS.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex items-center gap-3 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600"
+                >
+                  <stat.icon className="h-5 w-5" />
+                </span>
 
-          <p className="mb-6 max-w-md text-base leading-relaxed text-gray-700 lg:text-lg">
-            From beginner-friendly animation & coding to Arduino kits and Python
-            - live, instructor-led online classes for ages 6 and up. Choose
-            group or 1:1, pick your child's course, and start with a free trial.
-          </p>
-
-          <div className="mb-6 flex flex-wrap items-stretch">
-            {STATS.map((stat, index) => (
-              <React.Fragment key={stat.label}>
-                <div className="flex flex-col gap-1 px-4 first:pl-0 lg:px-5">
-                  <stat.icon className="h-5 w-5 text-red-600" />
-
-                  <span className="text-xl font-bold leading-none lg:text-2xl">
-                    {stat.value}
-                  </span>
-
-                  <span className="max-w-[110px] text-xs leading-tight text-gray-500 lg:text-sm">
+                <div className="flex flex-col-reverse gap-1">
+                  <dt className="max-w-[120px] text-xs leading-tight text-gray-600 lg:text-sm">
                     {stat.label}
-                  </span>
+                  </dt>
+                  <dd className="text-xl font-bold leading-none tabular-nums text-gray-900 lg:text-2xl">
+                    {stat.value}
+                  </dd>
                 </div>
-
-                {index < STATS.length - 1 && (
-                  <div className="my-0.5 w-px self-stretch bg-gray-200" />
-                )}
-              </React.Fragment>
+              </div>
             ))}
           </div>
 
@@ -1187,7 +1234,7 @@ const HeroSection = () => {
             {/* Primary CTA */}
             <button
               type="button"
-              className="group inline-flex h-[52px] items-center justify-center gap-2.5 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-7 text-base font-bold text-white shadow-[0_8px_24px_-6px_#ED1C24] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-6px_#ED1C24] lg:text-lg"
+              className="group inline-flex h-[52px] items-center justify-center gap-2.5 rounded-lg bg-[#e8431f]  px-7 text-base font-bold text-white shadow-[0_8px_24px_-6px_#ED1C24] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-6px_#ED1C24] lg:text-md"
               onClick={() => {
                 resetScheduleState();
                 setOpen(true);
@@ -1195,7 +1242,7 @@ const HeroSection = () => {
             >
               <CalendarIcon size={18} />
 
-              <span>BOOK A TRIAL</span>
+              <span>Book a FREE Trial</span>
 
               <ArrowRight
                 size={18}
@@ -1208,12 +1255,12 @@ const HeroSection = () => {
               type="button"
               onClick={() => {
                 document
-                  .getElementById("courses")
+                  .getElementById("journey")
                   ?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="group inline-flex h-[52px] items-center justify-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-7 text-base font-bold text-gray-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-700 lg:text-lg"
+              className="group inline-flex h-[52px] items-center justify-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-7 text-base font-bold text-gray-900 transition-all duration-300 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:text-red-700 lg:text-md"
             >
-              <span>EXPLORE COURSES</span>
+              <span>See the Cyborg Journey</span>
 
               <ArrowRight
                 size={18}
@@ -1224,7 +1271,10 @@ const HeroSection = () => {
 
           <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 lg:text-sm">
             <Lock size={13} className="text-red-600" />
-            <span>No commitment. Just a trial class experience.</span>
+            <span>
+              45-minute experience . Child assessment . Parent counselling . No
+              prior robotics experience required
+            </span>
           </div>
         </div>
         <div className="group relative mx-auto w-80 max-h-[500px] max-w-sm aspect-[9/16] overflow-hidden rounded-3xl border border-red-100 bg-black shadow-2xl">
@@ -1673,54 +1723,52 @@ const HeroSection = () => {
                   )}
                 </div>
 
-                {/* CONTINUE-AFTER-TRIAL CENTER */}
+                {/* TRIAL VISIT OPTION — offline students only; online trials
+                    can't visit HQ so there's nothing to choose between. */}
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                  <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
-                      <MapPin className="h-3.5 w-3.5" />
+                {trial === "offline" && (
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
+                    <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
+                        <MapPin className="h-3.5 w-3.5" />
+                      </span>
+                      Please select any 1
                     </span>
-                    Continue classes after the trial
-                  </span>
 
-                  <p className="mb-3 text-xs leading-relaxed text-gray-500">
-                    The trial itself happens at our headquarters. Which center
-                    would you like to continue at afterwards?
-                  </p>
+                    <div className="grid gap-2">
+                      {TRIAL_VISIT_OPTIONS.map((option) => {
+                        const checked = preferredCenter === option.id;
 
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {CONTINUE_CENTERS.map((center) => {
-                      const checked = preferredCenter === center.id;
+                        return (
+                          <label
+                            key={option.id}
+                            className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-3 text-sm leading-relaxed transition ${
+                              checked
+                                ? "border-red-700 bg-red-50 text-red-800"
+                                : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50/40"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                handlePreferredCenterToggle(option.id)
+                              }
+                              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-red-700 focus:ring-red-600"
+                            />
+                            <span>{option.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
 
-                      return (
-                        <label
-                          key={center.id}
-                          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
-                            checked
-                              ? "border-red-700 bg-red-50 text-red-800"
-                              : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50/40"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() =>
-                              handlePreferredCenterToggle(center.id)
-                            }
-                            className="h-4 w-4 shrink-0 rounded border-gray-300 text-red-700 focus:ring-red-600"
-                          />
-                          {center.label}
-                        </label>
-                      );
-                    })}
+                    {preferredCenterError && (
+                      <span className="mt-2 block text-xs text-red-600">
+                        {preferredCenterError}
+                      </span>
+                    )}
                   </div>
-
-                  {preferredCenterError && (
-                    <span className="mt-2 block text-xs text-red-600">
-                      {preferredCenterError}
-                    </span>
-                  )}
-                </div>
+                )}
 
                 {/* NOTICE */}
 
@@ -1760,11 +1808,6 @@ const HeroSection = () => {
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
-                    </>
-                  ) : preferredCenter && preferredCenter !== "kalyani-nagar" ? (
-                    <>
-                      Confirm registration
-                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   ) : (
                     <>
@@ -1949,21 +1992,36 @@ const HeroSection = () => {
 
             <div>
               <DialogTitle className="text-xl font-bold text-gray-900">
-                Trial booked!
+                Trial Booked
               </DialogTitle>
 
-              <DialogDescription className="mt-2 text-sm leading-relaxed text-gray-600">
+              <DialogDescription className="mt-2  whitespace-pre-line text-sm leading-relaxed text-gray-600">
                 {successMessage}
               </DialogDescription>
             </div>
 
-            <Button
-              type="button"
-              onClick={() => setSuccessOpen(false)}
-              className="h-11 w-full rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
-            >
-              Done
-            </Button>
+            <div className="flex w-full flex-col gap-2">
+              <Button
+                type="button"
+                onClick={() => setSuccessOpen(false)}
+                className="h-11 w-full rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
+              >
+                Done
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSuccessOpen(false);
+                  resetDialogState();
+                  setOpen(true);
+                }}
+                className="h-11 w-full rounded-full border-[#a81b1e] text-[#a81b1e] hover:bg-red-50"
+              >
+                Book For Another Child
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
