@@ -7,7 +7,7 @@ export interface CodefestRegistrationFormData {
   emailAddress: string;
   parentGuardianContactNumber: string;
   emergencyContactNumber?: string;
-  preferredCodingPlatform: string;
+  preferredCodingPlatform?: string;
   agreedToTerms: boolean;
 }
 
@@ -21,7 +21,17 @@ const NAME_REGEX = /^[A-Za-z][A-Za-z\s.'-]{1,}$/;
 export const CODEFEST_COMPETITION = {
   key: "codefest-competition",
   name: "CodeFest 1.0 Maze Challenge",
-  amount: 499,
+  baseAmount: 499,
+  gstPercent: 18,
+  get gstAmount() {
+    return Math.round(this.baseAmount * (this.gstPercent / 100));
+  },
+  get amount() {
+    return this.baseAmount + this.gstAmount;
+  },
+  get priceLabel() {
+    return `₹${this.baseAmount} + GST (${this.gstPercent}%)`;
+  },
 } as const;
 
 export function generateCompetitionHallTicketNumber(orderId: string): string {
@@ -49,7 +59,7 @@ export function normalizeCodefestRegistrationForm(
     emergencyContactNumber: formData.emergencyContactNumber
       ? formData.emergencyContactNumber.replace(/\D/g, "").slice(0, 10)
       : "",
-    preferredCodingPlatform: formData.preferredCodingPlatform.trim(),
+    preferredCodingPlatform: (formData.preferredCodingPlatform ?? "").trim(),
     agreedToTerms: Boolean(formData.agreedToTerms),
   };
 }
@@ -105,16 +115,6 @@ export function validateCodefestRegistrationForm(
   if (data.emergencyContactNumber && !/^\d{10}$/.test(data.emergencyContactNumber)) {
     errors.emergencyContactNumber =
       "Enter a valid 10-digit emergency contact number.";
-  }
-
-  if (!data.preferredCodingPlatform) {
-    errors.preferredCodingPlatform =
-      "Please select your preferred coding platform.";
-  }
-
-  if (!["scratch", "pictoblox"].includes(data.preferredCodingPlatform)) {
-    errors.preferredCodingPlatform =
-      "Platform must be Scratch or PictoBlox.";
   }
 
   if (!data.agreedToTerms) {

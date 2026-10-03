@@ -24,7 +24,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
   /** Next Follow-up date filter (YYYY-MM-DD). Empty string = no filter. */
   const [followUpDateFilter, setFollowUpDateFilter] = useState("");
 
-  const [sortField, setSortField] = useState<SortField>("trialDate");
+  const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   /* STATUS COUNTS */

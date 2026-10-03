@@ -1,19 +1,25 @@
 import {
-  HeroSection,
   FeatureBar,
   AboutChallenge,
   HowItWorks,
   Highlights,
   FAQSection,
   FinalCTA,
-  Footer,
   RegistrationForm,
-} from "@/components/codefest/index";
-import CodefestLiveSection from "@/components/codefest/CodefestLiveSection";
+} from "@/components/codefest/codefest-maz/index";
+import CodefestLiveSection from "@/components/codefest/codefest-maz/CodefestLiveSection";
 import Header from "@/components/layout/header";
 
 import type { Metadata } from "next";
-import WinnerAnnouncement from "@/components/codefest/WinnerAnnouncement";
+import WinnerAnnouncement from "@/components/codefest/codefest-maz/WinnerAnnouncement";
+import HeroSection from "@/components/codefest/codefest-python/HeroSection";
+import About from "@/components/codefest/codefest-python/About";
+import Challenge from "@/components/codefest/codefest-python/Challenge";
+import Evaluation from "@/components/codefest/codefest-python/Evaluation";
+import Process from "@/components/codefest/codefest-python/Process";
+import Theme from "@/components/codefest/codefest-python/Theme";
+import Winners from "@/components/codefest/codefest-python/Winners";
+import Footer from "@/components/codefest/codefest-python/Footer";
 
 export const metadata: Metadata = {
   title: "Codefest 1.0 | Online Coding Competitions For Students",
@@ -38,8 +44,13 @@ export default function HomePage() {
     <main id="top" className="bg-[#f8f8f8] overflow-hidden">
       <Header />
       <HeroSection />
-      <WinnerAnnouncement />
-      <CodefestLiveSection />
+      <RegistrationForm showTrigger={false} />
+      <About />
+      <Challenge />
+      <Theme />
+      <Evaluation />
+      <Process />
+      <Winners />
       <Footer />
     </main>
   );

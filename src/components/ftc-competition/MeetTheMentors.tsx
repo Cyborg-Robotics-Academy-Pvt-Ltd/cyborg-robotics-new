@@ -27,7 +27,7 @@ const MENTORS: Mentor[] = [
   {
     id: "anchal-mishra",
     name: "Anchal Mishra",
-    specialization: "PROGRAM LEAD",
+    specialization: "Embedded engineering & Robotics",
     role: "Program Lead",
     image: "/assets/team/anchal.png",
     linkedinUrl: "https://linkedin.com/in/anchal-mishra",

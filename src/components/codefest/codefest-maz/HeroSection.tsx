@@ -3,8 +3,8 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ArrowRight, BookOpen, Lock, Sparkles } from "lucide-react";
-import { Button } from "../ui/button";
+import { BookOpen, Lock, Sparkles } from "lucide-react";
+import { Button } from "../../ui/button";
 
 export default function HeroSection() {
   // Square dot pattern grid

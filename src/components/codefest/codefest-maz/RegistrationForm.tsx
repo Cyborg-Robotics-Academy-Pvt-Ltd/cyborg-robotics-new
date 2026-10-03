@@ -34,7 +34,10 @@ import {
   type CodefestRegistrationFormData,
   type CodefestRegistrationFormErrors,
 } from "@/lib/codefest-registration-validation";
-
+type FormFieldElement =
+  | HTMLInputElement
+  | HTMLSelectElement
+  | HTMLTextAreaElement;
 const textFields = [
   {
     id: "fullName",
@@ -88,12 +91,13 @@ const textFields = [
 ] as const;
 
 const inputClassName =
-  "h-14 rounded-2xl border border-gray-200 bg-white pl-12 pr-4 text-[15px] font-500 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#b3202a] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(179,32,42,0.1)] hover:border-gray-300";
+  "h-14 rounded-2xl border border-gray-200 bg-white pl-12 pr-4 text-[15px] font-500 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#0A1F44] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(10,31,68,0.1)] hover:border-gray-300";
 
 const selectTriggerClassName =
-  "h-14 w-full rounded-2xl border border-gray-200 bg-white pl-12 pr-10 text-left text-[14px] sm:text-[15px] font-medium text-gray-700 shadow-none transition-all duration-200 focus:border-[#b3202a] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(179,32,42,0.1)]hover:border-gray-300  overflow-hidden";
+  "h-14 w-full rounded-2xl border border-gray-200 bg-white pl-12 pr-10 text-left text-[14px] sm:text-[15px] font-medium text-gray-700 shadow-none transition-all duration-200 focus:border-[#0A1F44] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(10,31,68,0.1)] hover:border-gray-300 overflow-hidden";
+
 const textareaClassName =
-  "min-h-[112px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-[15px] font-500 text-gray-700 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#b3202a] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(179,32,42,0.1)] hover:border-gray-300";
+  "min-h-[112px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-[15px] font-500 text-gray-700 shadow-none transition-all duration-200 placeholder:text-gray-400 focus-visible:border-[#0A1F44] focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_rgba(10,31,68,0.1)] hover:border-gray-300";
 
 const initialFormData: CodefestRegistrationFormData = {
   fullName: "",
@@ -104,18 +108,19 @@ const initialFormData: CodefestRegistrationFormData = {
   emailAddress: "",
   parentGuardianContactNumber: "",
   emergencyContactNumber: "",
-  preferredCodingPlatform: "",
   agreedToTerms: false,
 };
 
 interface RegistrationFormProps {
   initiallyOpen?: boolean;
+  showTrigger?: boolean;
 }
 
 export default function RegistrationForm({
   initiallyOpen = false,
+  showTrigger = true,
 }: RegistrationFormProps) {
-  const registrationClosed = true;
+  const registrationClosed = false;
   const [isModalOpen, setIsModalOpen] = useState(
     registrationClosed ? false : initiallyOpen,
   );
@@ -150,11 +155,7 @@ export default function RegistrationForm({
     setIsModalOpen(true);
   };
 
-  const handleInputChange = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
+  const handleInputChange = (event: React.ChangeEvent<FormFieldElement>) => {
     const { name, value } = event.target;
     setFormError("");
     setFormErrors((current) => ({ ...current, [name]: "" }));
@@ -244,7 +245,7 @@ export default function RegistrationForm({
 
         input:focus ~ .input-icon,
         textarea:focus ~ .input-icon {
-          color: #b3202a;
+          color: #0a1f44;
         }
 
         @keyframes slideUp {
@@ -272,7 +273,7 @@ export default function RegistrationForm({
         }
 
         .card-header-glow {
-          background: linear-gradient(135deg, rgba(179, 32, 42, 0.03) 0%, rgba(199, 61, 29, 0.02) 100%);
+          background: linear-gradient(135deg, rgba(10, 31, 68, 0.03) 0%, rgba(23, 58, 115, 0.02) 100%);
         }
 
         .feature-card {
@@ -288,14 +289,14 @@ export default function RegistrationForm({
         }
 
         .cta-button {
-          background: linear-gradient(135deg, #b3202a 0%, #a80f1d 100%);
+          background: linear-gradient(135deg, #0a1f44 0%, #173a73 100%);
           transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow: 0 4px 16px rgba(179, 32, 42, 0.2);
+          box-shadow: 0 4px 16px rgba(10, 31, 68, 0.25);
           border: none;
         }
 
         .cta-button:hover {
-          box-shadow: 0 8px 32px rgba(179, 32, 42, 0.3);
+          box-shadow: 0 8px 32px rgba(10, 31, 68, 0.35);
           transform: translateY(-2px);
         }
 
@@ -318,7 +319,7 @@ export default function RegistrationForm({
           width: 48px;
           height: 48px;
           border-radius: 16px;
-          background: linear-gradient(135deg, #b3202a 0%, #a80f1d 100%);
+          background: linear-gradient(135deg, #0a1f44 0%, #173a73 100%);
           color: white;
           transition: all 0.3s ease;
         }
@@ -327,95 +328,99 @@ export default function RegistrationForm({
           transform: scale(1.05);
         }
       `}</style>
-      <Card className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-gray-50/50 shadow-md sm:rounded-[28px]">
-        <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-[#b3202a]/[0.03] to-[#c73e1d]/[0.02] px-4 py-5 sm:px-6 sm:py-5">
-          <div className="max-w-4xl space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#b3202a]/70 sm:text-xs">
-              🚀 Competition Registration
-            </p>
+      {showTrigger && (
+        <Card className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-white via-white to-gray-50/50 shadow-md sm:rounded-[28px]">
+          <CardHeader className="border-b border-gray-100 bg-gradient-to-br from-[#0A1F44]/[0.03] to-[#173A73]/[0.02] px-4 py-5 sm:px-6 sm:py-5">
+            <div className="max-w-4xl space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#0A1F44]/70 sm:text-xs">
+                🐍 Python Competition Registration
+              </p>
 
-            <CardTitle className="text-2xl font-black leading-[0.95] tracking-tight text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
-              READY TO PARTICIPATE?
-              <br />
-              <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent font-bold">
-                CodeFest?
-              </span>
-            </CardTitle>
+              <CardTitle className="text-2xl font-black leading-[0.95] tracking-tight text-gray-900 sm:text-3xl md:text-4xl lg:text-5xl">
+                READY TO BUILD IN
+                <br />
+                <span className="bg-gradient-to-r from-[#0A1F44] to-[#173A73] bg-clip-text text-transparent font-bold">
+                  Python?
+                </span>
+              </CardTitle>
 
-            <p className="pt-1 text-sm leading-relaxed text-gray-600 sm:text-[15px]">
-              Register now for CODE FEST 1.0 and secure your spot in India’s
-              exciting block-based coding competition for young innovators.
-            </p>
-          </div>
-        </CardHeader>
+              <p className="pt-1 text-sm leading-relaxed text-gray-600 sm:text-[15px]">
+                Register now for CODE FEST 1.0 and secure your spot in
+                India&apos;s national Python coding challenge for young
+                developers.
+              </p>
+            </div>
+          </CardHeader>
 
-        <CardContent className="space-y-5 px-4 py-5 sm:px-6 sm:py-7">
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                label: "Entry Fee",
-                value: `Rs. ${CODEFEST_COMPETITION.amount}`,
-                icon: "₹",
-              },
-              {
-                label: "Platforms",
-                value: "Scratch & PictoBlox",
-                icon: "🖥️",
-              },
-              {
-                label: "Hall Ticket",
-                value: "Auto Generated",
-                icon: "🎫",
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-red-100 bg-gradient-to-br from-white to-[#fafaf9] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg"
-              >
-                <div className="text-2xl">{item.icon}</div>
+          <CardContent className="space-y-5 px-4 py-5 sm:px-6 sm:py-7">
+            {/* Feature Cards */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  label: "Entry Fee",
+                  value: CODEFEST_COMPETITION.priceLabel,
+                  icon: "₹",
+                },
+                {
+                  label: "Platform",
+                  value: "Python 3 (IDLE / VS Code)",
+                  icon: "🐍",
+                },
+                {
+                  label: "Hall Ticket",
+                  value: "Auto Generated",
+                  icon: "🎫",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-[#0A1F44]/10 bg-gradient-to-br from-white to-[#fafaf9] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#0A1F44]/20 hover:shadow-lg"
+                >
+                  <div className="text-2xl">{item.icon}</div>
 
-                <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
-                  {item.label}
-                </p>
+                  <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">
+                    {item.label}
+                  </p>
 
-                <p className="mt-2 text-sm font-bold leading-snug text-gray-900 sm:text-[15px]">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
+                  <p className="mt-2 text-sm font-bold leading-snug text-gray-900 sm:text-[15px]">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-          {/* Secure Payment */}
-          <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-green-50/40 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-sm">
-                <ShieldCheck size={20} />
-              </div>
+            {/* Secure Payment */}
+            <div className="rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-green-50/40 p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-sm">
+                  <ShieldCheck size={20} />
+                </div>
 
-              <div className="flex-1">
-                <p className="text-sm font-bold uppercase tracking-[0.1em] text-green-900">
-                  Secure Payment Flow
-                </p>
+                <div className="flex-1">
+                  <p className="text-sm font-bold uppercase tracking-[0.1em] text-green-900">
+                    Secure Payment Flow
+                  </p>
 
-                <p className="mt-1.5 text-sm leading-relaxed text-green-800/80">
-                  Your details are securely encrypted. After successful payment,
-                  your competition ID and hall ticket are generated instantly.
-                </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-green-800/80">
+                    Your details are securely encrypted. After successful
+                    payment, your competition ID and hall ticket are generated
+                    instantly.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* CTA */}
-          <Button
-            onClick={openModal}
-            className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white transition-all duration-300"
-          >
-            Register Now
-            <ArrowRight size={18} className="ml-2" />
-          </Button>
-        </CardContent>
-      </Card>
+            {/* CTA */}
+            <Button
+              onClick={openModal}
+              className="cta-button h-[58px] w-full rounded-2xl text-[16px] font-bold text-white transition-all duration-300"
+            >
+              Register Now
+              <ArrowRight size={18} className="ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -436,7 +441,7 @@ export default function RegistrationForm({
 
             .field-group input:focus + .field-icon,
             .field-group textarea:focus + .field-icon {
-              color: #b3202a;
+              color: #0a1f44;
               transform: scale(1.1);
             }
 
@@ -445,7 +450,7 @@ export default function RegistrationForm({
             }
 
             .required-asterisk {
-              color: #b3202a;
+              color: #0a1f44;
               font-weight: 700;
             }
           `}</style>
@@ -551,79 +556,6 @@ export default function RegistrationForm({
                     </p>
                   )}
                 </div>
-
-                {[
-                  {
-                    id: "preferredCodingPlatform",
-                    label: "Preferred Coding Platform",
-                    icon: Laptop,
-                    options: [
-                      { value: "scratch", label: "Scratch" },
-                      { value: "pictoblox", label: "PictoBlox" },
-                    ],
-                  },
-                ].map(({ id, label, icon: Icon, options }) => (
-                  <div key={id} className="space-y-2.5 md:col-span-2">
-                    <Label
-                      htmlFor={id}
-                      className="text-xs font-bold uppercase tracking-[0.15em] text-gray-700"
-                    >
-                      {label}
-                      <span className="required-asterisk"> *</span>
-                    </Label>
-                    <div className="field-group relative">
-                      <Select
-                        value={
-                          formData[
-                            id as keyof CodefestRegistrationFormData
-                          ] as string
-                        }
-                        onValueChange={(value) => {
-                          setFormError("");
-                          setFormErrors((current) => ({
-                            ...current,
-                            [id]: "",
-                          }));
-                          setFormData((current) => ({
-                            ...current,
-                            [id]: value,
-                          }));
-                        }}
-                      >
-                        <SelectTrigger
-                          id={id}
-                          className={selectTriggerClassName}
-                          aria-invalid={Boolean(
-                            formErrors[
-                              id as keyof CodefestRegistrationFormErrors
-                            ],
-                          )}
-                        >
-                          <SelectValue
-                            placeholder={`Select ${label.toLowerCase()}`}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {options.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Icon
-                        size={18}
-                        className="field-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                      />
-                    </div>
-                    {formErrors[id as keyof CodefestRegistrationFormErrors] && (
-                      <p className="error-badge text-xs text-red-600 font-medium">
-                        ✗{" "}
-                        {formErrors[id as keyof CodefestRegistrationFormErrors]}
-                      </p>
-                    )}
-                  </div>
-                ))}
               </div>
 
               <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4">
@@ -634,7 +566,7 @@ export default function RegistrationForm({
                     onCheckedChange={(checked) =>
                       handleTermsChange(Boolean(checked))
                     }
-                    className="mt-0.5 border-gray-300 data-[state=checked]:border-[#b3202a] data-[state=checked]:bg-[#b3202a]"
+                    className="mt-0.5 border-gray-300 data-[state=checked]:border-[#0A1F44] data-[state=checked]:bg-[#0A1F44]"
                   />
                   <div className="flex-1">
                     <Label
@@ -642,7 +574,7 @@ export default function RegistrationForm({
                       className="text-sm leading-relaxed text-gray-700"
                     >
                       I agree to the{" "}
-                      <span className="font-bold text-[#b3202a]">
+                      <span className="font-bold text-[#0A1F44]">
                         Terms & Conditions
                       </span>
                       <span className="required-asterisk"> *</span>
@@ -664,7 +596,7 @@ export default function RegistrationForm({
                 >
                   {isSubmitting
                     ? "🔄 Processing..."
-                    : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.amount}`}
+                    : `✓ Proceed to Pay Rs. ${CODEFEST_COMPETITION.baseAmount} + GST`}
                   {!isSubmitting && <ArrowRight size={18} className="ml-2" />}
                 </Button>
 
