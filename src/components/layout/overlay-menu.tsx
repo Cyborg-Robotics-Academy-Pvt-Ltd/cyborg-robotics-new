@@ -64,12 +64,18 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { enhancedCourseData } from "@/data/enhancedCourseData";
 
+interface SectionNavItem {
+  id: string;
+  label: string;
+}
+
 interface OverlayMenuProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   activeSection?: string;
   scrollToSection?: (sectionId: string) => void;
   menuData?: { mainMenu: MenuItem[] }; // Added optional menuData prop
+  navItems?: SectionNavItem[];
 }
 
 // Animation variants for staggered effect
@@ -216,7 +222,8 @@ const MenuList = ({
             <Link
               href={item.href || "#"}
               onClick={() => handleItemClick(item)}
-              className={`flex items-center justify-between rounded-lg ${linkPaddingClass} transition-all duration-300 ${
+              aria-current={isActive ? "page" : undefined}
+              className={`flex items-center justify-between rounded-lg ${linkPaddingClass} transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
                 isActive
                   ? "bg-red-800 text-white shadow-md"
                   : "bg-white text-foreground hover:bg-gray-100 shadow-sm hover:shadow-md"
@@ -334,7 +341,8 @@ const MenuList = ({
             <Link
               href={item.href || "#"}
               onClick={() => handleItemClick(item)}
-              className={linkClass}
+              aria-current={isActive ? "page" : undefined}
+              className={`${linkClass} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2`}
             >
               {isOfflineCourseChild ? (
                 <span>{item.title}</span>
@@ -369,6 +377,7 @@ export default function OverlayMenu({
   activeSection,
   scrollToSection,
   menuData: customMenuData,
+  navItems,
 }: OverlayMenuProps) {
   const { user, userRole } = useAuth();
   const router = useRouter();
@@ -384,6 +393,7 @@ export default function OverlayMenu({
 
   // Use custom menu data if provided, otherwise use default
   const menuItems = customMenuData?.mainMenu || menuData.mainMenu;
+  const hasCustomNavItems = Boolean(navItems && navItems.length > 0);
 
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -392,7 +402,7 @@ export default function OverlayMenu({
       setShowSuggestions(false);
       setIsOpen(false);
       router.push(
-        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`
+        `/all-courses?search=${encodeURIComponent(searchQuery.trim())}`,
       );
     }
   };
@@ -421,7 +431,7 @@ export default function OverlayMenu({
       ) {
         // Check if the click is not on a suggestion item
         const suggestionElements = document.querySelectorAll(
-          ".search-suggestion-item"
+          ".search-suggestion-item",
         );
         let clickedOnSuggestion = false;
         suggestionElements.forEach((el) => {
@@ -455,13 +465,13 @@ export default function OverlayMenu({
         ([slug, course]) => ({
           slug,
           title: course.title,
-        })
+        }),
       );
 
       // Filter suggestions based on search query
       const filteredSuggestions = courseList
         .filter((course) =>
-          course.title.toLowerCase().includes(searchQuery.toLowerCase())
+          course.title.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .slice(0, 5); // Limit to 5 suggestions
 
@@ -504,6 +514,15 @@ export default function OverlayMenu({
           <div className="container mx-auto justify-center flex h-full max-w-6xl flex-col px-4 md:px-6">
             <header className="w-full py-4 border-b border-transparent">
               <div className="flex items-center">
+                {!user && (
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="mr-auto inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                  >
+                    Log In
+                  </Link>
+                )}
                 <Link
                   href="/"
                   onClick={() => setIsOpen(false)}
@@ -578,14 +597,41 @@ export default function OverlayMenu({
                     <div className="w-12 h-1 bg-red-700 rounded-full"></div>
                   </div>
 
-                  <MenuList
-                    items={menuItems}
-                    setIsOpen={setIsOpen}
-                    activeSection={activeSection}
-                    scrollToSection={scrollToSection}
-                    router={router}
-                    isMobile={isMobile}
-                  />
+                  {hasCustomNavItems ? (
+                    <div className="space-y-2">
+                      {navItems!.map((item) => {
+                        const isActive = activeSection === item.id;
+
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setIsOpen(false);
+                              scrollToSection?.(item.id);
+                            }}
+                            aria-current={isActive ? "page" : undefined}
+                            className={`flex w-full items-center justify-center rounded-xl px-4 py-3 text-base font-medium whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B92423]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                              isActive
+                                ? "bg-red-700 text-white shadow-md"
+                                : "bg-white text-gray-900 shadow-sm hover:bg-gray-100 hover:text-[#B92423]"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <MenuList
+                      items={menuItems}
+                      setIsOpen={setIsOpen}
+                      activeSection={activeSection}
+                      scrollToSection={scrollToSection}
+                      router={router}
+                      isMobile={isMobile}
+                    />
+                  )}
                   {/* Authentication Section */}
                   {user && (
                     <div className="mt-4 pt-4 border-t border-gray-200">

@@ -658,7 +658,14 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2 lg:hidden">
-              {renderAuthMenu(true)}
+              <Link href="/free-trial" className="shrink-0">
+                <Button
+                  size="sm"
+                  className="h-9 rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-3 text-[10.5px] font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.16)] transition-all duration-300 hover:shadow-[0_12px_24px_rgba(239,68,68,0.2)]"
+                >
+                  Book a FREE Trial
+                </Button>
+              </Link>
               <div
                 className={`rounded-2xl p-0.5 shadow-sm transition-all duration-300 ${
                   isTransparentMode
