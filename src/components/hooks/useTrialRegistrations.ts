@@ -6,7 +6,10 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   updateDoc,
+  type QueryDocumentSnapshot,
+  type DocumentData,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -20,13 +23,70 @@ import {
   TrialStatus,
 } from "@/app/enquire-form/types";
 
+const COLLECTION = "freeTrialRegistrations";
+
 /**
- * Owns the Firestore round-trip for trial registrations:
- * initial fetch + every mutation (status, remarks, lead
- * temp/outcome, follow-ups, edit, delete).
+ * Pure mapper: Firestore doc -> TrialRegistration.
+ * Explicit return type means a missing field fails the build here,
+ * not somewhere downstream.
+ */
+function mapRegistration(
+  docSnapshot: QueryDocumentSnapshot<DocumentData>,
+): TrialRegistration {
+  const data = docSnapshot.data();
+
+  const trialMode: TrialRegistration["trialMode"] =
+    data.trialMode === "offline" ? "offline" : "online";
+
+  const location = typeof data.location === "string" ? data.location.trim() : "";
+
+  const locationId = typeof data.locationId === "string" ? data.locationId : null;
+
+  const locationName =
+    typeof data.locationName === "string" ? data.locationName : "";
+
+  const preferredCenter =
+    typeof data.preferredCenter === "string" && data.preferredCenter.trim()
+      ? data.preferredCenter.trim()
+      : null;
+
+  const followUpHistory: FollowUpEntry[] = Array.isArray(data.followUpHistory)
+    ? data.followUpHistory
+    : [];
+
+  return {
+    id: docSnapshot.id,
+    studentName: data.studentName || "",
+    age: typeof data.age === "number" ? data.age : Number(data.age || 0),
+    contactNumber: data.contactNumber || "",
+    email: data.email || "",
+    trialDate: data.trialDate || "",
+    trialTime: data.trialTime || "",
+    location,
+    trialMode,
+    locationId,
+    locationName,
+    preferredCenter,
+    status: (data.status as TrialStatus) || "booked",
+    remark: data.remark || "",
+    counsellorRemark: data.counsellorRemark || "",
+    leadTemp: (data.leadTemp as LeadTemp) || "",
+    nextFollowUpDate: data.nextFollowUpDate || "",
+    followUpHistory,
+    leadOutcome: (data.leadOutcome as LeadOutcome) || "",
+    closeRemark: data.closeRemark || "",
+    dateOfRegistration: data.dateOfRegistration || "",
+    // Pending server timestamps are null until the write is acknowledged.
+    createdAt: data.createdAt?.toMillis?.() ?? 0,
+  };
+}
+
+/**
+ * Owns the Firestore round-trip for trial registrations.
  *
- * UI components stay dumb — they call these functions and
- * re-render off the returned `registrations` state.
+ * `onSnapshot` is the single source of truth: mutations only write to
+ * Firestore, and the listener updates `registrations` (including
+ * optimistic local-write events).
  */
 export function useTrialRegistrations() {
   const [registrations, setRegistrations] = useState<TrialRegistration[]>([]);
@@ -39,99 +99,12 @@ export function useTrialRegistrations() {
     setLoading(true);
     setError("");
 
-    const registrationsRef = collection(db, "freeTrialRegistrations");
-    const q = query(registrationsRef, orderBy("createdAt", "desc"));
+    const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
 
     return onSnapshot(
       q,
       (snapshot) => {
-        const data: TrialRegistration[] = snapshot.docs.map((docSnapshot) => {
-          const firestoreData = docSnapshot.data();
-
-          /**
-           * Read mode from Firestore.
-           *
-           * Backend source of truth.
-           */
-          const trialMode: TrialRegistration["trialMode"] =
-            firestoreData.trialMode === "offline" ? "offline" : "online";
-
-          const location =
-            typeof firestoreData.location === "string"
-              ? firestoreData.location.trim()
-              : "";
-
-          const locationId =
-            typeof firestoreData.locationId === "string"
-              ? firestoreData.locationId
-              : null;
-
-          const locationName =
-            typeof firestoreData.locationName === "string"
-              ? firestoreData.locationName
-              : "";
-
-          const preferredCenter =
-            typeof firestoreData.preferredCenter === "string" &&
-            firestoreData.preferredCenter.trim()
-              ? firestoreData.preferredCenter.trim()
-              : null;
-
-          const followUpHistory: FollowUpEntry[] = Array.isArray(
-            firestoreData.followUpHistory,
-          )
-            ? firestoreData.followUpHistory
-            : [];
-
-          return {
-            id: docSnapshot.id,
-
-            studentName: firestoreData.studentName || "",
-
-            age:
-              typeof firestoreData.age === "number"
-                ? firestoreData.age
-                : Number(firestoreData.age || 0),
-
-            contactNumber: firestoreData.contactNumber || "",
-
-            email: firestoreData.email || "",
-
-            trialDate: firestoreData.trialDate || "",
-
-            trialTime: firestoreData.trialTime || "",
-
-            location,
-
-            trialMode,
-
-            locationId,
-
-            locationName,
-
-            preferredCenter,
-
-            status: (firestoreData.status as TrialStatus) || "booked",
-
-            remark: firestoreData.remark || "",
-
-            counsellorRemark: firestoreData.counsellorRemark || "",
-
-            leadTemp: (firestoreData.leadTemp as LeadTemp) || "",
-
-            nextFollowUpDate: firestoreData.nextFollowUpDate || "",
-
-            followUpHistory,
-
-            leadOutcome: (firestoreData.leadOutcome as LeadOutcome) || "",
-
-            closeRemark: firestoreData.closeRemark || "",
-
-            dateOfRegistration: firestoreData.dateOfRegistration || "",
-          };
-        });
-
-        setRegistrations(data);
+        setRegistrations(snapshot.docs.map(mapRegistration));
         setLoading(false);
       },
       (err) => {
@@ -142,19 +115,11 @@ export function useTrialRegistrations() {
     );
   }, []);
 
-  /* PATCH HELPER — updates Firestore, then mirrors into local state */
+  /* PATCH HELPER — Firestore write only; listener updates state */
 
   const patchRegistration = useCallback(
     async (id: string, payload: Record<string, unknown>) => {
-      await updateDoc(doc(db, "freeTrialRegistrations", id), payload);
-
-      setRegistrations((previous) =>
-        previous.map((registration) =>
-          registration.id === id
-            ? { ...registration, ...(payload as Partial<TrialRegistration>) }
-            : registration,
-        ),
-      );
+      await updateDoc(doc(db, COLLECTION, id), payload);
     },
     [],
   );
@@ -313,13 +278,10 @@ export function useTrialRegistrations() {
       try {
         const location = draft.location.trim();
 
-        /**
-         * Recalculate mode when
-         * location is changed.
-         */
+        /** Recalculate mode when location is changed. */
         const locationResult = getTrialModeFromLocation(location);
 
-        const payload = {
+        await patchRegistration(target.id, {
           studentName: draft.studentName.trim(),
           age: draft.age === "" ? target.age : ageNum,
           contactNumber: draft.contactNumber.trim(),
@@ -330,10 +292,8 @@ export function useTrialRegistrations() {
           trialMode: locationResult.trialMode,
           locationId: locationResult.locationId,
           locationName: locationResult.locationName,
-          updatedAt: new Date(),
-        };
-
-        await patchRegistration(target.id, payload);
+          updatedAt: serverTimestamp(),
+        });
 
         return true;
       } catch (err) {
@@ -349,12 +309,7 @@ export function useTrialRegistrations() {
 
   const deleteRegistration = useCallback(async (id: string): Promise<boolean> => {
     try {
-      await deleteDoc(doc(db, "freeTrialRegistrations", id));
-
-      setRegistrations((previous) =>
-        previous.filter((registration) => registration.id !== id),
-      );
-
+      await deleteDoc(doc(db, COLLECTION, id));
       return true;
     } catch (err) {
       console.error("Error deleting registration:", err);
