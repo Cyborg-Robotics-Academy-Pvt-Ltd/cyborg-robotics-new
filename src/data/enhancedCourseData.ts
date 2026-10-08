@@ -820,7 +820,7 @@ export const enhancedCourseData: Record<string, EnhancedCourseData> = {
     description:
       "Design beautiful and functional mobile applications with modern UI/UX principles",
     mode: "Online & Offline",
-    onlineCourseUrl: "https://your-academy.graphy.com/courses/app-designing",
+    onlineCourseUrl: "https://online.cyborgrobotics.in/courses/Application-Designing--6abcd107334236781db6b9c7",
     duration: "16 CLASSES (x4 LEVELS) (1 HOUR PER CLASS)",
     syllabusPath: "/assets/pdf/APP DESIGNING.pdf",
     syllabusFileName: "APP DESIGNING.pdf",

@@ -8,7 +8,7 @@ const Footer = () => {
       {/* Main content */}
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
         <p className="mb-3 text-xs font-semibold tracking-widest sm:text-sm">
-          <span className="text-white">CODE FEST 1.0</span>
+          <span className="text-white">CodeFest 2.O Python Edition</span>
           <span className="mx-2 text-white/40">•</span>
         </p>
 
@@ -25,7 +25,7 @@ const Footer = () => {
           type="button"
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#A8FF00] px-6 py-3 text-sm font-bold text-[#0A1128] transition-transform hover:scale-105 active:scale-95"
         >
-          JOIN CODE FEST 1.0
+          JOIN CodeFest 2.O Python Edition
           <ArrowRight className="h-4 w-4" strokeWidth={3} />
         </button>
       </div>

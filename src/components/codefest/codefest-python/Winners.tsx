@@ -71,7 +71,7 @@ export default function Winners() {
             href="#join"
             className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-[#0A1F44] px-6 py-3 text-sm font-semibold text-white hover:bg-[#12295C] transition"
           >
-            Join CodeFest 1.0 <ArrowRight size={16} />
+            Join CodeFest 2.O Python Edition <ArrowRight size={16} />
           </a>
         </div>
       </div>

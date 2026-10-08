@@ -24,7 +24,7 @@ const NAV_LINKS = [
 ];
 
 const BADGES = [
-  { label: "CodeFest 1.0", variant: "solid" as const },
+  { label: "CodeFest 2.O Python Edition", variant: "solid" as const },
   { label: "Python-based", variant: "outline" as const, icon: "🐍" },
   { label: "Submission-based hackathon", variant: "outline" as const },
 ];
@@ -84,7 +84,7 @@ const STATS = [
   },
 ];
 
-const DEFAULT_CODE = `# CodeFest 1.0 — build your entry
+const DEFAULT_CODE = `# CodeFest 2.O Python Edition — build your entry
 class Participant:
     def build_project(self):
         idea = "solve a real problem"
@@ -694,7 +694,7 @@ function HeroSection() {
         >
           {/* Badge pill: Code Fest 1.0 */}
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#0A1F44] px-4 py-1.5 text-xs font-bold">
-            <span className="text-white">CODE FEST 1.0</span>
+            <span className="text-white">CodeFest 2.O Python Edition</span>
           </div>
 
           <h1 className="font-syne max-w-[640px] text-[2.25rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-[#0A1F44] sm:text-[2.75rem] lg:text-[3.25rem]">
