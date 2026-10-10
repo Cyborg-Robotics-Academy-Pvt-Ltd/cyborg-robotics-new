@@ -60,10 +60,10 @@ export default function Navbar({
                 type="button"
                 onClick={() => scrollToSection(item.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B92423]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                className={`rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                   isActive
-                    ? "bg-orange-100 font-semibold text-[#e8431f]"
-                    : "text-black hover:bg-black/5 hover:text-[#e8431f]"
+                    ? "bg-orange-100 font-semibold text-red-800"
+                    : "text-black hover:bg-black/5 hover:text-red-800"
                 }`}
               >
                 {item.label}
@@ -81,9 +81,9 @@ export default function Navbar({
                 onBookTrial();
               }
             }}
-            className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a18] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
-            <Button className="h-10 rounded-full bg-gradient-to-r from-orange-600 via-[#ff7a18] to-[#ff3131] px-3 text-[10px] font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a18] focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:px-4 sm:text-xs xl:px-5 xl:text-sm">
+            <Button className="h-10 rounded-full bg-gradient-to-r from-red-600 via-red-700 to-red-800 px-3 text-[10px] font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:px-4 sm:text-xs xl:px-5 xl:text-sm">
               <span className="flex items-center gap-1.5 whitespace-nowrap">
                 <span>Book Free Trial</span>
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -94,7 +94,7 @@ export default function Navbar({
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-white/80 text-black shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B92423]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-white/80 text-black shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2 focus-visible:ring-offset-white lg:hidden"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
           >

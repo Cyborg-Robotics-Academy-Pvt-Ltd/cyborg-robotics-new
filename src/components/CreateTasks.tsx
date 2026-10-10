@@ -63,7 +63,7 @@ const CreateTasks = () => {
   const [prn, setPrn] = useState("");
 
   const [dateTime, setDateTime] = useState(
-    format(new Date(), "yyyy-MM-dd'T'HH:mm")
+    format(new Date(), "yyyy-MM-dd'T'HH:mm"),
   );
   const [status, setStatus] = useState<Task["status"]>("complete");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -92,7 +92,7 @@ const CreateTasks = () => {
       const filteredSuggestions = allPrns.filter(
         (suggestion) =>
           suggestion.prn.toLowerCase().includes(value.toLowerCase()) ||
-          suggestion.username.toLowerCase().includes(value.toLowerCase())
+          suggestion.username.toLowerCase().includes(value.toLowerCase()),
       );
       setPrnSuggestions(filteredSuggestions);
     } else {
@@ -170,6 +170,11 @@ const CreateTasks = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        if (!auth) {
+          toast.error("Authentication is not ready. Please try again.");
+          return;
+        }
+
         const user = auth.currentUser;
         if (!user) {
           router.push("/login");
@@ -225,7 +230,7 @@ const CreateTasks = () => {
 
       const q = query(
         collection(db, "students"),
-        where("PrnNumber", "==", prn)
+        where("PrnNumber", "==", prn),
       );
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
@@ -240,7 +245,7 @@ const CreateTasks = () => {
               (t) =>
                 t.task === editingTask.task &&
                 t.dateTime === editingTask.dateTime &&
-                t.status === editingTask.status
+                t.status === editingTask.status,
             ) ?? -1;
 
           if (taskIndex === -1) {
@@ -259,7 +264,7 @@ const CreateTasks = () => {
         toast.success(
           editingTask
             ? "Task updated successfully!"
-            : "Task added successfully!"
+            : "Task added successfully!",
         );
         setIsModalOpen(false);
         setEditingTask(null);
@@ -307,7 +312,7 @@ const CreateTasks = () => {
 
       const q = query(
         collection(db, "students"),
-        where("PrnNumber", "==", taskData.prn)
+        where("PrnNumber", "==", taskData.prn),
       );
       const querySnapshot = await getDocs(q);
 
@@ -321,7 +326,7 @@ const CreateTasks = () => {
             (t) =>
               t.task !== taskData.task ||
               t.dateTime !== taskData.dateTime ||
-              t.status !== taskData.status
+              t.status !== taskData.status,
           ) || [];
 
         await updateDoc(studentRef, { tasks: updatedTasks });
@@ -340,7 +345,7 @@ const CreateTasks = () => {
     (task) =>
       task.task.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.course?.toLowerCase().includes(searchTerm.toLowerCase())
+      task.course?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const sortTasksByDate = () => {
@@ -362,7 +367,7 @@ const CreateTasks = () => {
       // Sort tasks by date, most recent first
       const sortedTasks = studentTasks.sort(
         (a, b) =>
-          new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
+          new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
       );
       const mostRecentTask = sortedTasks[0];
 
@@ -564,7 +569,7 @@ const CreateTasks = () => {
                                 e.stopPropagation();
                                 if (
                                   window.confirm(
-                                    "Are you sure you want to delete this task?"
+                                    "Are you sure you want to delete this task?",
                                   )
                                 ) {
                                   handleDelete(task);

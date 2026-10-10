@@ -46,6 +46,7 @@ import {
   Users,
   LogOut,
   Search,
+  LayoutDashboard,
 } from "lucide-react";
 // Social icons now use images from public/assets/social-icons
 
@@ -379,10 +380,11 @@ export default function OverlayMenu({
   menuData: customMenuData,
   navItems,
 }: OverlayMenuProps) {
-  const { user, userRole } = useAuth();
+  const { user, userRole, loading } = useAuth();
   const router = useRouter();
   const isMobile = useIsMobile(); // Add this hook
 
+  const isLoggedIn = Boolean(user && userRole);
   // Search functionality states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<
@@ -483,7 +485,12 @@ export default function OverlayMenu({
 
   const handleSignOut = useCallback(async () => {
     try {
-      await signOut(auth);
+      const currentAuth = auth;
+      if (!currentAuth) {
+        throw new Error("Firebase Auth is not initialized.");
+      }
+
+      await signOut(currentAuth);
       setIsOpen(false);
       router.push("/");
       localStorage.removeItem("userRole");
@@ -514,11 +521,25 @@ export default function OverlayMenu({
           <div className="container mx-auto justify-center flex h-full max-w-6xl flex-col px-4 md:px-6">
             <header className="w-full py-4 border-b border-transparent">
               <div className="flex items-center">
-                {!user && (
+                {loading ? (
+                  <div
+                    className="mr-auto h-9 w-24 animate-pulse rounded-full bg-gray-200"
+                    aria-hidden="true"
+                  />
+                ) : isLoggedIn ? (
+                  <Link
+                    href={`/${userRole}-dashboard`}
+                    onClick={() => setIsOpen(false)}
+                    className="mr-auto inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                  >
+                    <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                    Dashboard
+                  </Link>
+                ) : (
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="mr-auto inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                    className="mr-auto inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                   >
                     Log In
                   </Link>
@@ -696,7 +717,7 @@ export default function OverlayMenu({
                           </AccordionTrigger>
                           <AccordionContent className="pb-2 text-sm text-gray-600">
                             Our robotics courses are designed for children aged
-                            4-25 years with specialized programs for different
+                            5-25 years with specialized programs for different
                             age groups.
                           </AccordionContent>
                         </AccordionItem>

@@ -406,6 +406,17 @@ export function MobileCard({
           {registration.trialDate} · {registration.trialTime}
         </div>
 
+        {registration.remark && (
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">
+              Enquiry Remark
+            </p>
+            <p className="whitespace-pre-wrap text-sm text-stone-700">
+              {registration.remark}
+            </p>
+          </div>
+        )}
+
         {/* LOCATION */}
 
         <div className="flex items-center gap-2">

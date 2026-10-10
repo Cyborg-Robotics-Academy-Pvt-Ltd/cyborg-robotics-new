@@ -123,7 +123,7 @@ export default function LearningModes() {
                   <motion.span
                     layoutId="mode-pill"
                     aria-hidden="true"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-[#d63a17] to-[#e8431f] shadow-md shadow-[#ff5a36]/30"
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-red-700 to-red-800 shadow-md shadow-[#ff5a36]/30"
                     transition={
                       reduceMotion
                         ? { duration: 0 }
@@ -158,7 +158,7 @@ export default function LearningModes() {
               }}
               className="grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
             >
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#d63a17] to-[#e8431f] p-8 text-white sm:p-10">
+              <div className="relative overflow-hidden bg-gradient-to-br from-red-700 to-red-800 p-8 text-white sm:p-10">
                 <Icon
                   aria-hidden="true"
                   strokeWidth={1}

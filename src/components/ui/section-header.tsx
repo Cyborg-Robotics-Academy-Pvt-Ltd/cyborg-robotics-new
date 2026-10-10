@@ -44,11 +44,11 @@ export function SectionHeader({
     <div className={cn("mx-auto mb-12 max-w-3xl text-center", className)}>
       <motion.p
         {...fadeUp(0)}
-        className="inline-flex items-center gap-2 rounded-full border border-[#ff5a36]/30 bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-[#d63a17] shadow-sm"
+        className="inline-flex items-center gap-2 rounded-full border border-[#ff5a36]/30 bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-red-800 shadow-sm"
       >
         <span aria-hidden="true" className="relative flex size-2">
-          <span className="absolute inline-flex size-full rounded-full bg-[#ff5a36] opacity-60 motion-safe:animate-ping" />
-          <span className="relative inline-flex size-2 rounded-full bg-[#d63a17]" />
+          <span className="absolute inline-flex size-full rounded-full bg-red-800 opacity-60 motion-safe:animate-ping" />
+          <span className="relative inline-flex size-2 rounded-full bg-red-800" />
         </span>
         {kicker}
       </motion.p>
@@ -61,14 +61,14 @@ export function SectionHeader({
         {before}
         {marked && (
           <span className="relative inline-block whitespace-nowrap">
-            <span className="bg-gradient-to-r from-[#d63a17] to-[#f0561f] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
               {marked}
             </span>
             <svg
               aria-hidden="true"
               viewBox="0 0 200 12"
               preserveAspectRatio="none"
-              className="absolute -bottom-2 left-0 h-2.5 w-full text-[#ff5a36]"
+              className="absolute -bottom-2 left-0 h-2.5 w-full text-red-800"
               fill="none"
             >
               <motion.path

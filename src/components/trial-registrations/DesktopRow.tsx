@@ -157,6 +157,14 @@ export function DesktopRow({
         </div>
       </TableCell>
 
+      {/* ENQUIRY REMARK */}
+
+      <TableCell className="min-w-[220px] max-w-[320px]">
+        <p className="whitespace-normal text-sm text-stone-700">
+          {registration.remark || "—"}
+        </p>
+      </TableCell>
+
       {/* LOCATION */}
 
       <TableCell>

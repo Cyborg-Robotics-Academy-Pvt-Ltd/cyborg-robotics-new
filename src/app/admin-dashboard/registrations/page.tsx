@@ -1219,7 +1219,8 @@ const Page = () => {
 
   const handleCreateRegistration = useCallback(
     async (registration: UnifiedRegistration) => {
-      const currentAdminUid = auth.currentUser?.uid;
+      const currentAuth = auth;
+      const currentAdminUid = currentAuth?.currentUser?.uid;
       const center = getSelectedCenter(registration);
       const course = getSelectedCourse(registration);
       const trainerId = selectedTrainerByRegistration[registration.id] || "";

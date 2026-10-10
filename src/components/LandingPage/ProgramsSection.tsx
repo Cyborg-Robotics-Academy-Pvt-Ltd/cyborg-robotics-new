@@ -184,7 +184,7 @@ export default function ProgramsSection() {
           tabIndex={0}
           className={cn(
             "-mx-6 mt-4 snap-x snap-mandatory scroll-px-6 overflow-x-auto px-6 pb-6",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17]",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800",
             "lg:mx-0 lg:mt-12 lg:overflow-visible lg:px-0 lg:pb-0",
           )}
         >
@@ -219,9 +219,9 @@ export default function ProgramsSection() {
           <a
             href="#trial"
             className={cn(
-              "group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d63a17] to-[#e8431f] px-7 py-4 font-bold text-white",
+              "group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-700 to-red-800 px-7 py-4 font-bold text-white",
               "shadow-lg shadow-[#ff5a36]/25 transition-shadow hover:shadow-xl hover:shadow-[#ff5a36]/35",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17] focus-visible:ring-offset-2",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2",
             )}
           >
             Not Sure? Start With a Free Assessment + Trial
@@ -277,8 +277,8 @@ function ScrollButton({
       onClick={onClick}
       className={cn(
         "grid size-11 place-items-center rounded-full border border-zinc-300 bg-white text-zinc-900 transition-colors",
-        "hover:border-[#d63a17] hover:text-[#d63a17] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-300 disabled:hover:text-zinc-900",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17] focus-visible:ring-offset-2",
+        "hover:border-red-800 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-300 disabled:hover:text-zinc-900",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2",
       )}
     >
       <Icon aria-hidden="true" className="size-5" />
@@ -295,7 +295,7 @@ function LevelMeter({ level }: { level: number }) {
             key={i}
             className={cn(
               "h-1.5 w-5 rounded-full",
-              i < level ? "bg-[#d63a17]" : "bg-zinc-200",
+              i < level ? "bg-red-800" : "bg-zinc-200",
             )}
           />
         ))}
@@ -335,7 +335,7 @@ function ProgramCard({
       >
         <span
           aria-hidden="true"
-          className="absolute -top-1.5 left-1/2 hidden size-3 -translate-x-1/2 rounded-full border-2 border-white bg-[#d63a17] shadow lg:block"
+          className="absolute -top-1.5 left-1/2 hidden size-3 -translate-x-1/2 rounded-full border-2 border-white bg-red-800 shadow lg:block"
         />
         <div className="flex items-start justify-between gap-3">
           <span
@@ -343,11 +343,11 @@ function ProgramCard({
             style={{
               backgroundColor: `rgb(255 90 54 / ${0.06 + level * 0.04})`,
             }}
-            className="grid size-12 shrink-0 place-items-center rounded-xl text-[#b8300f]"
+            className="grid size-12 shrink-0 place-items-center rounded-xl text-red-800 shadow-sm"
           >
             <Icon className="size-6" />
           </span>
-          <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-[#b8300f] ring-1 ring-inset ring-[#ff5a36]/25">
+          <span className="rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800 ring-1 ring-inset ring-red-800/25">
             {age}
           </span>
         </div>
@@ -381,8 +381,8 @@ function ProgramCard({
             href="#trial"
             aria-label={`Book a trial for ${title}`}
             className={cn(
-              "group/cta inline-flex items-center gap-1.5 rounded-md text-sm font-bold text-[#b8300f]",
-              "hover:text-[#8f2208] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17] focus-visible:ring-offset-2",
+              "group/cta inline-flex items-center gap-1.5 rounded-md text-sm font-bold text-red-800",
+              "hover:text-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2",
             )}
           >
             Try this level

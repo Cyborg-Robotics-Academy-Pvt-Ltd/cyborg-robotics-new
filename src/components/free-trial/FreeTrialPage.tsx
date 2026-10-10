@@ -82,16 +82,16 @@ const FreeTrialPage = () => {
       />
       <HeroSection openRequest={trialModalRequest} />
       <TrustStats />
-      <WhyRobotics />
-      <LearningJourney />
-      <ProgramsSection />
+      <TrialProcess />
       <LearningModes />
+      <ProgramsSection />
+      <LearningJourney />
+      <WhyRobotics />
       <StudentStories />
       <Achievements />
       <FoundersSection />
-      <TrialProcess />
-      <TrialCTA />
       <FAQ />
+      <TrialCTA />
       <Footer />
     </div>
   );

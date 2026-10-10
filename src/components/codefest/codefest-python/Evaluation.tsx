@@ -138,8 +138,8 @@ function EvaluationCard({
 export default function Challenge() {
   return (
     <section
-      id="challenge"
-      className="relative overflow-hidden bg-[#EEF2F8] py-10 sm:py-24 lg:py-12"
+      id="scoring"
+      className="relative scroll-mt-24 overflow-hidden bg-[#EEF2F8] py-10 sm:py-24 lg:py-12"
     >
       {/* Ambient background glow */}
       <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#2563A8]/[0.08] blur-[120px]" />

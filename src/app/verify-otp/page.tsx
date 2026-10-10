@@ -112,7 +112,7 @@ const VerifyOTPContent = () => {
         toast.success("OTP verified successfully!");
         // Redirect to reset password page with email and OTP token
         router.push(
-          `/reset-password?email=${encodeURIComponent(email)}&token=${otp}`
+          `/reset-password?email=${encodeURIComponent(email)}&token=${otp}`,
         );
       } else {
         setError(data.message || "Invalid OTP. Please try again.");

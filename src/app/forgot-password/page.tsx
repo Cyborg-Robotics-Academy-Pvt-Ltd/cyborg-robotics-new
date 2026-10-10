@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { auth } from "@/lib/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
+import { app } from "@/lib/firebase";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -35,7 +35,7 @@ const ForgotPasswordPage = () => {
     }
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(getAuth(app), email);
       setIsSuccess(true);
       toast.success("Password reset email sent! Please check your inbox.");
     } catch (error: any) {

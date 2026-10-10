@@ -456,6 +456,11 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   }, [prn]);
 
   React.useEffect(() => {
+    if (!auth) {
+      setUserChecked(true);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       setUserChecked(true);
       if (!user) {

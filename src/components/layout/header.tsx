@@ -328,7 +328,12 @@ export default function Header() {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      const currentAuth = auth;
+      if (!currentAuth) {
+        throw new Error("Firebase Auth is not initialized.");
+      }
+
+      await signOut(currentAuth);
       localStorage.removeItem("userRole");
       setShowProfileMenu(false);
       router.push("/");

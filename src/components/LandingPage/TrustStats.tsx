@@ -7,10 +7,10 @@ type Stat = {
 };
 
 const STATS: readonly Stat[] = [
-  { value: 10000, suffix: "+", label: "Students Trained*" },
-  { value: 10, suffix: "+", label: "Years of Experience" },
+  { value: 100000, suffix: "+", label: "Students Trained*" },
+  { value: 12, suffix: "+", label: "Years of Experience" },
   { value: 50, suffix: "+", label: "Competitions & Events" },
-  { value: 10, suffix: "+", label: "Awards & Achievements" },
+  { value: 20, suffix: "+", label: "Awards & Achievements" },
 ] as const;
 
 export default function TrustStats() {
@@ -34,7 +34,9 @@ export default function TrustStats() {
             >
               <span aria-hidden="true">
                 <CountUp value={value} duration={2} />
-                <span className="text-orange-600">{suffix}</span>
+                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+                  {suffix}
+                </span>
               </span>
             </dd>
           </div>

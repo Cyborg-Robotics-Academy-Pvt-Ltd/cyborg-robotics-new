@@ -83,7 +83,7 @@ const SUBMISSION_ITEMS = [
 
 export default function Process() {
   return (
-    <section id="process" className="bg-[#0B1120] py-10">
+    <section id="timeline" className="scroll-mt-24 bg-[#0B1120] py-10">
       <div className="mx-auto max-w-[1300px] px-6 sm:px-8 lg:px-12 grid lg:grid-cols-[1.1fr_1fr] gap-12">
         {/* Build process */}
         <div>

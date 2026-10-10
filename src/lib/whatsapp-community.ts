@@ -29,6 +29,7 @@ const WHATSAPP_LINKS: Record<string, string> = {
   "CodeFest Challenge": "https://chat.whatsapp.com/CaNL7KBldoWFQzS3kR6orX",
   "Maze Challenge": "https://chat.whatsapp.com/CaNL7KBldoWFQzS3kR6orX",
   "CodeFest 1.0 Maze Challenge": "https://chat.whatsapp.com/CaNL7KBldoWFQzS3kR6orX",
+  "CodeFest 1.0 python Competition": "https://chat.whatsapp.com/CaNL7KBldoWFQzS3kR6orX",
 };
 
 const WORKSHOP_COMMUNITY_LABELS: Record<string, string> = {

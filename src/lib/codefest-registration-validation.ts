@@ -20,7 +20,7 @@ const NAME_REGEX = /^[A-Za-z][A-Za-z\s.'-]{1,}$/;
 
 export const CODEFEST_COMPETITION = {
   key: "codefest-competition",
-  name: "CodeFest 1.0 Maze Challenge",
+  name: "CodeFest 1.0 python Competition",
   baseAmount: 499,
   gstPercent: 18,
   get gstAmount() {

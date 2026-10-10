@@ -7,8 +7,7 @@ import {
   safeWritePaymentAuditLog,
 } from "@/lib/payment-audit-log";
 import {
-  PAYMENT_SESSION_COOKIE_NAME,
-  getCookieValue,
+  getPaymentSessionCookieValue,
   verifyPaymentSessionCookieValue,
 } from "@/lib/payment-session-binding";
 
@@ -217,9 +216,9 @@ function verifyPaymentOwnership(
   orderId: string | null | undefined,
   paymentData: Record<string, any>
 ): { ok: boolean; reason?: string } {
-  const cookieValue = getCookieValue(
+  const cookieValue = getPaymentSessionCookieValue(
     req.headers.get("cookie"),
-    PAYMENT_SESSION_COOKIE_NAME
+    orderId
   );
   const sessionCheck = verifyPaymentSessionCookieValue(cookieValue);
 
@@ -859,6 +858,5 @@ export async function POST(req: Request) {
     );
   }
 }
-
 
 

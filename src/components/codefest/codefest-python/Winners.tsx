@@ -26,7 +26,7 @@ const WINNERS = [
 
 export default function Winners() {
   return (
-    <section id="winners" className="bg-[#EEF2F8] py-20">
+    <section id="rewards" className="scroll-mt-24 bg-[#EEF2F8] py-20">
       <div className="mx-auto max-w-[1300px] px-6 sm:px-8 lg:px-12 grid lg:grid-cols-[1.4fr_1fr] gap-8 items-stretch">
         {/* Winners showcase */}
         <div>

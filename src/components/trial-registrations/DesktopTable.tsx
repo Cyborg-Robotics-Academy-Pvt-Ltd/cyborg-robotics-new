@@ -119,6 +119,7 @@ export function DesktopTable({
               onClick={onToggleSort}
             />
 
+            <TableHead className="text-stone-500">Enquiry Remark</TableHead>
             <TableHead className="text-stone-500">Location</TableHead>
             <TableHead className="text-stone-500">Visit Option</TableHead>
             <TableHead className="text-stone-500">Mode</TableHead>

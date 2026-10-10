@@ -18,6 +18,7 @@ import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
   BookOpenText,
+  CalendarDays,
   Clapperboard,
   FilePen,
   Images,
@@ -85,6 +86,11 @@ const roleLinksMap: Record<
           "/admin-dashboard/competition-registration",
           "/admin-dashboard/renewal",
         ].some((path) => pathname.startsWith(path)),
+    },
+    {
+      label: "Trial Availability",
+      href: "/admin-dashboard/trial-availability",
+      icon: <CalendarDays className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Enquire form",
@@ -194,10 +200,13 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (typeof window !== "undefined" && auth.currentUser) {
+      if (typeof window === "undefined" || !auth) return;
+
+      const currentUser = auth.currentUser;
+      if (currentUser) {
         try {
           // Set email from Firebase auth
-          setProfileEmail(auth.currentUser.email);
+          setProfileEmail(currentUser.email);
 
           let collectionName = "";
           switch (role) {
@@ -214,7 +223,7 @@ export default function DashboardLayout({
               collectionName = "students";
           }
 
-          const userDocRef = doc(db, collectionName, auth.currentUser.uid);
+          const userDocRef = doc(db, collectionName, currentUser.uid);
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
@@ -267,6 +276,10 @@ export default function DashboardLayout({
 
   const handleLogout = useCallback(async () => {
     try {
+      if (!auth) {
+        throw new Error("Firebase Auth is not initialized.");
+      }
+
       await signOut(auth);
       if (typeof window !== "undefined") {
         localStorage.removeItem("userRole");

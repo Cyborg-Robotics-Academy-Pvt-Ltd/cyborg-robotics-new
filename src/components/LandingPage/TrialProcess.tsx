@@ -94,7 +94,7 @@ export default function TrialProcess() {
           >
             <motion.span
               variants={drawY}
-              className="block h-full origin-top bg-[#ff5a36]"
+              className="block h-full origin-top bg-red-800"
             />
           </span>
 
@@ -105,7 +105,7 @@ export default function TrialProcess() {
           >
             <motion.span
               variants={drawX}
-              className="block h-full origin-left bg-[#ff5a36]"
+              className="block h-full origin-left bg-red-800"
             />
           </span>
 
@@ -122,8 +122,8 @@ export default function TrialProcess() {
                     className={cn(
                       "relative z-10 grid size-14 shrink-0 place-items-center rounded-full border-2 ring-8 ring-white",
                       isLast
-                        ? "border-transparent bg-gradient-to-br from-[#d63a17] to-[#e8431f] text-white shadow-lg shadow-[#ff5a36]/30"
-                        : "border-[#ff5a36] bg-white text-[#d63a17]",
+                        ? "border-transparent bg-gradient-to-br from-red-600 to-red-800 text-white shadow-lg shadow-[#ff5a36]/30"
+                        : "border-red-800 bg-white text-red-800",
                     )}
                   >
                     <Icon aria-hidden="true" className="size-6" />
@@ -132,8 +132,8 @@ export default function TrialProcess() {
                       className={cn(
                         "absolute -right-1 -top-1 grid size-6 place-items-center rounded-full text-xs font-bold ring-2 ring-white",
                         isLast
-                          ? "bg-white text-[#d63a17]"
-                          : "bg-[#d63a17] text-white",
+                          ? "bg-white text-red-800"
+                          : "bg-red-800 text-white",
                       )}
                     >
                       {index + 1}
@@ -146,8 +146,8 @@ export default function TrialProcess() {
                       "transition-[transform,box-shadow,border-color] duration-300",
                       "hover:shadow-lg motion-safe:hover:-translate-y-1",
                       isLast
-                        ? "border-[#ff5a36]/40 bg-orange-50"
-                        : "border-zinc-200 bg-white hover:border-[#ff5a36]/40",
+                        ? "border-red-800/40 bg-orange-50"
+                        : "border-zinc-200 bg-white hover:border-red-800/40",
                     )}
                   >
                     <span className="sr-only">Step {index + 1}: </span>

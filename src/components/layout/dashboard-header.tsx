@@ -54,6 +54,10 @@ export default function DashboardHeader() {
 
   const handleSignOut = async () => {
     try {
+      if (!auth) {
+        throw new Error("Firebase Auth is not initialized.");
+      }
+
       await signOut(auth);
       localStorage.removeItem("userRole");
       router.push("/");

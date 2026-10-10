@@ -2,6 +2,25 @@ import { createHmac, createHash, timingSafeEqual } from "crypto";
 
 export const PAYMENT_SESSION_COOKIE_NAME = "cyborg_payment_session";
 
+export function getPaymentSessionCookieName(orderId: string): string {
+  return `${PAYMENT_SESSION_COOKIE_NAME}_${orderId}`;
+}
+
+export function getPaymentSessionCookieValue(
+  cookieHeader: string | null | undefined,
+  orderId: string | null | undefined,
+): string | null {
+  if (orderId) {
+    const orderCookie = getCookieValue(
+      cookieHeader,
+      getPaymentSessionCookieName(orderId),
+    );
+    if (orderCookie) return orderCookie;
+  }
+
+  return getCookieValue(cookieHeader, PAYMENT_SESSION_COOKIE_NAME);
+}
+
 export interface PaymentSessionBindingPayload {
   orderId: string;
   customerId: string;
@@ -166,4 +185,3 @@ export function getCookieValue(
 
   return null;
 }
-

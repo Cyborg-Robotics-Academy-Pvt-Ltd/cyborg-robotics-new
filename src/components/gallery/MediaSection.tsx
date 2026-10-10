@@ -175,6 +175,10 @@ const MediaSection = () => {
         upload_preset: "cyborg_robotics",
       };
 
+      if (!auth) {
+        throw new Error("Authentication is not ready. Please try again.");
+      }
+
       const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error("You must be logged in to upload files");

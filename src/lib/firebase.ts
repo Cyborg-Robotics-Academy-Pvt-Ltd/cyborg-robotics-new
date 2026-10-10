@@ -1,10 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import {
-  browserLocalPersistence,
-  getAuth,
-  setPersistence,
-} from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,14 +18,18 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialize Firestore
 const db = getFirestore(app);
 
-// Initialize Auth synchronously so auth state listeners can attach on first render.
-const auth = getAuth(app);
+// Initialize Auth only on the client side
+let auth: Auth | null = null;
 let analytics = null;
 
 if (typeof window !== 'undefined') {
-  // Enable persistent auth state before auth listeners restore the session.
-  setPersistence(auth, browserLocalPersistence).catch(err => {
-    console.error('Failed to set auth persistence:', err);
+  // Import auth-related modules only on client side
+  import('firebase/auth').then(({ getAuth, setPersistence, browserLocalPersistence }) => {
+    auth = getAuth(app);
+    // Enable persistent auth state
+    setPersistence(auth, browserLocalPersistence).catch(err => {
+      console.error('Failed to set auth persistence:', err);
+    });
   });
 
   // Import analytics only on client side

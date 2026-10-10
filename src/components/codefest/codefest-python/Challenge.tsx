@@ -34,8 +34,8 @@ const TRACKS = [
 export default function Challenge() {
   return (
     <section
-      id="challenge"
-      className="relative py-24 overflow-hidden bg-cover bg-center bg-no-repeat"
+      id="categories"
+      className="relative scroll-mt-24 py-24 overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/assets/codefest/challenge-bg.png')" }}
     >
       <div className="relative flex flex-col items-center px-6">

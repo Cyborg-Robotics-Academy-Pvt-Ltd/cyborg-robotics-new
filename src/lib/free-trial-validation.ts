@@ -1,16 +1,7 @@
-    export const VALID_TRIAL_TIMES = [
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "19:00",
-];
+    import type { TrialMode } from "@/lib/trial-location";
+    import { getDefaultTrialSlots, isValidTrialDate, isValidTrialTime } from "@/lib/trial-availability";
 
-    export const MAX_BOOKINGS_PER_SLOT = 3;
+        export const MAX_BOOKINGS_PER_SLOT = 3;
 
     export function getTrimmedString(value: unknown) {
     return typeof value === "string" ? value.trim() : "";
@@ -97,25 +88,94 @@
     | { ok: true; data: SlotFields }
     | { ok: false; message: string };
 
-    // Validates trialDate/trialTime. Only called when the client actually sent
+    export type ManualTrialRequestResult =
+      | { ok: true; remark: string | null }
+      | { ok: false; message: string };
+
+    export function validateManualTrialRequest(
+      body: Record<string, unknown>,
+    ): ManualTrialRequestResult {
+      const dateValue = body.requestedTrialDate;
+      const timeValue = body.requestedTrialTime;
+      const hasDate = typeof dateValue === "string" && dateValue.trim().length > 0;
+      const hasTime = typeof timeValue === "string" && timeValue.trim().length > 0;
+
+      const hasAnyInput =
+        (dateValue !== undefined &&
+          dateValue !== null &&
+          dateValue !== "") ||
+        (timeValue !== undefined &&
+          timeValue !== null &&
+          timeValue !== "");
+
+      if (!hasAnyInput) {
+        return { ok: true, remark: null };
+      }
+
+      if (!hasDate || !hasTime) {
+        return {
+          ok: false,
+          message: "Please enter both a preferred trial date and time.",
+        };
+      }
+
+      const date = getTrimmedString(dateValue);
+      const time = getTrimmedString(timeValue);
+      if (!isValidTrialDate(date) || !isValidTrialTime(time)) {
+        return {
+          ok: false,
+          message: "Please enter a valid preferred trial date and time.",
+        };
+      }
+
+      if (date < new Date().toISOString().slice(0, 10)) {
+        return {
+          ok: false,
+          message: "Preferred trial date cannot be in the past.",
+        };
+      }
+
+      return {
+        ok: true,
+        remark: `Requested trial schedule: ${date} at ${time}.`,
+      };
+    }
+
+        // Validates trialDate/trialTime. Only called when the client actually sent
     // a slot (step 2) — step 1's "incomplete" lead has no slot yet.
    export function validateSlotFields(
   body: Record<string, unknown>,
-): SlotValidationResult {
+     trialMode: TrialMode,
+     configuredSlots?: string[],
+   ): SlotValidationResult {
   const date = getTrimmedString(body.trialDate);
   const time = getTrimmedString(body.trialTime);
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  if (!isValidTrialDate(date)) {
     return {
       ok: false,
       message: "Invalid trial date format.",
     };
   }
 
-  if (!VALID_TRIAL_TIMES.includes(time)) {
+  if (!isValidTrialTime(time)) {
     return {
       ok: false,
       message: "Invalid trial time slot.",
+    };
+  }
+
+  const permittedSlots =
+    configuredSlots ?? getDefaultTrialSlots(trialMode, date);
+  if (!permittedSlots.includes(time)) {
+    return {
+      ok: false,
+      message:
+        configuredSlots === undefined
+          ? trialMode === "offline"
+            ? "Offline trials are only available on Saturdays and Sundays."
+            : "No online trial times are available on this date."
+          : "That trial time is not available on the selected date.",
     };
   }
 

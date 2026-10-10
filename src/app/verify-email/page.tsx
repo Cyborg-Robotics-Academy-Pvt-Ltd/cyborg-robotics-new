@@ -34,6 +34,11 @@ const VerifyEmailContent = () => {
   // Check email verification status
   useEffect(() => {
     if (!email) return;
+    if (!auth) {
+      setError("Authentication is not ready. Please try again.");
+      setIsLoading(false);
+      return;
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -65,6 +70,12 @@ const VerifyEmailContent = () => {
   const handleCheckVerification = async () => {
     setIsLoading(true);
     setError("");
+
+    if (!auth) {
+      setError("Authentication is not ready. Please try again.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const user = auth.currentUser;

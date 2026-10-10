@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
@@ -13,15 +12,6 @@ declare global {
     loadPyodide: any;
   }
 }
-
-const NAV_LINKS = [
-  { label: "About", href: "#about" },
-  { label: "Categories", href: "#categories" },
-  { label: "Scoring", href: "#scoring" },
-  { label: "Timeline", href: "#timeline" },
-  { label: "Rewards", href: "#rewards" },
-  { label: "FAQ", href: "#faq" },
-];
 
 const BADGES = [
   { label: "CodeFest 2.O Python Edition", variant: "solid" as const },
@@ -482,144 +472,13 @@ function PythonPlayground() {
   );
 }
 
-/* ---------------- Navbar ---------------- */
-
-function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 8);
-    }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  return (
-    <header
-      className={`sticky top-3 z-50 mx-auto max-w-[1400px] rounded-2xl border bg-white/90 backdrop-blur-xl transition-all duration-300 ${
-        scrolled
-          ? "border-gray-200/90 shadow-[0_14px_45px_-24px_rgba(15,23,42,0.35)]"
-          : "border-gray-200/70 shadow-[0_8px_30px_-25px_rgba(15,23,42,0.28)]"
-      }`}
-    >
-      <nav className="flex items-center justify-between px-4 py-3.5 sm:px-5 lg:px-7">
-        <Link href="#" className="flex items-center gap-2.5">
-          <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#b91c1c] via-[#dc2626] to-[#f97316] text-lg shadow-[0_8px_20px_-8px_rgba(220,38,38,0.7)]">
-            🤖
-          </div>
-          <div className="leading-tight">
-            <p className="font-syne text-[15px] font-bold tracking-tight text-[#0B1220]">
-              Cyborg
-            </p>
-            <p className="text-[10px] font-medium tracking-wide text-[#64748B]">
-              Robotics Academy
-            </p>
-          </div>
-        </Link>
-
-        <ul className="hidden items-center gap-8 lg:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link.label}>
-              <Link
-                href={link.href}
-                className="relative py-2 text-[14px] font-semibold text-[#475569] transition hover:text-[#0F172A] after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:rounded-full after:bg-gradient-to-r after:from-[#dc2626] after:to-[#f97316] after:transition-all hover:after:w-full"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <div className="hidden lg:block">
-          <button
-            type="button"
-            onClick={openRegistration}
-            className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#b91c1c] to-[#dc2626] px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_-12px_rgba(185,28,28,0.8)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-12px_rgba(185,28,28,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#dc2626]"
-          >
-            Register now
-            <span className="transition-transform group-hover:translate-x-0.5">
-              →
-            </span>
-          </button>
-        </div>
-
-        <button
-          onClick={() => setOpen((o) => !o)}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white/80 text-[#0B1220] lg:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0855AB]"
-        >
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-            {open ? (
-              <path
-                d="M6 6l12 12M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M4 7h16M4 12h16M4 17h16"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
-        </button>
-      </nav>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden rounded-b-2xl border-t border-gray-200 bg-white/95 lg:hidden"
-          >
-            <ul className="flex flex-col gap-1 px-6 py-4">
-              {NAV_LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-lg px-2 py-2.5 text-[15px] font-medium text-[#3A4250] hover:bg-gray-50"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    openRegistration();
-                  }}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#A81B1E] px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Register now →
-                </button>
-              </li>
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
-
 /* ---------------- Hero ---------------- */
 
 function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="relative min-h-[calc(100vh-82px)] overflow-hidden bg-[#fbfcff] py-6 lg:py-0">
+    <section className="relative min-h-[calc(100vh-82px)] overflow-hidden bg-[#fbfcff]  lg:py-0">
       {/* soft decorative corner shapes — minimal, low opacity, brand-tinted */}
       <div
         className="pointer-events-none absolute -top-32 -right-40 h-[520px] w-[520px] rounded-full opacity-60 blur-3xl"
@@ -685,7 +544,7 @@ function HeroSection() {
             "linear-gradient(180deg, transparent, rgba(239,246,255,0.8))",
         }}
       />
-      <div className="relative mx-auto grid max-w-[1400px] gap-12 px-5 py-16 sm:px-8 md:py-20 lg:grid-cols-12 lg:items-center lg:gap-10 lg:px-10 lg:py-24 xl:gap-16">
+      <div className="relative mx-auto grid max-w-[1400px] gap-12 px-5 py-4 sm:px-8 md:py-20 lg:grid-cols-12 lg:items-center lg:gap-10 lg:px-10 lg:py-24 xl:gap-16">
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -773,7 +632,14 @@ function HeroSection() {
               </span>
             </button>
 
-            <button className="group flex h-[46px] items-center justify-center gap-2 rounded-full border border-[#0A1F44]/15 bg-white px-6 text-[13px] font-bold text-[#0A1F44] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#0A1F44]/30 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]">
+            <a
+              href="/assets/codefest/CODEFEST_SENIOR EDITION.pdf"
+              target="_blank"
+              rel="noreferrer"
+              download
+              className="group flex h-[46px] items-center justify-center gap-2 rounded-full border border-[#0A1F44]/15 bg-white px-6 text-[13px] font-bold text-[#0A1F44] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#0A1F44]/30 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+              aria-label="Download CodeFest rulebook PDF"
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -788,7 +654,7 @@ function HeroSection() {
                 />
               </svg>
               DOWNLOAD RULEBOOK
-            </button>
+            </a>
           </div>
         </motion.div>
 
@@ -803,13 +669,7 @@ function HeroSection() {
 /* ---------------- Page ---------------- */
 
 const page = () => {
-  return (
-    <main className="min-h-screen bg-white">
-      <Navbar />
-      <HeroSection />
-      {/* About / Categories / Scoring / Timeline / Rewards / FAQ sections go here */}
-    </main>
-  );
+  return <HeroSection />;
 };
 
 export default HeroSection;

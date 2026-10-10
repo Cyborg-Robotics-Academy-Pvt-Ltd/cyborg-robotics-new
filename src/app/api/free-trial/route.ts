@@ -18,9 +18,11 @@ import {
   getTrimmedString,
   slotIdFor,
   validateCoreFields,
+  validateManualTrialRequest,
   validateSlotFields,
 } from "@/lib/free-trial-validation";
 import { getTrialModeFromCoordinates } from "@/lib/trial-location";
+import { getTrialAvailabilityOverride } from "@/lib/trial-availability-server";
 
 /* -------------------------------------------------------------------------- */
 /* SIMPLE SERVER CACHE                                                       */
@@ -444,6 +446,14 @@ export async function POST(req: Request) {
     /* ====================================================================== */
 
     if (!hasSlot) {
+      const manualScheduleResult = validateManualTrialRequest(body);
+      if (!manualScheduleResult.ok) {
+        return NextResponse.json(
+          { success: false, message: manualScheduleResult.message },
+          { status: 400 },
+        );
+      }
+
       const registrationRef =
         doc(
           collection(
@@ -482,7 +492,7 @@ export async function POST(req: Request) {
 
         assignedTo: null,
 
-        remark: "",
+        remark: manualScheduleResult.remark ?? "",
 
         source: "website",
 
@@ -559,8 +569,14 @@ export async function POST(req: Request) {
     /* STEP 2 - VALIDATE SLOT                                                 */
     /* ====================================================================== */
 
+    const submittedDate = getTrimmedString(body.trialDate);
+    const configuredSlots =
+      await getTrialAvailabilityOverride(
+        locationResult.trialMode,
+        submittedDate,
+      );
     const slotResult =
-      validateSlotFields(body);
+      validateSlotFields(body, locationResult.trialMode, configuredSlots);
 
     if (!slotResult.ok) {
       console.error(

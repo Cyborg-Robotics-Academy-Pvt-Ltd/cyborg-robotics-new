@@ -43,6 +43,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { getDefaultTrialSlots } from "@/lib/trial-availability";
+import type { TrialAvailabilityOverrides } from "@/lib/trial-availability";
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
@@ -103,8 +105,8 @@ const LOCATIONS: TrialLocation[] = [
     address: "Kalyani Nagar, Pune, Maharashtra",
     lat: 18.5486,
     lng: 73.9027,
-    offlineSlots: ["10:00", "11:00", "14:00", "16:00"],
-    offlineDaysClosed: [0],
+    offlineSlots: ["10:00", "18:00"],
+    offlineDaysClosed: [],
   },
   {
     id: "kharadi",
@@ -113,8 +115,8 @@ const LOCATIONS: TrialLocation[] = [
     address: "Kharadi, Pune, Maharashtra",
     lat: 18.5511,
     lng: 73.9477,
-    offlineSlots: ["11:00", "13:00", "15:00", "17:00"],
-    offlineDaysClosed: [0],
+    offlineSlots: ["10:00", "18:00"],
+    offlineDaysClosed: [],
   },
   {
     id: "magarpatta",
@@ -123,8 +125,8 @@ const LOCATIONS: TrialLocation[] = [
     address: "Magarpatta, Pune, Maharashtra",
     lat: 18.5134,
     lng: 73.927,
-    offlineSlots: ["10:00", "12:00", "15:00", "17:00"],
-    offlineDaysClosed: [0],
+    offlineSlots: ["10:00", "18:00"],
+    offlineDaysClosed: [],
   },
 ];
 
@@ -270,6 +272,14 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [isManualSchedule, setIsManualSchedule] = useState(false);
+  const [requestedTrialDate, setRequestedTrialDate] = useState("");
+  const [requestedTrialTime, setRequestedTrialTime] = useState("");
+  const [visibleMonth, setVisibleMonth] = useState(getMinBookableDate);
+  const [availabilityOverrides, setAvailabilityOverrides] =
+    useState<TrialAvailabilityOverrides>({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
   const reelVideoRef = useRef<HTMLVideoElement>(null);
   const [reelDuration, setReelDuration] = useState(0);
   const [reelCurrentTime, setReelCurrentTime] = useState(0);
@@ -401,12 +411,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* ------------------------------------------------------------------------ */
 
   const activeSlots = useMemo(() => {
-    if (trial === "online") {
-      return ONLINE_CONFIG.slots;
-    }
-
-    return selectedLocation?.offlineSlots ?? [];
-  }, [trial, selectedLocation]);
+    if (!selectedDate) return [];
+    const dateKey = toLocalISODate(selectedDate);
+    const configuredSlots = availabilityOverrides[dateKey];
+    return configuredSlots ?? getDefaultTrialSlots(trial, dateKey);
+  }, [trial, selectedDate, availabilityOverrides]);
 
   const activeDaysClosed = useMemo(() => {
     if (trial === "online") {
@@ -445,6 +454,9 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     setSelectedDate(undefined);
     setSelectedTime(null);
+    setIsManualSchedule(false);
+    setRequestedTrialDate("");
+    setRequestedTrialTime("");
 
     setTrial("online");
     setLocationId(null);
@@ -469,11 +481,18 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* RESET ONLY SCHEDULE / STEP                                               */
   /* ------------------------------------------------------------------------ */
 
-  const resetScheduleState = () => {
-    setStep(1);
+  const clearSelectedSchedule = () => {
     setSelectedDate(undefined);
     setSelectedTime(null);
+    setIsManualSchedule(false);
+    setRequestedTrialDate("");
+    setRequestedTrialTime("");
     setNotice(null);
+  };
+
+  const resetScheduleState = () => {
+    setStep(1);
+    clearSelectedSchedule();
     setFieldErrors({});
   };
 
@@ -493,8 +512,77 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       return true;
     }
 
-    return activeDaysClosed.includes(normalized.getDay());
+    const dateKey = toLocalISODate(normalized);
+    const configuredSlots = availabilityOverrides[dateKey];
+    if (configuredSlots !== undefined) {
+      return configuredSlots.length === 0;
+    }
+
+    const dayOfWeek = normalized.getDay();
+
+    if (trial === "offline" && dayOfWeek !== 0 && dayOfWeek !== 6) {
+      return true;
+    }
+
+    return activeDaysClosed.includes(dayOfWeek);
   };
+
+  useEffect(() => {
+    const year = visibleMonth.getFullYear();
+    const month = visibleMonth.getMonth();
+    const from = toLocalISODate(new Date(year, month, 1));
+    const to = toLocalISODate(new Date(year, month + 1, 0));
+    let active = true;
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+
+    fetch(`/api/free-trial/availability?mode=${trial}&from=${from}&to=${to}`)
+      .then(async (response) => {
+        const result = (await response.json()) as {
+          success: boolean;
+          availability?: TrialAvailabilityOverrides;
+          message?: string;
+        };
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message || "Unable to load trial availability.",
+          );
+        }
+        if (active) setAvailabilityOverrides(result.availability ?? {});
+      })
+      .catch((availabilityError: unknown) => {
+        console.error("Unable to load trial availability:", availabilityError);
+        if (active) {
+          setAvailabilityOverrides({});
+          setAvailabilityError(
+            availabilityError instanceof Error
+              ? availabilityError.message
+              : "Unable to load trial availability.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setAvailabilityLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [trial, visibleMonth]);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    if (isDateDisabledForMode(selectedDate)) {
+      clearSelectedSchedule();
+    }
+  }, [selectedDate, trial, locationId, selectedLocation]);
+
+  useEffect(() => {
+    if (selectedTime && !activeSlots.includes(selectedTime)) {
+      setSelectedTime(null);
+    }
+  }, [selectedTime, activeSlots]);
 
   /* ------------------------------------------------------------------------ */
   /* AUTO OPEN                                                                */
@@ -636,6 +724,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       const nearest = findNearestLocation(lat, lng, LOCATIONS);
 
       if (!nearest) {
+        clearSelectedSchedule();
         setTrial("online");
         setLocationId(null);
         setLocationVerified(true);
@@ -646,6 +735,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       const distance = nearest.distanceKm;
 
       if (distance <= MAX_OFFLINE_DISTANCE_KM) {
+        clearSelectedSchedule();
         setTrial("offline");
         setLocationId(nearest.location.id);
         setLocationVerified(true);
@@ -654,6 +744,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
           "Trial class will be conducted at our headquarters in Kalyani Nagar, Pune.",
         );
       } else {
+        clearSelectedSchedule();
         setTrial("online");
         setLocationId(null);
         setLocationVerified(true);
@@ -691,6 +782,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setLocationVerified(false);
     setLocationMessage("");
 
+    clearSelectedSchedule();
     setTrial("online");
     setLocationId(null);
 
@@ -791,6 +883,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     status: "incomplete" | "booked";
     trialDate: string | null;
     trialTime: string | null;
+    requestedTrialDate?: string;
+    requestedTrialTime?: string;
   }) => ({
     studentName: form.studentName.trim(),
     age: Number(form.age),
@@ -815,6 +909,12 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     trialDate: options.trialDate,
     trialTime: options.trialTime,
+    ...(options.requestedTrialDate && options.requestedTrialTime
+      ? {
+          requestedTrialDate: options.requestedTrialDate,
+          requestedTrialTime: options.requestedTrialTime,
+        }
+      : {}),
 
     status: options.status,
 
@@ -859,7 +959,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     // Everyone — offline (either HQ preference) or online — proceeds to
     // step 2 to pick a date/time slot.
-    const skipTimeSlot = false;
+    const skipTimeSlot =
+      trial === "offline" && preferredCenter === "unable-to-visit-hq";
 
     setSavingLead(true);
     setNotice(null);
@@ -985,7 +1086,15 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!selectedDate) {
+    if (isManualSchedule && (!requestedTrialDate || !requestedTrialTime)) {
+      setNotice({
+        type: "error",
+        message: "Please enter both a preferred trial date and time.",
+      });
+      return;
+    }
+
+    if (!isManualSchedule && !selectedDate) {
       setNotice({
         type: "error",
         message: "Please select a trial date.",
@@ -993,7 +1102,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       return;
     }
 
-    if (!selectedTime) {
+    if (!isManualSchedule && !selectedTime) {
       setNotice({
         type: "error",
         message: "Please select a trial time.",
@@ -1019,9 +1128,9 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       return;
     }
 
-    const trialDate = toLocalISODate(selectedDate);
+    const trialDate = selectedDate ? toLocalISODate(selectedDate) : null;
 
-    if (!trialDate) {
+    if (!isManualSchedule && !trialDate) {
       setNotice({
         type: "error",
         message: "Please select a valid trial date.",
@@ -1032,11 +1141,19 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setSubmitting(true);
     setNotice(null);
 
-    const payload = buildPayload({
-      status: "booked",
-      trialDate,
-      trialTime: selectedTime,
-    });
+    const payload = isManualSchedule
+      ? buildPayload({
+          status: "incomplete",
+          trialDate: null,
+          trialTime: null,
+          requestedTrialDate,
+          requestedTrialTime,
+        })
+      : buildPayload({
+          status: "booked",
+          trialDate,
+          trialTime: selectedTime,
+        });
 
     console.log("FINAL BOOKING PAYLOAD:", payload);
 
@@ -1062,6 +1179,9 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       setForm(initialForm);
       setSelectedDate(undefined);
       setSelectedTime(null);
+      setIsManualSchedule(false);
+      setRequestedTrialDate("");
+      setRequestedTrialTime("");
       setLeadId(null);
 
       setTrial("online");
@@ -1079,9 +1199,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
       setOpen(false);
       setSuccessMessage(
-        trial === "online"
-          ? "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292."
-          : "Your trial is booked successfully. ",
+        isManualSchedule
+          ? "Your preferred trial date and time have been saved. Our counsellor will contact you to confirm availability."
+          : trial === "online"
+            ? "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292."
+            : "Your trial is booked successfully. ",
       );
       setSuccessOpen(true);
     } catch (error) {
@@ -1169,18 +1291,20 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             <span className="h-1 w-1 rounded-full bg-red-600" />
             <span>Coding</span>
             <span className="h-1 w-1 rounded-full bg-red-600" />
-            <span>STEM | ages 4-25</span>
+            <span>STEM | ages 5-25</span>
           </div>
           <div className="flex min-w-0 flex-col">
             <h1 className="text-balance text-[clamp(2rem,4.2vw,3.5rem)] font-black uppercase leading-[1.05] tracking-tight text-neutral-950 motion-safe:animate-fadeUp">
               Where Curiosity{" "}
               <span className="relative inline-block whitespace-nowrap">
-                <span className="text-[#E8401C]">Becomes Creation</span>
+                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+                  Becomes Creation
+                </span>
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 200 12"
                   preserveAspectRatio="none"
-                  className="absolute -bottom-1.5 left-0 h-2 w-full text-[#E8401C]/70"
+                  className="absolute -bottom-1.5 left-0 h-2 w-full text-red-800"
                 >
                   <path
                     d="M2 8 Q 50 1, 100 6 T 198 5"
@@ -1194,7 +1318,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             </h1>
 
             <p
-              className="mt-5 mb-6 max-w-md text-pretty text-base leading-relaxed text-neutral-700 motion-safe:animate-fadeUp lg:text-lg"
+              className="mt-5 mb-2 max-w-md text-pretty text-base leading-relaxed text-neutral-700 motion-safe:animate-fadeUp lg:text-lg"
               style={{ animationDelay: "120ms" }}
             >
               Hands-on robotics and coding programs designed to help children{" "}
@@ -1204,37 +1328,27 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               and create, online and offline.
             </p>
           </div>
-
-          <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:flex sm:gap-0 sm:divide-x sm:divide-gray-200">
-            {STATS.map((stat) => (
-              <div
-                key={stat.label}
-                className="flex items-center gap-3 sm:px-5 sm:first:pl-0 sm:last:pr-0"
-              >
-                <span
-                  aria-hidden="true"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600"
-                >
-                  <stat.icon className="h-5 w-5" />
-                </span>
-
-                <div className="flex flex-col-reverse gap-1">
-                  <dt className="max-w-[120px] text-xs leading-tight text-gray-600 lg:text-sm">
-                    {stat.label}
-                  </dt>
-                  <dd className="text-xl font-bold leading-none tabular-nums text-gray-900 lg:text-2xl">
-                    {stat.value}
-                  </dd>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p
+            className="mt-2 mb-6 max-w-md text-pretty text-base leading-relaxed text-neutral-700 motion-safe:animate-fadeUp lg:text-lg"
+            style={{ animationDelay: "120ms" }}
+          >
+            <strong className="font-semibold text-neutral-950">
+              {" "}
+              Robotics | Coding | Electronics | 3D Printing | Python | Drones |
+              AWS{" "}
+            </strong>{" "}
+            | + More —{" "}
+            <strong className="font-semibold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              {" "}
+              Everything under one roof.{" "}
+            </strong>{" "}
+          </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Primary CTA */}
             <button
               type="button"
-              className="group inline-flex h-[52px] items-center justify-center gap-2.5 rounded-lg bg-[#e8431f]  px-7 text-base font-bold text-white shadow-[0_8px_24px_-6px_#ED1C24] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-6px_#ED1C24] lg:text-md"
+              className="group inline-flex h-[52px] items-center justify-center gap-2.5 rounded-lg bg-red-700  px-7 text-base font-bold text-white shadow-[0_8px_24px_-6px_#ED1C24] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-6px_#ED1C24] lg:text-md"
               onClick={() => {
                 resetScheduleState();
                 setOpen(true);
@@ -1268,7 +1382,6 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               />
             </button>
           </div>
-
           <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 lg:text-sm">
             <Lock size={13} className="text-red-600" />
             <span>
@@ -1862,67 +1975,133 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
                 {/* CALENDAR + SLOTS */}
 
-                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
-                  <div className="flex justify-center rounded-xl border border-gray-200 p-2">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        if (!date || Number.isNaN(date.getTime())) {
-                          setSelectedDate(undefined);
-                          setSelectedTime(null);
-                          return;
+                {isManualSchedule ? (
+                  <div className="grid gap-3 rounded-xl border border-gray-200 p-4 sm:grid-cols-2">
+                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                      Preferred date
+                      <Input
+                        type="date"
+                        min={toLocalISODate(minBookableDate)}
+                        value={requestedTrialDate}
+                        onChange={(event) =>
+                          setRequestedTrialDate(event.target.value)
                         }
-
-                        setSelectedDate(date);
-                        setSelectedTime(null);
+                        required
+                      />
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                      Preferred time
+                      <Input
+                        type="time"
+                        value={requestedTrialTime}
+                        onChange={(event) =>
+                          setRequestedTrialTime(event.target.value)
+                        }
+                        required
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 sm:col-span-2">
+                      This is a preferred schedule request, not a confirmed
+                      booking. Our counsellor will confirm availability.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsManualSchedule(false);
                         setNotice(null);
                       }}
-                      disabled={isDateDisabledForMode}
-                      defaultMonth={minBookableDate}
-                      className="rounded-md"
-                    />
+                      className="sm:col-span-2"
+                    >
+                      Choose an available slot instead
+                    </Button>
                   </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
+                    <div className="flex justify-center rounded-xl border border-gray-200 p-2">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => {
+                          if (!date || Number.isNaN(date.getTime())) {
+                            setSelectedDate(undefined);
+                            setSelectedTime(null);
+                            return;
+                          }
 
-                  <div className="grid gap-2">
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                      <Clock3 className="h-3.5 w-3.5 text-red-700" />
-                      Select time
-                    </span>
+                          setSelectedDate(date);
+                          setSelectedTime(null);
+                          setNotice(null);
+                        }}
+                        disabled={(date) =>
+                          availabilityLoading ||
+                          Boolean(availabilityError) ||
+                          isDateDisabledForMode(date)
+                        }
+                        defaultMonth={minBookableDate}
+                        onMonthChange={setVisibleMonth}
+                        className="rounded-md"
+                      />
+                    </div>
 
-                    {selectedDate ? (
-                      activeSlots.length ? (
-                        <div className="flex flex-wrap gap-2">
-                          {activeSlots.map((time) => (
-                            <button
-                              key={time}
-                              type="button"
-                              onClick={() => {
-                                setSelectedTime(time);
-                                setNotice(null);
-                              }}
-                              className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                                selectedTime === time
-                                  ? "border-red-700 bg-red-700 text-white"
-                                  : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50"
-                              }`}
-                            >
-                              {time}
-                            </button>
-                          ))}
-                        </div>
+                    <div className="grid gap-2">
+                      {availabilityError && (
+                        <p role="alert" className="text-sm text-red-700">
+                          {availabilityError}
+                        </p>
+                      )}
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                        <Clock3 className="h-3.5 w-3.5 text-red-700" />
+                        Select time
+                      </span>
+
+                      {selectedDate ? (
+                        activeSlots.length ? (
+                          <div className="flex flex-wrap gap-2">
+                            {activeSlots.map((time) => (
+                              <button
+                                key={time}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedTime(time);
+                                  setNotice(null);
+                                }}
+                                className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                                  selectedTime === time
+                                    ? "border-red-700 bg-red-700 text-white"
+                                    : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50"
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400">
+                            No slots available for this mode.
+                          </p>
+                        )
                       ) : (
                         <p className="text-xs text-gray-400">
-                          No slots available for this mode.
+                          Pick a date to see available time slots.
                         </p>
-                      )
-                    ) : (
-                      <p className="text-xs text-gray-400">
-                        Pick a date to see available time slots.
-                      </p>
-                    )}
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsManualSchedule(true);
+                          setSelectedDate(undefined);
+                          setSelectedTime(null);
+                          setNotice(null);
+                        }}
+                        className="justify-self-start"
+                      >
+                        Other date &amp; time
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* NOTICE */}
 
@@ -1960,7 +2139,16 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
                   <Button
                     type="submit"
-                    disabled={submitting || !selectedDate || !selectedTime}
+                    disabled={
+                      submitting ||
+                      (!isManualSchedule &&
+                        (availabilityLoading ||
+                          Boolean(availabilityError) ||
+                          !selectedDate ||
+                          !selectedTime)) ||
+                      (isManualSchedule &&
+                        (!requestedTrialDate || !requestedTrialTime))
+                    }
                     className="h-12 flex-[2] rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
                   >
                     {submitting ? (
@@ -1968,6 +2156,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Saving...
                       </>
+                    ) : isManualSchedule ? (
+                      "Send preferred schedule"
                     ) : (
                       "Submit registration"
                     )}

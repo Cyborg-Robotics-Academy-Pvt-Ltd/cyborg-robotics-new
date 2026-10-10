@@ -303,7 +303,7 @@ export default function LearningJourney() {
                     className={cn(
                       "relative w-full overflow-hidden rounded-2xl border p-4 text-left",
                       "transition-[background-color,box-shadow,border-color,transform] duration-300",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17] focus-visible:ring-offset-2",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2",
                       isActive
                         ? cn(
                             "bg-white shadow-lg lg:translate-x-1.5",
@@ -388,7 +388,7 @@ export default function LearningJourney() {
             onPointerMove={onPanelPointerMove}
             className={cn(
               "group/panel relative min-h-[24rem] overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br p-8 shadow-xl transition-colors duration-500 sm:p-10",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d63a17]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800",
               t.panel,
               t.spot,
             )}

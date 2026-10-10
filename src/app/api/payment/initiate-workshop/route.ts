@@ -8,7 +8,7 @@ import {
   createPaymentSessionBinding,
   createPaymentSessionCookieValue,
   derivePaymentOwnerSeed,
-  PAYMENT_SESSION_COOKIE_NAME,
+  getPaymentSessionCookieName,
 } from "@/lib/payment-session-binding";
 
 const WORKSHOPS = {
@@ -215,7 +215,7 @@ export async function POST(req: Request) {
 
     const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
     if (cookieValue) {
-      response.cookies.set(PAYMENT_SESSION_COOKIE_NAME, cookieValue, {
+      response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, {
         httpOnly: true,
         sameSite: "none",
         secure: true,
@@ -233,7 +233,6 @@ export async function POST(req: Request) {
     );
   }
 }
-
 
 
 

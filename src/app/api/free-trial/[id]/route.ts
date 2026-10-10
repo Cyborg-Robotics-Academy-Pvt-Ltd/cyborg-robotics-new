@@ -16,12 +16,14 @@ import {
   getTrimmedString,
   slotIdFor,
   validateCoreFields,
+  validateManualTrialRequest,
   validateSlotFields,
 } from "@/lib/free-trial-validation";
 
 import {
   getTrialModeFromCoordinates,
 } from "@/lib/trial-location";
+import { getTrialAvailabilityOverride } from "@/lib/trial-availability-server";
 
 import { sendTrialBookingEmails } from "@/lib/mailer";
 
@@ -224,6 +226,14 @@ export async function PATCH(
     ===================================================== */
 
     if (!hasSlot) {
+      const manualScheduleResult = validateManualTrialRequest(body);
+      if (!manualScheduleResult.ok) {
+        return NextResponse.json(
+          { success: false, message: manualScheduleResult.message },
+          { status: 400 },
+        );
+      }
+
       await updateDoc(registrationRef, {
         ...core,
 
@@ -243,6 +253,10 @@ export async function PATCH(
 
         distanceFromCenterKm:
           locationResult.distanceKm,
+
+        ...(manualScheduleResult.remark !== null
+          ? { remark: manualScheduleResult.remark }
+          : {}),
 
         status: "incomplete",
 
@@ -286,8 +300,14 @@ export async function PATCH(
        STEP 2 - VALIDATE SLOT
     ===================================================== */
 
+    const submittedDate = getTrimmedString(body.trialDate);
+    const configuredSlots =
+      await getTrialAvailabilityOverride(
+        locationResult.trialMode,
+        submittedDate,
+      );
     const slotResult =
-      validateSlotFields(body);
+      validateSlotFields(body, locationResult.trialMode, configuredSlots);
 
     if (!slotResult.ok) {
       return NextResponse.json(

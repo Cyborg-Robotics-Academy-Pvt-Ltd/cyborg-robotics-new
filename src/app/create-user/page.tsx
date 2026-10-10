@@ -305,6 +305,10 @@ const CreateUser = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (!auth) {
+        router.push("/login");
+        return;
+      }
       const user = auth.currentUser;
       if (!user) {
         router.push("/login");
@@ -487,7 +491,7 @@ const CreateUser = () => {
         status: courseDetails[courseName]?.status || "ongoing",
       }));
 
-      const currentAdminUid = auth.currentUser?.uid;
+      const currentAdminUid = auth?.currentUser?.uid;
       if (!currentAdminUid) {
         setError("Admin session not found. Please log in again.");
         setEnrolling(false);

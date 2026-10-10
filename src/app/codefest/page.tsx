@@ -8,11 +8,11 @@ import {
   RegistrationForm,
 } from "@/components/codefest/codefest-maz/index";
 import CodefestLiveSection from "@/components/codefest/codefest-maz/CodefestLiveSection";
-import Header from "@/components/layout/header";
 
 import type { Metadata } from "next";
 import WinnerAnnouncement from "@/components/codefest/codefest-maz/WinnerAnnouncement";
 import HeroSection from "@/components/codefest/codefest-python/HeroSection";
+import CodefestNavbar from "@/components/codefest/codefest-python/Navbar";
 import About from "@/components/codefest/codefest-python/About";
 import Challenge from "@/components/codefest/codefest-python/Challenge";
 import Evaluation from "@/components/codefest/codefest-python/Evaluation";
@@ -22,7 +22,8 @@ import Winners from "@/components/codefest/codefest-python/Winners";
 import Footer from "@/components/codefest/codefest-python/Footer";
 
 export const metadata: Metadata = {
-  title: "Codefest 1.0 | Online Coding Competitions For Students",
+  title:
+    "CodeFest 2.O Python Edition | Online Coding Competitions For Students",
   description:
     "CodeFest 2026 registrations are closed. Results for the Pan-India online coding competition for school students will be declared soon.",
   keywords: [
@@ -41,8 +42,8 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main id="top" className="bg-[#f8f8f8] overflow-hidden">
-      <Header />
+    <main id="top" className="bg-[#f8f8f8] overflow-x-clip">
+      <CodefestNavbar />
       <HeroSection />
       <RegistrationForm showTrigger={false} />
       <About />

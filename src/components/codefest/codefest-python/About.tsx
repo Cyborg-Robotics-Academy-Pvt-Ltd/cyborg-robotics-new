@@ -23,7 +23,10 @@ const STEPS = [
 
 export default function About() {
   return (
-    <section id="about" className="bg-[#eef3fb] py-10 sm:py-10">
+    <section
+      id="about"
+      className="scroll-mt-24 bg-[#eef3fb] py-10 sm:py-10"
+    >
       <div className="flex justify-center px-6">
         <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-0">
           {/* Text column */}

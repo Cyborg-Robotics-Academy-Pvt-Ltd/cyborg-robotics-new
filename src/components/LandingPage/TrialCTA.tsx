@@ -29,7 +29,7 @@ export default function TrialCTA(): ReactElement {
     <section
       id="trial"
       aria-labelledby="trial-heading"
-      className="scroll-mt-28 bg-[#d9431f] py-20 text-white md:py-28"
+      className="scroll-mt-28 bg-red-900 py-20 text-white md:py-28"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:gap-16">
         {/* Left: message + CTA */}
@@ -49,28 +49,8 @@ export default function TrialCTA(): ReactElement {
             See how your child learns, and find the right path with confidence.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={`tel:${TRIAL_PHONE}`}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-7 py-4 text-base font-black text-[#b93820] transition hover:bg-orange-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
-            >
-              <Phone className="h-5 w-5" aria-hidden="true" />
-              Book my free trial
-            </a>
-
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/60 px-7 py-4 text-base font-bold transition hover:bg-white/10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
-            >
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              WhatsApp us
-            </a>
-          </div>
-
           <p className="mt-5 text-sm text-white/90">
-            Online &amp; Offline · Ages 4–18 · No prior experience needed
+            Online &amp; Offline · Ages 4–25 · No prior experience needed
           </p>
         </div>
 

@@ -118,6 +118,20 @@ const SignUpPage = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    if (!auth) {
+      toast.error("Authentication is not ready. Please try again.");
+      return;
+    }
+
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error("Sign-out error:", error);
+      toast.error("Failed to sign out. Please try again.");
+    }
+  };
+
   // Password strength indicator function
   const renderPasswordStrength = () => {
     const strengthConditions = [
@@ -399,6 +413,11 @@ const SignUpPage = () => {
     setIsSubmitting(true);
 
     try {
+      if (!auth) {
+        toast.error("Authentication is not ready. Please try again.");
+        return;
+      }
+
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -658,7 +677,7 @@ const SignUpPage = () => {
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button
                           variant="outline"
-                          onClick={() => auth.signOut()}
+                          onClick={handleSignOut}
                           className="w-full sm:w-auto border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300"
                         >
                           Sign Out
@@ -788,7 +807,7 @@ const SignUpPage = () => {
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button
                           variant="outline"
-                          onClick={() => auth.signOut()}
+                          onClick={handleSignOut}
                           className="w-full sm:w-auto border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300"
                         >
                           Sign Out
@@ -974,7 +993,7 @@ const SignUpPage = () => {
                         </Link>
                         <Button
                           variant="outline"
-                          onClick={() => auth.signOut()}
+                          onClick={handleSignOut}
                           className="w-full sm:w-auto border-red-600 text-red-600 hover:bg-red-50 font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-300"
                         >
                           Sign Out

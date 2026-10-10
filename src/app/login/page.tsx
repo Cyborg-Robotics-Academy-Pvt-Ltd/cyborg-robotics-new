@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { auth, db } from "@/lib/firebase";
+import { app, db } from "@/lib/firebase";
 import {
   setDoc,
   serverTimestamp,
@@ -190,7 +190,7 @@ const LoginPage = () => {
 
       // STEP 4: Firebase auth
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(getAuth(app), email, password);
       } catch (authError: unknown) {
         if (authError instanceof FirebaseError) {
           if (
