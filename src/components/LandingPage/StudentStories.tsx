@@ -204,6 +204,7 @@ function StoryCard({
             <Image
               src={poster}
               alt={posterAlt ?? `${title} at Cyborg Robotics Academy`}
+              quality={100}
               fill
               sizes="(min-width: 1180px) 380px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
               className="object-cover object-top transition-transform duration-500 motion-safe:group-hover:scale-105"
