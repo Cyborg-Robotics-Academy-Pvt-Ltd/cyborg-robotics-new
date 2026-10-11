@@ -97,13 +97,12 @@ export const InfiniteMovingCards = ({
             key={`${item.title}-${idx}`}
             className="flex-shrink-0 w-[220px] rounded-3xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
           >
-            <div className="overflow-hidden rounded-t-3xl h-48 bg-gray-100">
+            <div className="relative h-48 overflow-hidden rounded-t-3xl bg-gray-100">
               <Image
                 src={item.imageUrl}
                 alt={item.title}
-                width={220}
-                height={192}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 priority={idx < 3} // Only prioritize first 3
                 loading={idx < 3 ? "eager" : "lazy"}
                 quality={80}

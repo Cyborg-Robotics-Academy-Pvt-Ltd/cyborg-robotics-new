@@ -35,6 +35,10 @@ export default function TeamSection() {
 
             <a
               href="#trial"
+              onClick={(event) => {
+                event.preventDefault();
+                window.dispatchEvent(new CustomEvent("cyborg:open-trial-form"));
+              }}
               className="mt-6 inline-block rounded-lg border border-gray-600 px-6 py-3 font-bold"
             >
               Meet Cyborg Through a Trial

@@ -1,34 +1,11 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import {
-  Globe,
-  Flag,
-  Medal,
-  Trophy,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { Pause, Play, Trophy, type LucideIcon } from "lucide-react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/utils";
-
-interface Scope {
-  readonly id: string;
-  readonly label: string;
-  readonly icon: LucideIcon;
-}
-
-interface Achievement {
-  readonly id: string;
-  readonly label: string;
-  readonly icon: LucideIcon;
-}
-
-interface GalleryPhoto {
-  readonly src: string;
-  readonly alt: string;
-}
 
 const CONTENT = {
   kicker: "Beyond the classroom",
@@ -42,29 +19,42 @@ const COMPETITIONS = {
   title: "Competitions & Exposure",
   description:
     "Showcase verified Cyborg participation and achievements across robotics and coding competitions.",
-  events: ["WRO", "IRO", "FTC"],
-  scopes: [
-    { id: "national", label: "National Events", icon: Flag },
-    { id: "international", label: "International Events", icon: Globe },
-  ] as readonly Scope[],
+  events: [
+    {
+      id: "wro",
+      label: "World Robot Olympiad",
+      logo: "/assets/events/wro.png",
+      logoClass: "bg-white",
+    },
+    {
+      id: "iro",
+      label: "Indian Robotics Olympiad",
+      logo: "/assets/awards/IRO.png",
+      logoClass: "bg-white",
+    },
+    {
+      id: "ftc",
+      label: "FIRST Tech Challenge",
+      logo: "https://www.firstinspires.org/hubfs/web/design/first-web/Branding/Primaries/Logo%20Primary.svg",
+      logoClass: "bg-white",
+    },
+    {
+      id: "wsro",
+      label: "World Robotics Olympiad",
+      logo: "/assets/events/WSRO.png",
+      logoClass: "bg-white",
+    },
+    {
+      id: "robotex",
+      label: "Robotex",
+      logo: "/assets/events/Robotex.png",
+      logoClass: "bg-white",
+    },
+  ],
 } as const;
 
-const AWARDS = {
-  title: "Awards & Recognition",
-  description:
-    "Use actual certificates, trophies, student photographs and short achievement stories to demonstrate the journey.",
-  items: [
-    { id: "student", label: "Student Awards", icon: Medal },
-    { id: "team", label: "Team Achievements", icon: Users },
-    { id: "international", label: "International Exposure", icon: Globe },
-  ] as readonly Achievement[],
-} as const;
-
-/**
- * Add real certificate / trophy photos here. The gallery is hidden while empty.
- * e.g. { src: "/images/awards/wro-trophy.jpg", alt: "Team holding the WRO trophy" }
- */
-const GALLERY: readonly GalleryPhoto[] = [];
+const ACHIEVEMENT_REEL_URL =
+  "https://res.cloudinary.com/dqiarwxml/video/upload/v1791711510/IMG_6785_1_uk1nqk.mp4";
 
 export default function CompetitionsAwards() {
   const reduceMotion = useReducedMotion();
@@ -106,7 +96,7 @@ export default function CompetitionsAwards() {
           {/* Competitions */}
           <motion.article
             variants={item}
-            className="flex flex-col rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm sm:p-10"
+            className="flex flex-col rounded-3xl bg-white p-8 shadow-sm sm:p-10"
           >
             <CardHeading
               icon={Trophy}
@@ -114,94 +104,188 @@ export default function CompetitionsAwards() {
               description={COMPETITIONS.description}
             />
 
-            <ul role="list" className="mt-8 grid grid-cols-3 gap-3">
-              {COMPETITIONS.events.map((event) => (
-                <li
-                  key={event}
-                  className={cn(
-                    "group grid aspect-[4/3] place-items-center rounded-2xl border border-zinc-200 bg-zinc-50",
-                    "transition-[transform,background-color,border-color,box-shadow] duration-300",
-                    "hover:border-[#ff5a36]/40 hover:bg-orange-50 hover:shadow-md motion-safe:hover:-translate-y-1",
-                  )}
-                >
-                  <span className="text-2xl font-black tracking-tight text-zinc-500 transition-colors group-hover:text-[#d63a17] sm:text-3xl">
-                    {event}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <ul role="list" className="mt-6 flex flex-wrap gap-2">
-              {COMPETITIONS.scopes.map(({ id, label, icon: Icon }) => (
-                <li
-                  key={id}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#ff5a36]/25 bg-orange-50 px-4 py-2 text-sm font-semibold text-[#d63a17]"
-                >
-                  <Icon aria-hidden="true" className="size-4" />
-                  {label}
-                </li>
-              ))}
-            </ul>
-          </motion.article>
-
-          {/* Awards */}
-          <motion.article
-            variants={item}
-            className="flex flex-col rounded-3xl border border-zinc-200 bg-gradient-to-br from-white to-orange-50 p-8 shadow-sm sm:p-10"
-          >
-            <CardHeading
-              icon={Medal}
-              title={AWARDS.title}
-              description={AWARDS.description}
-            />
-
-            <ul role="list" className="mt-8 grid gap-3">
-              {AWARDS.items.map(({ id, label, icon: Icon }) => (
-                <li
-                  key={id}
-                  className={cn(
-                    "group flex items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-4",
-                    "transition-[transform,border-color,box-shadow] duration-300",
-                    "hover:border-[#ff5a36]/40 hover:shadow-md motion-safe:hover:translate-x-1",
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#ff5a36]/10 text-[#d63a17] transition-colors group-hover:bg-[#d63a17] group-hover:text-white"
-                  >
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="font-bold text-zinc-900">{label}</span>
-                </li>
-              ))}
-            </ul>
-
-            {GALLERY.length > 0 && (
-              <ul
-                role="list"
-                aria-label="Award and certificate photos"
-                className="mt-6 grid grid-cols-3 gap-3"
+            <div className="mt-8 overflow-hidden rounded-2xl bg-white p-2">
+              <motion.div
+                className="flex w-max items-center gap-3"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{
+                  repeat: Number.POSITIVE_INFINITY,
+                  duration: 24,
+                  ease: "linear",
+                }}
               >
-                {GALLERY.map((photo) => (
-                  <li
-                    key={photo.src}
-                    className="relative aspect-square overflow-hidden rounded-2xl border border-zinc-200 bg-orange-100"
-                  >
-                    <Image
-                      src={photo.src}
-                      alt={photo.alt}
-                      fill
-                      sizes="(min-width: 1024px) 160px, 30vw"
-                      className="object-cover transition-transform duration-500 motion-safe:hover:scale-105"
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
+                {[...COMPETITIONS.events, ...COMPETITIONS.events].map(
+                  ({ id, label, logo, logoClass }, index) => (
+                    <div
+                      key={`${id}-${index}`}
+                      className={cn(
+                        "group grid h-24 w-32 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white",
+                        "transition-[transform,background-color,box-shadow] duration-300",
+                        "hover:bg-orange-50 hover:shadow-md motion-safe:hover:-translate-y-1",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "grid size-full place-items-center rounded-xl p-3",
+                          logoClass,
+                        )}
+                      >
+                        <Image
+                          src={logo}
+                          alt={`${label} logo`}
+                          width={160}
+                          height={96}
+                          sizes="(min-width: 1024px) 160px, 30vw"
+                          className="max-h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </span>
+                    </div>
+                  ),
+                )}
+              </motion.div>
+            </div>
           </motion.article>
+
+          <motion.div
+            variants={item}
+            className="flex items-center justify-center"
+          >
+            <AchievementReel />
+          </motion.div>
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function AchievementReel() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [playbackError, setPlaybackError] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.play().catch(() => setIsPlaying(false));
+  }, []);
+
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(() => {
+        setIsPlaying(false);
+        setPlaybackError(true);
+      });
+    } else {
+      video.pause();
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = Math.floor(safeSeconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <div className="relative aspect-[9/16] h-[460px] max-w-full overflow-hidden rounded-2xl bg-black shadow-lg">
+      <video
+        ref={videoRef}
+        src={ACHIEVEMENT_REEL_URL}
+        className="absolute inset-0 size-full object-cover"
+        aria-label="Cyborg Robotics achievement reel"
+        muted
+        playsInline
+        loop
+        preload="metadata"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onTimeUpdate={(event) =>
+          setCurrentTime(event.currentTarget.currentTime)
+        }
+        onError={() => setPlaybackError(true)}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/40"
+      />
+
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 px-3 py-3 text-xs font-semibold text-white">
+        <span className="flex items-center gap-2">
+          <Image
+            src="/cyborglogo.png"
+            alt=""
+            width={28}
+            height={28}
+            className="size-7 rounded-full object-cover"
+          />
+          Cyborg Robotics
+        </span>
+        <span>{formatTime(duration - currentTime)}</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={togglePlayback}
+        aria-label={
+          isPlaying ? "Pause achievement reel" : "Play achievement reel"
+        }
+        className="absolute left-1/2 top-1/2 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/50 bg-black/40 text-white backdrop-blur-sm"
+      >
+        {isPlaying ? (
+          <Pause aria-hidden="true" className="size-5 fill-white" />
+        ) : (
+          <Play aria-hidden="true" className="size-5 fill-white" />
+        )}
+      </button>
+
+      <div className="absolute inset-x-3 bottom-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={togglePlayback}
+          aria-label={
+            isPlaying ? "Pause achievement reel" : "Play achievement reel"
+          }
+          className="text-white"
+        >
+          {isPlaying ? (
+            <Pause aria-hidden="true" className="size-4 fill-white" />
+          ) : (
+            <Play aria-hidden="true" className="size-4 fill-white" />
+          )}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={duration || 0}
+          step={0.1}
+          value={Math.min(currentTime, duration || 0)}
+          onChange={(event) => {
+            const video = videoRef.current;
+            if (!video) return;
+            video.currentTime = Number(event.currentTarget.value);
+          }}
+          aria-label="Seek through achievement reel"
+          className="h-1 min-w-0 flex-1 cursor-pointer accent-[#ff5a36]"
+        />
+      </div>
+
+      {playbackError && (
+        <p
+          role="alert"
+          className="absolute inset-x-3 bottom-10 rounded-lg bg-black/70 p-2 text-center text-xs text-white"
+        >
+          The reel could not be played.
+        </p>
+      )}
+    </div>
   );
 }
 

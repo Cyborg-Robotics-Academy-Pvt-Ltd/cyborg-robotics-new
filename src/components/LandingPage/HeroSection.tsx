@@ -599,6 +599,19 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     }
   }, [openRequest]);
 
+  useEffect(() => {
+    const handleOpenTrialForm = () => {
+      resetScheduleState();
+      setOpen(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.addEventListener("cyborg:open-trial-form", handleOpenTrialForm);
+    return () => {
+      window.removeEventListener("cyborg:open-trial-form", handleOpenTrialForm);
+    };
+  }, []);
+
   /* ------------------------------------------------------------------------ */
   /* HERO OBSERVER                                                            */
   /* ------------------------------------------------------------------------ */

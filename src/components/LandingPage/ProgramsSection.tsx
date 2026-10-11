@@ -218,6 +218,10 @@ export default function ProgramsSection() {
         <div className="mt-12 text-center lg:mt-16">
           <a
             href="#trial"
+            onClick={(event) => {
+              event.preventDefault();
+              window.dispatchEvent(new CustomEvent("cyborg:open-trial-form"));
+            }}
             className={cn(
               "group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-700 to-red-800 px-7 py-4 font-bold text-white",
               "shadow-lg shadow-[#ff5a36]/25 transition-shadow hover:shadow-xl hover:shadow-[#ff5a36]/35",

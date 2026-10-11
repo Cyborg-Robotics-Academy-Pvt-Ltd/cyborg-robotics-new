@@ -65,6 +65,7 @@ const ChartContainer = React.forwardRef<
             height="100%"
             minWidth={0}
             minHeight={0}
+            initialDimension={{ width: 500, height: 300 }}
           >
             {children}
           </RechartsPrimitive.ResponsiveContainer>

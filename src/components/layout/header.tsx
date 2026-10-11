@@ -543,6 +543,7 @@ export default function Header() {
               className={`w-auto transition-all duration-300 ${
                 isScrolled ? "h-8 sm:h-9" : "h-9 sm:h-10"
               }`}
+              style={{ width: "auto" }}
               priority
             />
           </Link>

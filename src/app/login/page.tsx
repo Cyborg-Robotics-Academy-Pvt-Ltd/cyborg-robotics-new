@@ -288,6 +288,7 @@ const LoginPage = () => {
                 width={200}
                 height={200}
                 className="relative z-10 mx-auto hover:scale-105 transition-transform duration-300"
+                style={{ height: "auto" }}
               />
             </Link>
           </motion.div>
@@ -304,6 +305,8 @@ const LoginPage = () => {
               width={450}
               height={450}
               className="mx-auto "
+              style={{ height: "auto" }}
+              loading="eager"
             />
           </motion.div>
 
@@ -340,6 +343,7 @@ const LoginPage = () => {
                     width={120}
                     height={120}
                     className="mx-auto"
+                    style={{ height: "auto" }}
                   />
                 </div>
               </CardHeader>
