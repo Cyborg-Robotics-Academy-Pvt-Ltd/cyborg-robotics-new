@@ -47,7 +47,7 @@ const COMPETITIONS = {
     {
       id: "robotex",
       label: "Robotex",
-      logo: "/assets/events/Robotex.png",
+      logo: "/assets/events/robotex.png",
       logoClass: "bg-white",
     },
   ],

@@ -29,7 +29,7 @@ const Home = () => {
         <HomePage />
       </div>
       <WhatsAppWidget />
-      <TawkWidget />
+
       <ScrollButton />
     </>
   );

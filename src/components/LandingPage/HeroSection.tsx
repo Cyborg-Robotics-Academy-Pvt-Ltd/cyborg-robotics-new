@@ -281,8 +281,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
   const reelVideoRef = useRef<HTMLVideoElement>(null);
+  const reelTimeRemainingRef = useRef<HTMLSpanElement>(null);
+  const reelProgressRef = useRef<HTMLDivElement>(null);
+  const reelProgressThumbRef = useRef<HTMLDivElement>(null);
+  const reelCurrentTimeRef = useRef(0);
   const [reelDuration, setReelDuration] = useState(0);
-  const [reelCurrentTime, setReelCurrentTime] = useState(0);
   useEffect(() => {
     const video = reelVideoRef.current;
     if (!video) return;
@@ -305,13 +308,30 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
   }, []);
   const [isReelPlaying, setIsReelPlaying] = useState(false);
-  const [reelProgress, setReelProgress] = useState(0);
   const formatTime = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
     const s = Math.floor(seconds);
     const m = Math.floor(s / 60);
     const remSec = s % 60;
     return `${m}:${remSec.toString().padStart(2, "0")}`;
+  };
+  const updateReelPosition = (video: HTMLVideoElement) => {
+    reelCurrentTimeRef.current = video.currentTime;
+    const progress = video.duration
+      ? (video.currentTime / video.duration) * 100
+      : 0;
+
+    if (reelTimeRemainingRef.current) {
+      reelTimeRemainingRef.current.textContent = formatTime(
+        video.duration - video.currentTime,
+      );
+    }
+    if (reelProgressRef.current) {
+      reelProgressRef.current.style.width = `${progress}%`;
+    }
+    if (reelProgressThumbRef.current) {
+      reelProgressThumbRef.current.style.left = `${progress}%`;
+    }
   };
   const handleReelSeek = (event: React.MouseEvent<HTMLDivElement>) => {
     const video = reelVideoRef.current;
@@ -325,7 +345,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     );
 
     video.currentTime = ratio * video.duration;
-    setReelProgress(ratio * 100);
+    updateReelPosition(video);
   };
   const toggleReelPlayback = () => {
     const video = reelVideoRef.current;
@@ -1416,13 +1436,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             preload="metadata"
             onClick={toggleReelPlayback}
             onLoadedMetadata={(e) => setReelDuration(e.currentTarget.duration)}
-            onTimeUpdate={(e) => {
-              const video = e.currentTarget;
-              setReelCurrentTime(video.currentTime);
-              if (video.duration) {
-                setReelProgress((video.currentTime / video.duration) * 100);
-              }
-            }}
+            onTimeUpdate={(e) => updateReelPosition(e.currentTarget)}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/50" />
@@ -1443,7 +1457,9 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               </span>
             </div>
             <span className="text-sm font-medium text-white/90 bg-red-800 p-1 rounded-xl">
-              {formatTime(reelDuration - reelCurrentTime)}
+              <span ref={reelTimeRemainingRef}>
+                {formatTime(reelDuration - reelCurrentTimeRef.current)}
+              </span>
             </span>
           </div>
 
@@ -1509,12 +1525,14 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             >
               <div className="pointer-events-none absolute inset-y-0 my-auto h-[3px] w-full rounded-full bg-white/30" />
               <div
+                ref={reelProgressRef}
                 className="pointer-events-none absolute inset-y-0 my-auto h-[3px] rounded-full bg-red-600"
-                style={{ width: `${reelProgress}%` }}
+                style={{ width: "0%" }}
               />
               <div
+                ref={reelProgressThumbRef}
                 className="pointer-events-none absolute top-1/2 h-[10px] w-[10px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600 shadow transition-opacity opacity-0 group-hover/bar:opacity-100"
-                style={{ left: `${reelProgress}%` }}
+                style={{ left: "0%" }}
               />
             </div>
           </div>

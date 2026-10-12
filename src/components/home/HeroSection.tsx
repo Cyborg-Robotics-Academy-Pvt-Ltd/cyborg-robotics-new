@@ -1,6 +1,5 @@
 "use client";
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -36,22 +35,33 @@ const heroStats = [
 ];
 
 const Carousel = () => {
+  const [loadVideo, setLoadVideo] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setLoadVideo(true), 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <section className="relative w-full overflow-visible -mt-8 md:-mt-14 lg:-mt-8">
       <div className="relative h-[300px] w-full sm:h-[400px] md:h-[500px] lg:h-[700px] xl:h-[640px] 2xl:h-[920px]">
         {/* <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_38%,rgba(185,28,28,0.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(249,115,22,0.16),transparent_22%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.68))]" />
         <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:38px_38px]" /> */}
         <video
-          autoPlay
+          autoPlay={loadVideo}
           loop
           muted
           playsInline
+          preload={loadVideo ? "auto" : "none"}
+          poster="https://res.cloudinary.com/dz8enfjtx/video/upload/so_0/v1759653436/cyborg_1_nspmur.jpg"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         >
-          <source
-            src="https://res.cloudinary.com/dz8enfjtx/video/upload/v1759653436/cyborg_1_nspmur.mp4"
-            type="video/mp4"
-          />
+          {loadVideo && (
+            <source
+              src="https://res.cloudinary.com/dz8enfjtx/video/upload/v1759653436/cyborg_1_nspmur.mp4"
+              type="video/mp4"
+            />
+          )}
           Your browser does not support the video tag.
         </video>
 
