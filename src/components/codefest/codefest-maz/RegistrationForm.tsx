@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
+  CalendarDays,
   GraduationCap,
   Laptop,
   Mail,
@@ -47,9 +48,9 @@ const textFields = [
     type: "text",
   },
   {
-    id: "gradeClass",
-    label: "Grade / Class",
-    placeholder: "Enter grade or class",
+    id: "institutionName",
+    label: "Institution Name",
+    placeholder: "Enter your college name",
     icon: GraduationCap,
     type: "text",
   },
@@ -61,11 +62,11 @@ const textFields = [
     type: "text",
   },
   {
-    id: "parentGuardianName",
-    label: "Parent / Guardian Name",
-    placeholder: "Enter parent or guardian name",
-    icon: User,
-    type: "text",
+    id: "dateOfBirth",
+    label: "Date of Birth",
+    placeholder: "",
+    icon: CalendarDays,
+    type: "date",
   },
   {
     id: "emailAddress",
@@ -76,8 +77,8 @@ const textFields = [
   },
   {
     id: "parentGuardianContactNumber",
-    label: "Parent / Guardian Contact Number",
-    placeholder: "Enter 10-digit number",
+    label: "Primary No (WhatsApp Number)",
+    placeholder: "Enter primary WhatsApp number",
     icon: Phone,
     type: "tel",
   },
@@ -101,14 +102,36 @@ const textareaClassName =
 
 const initialFormData: CodefestRegistrationFormData = {
   fullName: "",
-  gradeClass: "",
+  institutionName: "",
   cityState: "",
   fullResidentialAddress: "",
-  parentGuardianName: "",
+  dateOfBirth: "",
   emailAddress: "",
   parentGuardianContactNumber: "",
   emergencyContactNumber: "",
   agreedToTerms: false,
+};
+
+const getAge = (dateOfBirth: string) => {
+  if (!dateOfBirth) return null;
+
+  const [year, month, day] = dateOfBirth.split("-").map(Number);
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  const birthdayHasNotOccurred =
+    today.getMonth() + 1 < month ||
+    (today.getMonth() + 1 === month && today.getDate() < day);
+
+  if (birthdayHasNotOccurred) age -= 1;
+  return age >= 0 ? age : null;
+};
+
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 interface RegistrationFormProps {
@@ -498,6 +521,7 @@ export default function RegistrationForm({
                           id={id}
                           name={id}
                           type={type}
+                          max={id === "dateOfBirth" ? getTodayDate() : undefined}
                           placeholder={placeholder}
                           value={
                             formData[
@@ -521,6 +545,14 @@ export default function RegistrationForm({
                         <p className="error-badge text-xs text-red-600 font-medium">
                           ✗{" "}
                           {formErrors[id as keyof CodefestRegistrationFormData]}
+                        </p>
+                      )}
+                      {id === "dateOfBirth" && formData.dateOfBirth && (
+                        <p className="text-xs font-medium text-gray-600">
+                          Age: {getAge(formData.dateOfBirth) ?? "—"}
+                          {getAge(formData.dateOfBirth) === null
+                            ? ""
+                            : " years"}
                         </p>
                       )}
                     </div>

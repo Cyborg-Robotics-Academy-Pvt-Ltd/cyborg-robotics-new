@@ -1,9 +1,9 @@
 export interface CodefestRegistrationFormData {
   fullName: string;
-  gradeClass: string;
+  institutionName: string;
+  dateOfBirth: string;
   cityState: string;
   fullResidentialAddress: string;
-  parentGuardianName: string;
   emailAddress: string;
   parentGuardianContactNumber: string;
   emergencyContactNumber?: string;
@@ -44,12 +44,10 @@ export function normalizeCodefestRegistrationForm(
 ): CodefestRegistrationFormData {
   return {
     fullName: formData.fullName.replace(/\s+/g, " ").trim(),
-    gradeClass: formData.gradeClass.replace(/\s+/g, " ").trim(),
+    institutionName: formData.institutionName.replace(/\s+/g, " ").trim(),
+    dateOfBirth: formData.dateOfBirth.trim(),
     cityState: formData.cityState.replace(/\s+/g, " ").trim(),
     fullResidentialAddress: formData.fullResidentialAddress
-      .replace(/\s+/g, " ")
-      .trim(),
-    parentGuardianName: formData.parentGuardianName
       .replace(/\s+/g, " ")
       .trim(),
     emailAddress: formData.emailAddress.trim(),
@@ -76,8 +74,35 @@ export function validateCodefestRegistrationForm(
     errors.fullName = "Enter the participant's full name.";
   }
 
-  if (!data.gradeClass) {
-    errors.gradeClass = "Grade or class is required.";
+  if (!data.institutionName) {
+    errors.institutionName = "Institution name is required.";
+  }
+
+  if (!data.dateOfBirth) {
+    errors.dateOfBirth = "Date of birth is required.";
+  } else {
+    const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(data.dateOfBirth);
+    const dateOfBirth = dateMatch
+      ? new Date(
+          Date.UTC(
+            Number(dateMatch[1]),
+            Number(dateMatch[2]) - 1,
+            Number(dateMatch[3]),
+          ),
+        )
+      : null;
+    const today = new Date();
+    const todayString = `${today.getFullYear()}-${String(
+      today.getMonth() + 1,
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const isValidDate =
+      dateOfBirth !== null &&
+      !Number.isNaN(dateOfBirth.getTime()) &&
+      dateOfBirth.toISOString().slice(0, 10) === data.dateOfBirth;
+
+    if (!isValidDate || data.dateOfBirth > todayString) {
+      errors.dateOfBirth = "Enter a valid date of birth.";
+    }
   }
 
   if (!data.cityState) {
@@ -92,12 +117,6 @@ export function validateCodefestRegistrationForm(
     errors.fullResidentialAddress = "Enter the full residential address.";
   }
 
-  if (!data.parentGuardianName) {
-    errors.parentGuardianName = "Parent or guardian name is required.";
-  } else if (!NAME_REGEX.test(data.parentGuardianName)) {
-    errors.parentGuardianName = "Enter the parent or guardian full name.";
-  }
-
   if (!data.emailAddress) {
     errors.emailAddress = "Email address is required.";
   } else if (!EMAIL_REGEX.test(data.emailAddress)) {
@@ -106,10 +125,10 @@ export function validateCodefestRegistrationForm(
 
   if (!data.parentGuardianContactNumber) {
     errors.parentGuardianContactNumber =
-      "Parent or guardian contact number is required.";
+      "Primary WhatsApp number is required.";
   } else if (!/^\d{10}$/.test(data.parentGuardianContactNumber)) {
     errors.parentGuardianContactNumber =
-      "Enter a valid 10-digit contact number.";
+      "Enter a valid 10-digit WhatsApp number.";
   }
 
   if (data.emergencyContactNumber && !/^\d{10}$/.test(data.emergencyContactNumber)) {

@@ -34,10 +34,10 @@ export async function POST(req: Request) {
 
     const missingFields = [
       requireString(body.fullName, "fullName"),
-      requireString(body.gradeClass, "gradeClass"),
+      requireString(body.institutionName, "institutionName"),
+      requireString(body.dateOfBirth, "dateOfBirth"),
       requireString(body.cityState, "cityState"),
       requireString(body.fullResidentialAddress, "fullResidentialAddress"),
-      requireString(body.parentGuardianName, "parentGuardianName"),
       requireString(body.emailAddress, "emailAddress"),
       requireString(
         body.parentGuardianContactNumber,
@@ -57,10 +57,10 @@ export async function POST(req: Request) {
 
     const normalizedFormData = normalizeCodefestRegistrationForm({
       fullName: body.fullName || "",
-      gradeClass: body.gradeClass || "",
+      institutionName: body.institutionName || "",
+      dateOfBirth: body.dateOfBirth || "",
       cityState: body.cityState || "",
       fullResidentialAddress: body.fullResidentialAddress || "",
-      parentGuardianName: body.parentGuardianName || "",
       emailAddress: body.emailAddress || "",
       parentGuardianContactNumber: body.parentGuardianContactNumber || "",
       emergencyContactNumber: body.emergencyContactNumber || "",

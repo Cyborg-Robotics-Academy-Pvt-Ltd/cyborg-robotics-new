@@ -654,7 +654,12 @@ const normalizeCompetition = (
     orderId: record.orderId || "",
     name: record.fullName || record.studentName || draft.fullName || "",
     className: record.gradeClass || draft.gradeClass || "",
-    schoolName: record.schoolName || draft.schoolName || "",
+    schoolName:
+      record.schoolName ||
+      record.institutionName ||
+      draft.schoolName ||
+      draft.institutionName ||
+      "",
     parentName: record.parentGuardianName || draft.parentGuardianName || "",
     email:
       record.parentEmailAddress ||
@@ -1962,10 +1967,13 @@ const Page = () => {
                                           label="School"
                                           value={registration.schoolName}
                                         />
-                                        <Field
-                                          label="Parent / Guardian"
-                                          value={registration.parentName}
-                                        />
+                                        {registration.registrationType !==
+                                          "competition" && (
+                                          <Field
+                                            label="Parent / Guardian"
+                                            value={registration.parentName}
+                                          />
+                                        )}
                                         <Field
                                           label="Email"
                                           value={registration.email}
@@ -2005,7 +2013,9 @@ const Page = () => {
                                           label="Remark"
                                           value={registration.remark}
                                         />
-                                        {registration.extraDetails && (
+                                        {registration.registrationType !==
+                                          "competition" &&
+                                          registration.extraDetails && (
                                           <Field
                                             label="Extra Details"
                                             value={registration.extraDetails}

@@ -12,9 +12,17 @@ type Props = {
   active: SortField;
   dir: SortDir;
   onClick: (field: SortField) => void;
+  className?: string;
 };
 
-export function SortableHead({ label, field, active, dir, onClick }: Props) {
+export function SortableHead({
+  label,
+  field,
+  active,
+  dir,
+  onClick,
+  className,
+}: Props) {
   const isActive = active === field;
 
   const Icon = isActive
@@ -29,6 +37,7 @@ export function SortableHead({ label, field, active, dir, onClick }: Props) {
       className={cn(
         "cursor-pointer select-none text-stone-500 transition-colors hover:text-stone-900",
         isActive && "text-stone-900",
+        className,
       )}
     >
       <div className="flex items-center gap-1.5">

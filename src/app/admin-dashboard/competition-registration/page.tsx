@@ -56,6 +56,8 @@ interface CompetitionRegistration {
   firestoreId?: string;
   orderId?: string;
   fullName?: string;
+  institutionName?: string;
+  dateOfBirth?: string;
   gradeClass?: string;
   schoolName?: string;
   cityState?: string;
@@ -213,6 +215,13 @@ const normalizeCompetitionRecord = (
       typeof id === "string" && id.startsWith("payment-competition-") ? "" : id,
     orderId: record.orderId || "",
     fullName: record.fullName || record.studentName || draft.fullName || "",
+    institutionName:
+      record.institutionName ||
+      draft.institutionName ||
+      record.gradeClass ||
+      draft.gradeClass ||
+      "",
+    dateOfBirth: record.dateOfBirth || draft.dateOfBirth || "",
     gradeClass: record.gradeClass || draft.gradeClass || "",
     schoolName: record.schoolName || draft.schoolName || "",
     cityState: record.cityState || draft.cityState || "",
@@ -280,6 +289,9 @@ const mergeCompetitionRecord = (
     id: pickFirstValue(base.id, incoming.id) || "",
     orderId: pickFirstValue(base.orderId, incoming.orderId) || "",
     fullName: pickFirstValue(base.fullName, incoming.fullName) || "",
+    institutionName:
+      pickFirstValue(base.institutionName, incoming.institutionName) || "",
+    dateOfBirth: pickFirstValue(base.dateOfBirth, incoming.dateOfBirth) || "",
     gradeClass: pickFirstValue(base.gradeClass, incoming.gradeClass) || "",
     schoolName: pickFirstValue(base.schoolName, incoming.schoolName) || "",
     cityState: pickFirstValue(base.cityState, incoming.cityState) || "",
@@ -464,6 +476,8 @@ const Page = () => {
         registration.parentGuardianContactNumber
           ?.toLowerCase()
           .includes(term) ||
+        registration.institutionName?.toLowerCase().includes(term) ||
+        registration.dateOfBirth?.toLowerCase().includes(term) ||
         registration.gradeClass?.toLowerCase().includes(term) ||
         registration.schoolName?.toLowerCase().includes(term) ||
         registration.cityState?.toLowerCase().includes(term) ||
@@ -644,14 +658,14 @@ const Page = () => {
         { header: "Competition", key: "competitionName", width: 30 },
         { header: "Participant Name", key: "fullName", width: 24 },
         { header: "Hall Ticket", key: "hallTicketNumber", width: 18 },
-        { header: "Grade / Class", key: "gradeClass", width: 16 },
+        { header: "Institution Name", key: "institutionName", width: 24 },
+        { header: "Date of Birth", key: "dateOfBirth", width: 16 },
         { header: "City & State", key: "cityState", width: 18 },
         {
           header: "Residential Address",
           key: "fullResidentialAddress",
           width: 36,
         },
-        { header: "Parent Name", key: "parentGuardianName", width: 24 },
         { header: "Email Address", key: "emailAddress", width: 32 },
         {
           header: "Parent Contact",
@@ -796,8 +810,8 @@ const Page = () => {
                           { key: "competitionName", label: "Competition" },
                           { key: "fullName", label: "Participant" },
                           {
-                            key: "parentGuardianName",
-                            label: "Parent / Contact",
+                            key: "dateOfBirth",
+                            label: "DOB / Contact",
                           },
                           { key: "cityState", label: "Location" },
                           { key: "preferredCodingPlatform", label: "Setup" },
@@ -866,14 +880,18 @@ const Page = () => {
                                   "-"}
                               </p>
                               <p className="text-xs text-gray-500">
-                                Grade: {registration.gradeClass || "-"}
+                                Institution:{" "}
+                                {registration.institutionName ||
+                                  registration.schoolName ||
+                                  registration.gradeClass ||
+                                  "-"}
                               </p>
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm text-gray-700">
                             <div className="min-w-[220px] space-y-1">
                               <p className="font-medium text-gray-900">
-                                {registration.parentGuardianName || "-"}
+                                DOB: {registration.dateOfBirth || "-"}
                               </p>
                               <p className="text-xs text-gray-500">
                                 Email:{" "}

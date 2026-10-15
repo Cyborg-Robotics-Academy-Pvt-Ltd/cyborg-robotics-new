@@ -333,10 +333,10 @@ export async function finalizeRegistrationForPayment(
 
       await updateDoc(doc(db, "competitionRegistrations", existingId), {
         fullName: competitionDraft.fullName ?? "",
-        gradeClass: competitionDraft.gradeClass ?? "",
+        institutionName: competitionDraft.institutionName ?? "",
+        dateOfBirth: competitionDraft.dateOfBirth ?? "",
         cityState: competitionDraft.cityState ?? "",
         fullResidentialAddress: competitionDraft.fullResidentialAddress ?? "",
-        parentGuardianName: competitionDraft.parentGuardianName ?? "",
         emailAddress: competitionDraft.emailAddress ?? "",
         parentGuardianContactNumber:
           competitionDraft.parentGuardianContactNumber ?? "",
@@ -367,10 +367,10 @@ export async function finalizeRegistrationForPayment(
     const hallTicketNumber = generateCompetitionHallTicketNumber(orderId);
     const competitionRegistrationPayload = {
       fullName: competitionDraft.fullName ?? "",
-      gradeClass: competitionDraft.gradeClass ?? "",
+      institutionName: competitionDraft.institutionName ?? "",
+      dateOfBirth: competitionDraft.dateOfBirth ?? "",
       cityState: competitionDraft.cityState ?? "",
       fullResidentialAddress: competitionDraft.fullResidentialAddress ?? "",
-      parentGuardianName: competitionDraft.parentGuardianName ?? "",
       emailAddress: competitionDraft.emailAddress ?? "",
       parentGuardianContactNumber:
         competitionDraft.parentGuardianContactNumber ?? "",
