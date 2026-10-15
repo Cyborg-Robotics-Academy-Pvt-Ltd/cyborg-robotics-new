@@ -75,7 +75,15 @@ const StudentDetailsPage = () => {
         // Query the students collection for the specific PRN
         const studentsRef = collection(db, "students");
         const q = query(studentsRef, where("PrnNumber", "==", prn));
-        const querySnapshot = await getDocs(q);
+        let querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          const lowercasePrnQuery = query(
+            studentsRef,
+            where("prnNumber", "==", prn),
+          );
+          querySnapshot = await getDocs(lowercasePrnQuery);
+        }
 
         if (querySnapshot.empty) {
           setError("No student found with this PRN number.");

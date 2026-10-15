@@ -106,8 +106,23 @@ const labelCls =
 
 async function getStudentData(prn: string) {
   const studentsRef = collection(db, "students");
-  const q = query(studentsRef, where("PrnNumber", "==", prn));
-  const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(
+    query(studentsRef, where("PrnNumber", "==", prn)),
+  );
+  if (querySnapshot.empty) {
+    const lowercasePrnSnapshot = await getDocs(
+      query(studentsRef, where("prnNumber", "==", prn)),
+    );
+    if (!lowercasePrnSnapshot.empty) {
+      const d = lowercasePrnSnapshot.docs[0].data();
+      return {
+        ...d,
+        PrnNumber: d.PrnNumber || d.prnNumber || prn,
+        profileimage:
+          d.profileimage || d.imageUrl || d.imageUrls?.[0] || undefined,
+      } as Student;
+    }
+  }
   if (querySnapshot.empty) return null;
   const d = querySnapshot.docs[0].data();
   return {

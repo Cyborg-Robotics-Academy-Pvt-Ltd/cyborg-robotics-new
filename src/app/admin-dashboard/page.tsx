@@ -38,6 +38,8 @@ import {
   CalendarRange,
   Filter as FilterIcon,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -452,6 +454,17 @@ const AdminDashboard = () => {
     atRiskStudents: 0,
     monthlyGrowth: 0,
   });
+  const [trainerSummaries, setTrainerSummaries] = useState<
+    {
+      id: string;
+      name: string;
+      image: string;
+      studentCount: number;
+      ongoingStudentCount: number;
+    }[]
+  >([]);
+  const [trainerSearchQuery, setTrainerSearchQuery] = useState("");
+  const trainerCarouselRef = useRef<HTMLDivElement | null>(null);
   const [loadingOverview, setLoadingOverview] = useState(true);
   const [registrationRecords, setRegistrationRecords] = useState<any[]>([]);
   const [paymentRecords, setPaymentRecords] = useState<any[]>([]);
@@ -1215,6 +1228,85 @@ const AdminDashboard = () => {
         collection(db, "registrations"),
       );
 
+      setTrainerSummaries(
+        trainersSnapshot.docs.map((trainerDoc) => {
+          const trainerData = trainerDoc.data();
+          const name = String(
+            trainerData.name ||
+              trainerData.fullName ||
+              trainerData.displayName ||
+              trainerData.username ||
+              trainerData.email ||
+              "Unnamed trainer",
+          ).trim();
+          const normalizedTrainerName = name.toLowerCase();
+          const imageValue =
+            trainerData.profileimage ||
+            trainerData.profileImage ||
+            trainerData.imageUrls?.[0] ||
+            trainerData.imageUrl;
+
+          const studentCount = studentsSnapshot.docs.filter((studentDoc) => {
+            const student = studentDoc.data();
+            const assignments = [
+              ...(Array.isArray(student.courseTrainers)
+                ? student.courseTrainers
+                : []),
+              ...(Array.isArray(student.courses) ? student.courses : []),
+            ];
+            const hasMatchingAssignment = (assignment: Record<string, any>) =>
+              String(assignment?.trainerId || "") === trainerDoc.id ||
+              (String(assignment?.trainerName || "")
+                .trim()
+                .toLowerCase() === normalizedTrainerName &&
+                normalizedTrainerName.length > 0);
+
+            return (
+              String(student.trainerId || "") === trainerDoc.id ||
+              hasMatchingAssignment({
+                trainerName: student.trainerName,
+                trainerId: student.trainerId,
+              }) ||
+              assignments.some(hasMatchingAssignment)
+            );
+          }).length;
+
+          const ongoingStudentCount = studentsSnapshot.docs.filter(
+            (studentDoc) => {
+              const student = studentDoc.data();
+              const courses = Array.isArray(student.courses)
+                ? student.courses
+                : [];
+
+              return courses.some((course: Record<string, any>) => {
+                const assignedToTrainer =
+                  String(course?.trainerId || "") === trainerDoc.id ||
+                  (!course?.trainerId &&
+                    String(course?.trainerName || "")
+                      .trim()
+                      .toLowerCase() === normalizedTrainerName &&
+                    normalizedTrainerName.length > 0);
+                const isCompleted =
+                  course?.completed === true ||
+                  String(course?.status || "")
+                    .trim()
+                    .toLowerCase() === "complete";
+
+                return assignedToTrainer && !isCompleted;
+              });
+            },
+          ).length;
+
+          return {
+            id: trainerDoc.id,
+            name,
+            image: typeof imageValue === "string" ? imageValue : "",
+            studentCount,
+            ongoingStudentCount,
+          };
+        }),
+      );
+
       // Get courses from the static courses.ts file
       const coursesModule = await import("../../../utils/courses");
       const coursesList = coursesModule.default;
@@ -1367,6 +1459,7 @@ const AdminDashboard = () => {
       });
       setPaymentRecords([]);
       setRegistrationRecords([]);
+      setTrainerSummaries([]);
     } finally {
       setLoadingOverview(false);
     }
@@ -1905,6 +1998,10 @@ const AdminDashboard = () => {
       href: "/admin-dashboard/assign-trainer",
     },
     {
+      title: "Trainer Student Records",
+      href: "/admin-dashboard/trainer-students",
+    },
+    {
       title: "New Registration",
       href: "/registration",
     },
@@ -2169,6 +2266,183 @@ const AdminDashboard = () => {
               ))}
             </div>
           </motion.div>
+
+          <section className="mb-8" aria-labelledby="trainer-overview-title">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2
+                    id="trainer-overview-title"
+                    className="text-2xl font-bold tracking-tight text-gray-900"
+                  >
+                    Meet Our Trainers
+                  </h2>
+                  {!loadingOverview && (
+                    <span className="inline-flex items-center rounded-full border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-800">
+                      {trainerSummaries.length}{" "}
+                      {trainerSummaries.length === 1 ? "trainer" : "trainers"}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-gray-600">
+                  Explore trainer profiles and their students.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full sm:w-56">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    value={trainerSearchQuery}
+                    onChange={(event) =>
+                      setTrainerSearchQuery(event.target.value)
+                    }
+                    placeholder="Quick search trainers"
+                    aria-label="Quick search trainers"
+                    className="h-9 rounded-full border-red-100 bg-white pl-9 text-sm focus-visible:ring-red-200"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const carousel = trainerCarouselRef.current;
+                    if (!carousel) return;
+                    carousel.scrollBy({
+                      left: -(carousel.clientWidth * 0.8),
+                      behavior: "smooth",
+                    });
+                  }}
+                  aria-label="Previous trainers"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-red-100 bg-white text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const carousel = trainerCarouselRef.current;
+                    if (!carousel) return;
+                    carousel.scrollBy({
+                      left: carousel.clientWidth * 0.8,
+                      behavior: "smooth",
+                    });
+                  }}
+                  aria-label="Next trainers"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-red-100 bg-white text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <Link
+                  href="/admin-dashboard/trainer-students"
+                  className="text-sm font-semibold text-red-700 transition hover:text-red-900"
+                >
+                  View trainer records
+                </Link>
+              </div>
+            </div>
+            {loadingOverview ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="overflow-hidden py-2"
+              >
+                <div className="mb-5 flex items-center gap-3">
+                  <RefreshCw className="h-4 w-4 animate-spin text-red-700" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      Loading trainer data
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Fetching trainer profiles and student counts
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-8" aria-hidden="true">
+                  {[0, 1, 2, 3].map((placeholder) => (
+                    <div
+                      key={placeholder}
+                      className="flex w-36 shrink-0 flex-col items-center"
+                    >
+                      <div className="mb-3 h-20 w-20 animate-pulse rounded-full bg-red-100" />
+                      <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+                      <div className="mt-2 h-3 w-16 animate-pulse rounded bg-gray-100" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : trainerSummaries.length > 0 ? (
+              trainerSummaries.some((trainer) =>
+                trainer.name
+                  .toLowerCase()
+                  .includes(trainerSearchQuery.trim().toLowerCase()),
+              ) ? (
+                <div
+                  ref={trainerCarouselRef}
+                  className="flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  aria-label="Trainer carousel"
+                >
+                  {trainerSummaries
+                    .filter((trainer) =>
+                      trainer.name
+                        .toLowerCase()
+                        .includes(trainerSearchQuery.trim().toLowerCase()),
+                    )
+                    .map((trainer) => (
+                      <Link
+                        key={trainer.id}
+                        href={`/admin-dashboard/trainer-students?trainerId=${encodeURIComponent(trainer.id)}`}
+                        className="flex w-36 shrink-0 snap-start flex-col items-center text-center"
+                        aria-label={`View ${trainer.name}'s students and courses`}
+                      >
+                        <Avatar className="mb-3 h-20 w-20 shrink-0 rounded-full border-2 border-red-100">
+                          <AvatarImage
+                            src={trainer.image}
+                            alt={trainer.name}
+                            className="rounded-full object-cover"
+                          />
+                          <AvatarFallback className="rounded-full bg-red-50 text-red-700">
+                            {trainer.name
+                              .split(/\s+/)
+                              .map((part) => part[0])
+                              .join("")
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 max-w-full">
+                          <p className="truncate font-semibold text-gray-900">
+                            {trainer.name}
+                          </p>
+                          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-sm text-red-800 ring-1 ring-inset ring-red-100">
+                            <span className="text-base font-bold tabular-nums">
+                              {trainer.studentCount}
+                            </span>{" "}
+                            {trainer.studentCount === 1
+                              ? "student"
+                              : "students"}
+                          </p>
+                          <div className="mt-2 space-y-1 text-xs text-gray-600">
+                            <p>
+                              Ongoing students:{" "}
+                              <span className="font-semibold tabular-nums text-amber-700">
+                                {trainer.ongoingStudentCount}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                </div>
+              ) : (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  No trainers match “{trainerSearchQuery.trim()}”.
+                </p>
+              )
+            ) : (
+              <div className="rounded-2xl border border-dashed border-red-200 bg-white/60 p-5 text-sm text-gray-500">
+                No trainers to display yet.
+              </div>
+            )}
+          </section>
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
