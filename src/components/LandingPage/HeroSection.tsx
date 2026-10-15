@@ -89,7 +89,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /* -------------------------------------------------------------------------- */
 
 const ONLINE_CONFIG = {
-  slots: ["10:00", "12:00", "15:00", "17:00", "19:00"],
+  slots: ["18:00"],
   daysClosed: [0],
 };
 
@@ -1232,11 +1232,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
       setOpen(false);
       setSuccessMessage(
-        isManualSchedule
-          ? "Your preferred trial date and time have been saved. Our counsellor will contact you to confirm availability."
-          : trial === "online"
-            ? "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292."
-            : "Your trial is booked successfully. ",
+        "YOUR RESPONSE IS RECORDED. Our Team will contact you for further assistance. Our counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292.",
       );
       setSuccessOpen(true);
     } catch (error) {
@@ -1953,6 +1949,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
                     </>
+                  ) : trial === "offline" && preferredCenter === "unable-to-visit-hq" ? (
+                    "Submit"
                   ) : (
                     <>
                       Next: pick a slot
@@ -2213,7 +2211,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
             <div>
               <DialogTitle className="text-xl font-bold text-gray-900">
-                Trial Booked
+                Thank You !!
               </DialogTitle>
 
               <DialogDescription className="mt-2  whitespace-pre-line text-sm leading-relaxed text-gray-600">
