@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -77,6 +77,14 @@ const getTrainerCourses = (
 };
 
 export default function TrainerStudentsPage() {
+  return (
+    <Suspense fallback={<AuthLoadingSpinner />}>
+      <TrainerStudentsContent />
+    </Suspense>
+  );
+}
+
+function TrainerStudentsContent() {
   const { user, userRole, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

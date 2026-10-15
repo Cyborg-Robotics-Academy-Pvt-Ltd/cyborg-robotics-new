@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 
 // Generate a random 6-digit OTP
 function generateOTP() {
@@ -19,17 +18,19 @@ async function storeOTP(email: string, otp: string) {
   };
   
   // Store OTP in a separate collection
-  const otpRef = doc(collection(db, 'otps'));
-  await setDoc(otpRef, otpData);
-  
+  const otpRef = await adminDb.collection('otps').add(otpData);
+
   return otpRef.id;
 }
 
 // Verify OTP
 async function verifyOTP(email: string, otp: string) {
-  const otpsRef = collection(db, 'otps');
-  const q = query(otpsRef, where('email', '==', email), where('otp', '==', otp));
-  const querySnapshot = await getDocs(q);
+  const querySnapshot = await adminDb
+    .collection('otps')
+    .where('email', '==', email)
+    .where('otp', '==', otp)
+    .limit(1)
+    .get();
   
   if (querySnapshot.empty) {
     return { valid: false, message: 'Invalid OTP' };
@@ -43,12 +44,12 @@ async function verifyOTP(email: string, otp: string) {
   
   if (now > expiresAt) {
     // Delete expired OTP
-    await deleteDoc(otpDoc.ref);
+    await otpDoc.ref.delete();
     return { valid: false, message: 'OTP has expired' };
   }
   
   // Delete used OTP
-  await deleteDoc(otpDoc.ref);
+  await otpDoc.ref.delete();
   
   return { valid: true, message: 'OTP verified successfully' };
 }

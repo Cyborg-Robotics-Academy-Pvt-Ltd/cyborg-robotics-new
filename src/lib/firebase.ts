@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import type { Auth } from 'firebase/auth';
 
@@ -13,7 +13,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app =
+  getApps().find((existingApp) => existingApp.name === "[DEFAULT]") ??
+  initializeApp(firebaseConfig);
 
 // Initialize Firestore
 const db = getFirestore(app);
