@@ -1,14 +1,13 @@
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { app } from '@/lib/firebase';
-
-// Check for required Cloudinary environment variables
-if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 
-    !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
-  throw new Error('Missing required Cloudinary environment variables');
-}
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
   try {
+    const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    if (!cloudinaryCloudName || !cloudinaryUploadPreset) {
+      throw new Error("Missing required Cloudinary environment variables");
+    }
+
     // Retrieve form data from the request
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -23,13 +22,13 @@ export async function POST(req: Request) {
     const fileBlob = new Blob([fileArrayBuffer], { type: file.type });
 
     // Construct the Cloudinary upload URL
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`;
 
     // Prepare form data for Cloudinary upload
     const cloudFormData = new FormData();
     cloudFormData.append("file", fileBlob);
     // Ensure the upload preset is defined before appending
-    cloudFormData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+    cloudFormData.append("upload_preset", cloudinaryUploadPreset);
 
     // Send the file to Cloudinary
     const cloudinaryResponse = await fetch(cloudinaryUrl, {
@@ -52,16 +51,11 @@ export async function POST(req: Request) {
     // Get the secure URL of the uploaded image
     const imageUrl = cloudinaryData.secure_url;
 
-    // Initialize Firestore
-    const db = getFirestore(app);
-    
     // Store the image URL in Firestore in the homeGalleryImage collection
     const timestamp = Date.now();
     const fileId = `${file.name.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}`;
     
-    // Create a document reference in the homeGalleryImage collection
-    const galleryCollection = collection(db, 'homeGalleryImage');
-    const galleryDocRef = await addDoc(galleryCollection, { 
+    const galleryDocRef = await adminDb.collection("homeGalleryImage").add({
       imageUrl, 
       uploadedAt: new Date(),
       fileName: file.name,

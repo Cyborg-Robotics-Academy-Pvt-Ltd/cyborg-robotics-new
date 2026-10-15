@@ -86,6 +86,7 @@ const StudentDetailsPage = () => {
         }
 
         if (querySnapshot.empty) {
+          ``;
           setError("No student found with this PRN number.");
           setIsLoading(false);
           return;
