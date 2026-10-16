@@ -232,6 +232,49 @@ const formatDateTime = (date: Date) =>
     minute: "2-digit",
   });
 
+const getRegularWeekdayPattern = (
+  student: Student,
+  trainerId: string | undefined,
+  today: Date,
+  targetWeekday: number,
+) => {
+  const trainerCourses = student.courses.filter(
+    (course) =>
+      course.trainerId === trainerId &&
+      course.completed !== true &&
+      (course.status || "").trim().toLowerCase() !== "complete",
+  );
+  if (trainerCourses.length === 0) return null;
+
+  const classDatesByDay = new Map<string, Date>();
+  student.tasks.forEach((task) => {
+    if ((task.status || "").trim().toLowerCase() !== "complete") return;
+    const classDate = task.dateTime ? new Date(task.dateTime) : null;
+    if (
+      !classDate ||
+      Number.isNaN(classDate.getTime()) ||
+      classDate > today ||
+      !trainerCourses.some((course) => taskMatchesCourse(task.course, course))
+    ) {
+      return;
+    }
+
+    const dayKey = `${classDate.getFullYear()}-${classDate.getMonth()}-${classDate.getDate()}`;
+    if (!classDatesByDay.has(dayKey)) classDatesByDay.set(dayKey, classDate);
+  });
+
+  const recentClassDates = Array.from(classDatesByDay.values())
+    .sort((a, b) => b.getTime() - a.getTime())
+    .slice(0, 5);
+  const matchingDayCount = recentClassDates.filter(
+    (date) => date.getDay() === targetWeekday,
+  ).length;
+
+  return matchingDayCount >= 3
+    ? { matchingDayCount, sampleSize: recentClassDates.length }
+    : null;
+};
+
 export default function TrainerDashboard() {
   const router = useRouter();
   const { user, userRole, loading: authLoading } = useAuth();
@@ -269,6 +312,9 @@ export default function TrainerDashboard() {
     }>
   >([]);
   const [assignedStudents, setAssignedStudents] = useState<Student[]>([]);
+  const [predictionDay, setPredictionDay] = useState<"today" | "tomorrow" | number>(
+    "today",
+  );
   const [studentSearch, setStudentSearch] = useState("");
   const [courseStatusFilter, setCourseStatusFilter] = useState<
     "ongoing" | "completed"
@@ -636,6 +682,46 @@ export default function TrainerDashboard() {
     });
   }, [rosterPreview, studentSearch, user?.uid]);
 
+  const targetPredictionWeekday =
+    predictionDay === "today"
+      ? currentDateTime.getDay()
+      : predictionDay === "tomorrow"
+        ? (currentDateTime.getDay() + 1) % 7
+        : predictionDay;
+  const predictionWeekdayName = new Date(
+    2024,
+    0,
+    7 + targetPredictionWeekday,
+  ).toLocaleDateString("en-IN", { weekday: "long" });
+
+  const studentsLikelyOnSelectedDay = useMemo(
+    () =>
+      assignedStudents
+        .map((student) => ({
+          student,
+          pattern: getRegularWeekdayPattern(
+            student,
+            user?.uid,
+            currentDateTime,
+            targetPredictionWeekday,
+          ),
+        }))
+        .filter(
+          (
+            entry,
+          ): entry is {
+            student: Student;
+            pattern: { matchingDayCount: number; sampleSize: number };
+          } => entry.pattern !== null,
+        )
+        .sort(
+          (a, b) =>
+            b.pattern.matchingDayCount - a.pattern.matchingDayCount ||
+            a.student.username.localeCompare(b.student.username),
+        ),
+    [assignedStudents, currentDateTime, targetPredictionWeekday, user?.uid],
+  );
+
   const courseRecords = useMemo(
     () =>
       assignedStudents.flatMap((student) =>
@@ -780,6 +866,164 @@ export default function TrainerDashboard() {
             ))}
           </div>
         </motion.div>
+
+        <section aria-labelledby="likely-students-heading" className="mb-8">
+          <Card className="border border-red-100 bg-white/85 shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-800">
+                  <CalendarClock className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle
+                    id="likely-students-heading"
+                    className="text-lg text-gray-900"
+                  >
+                    Students who may come on {predictionWeekdayName}
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    Based on each student&apos;s last five distinct completed
+                    class days. This is an estimate.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={predictionDay === "today" ? "default" : "outline"}
+                  aria-pressed={predictionDay === "today"}
+                  onClick={() => setPredictionDay("today")}
+                  className={
+                    predictionDay === "today"
+                      ? "rounded-full bg-red-800 text-white hover:bg-red-900"
+                      : "rounded-full border-red-200 text-red-800"
+                  }
+                >
+                  Today
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={predictionDay === "tomorrow" ? "default" : "outline"}
+                  aria-pressed={predictionDay === "tomorrow"}
+                  onClick={() => setPredictionDay("tomorrow")}
+                  className={
+                    predictionDay === "tomorrow"
+                      ? "rounded-full bg-red-800 text-white hover:bg-red-900"
+                      : "rounded-full border-red-200 text-red-800"
+                  }
+                >
+                  Tomorrow
+                </Button>
+                <label
+                  htmlFor="prediction-weekday"
+                  className="sr-only"
+                >
+                  Choose a weekday
+                </label>
+                <select
+                  id="prediction-weekday"
+                  value={
+                    typeof predictionDay === "number"
+                      ? predictionDay
+                      : targetPredictionWeekday
+                  }
+                  onChange={(event) =>
+                    setPredictionDay(Number(event.target.value))
+                  }
+                  className="h-9 rounded-full border border-red-200 bg-white px-3 text-sm font-medium text-red-800 focus:outline-none focus:ring-2 focus:ring-red-200"
+                >
+                  {[1, 2, 3, 4, 5, 6, 0].map((weekday) => (
+                    <option key={weekday} value={weekday}>
+                      {new Date(2024, 0, 7 + weekday).toLocaleDateString(
+                        "en-IN",
+                        { weekday: "long" },
+                      )}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {studentsLikelyOnSelectedDay.length > 0 ? (
+                <ul className="divide-y divide-gray-100">
+                  {studentsLikelyOnSelectedDay.map(({ student, pattern }) => {
+                    const trainerCourses = student.courses.filter(
+                      (course) =>
+                        course.trainerId === user?.uid &&
+                        course.completed !== true &&
+                        (course.status || "").trim().toLowerCase() !==
+                          "complete",
+                    );
+                    const detailHref = getStudentDetailHref(student, user?.uid);
+
+                    return (
+                      <li
+                        key={student.id}
+                        className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          {student.profileImage ? (
+                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100">
+                              <Image
+                                src={student.profileImage}
+                                alt=""
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-700">
+                              <User className="h-5 w-5" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-gray-900">
+                              {student.username}
+                              {student.prnNumber
+                                ? ` · PRN ${student.prnNumber}`
+                                : ""}
+                            </p>
+                            <p className="truncate text-sm text-gray-600">
+                              {trainerCourses
+                                .map((course) => course.name)
+                                .filter(Boolean)
+                                .join(", ") || "Assigned course"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 pl-[52px] sm:pl-0">
+                          <Badge className="border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-50">
+                            {pattern.matchingDayCount} of {pattern.sampleSize}{" "}
+                            recent class days on {predictionWeekdayName}
+                          </Badge>
+                          {detailHref ? (
+                            <Link
+                              href={detailHref}
+                              className="inline-flex items-center gap-1 text-sm font-semibold text-red-800 hover:text-red-900"
+                            >
+                              View
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
+                  No students have a regular{" "}
+                  {predictionWeekdayName} pattern in their recent class
+                  history.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </section>
 
         <section id="student-carousel" className="mb-8">
           <div className="mb-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">

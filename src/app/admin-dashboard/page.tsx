@@ -315,6 +315,182 @@ const getStudentTrainer = (student: Record<string, any>) => {
   return String(courseTrainer?.trainerName || "").trim();
 };
 
+const getCourseIdentity = (value?: string, fallbackLevel?: string) => {
+  const courseName = String(value || "").trim();
+  const pipeMatch = courseName.match(/^(.+?)\|(\d+)$/);
+  const suffixMatch = courseName.match(
+    /^(.+?)\s+level\s+(beginner|intermediate|advanced|expert|\d+)$/i,
+  );
+  const levels: Record<string, string> = {
+    beginner: "1",
+    intermediate: "2",
+    advanced: "3",
+    expert: "4",
+  };
+  const rawLevel = pipeMatch?.[2] || suffixMatch?.[2] || fallbackLevel || "";
+  const normalizedLevel = rawLevel.toLowerCase();
+
+  return {
+    name: (pipeMatch?.[1] || suffixMatch?.[1] || courseName)
+      .trim()
+      .toLowerCase(),
+    level: levels[normalizedLevel] || normalizedLevel,
+  };
+};
+
+type PredictionTrainerFilter =
+  | { id: string; name: string }
+  | "unassigned"
+  | undefined;
+
+const getActiveStudentCourses = (
+  student: Record<string, any>,
+  trainer?: PredictionTrainerFilter,
+) => {
+  const normalizeTrainer = (value: unknown) =>
+    String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  if (trainer === "unassigned" && hasTrainerAssignment(student)) return [];
+
+  const studentTrainerMatches =
+    Boolean(
+      trainer &&
+    trainer !== "unassigned" &&
+    (String(student.trainerId || "") === trainer.id ||
+      normalizeTrainer(student.trainerName) === normalizeTrainer(trainer.name)),
+    );
+
+  return (Array.isArray(student.courses) ? student.courses : [])
+    .map((course: unknown): Record<string, any> | null => {
+      if (typeof course === "string") return { name: course };
+      if (course && typeof course === "object") {
+        return course as Record<string, any>;
+      }
+      return null;
+    })
+    .filter(
+      (course): course is Record<string, any> =>
+        course !== null &&
+        course.completed !== true &&
+        String(course.status || "").trim().toLowerCase() !== "complete" &&
+        (trainer === "unassigned"
+          ? !course.trainerId && !course.trainerName
+          : !trainer ||
+          String(course.trainerId || "") === trainer.id ||
+          normalizeTrainer(course.trainerName) === normalizeTrainer(trainer.name) ||
+          (!course.trainerId && !course.trainerName && studentTrainerMatches)),
+    );
+};
+
+const getStudentCompletedClassDates = (
+  student: Record<string, any>,
+  now: Date,
+  trainer?: PredictionTrainerFilter,
+): Date[] | null => {
+  const activeCourses =
+    trainer && trainer !== "unassigned"
+      ? getActiveStudentCourses(student, trainer)
+      : [];
+  if (trainer && trainer !== "unassigned" && activeCourses.length === 0) {
+    return null;
+  }
+  if (
+    trainer === "unassigned" &&
+    (hasTrainerAssignment(student) ||
+      getActiveStudentCourses(student, trainer).length === 0)
+  ) {
+    return null;
+  }
+
+  const classDatesByDay = new Map<string, Date>();
+  (Array.isArray(student.tasks) ? student.tasks : []).forEach((task: unknown) => {
+    if (!task || typeof task !== "object") return;
+    const classTask = task as Record<string, any>;
+      if (String(classTask.status || "").trim().toLowerCase() !== "complete") {
+        return;
+      }
+      const classDate = classTask.dateTime
+        ? new Date(classTask.dateTime)
+        : null;
+      if (
+        !classDate ||
+        Number.isNaN(classDate.getTime()) ||
+        classDate > now
+      ) {
+        return;
+      }
+
+      if (trainer && trainer !== "unassigned") {
+        const taskCourse = getCourseIdentity(classTask.course);
+        const matchesActiveCourse = activeCourses.some(
+          (course: Record<string, any>) => {
+            const courseIdentity = getCourseIdentity(
+              course.name || course.courseName,
+              course.level,
+            );
+            return (
+              taskCourse.name === courseIdentity.name &&
+              (!taskCourse.level ||
+                !courseIdentity.level ||
+                taskCourse.level === courseIdentity.level)
+            );
+          },
+        );
+        if (!matchesActiveCourse) return;
+      }
+
+      const dayKey = `${classDate.getFullYear()}-${classDate.getMonth()}-${classDate.getDate()}`;
+      if (!classDatesByDay.has(dayKey)) classDatesByDay.set(dayKey, classDate);
+  });
+
+  return Array.from(classDatesByDay.values())
+    .sort((a, b) => b.getTime() - a.getTime())
+    .slice(0, 5);
+};
+
+const getStudentWeekdayPattern = (
+  student: Record<string, any>,
+  targetWeekday: number,
+  now: Date,
+  trainer?: PredictionTrainerFilter,
+) => {
+  const recentClassDates = getStudentCompletedClassDates(student, now, trainer);
+  if (!recentClassDates) return null;
+  const matchingDayCount = recentClassDates.filter(
+    (date) => date.getDay() === targetWeekday,
+  ).length;
+
+  return matchingDayCount >= 3
+    ? { matchingDayCount, sampleSize: recentClassDates.length }
+    : null;
+};
+
+const getStudentWeekdayCounts = (classDates: Date[]) => {
+  const weekdayCounts = new Map<number, number>();
+  classDates.forEach((date) => {
+    weekdayCounts.set(date.getDay(), (weekdayCounts.get(date.getDay()) || 0) + 1);
+  });
+  return weekdayCounts;
+};
+
+const countStudentsWithWeekdayPattern = (
+  students: Array<Record<string, any>>,
+  weekday: number,
+  now: Date,
+  trainer?: PredictionTrainerFilter,
+) =>
+  students.filter(
+    (student) => getStudentWeekdayPattern(student, weekday, now, trainer) !== null,
+  ).length;
+
+const PREDICTION_WEEKDAYS = [1, 2, 3, 4, 5, 6, 0];
+const getWeekdayName = (weekday: number) =>
+  new Date(2024, 0, 7 + weekday).toLocaleDateString("en-IN", {
+    weekday: "long",
+  });
+
 const toCourseSlug = (courseName?: string, level?: string) => {
   if (typeof courseName !== "string" || !courseName) return "";
 
@@ -466,6 +642,16 @@ const AdminDashboard = () => {
   const [trainerSearchQuery, setTrainerSearchQuery] = useState("");
   const trainerCarouselRef = useRef<HTMLDivElement | null>(null);
   const [loadingOverview, setLoadingOverview] = useState(true);
+  const [dayPredictionStudents, setDayPredictionStudents] = useState<
+    Array<Record<string, any>>
+  >([]);
+  const [predictionWeekday, setPredictionWeekday] = useState(
+    () => new Date().getDay(),
+  );
+  const [predictionTrainerId, setPredictionTrainerId] = useState("all");
+  const [predictionStudentGroup, setPredictionStudentGroup] = useState<
+    "regular" | "not_regular"
+  >("regular");
   const [registrationRecords, setRegistrationRecords] = useState<any[]>([]);
   const [paymentRecords, setPaymentRecords] = useState<any[]>([]);
 
@@ -1222,6 +1408,21 @@ const AdminDashboard = () => {
 
       // Fetch actual data from Firebase using your collections
       const studentsSnapshot = await getDocs(collection(db, "students"));
+      setDayPredictionStudents(
+        studentsSnapshot.docs.map((studentDoc) => {
+          const student = studentDoc.data();
+          return {
+            ...student,
+            id: studentDoc.id,
+            displayName:
+              student.fullName ||
+              student.name ||
+              student.username ||
+              student.email?.split("@")[0] ||
+              "Unnamed student",
+          };
+        }),
+      );
       const trainersSnapshot = await getDocs(collection(db, "trainers"));
       const paymentsSnapshot = await getDocs(collection(db, "payments"));
       const registrationsSnapshot = await getDocs(
@@ -1524,17 +1725,50 @@ const AdminDashboard = () => {
           const studentName =
             data.fullName || data.username || data.studentName || "Student";
           const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+          const courses = Array.isArray(data.courses) ? data.courses : [];
 
           return tasks
             .map((task: any, taskIndex: number) => {
               const taskDate = task.dateTime ? new Date(task.dateTime) : null;
               if (!taskDate || Number.isNaN(taskDate.getTime())) return null;
 
+              const taskCourseIdentity = getCourseIdentity(task.course);
+              const matchingCourse = courses.find((course: any) => {
+                if (!course || typeof course !== "object") return false;
+                const courseIdentity = getCourseIdentity(
+                  course.name || course.courseName,
+                  course.level,
+                );
+                return (
+                  courseIdentity.name === taskCourseIdentity.name &&
+                  (!taskCourseIdentity.level ||
+                    !courseIdentity.level ||
+                    courseIdentity.level === taskCourseIdentity.level)
+                );
+              });
+              const levelValue =
+                matchingCourse?.level || taskCourseIdentity.level;
+              const levelLabels: Record<string, string> = {
+                "1": "Beginner",
+                "2": "Intermediate",
+                "3": "Advanced",
+                "4": "Expert",
+              };
+              const levelLabel = levelValue
+                ? `Level ${levelLabels[String(levelValue).toLowerCase()] || levelValue}`
+                : "";
+              const courseName =
+                matchingCourse?.name ||
+                matchingCourse?.courseName ||
+                taskCourseIdentity.name ||
+                "Course";
+
               return {
                 id: `class-${doc.id}-${taskIndex}`,
                 studentName,
                 taskName: task.task || "Class task",
-                courseName: task.course || "course",
+                courseName,
+                courseLabel: [courseName, levelLabel].filter(Boolean).join(" · "),
                 status: String(task.status || "").trim(),
                 time: taskDate,
               };
@@ -1552,6 +1786,8 @@ const AdminDashboard = () => {
           type: "class_task",
           name: isComplete ? "Class Completed" : "Class Updated",
           description: `${task.studentName} ${isComplete ? "completed" : "updated"} ${task.courseName}: ${task.taskName}`,
+          classDateTime: task.time,
+          courseLabel: task.courseLabel,
           time: task.time,
           icon: CheckCircle2,
           iconColor: isComplete ? "text-emerald-600" : "text-blue-600",
@@ -1977,6 +2213,148 @@ const AdminDashboard = () => {
       overviewData.pendingApprovals,
       overviewData.pendingPayments,
       overviewData.weeklyEnrollments,
+    ],
+  );
+
+  const selectedPredictionTrainer = trainerSummaries.find(
+    (trainer) => trainer.id === predictionTrainerId,
+  );
+  const predictionTrainerFilter: PredictionTrainerFilter =
+    predictionTrainerId === "unassigned"
+      ? "unassigned"
+      : selectedPredictionTrainer;
+
+  const weekdayPredictionCounts = useMemo(
+    () =>
+      new Map(
+        PREDICTION_WEEKDAYS.map((weekday) => [
+          weekday,
+          countStudentsWithWeekdayPattern(
+            dayPredictionStudents,
+            weekday,
+            currentDateTime,
+            predictionTrainerFilter,
+          ),
+        ]),
+      ),
+    [
+      currentDateTime,
+      dayPredictionStudents,
+      predictionTrainerFilter,
+    ],
+  );
+
+  const trainerPredictionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    counts.set(
+      "all",
+      countStudentsWithWeekdayPattern(
+        dayPredictionStudents,
+        predictionWeekday,
+        currentDateTime,
+      ),
+    );
+    counts.set(
+      "unassigned",
+      countStudentsWithWeekdayPattern(
+        dayPredictionStudents,
+        predictionWeekday,
+        currentDateTime,
+        "unassigned",
+      ),
+    );
+    trainerSummaries.forEach((trainer) => {
+      counts.set(
+        trainer.id,
+        countStudentsWithWeekdayPattern(
+          dayPredictionStudents,
+          predictionWeekday,
+          currentDateTime,
+          trainer,
+        ),
+      );
+    });
+    return counts;
+  }, [currentDateTime, dayPredictionStudents, predictionWeekday, trainerSummaries]);
+
+  const studentsLikelyOnSelectedWeekday = useMemo(
+    () =>
+      dayPredictionStudents
+        .map((student) => ({
+          student,
+          pattern: getStudentWeekdayPattern(
+            student,
+            predictionWeekday,
+            currentDateTime,
+            predictionTrainerFilter,
+          ),
+        }))
+        .filter(
+          (
+            entry,
+          ): entry is {
+            student: Record<string, any>;
+            pattern: { matchingDayCount: number; sampleSize: number };
+          } => entry.pattern !== null,
+        )
+        .sort(
+          (a, b) =>
+            b.pattern.matchingDayCount - a.pattern.matchingDayCount ||
+            String(a.student.displayName).localeCompare(
+              String(b.student.displayName),
+            ),
+        ),
+    [
+      currentDateTime,
+      dayPredictionStudents,
+      predictionWeekday,
+      predictionTrainerFilter,
+    ],
+  );
+
+  const studentsWithoutSelectedWeekdayPattern = useMemo(
+    () =>
+      dayPredictionStudents
+        .map((student) => {
+          const classDates = getStudentCompletedClassDates(
+            student,
+            currentDateTime,
+            predictionTrainerFilter,
+          );
+          if (!classDates || classDates.length === 0) return null;
+
+          const weekdayCounts = getStudentWeekdayCounts(classDates);
+          const matchingDayCount = weekdayCounts.get(predictionWeekday) || 0;
+          if (matchingDayCount >= 3) return null;
+
+          return {
+            student,
+            classDayCount: classDates.length,
+            matchingDayCount,
+          };
+        })
+        .filter(
+          (
+            entry,
+          ): entry is {
+            student: Record<string, any>;
+            classDayCount: number;
+            matchingDayCount: number;
+          } => entry !== null,
+        )
+        .sort(
+          (a, b) =>
+            b.matchingDayCount - a.matchingDayCount ||
+            b.classDayCount - a.classDayCount ||
+            String(a.student.displayName).localeCompare(
+              String(b.student.displayName),
+            ),
+        ),
+    [
+      currentDateTime,
+      dayPredictionStudents,
+      predictionTrainerFilter,
+      predictionWeekday,
     ],
   );
 
@@ -2442,6 +2820,307 @@ const AdminDashboard = () => {
                 No trainers to display yet.
               </div>
             )}
+          </section>
+
+          <section aria-labelledby="admin-day-prediction-title" className="mb-8">
+            <Card className="border border-red-100 bg-white/85 shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-800">
+                    <CalendarRange className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle
+                      id="admin-day-prediction-title"
+                      className="text-lg text-gray-900"
+                    >
+                      Students who may come on {getWeekdayName(predictionWeekday)}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Based on each student&apos;s last five distinct completed
+                      class days. This is an estimate.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="mb-4 flex flex-wrap gap-2"
+                  role="group"
+                  aria-label="Filter predicted students by weekday"
+                >
+                  {PREDICTION_WEEKDAYS.map((weekday) => (
+                    <Button
+                      key={weekday}
+                      type="button"
+                      size="sm"
+                      variant={
+                        predictionWeekday === weekday ? "default" : "outline"
+                      }
+                      aria-pressed={predictionWeekday === weekday}
+                      onClick={() => {
+                        setPredictionWeekday(weekday);
+                        setPredictionStudentGroup("regular");
+                      }}
+                      className={
+                        predictionWeekday === weekday
+                          ? "rounded-full bg-red-800 text-white hover:bg-red-900"
+                          : "rounded-full border-red-200 text-red-800"
+                      }
+                    >
+                      {getWeekdayName(weekday)}{" "}
+                      <span
+                        className={`ml-1 inline-flex min-w-5 justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                          predictionWeekday === weekday
+                            ? "bg-white/20 text-white"
+                            : "bg-red-50 text-red-800"
+                        }`}
+                      >
+                        {weekdayPredictionCounts.get(weekday) || 0}
+                      </span>
+                    </Button>
+                  ))}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={
+                      predictionStudentGroup === "not_regular"
+                        ? "default"
+                        : "outline"
+                    }
+                    aria-pressed={predictionStudentGroup === "not_regular"}
+                    onClick={() => setPredictionStudentGroup("not_regular")}
+                    className={
+                      predictionStudentGroup === "not_regular"
+                        ? "ml-2 rounded-full bg-slate-700 text-white hover:bg-slate-800"
+                        : "ml-2 rounded-full border-slate-300 text-slate-700"
+                    }
+                  >
+                    Not regular{" "}
+                    <span className="ml-1 inline-flex min-w-5 justify-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                      {studentsWithoutSelectedWeekdayPattern.length}
+                    </span>
+                  </Button>
+                  <div className="ml-1 flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-1.5 pl-3 shadow-sm">
+                    <label
+                      htmlFor="prediction-trainer-filter"
+                      className="whitespace-nowrap text-xs font-semibold text-indigo-800"
+                    >
+                      Trainer
+                    </label>
+                    <select
+                      id="prediction-trainer-filter"
+                      value={predictionTrainerId}
+                      onChange={(event) =>
+                        setPredictionTrainerId(event.target.value)
+                      }
+                      className="h-8 min-w-40 rounded-lg border border-indigo-200 bg-white px-3 text-sm font-medium text-indigo-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                    >
+                      <option value="all">
+                        All trainers ({trainerPredictionCounts.get("all") || 0})
+                      </option>
+                      <option value="unassigned">
+                        Unassigned ({trainerPredictionCounts.get("unassigned") || 0})
+                      </option>
+                      {trainerSummaries.map((trainer) => (
+                        <option key={trainer.id} value={trainer.id}>
+                          {trainer.name} (
+                          {trainerPredictionCounts.get(trainer.id) || 0})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <p
+                  className="mb-3 text-sm font-semibold text-gray-700"
+                  aria-live="polite"
+                >
+                  {predictionStudentGroup === "regular"
+                    ? studentsLikelyOnSelectedWeekday.length
+                    : studentsWithoutSelectedWeekdayPattern.length}{" "}
+                  {predictionStudentGroup === "regular"
+                    ? studentsLikelyOnSelectedWeekday.length === 1
+                      ? "student"
+                      : "students"
+                    : studentsWithoutSelectedWeekdayPattern.length === 1
+                      ? "student"
+                      : "students"}{" "}
+                  {predictionStudentGroup === "regular"
+                    ? `regular on ${getWeekdayName(predictionWeekday)}`
+                    : `not regular on ${getWeekdayName(predictionWeekday)}`}{" "}
+                  out of {dayPredictionStudents.length} student records
+                  {" · "}
+                  {getWeekdayName(predictionWeekday)}
+                  {predictionTrainerId !== "all"
+                    ? ` · ${
+                        predictionTrainerId === "unassigned"
+                          ? "Unassigned"
+                          : selectedPredictionTrainer?.name || "Selected trainer"
+                      }`
+                    : ""}
+                </p>
+
+                <div
+                  hidden={predictionStudentGroup !== "regular"}
+                  aria-label="Regular students"
+                >
+                {loadingOverview ? (
+                  <p className="py-6 text-center text-sm text-gray-500">
+                    Loading student class history...
+                  </p>
+                ) : studentsLikelyOnSelectedWeekday.length > 0 ? (
+                  <ul className="max-h-[26rem] divide-y divide-gray-100 overflow-y-auto pr-2">
+                    {studentsLikelyOnSelectedWeekday.map(
+                      ({ student, pattern }) => {
+                        const activeCourses = getActiveStudentCourses(
+                          student,
+                          predictionTrainerFilter,
+                        );
+                        const trainerNames = Array.from(
+                          new Set(
+                            activeCourses
+                              .map((course) =>
+                                String(course.trainerName || "").trim(),
+                              )
+                              .filter(Boolean),
+                          ),
+                        );
+                        const trainerName =
+                          (predictionTrainerFilter === "unassigned"
+                            ? "Unassigned"
+                            : predictionTrainerFilter?.name) ||
+                          trainerNames.join(", ") ||
+                          getStudentTrainer(student) ||
+                          "Unassigned";
+
+                        return (
+                          <li
+                            key={student.id}
+                            className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-gray-900">
+                                {student.displayName}
+                              </p>
+                              <p className="truncate text-sm text-gray-600">
+                                {activeCourses
+                                  .map(
+                                    (course) =>
+                                      course.name || course.courseName || "",
+                                  )
+                                  .filter(Boolean)
+                                  .join(", ") || "Active course"}
+                              </p>
+                              <p className="mt-1 text-sm">
+                                <span className="text-gray-500">Trainer: </span>
+                                <span className="font-semibold text-red-800">
+                                  {trainerName}
+                                </span>
+                              </p>
+                            </div>
+                            <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+                              {pattern.matchingDayCount} of {pattern.sampleSize}{" "}
+                              recent class days
+                            </span>
+                          </li>
+                        );
+                      },
+                    )}
+                  </ul>
+                ) : (
+                  <p className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
+                    No students have a regular {getWeekdayName(predictionWeekday)}{" "}
+                    pattern in their recent class history.
+                  </p>
+                )}
+                </div>
+
+                <div
+                  hidden={predictionStudentGroup !== "not_regular"}
+                  aria-label={`Students not regular on ${getWeekdayName(predictionWeekday)}`}
+                >
+                  {loadingOverview ? (
+                    <p className="py-4 text-center text-sm text-gray-500">
+                      Loading student class history...
+                    </p>
+                  ) : studentsWithoutSelectedWeekdayPattern.length > 0 ? (
+                    <ul className="max-h-[22rem] divide-y divide-gray-100 overflow-y-auto pr-2">
+                      {studentsWithoutSelectedWeekdayPattern.map(
+                        ({
+                          student,
+                          classDayCount,
+                          matchingDayCount,
+                        }) => {
+                          const activeCourses = getActiveStudentCourses(
+                            student,
+                            predictionTrainerFilter,
+                          );
+                          const trainerNames = Array.from(
+                            new Set(
+                              activeCourses
+                                .map((course) =>
+                                  String(course.trainerName || "").trim(),
+                                )
+                                .filter(Boolean),
+                            ),
+                          );
+                          const trainerName =
+                            (predictionTrainerFilter === "unassigned"
+                              ? "Unassigned"
+                              : predictionTrainerFilter?.name) ||
+                            trainerNames.join(", ") ||
+                            getStudentTrainer(student) ||
+                            "Unassigned";
+
+                          return (
+                            <li
+                              key={student.id}
+                              className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-gray-900">
+                                  {student.displayName}
+                                </p>
+                                <p className="truncate text-sm text-gray-600">
+                                  {activeCourses
+                                    .map(
+                                      (course) =>
+                                        course.name ||
+                                        course.courseName ||
+                                        "",
+                                    )
+                                    .filter(Boolean)
+                                    .join(", ") || "Class history"}
+                                </p>
+                                <p className="mt-1 text-sm">
+                                  <span className="text-gray-500">
+                                    Trainer:{" "}
+                                  </span>
+                                  <span className="font-semibold text-red-800">
+                                    {trainerName}
+                                  </span>
+                                </p>
+                              </div>
+                              <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                {classDayCount < 5
+                                  ? `Not regular · ${matchingDayCount} of ${classDayCount} recent days`
+                                  : `${matchingDayCount} of 5 recent days`}
+                              </span>
+                            </li>
+                          );
+                        },
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-gray-300 px-4 py-5 text-center text-sm text-gray-500">
+                      No students without a regular{" "}
+                      {getWeekdayName(predictionWeekday)} pattern match this
+                      filter.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </section>
 
           {/* Quick Stats Grid */}
@@ -3041,6 +3720,8 @@ const AdminDashboard = () => {
                         name={activity.name}
                         description={activity.description}
                         time={getRelativeTime(activity.time)}
+                        classDateTime={activity.classDateTime}
+                        courseLabel={activity.courseLabel}
                         icon={
                           <activity.icon
                             className={`h-4 w-4 ${activity.iconColor}`}
@@ -3454,13 +4135,48 @@ const StatCard = ({
   );
 };
 
-const ActionItem = ({ name, description, time, icon }: any) => {
+const ActionItem = ({
+  name,
+  description,
+  time,
+  icon,
+  classDateTime,
+  courseLabel,
+}: {
+  name: string;
+  description: string;
+  time: string;
+  icon: React.ReactNode;
+  classDateTime?: Date;
+  courseLabel?: string;
+}) => {
   return (
     <div className="flex items-start gap-4">
       <div className="mt-1">{icon}</div>
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium leading-none text-gray-900">{name}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
+        {classDateTime && courseLabel ? (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
+              <CalendarRange className="h-3.5 w-3.5" />
+              {classDateTime.toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+              {" · "}
+              {classDateTime.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-800">
+              <BookOpen className="h-3.5 w-3.5" />
+              {courseLabel}
+            </span>
+          </div>
+        ) : null}
         <p className="text-xs text-muted-foreground mt-1">{time}</p>
       </div>
     </div>
