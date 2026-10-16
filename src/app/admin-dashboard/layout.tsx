@@ -2,7 +2,7 @@
 import React from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth-context";
-
+import { Toaster } from "@/components/ui/toast";
 export default function AdminDashboardLayout({
   children,
 }: {
@@ -17,6 +17,7 @@ export default function AdminDashboardLayout({
       <div className="flex flex-1">
         <DashboardLayout role="admin" name={name}>
           {children}
+          <Toaster />
         </DashboardLayout>
       </div>
     </div>

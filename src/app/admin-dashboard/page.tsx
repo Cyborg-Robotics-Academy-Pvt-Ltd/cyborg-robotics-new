@@ -87,6 +87,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Toaster, toast } from "@/components/ui/toast";
 import DashboardNotification from "@/components/admin/DashboardNotification";
 
 // Theme configurations
@@ -343,6 +344,44 @@ type PredictionTrainerFilter =
   | "unassigned"
   | undefined;
 
+const isPredictionCourseCompleted = (course: Record<string, any>) =>
+  course.completed === true ||
+  ["complete", "completed"].includes(
+    String(course.status || "").trim().toLowerCase(),
+  );
+
+const getPredictionStudentStatus = (student: Record<string, any>, now: Date) => {
+  const courses = Array.isArray(student.courses) ? student.courses : [];
+  const normalizedCourses = courses.filter(
+    (course: unknown) => course && typeof course === "object",
+  ) as Array<Record<string, any>>;
+  if (
+    normalizedCourses.length > 0 &&
+    normalizedCourses.every(isPredictionCourseCompleted)
+  ) {
+    return "Completed";
+  }
+
+  const latestClassDate = (Array.isArray(student.tasks) ? student.tasks : [])
+    .map((task: Record<string, any>) => {
+      const date = task?.dateTime ? new Date(task.dateTime) : null;
+      return date && !Number.isNaN(date.getTime()) ? date : null;
+    })
+    .filter((date: Date | null): date is Date => date !== null)
+    .sort((a: Date, b: Date) => b.getTime() - a.getTime())[0];
+
+  if (!latestClassDate) return "Active";
+  return now.getTime() - latestClassDate.getTime() >= 14 * 24 * 60 * 60 * 1000
+    ? "Inactive"
+    : "Active";
+};
+
+const PREDICTION_STUDENT_STATUS_STYLES: Record<string, string> = {
+  Active: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  Inactive: "border-amber-200 bg-amber-50 text-amber-800",
+  Completed: "border-slate-200 bg-slate-100 text-slate-700",
+};
+
 const getActiveStudentCourses = (
   student: Record<string, any>,
   trainer?: PredictionTrainerFilter,
@@ -373,8 +412,7 @@ const getActiveStudentCourses = (
     .filter(
       (course): course is Record<string, any> =>
         course !== null &&
-        course.completed !== true &&
-        String(course.status || "").trim().toLowerCase() !== "complete" &&
+        !isPredictionCourseCompleted(course) &&
         (trainer === "unassigned"
           ? !course.trainerId && !course.trainerName
           : !trainer ||
@@ -522,12 +560,15 @@ const getStudentCourseDetailUrl = (student: Record<string, any>) => {
   const primaryCourse =
     courses.find(
       (course: Record<string, any>) =>
-        course?.completed !== true &&
-        (!course?.status || String(course.status).toLowerCase() !== "complete"),
+        course &&
+        typeof course === "object" &&
+        !isPredictionCourseCompleted(course),
     ) || courses[0];
 
   const courseName = String(
-    primaryCourse?.name || primaryCourse?.courseName || "",
+    typeof primaryCourse === "string"
+      ? primaryCourse
+      : primaryCourse?.name || primaryCourse?.courseName || "",
   ).trim();
 
   if (!courseName) return `/${prnNumber}`;
@@ -658,6 +699,7 @@ const AdminDashboard = () => {
   // State for recent activity data
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
+  const shownActivityToastIds = useRef(new Set<string>());
 
   // State for enrollment trends
   const [enrollmentTrendStudents, setEnrollmentTrendStudents] = useState<any[]>(
@@ -2114,6 +2156,27 @@ const AdminDashboard = () => {
     fetchCourseCategories,
   ]);
 
+  useEffect(() => {
+    if (loadingActivities || notification) return;
+
+    [...recentActivities].reverse().forEach((activity) => {
+      const id = `admin-activity-${activity.type}-${activity.id}`;
+      if (shownActivityToastIds.current.has(id)) return;
+
+      shownActivityToastIds.current.add(id);
+      toast.add({
+        id,
+        title: activity.name,
+        description: `${activity.description} · ${getRelativeTime(activity.time)}`,
+        type:
+          activity.type === "payment" || activity.name === "Class Completed"
+            ? "success"
+            : "info",
+        timeout: 10000,
+      });
+    });
+  }, [loadingActivities, notification, recentActivities]);
+
   // Overview cards data
   const overviewCards = [
     {
@@ -2294,7 +2357,10 @@ const AdminDashboard = () => {
             entry,
           ): entry is {
             student: Record<string, any>;
-            pattern: { matchingDayCount: number; sampleSize: number };
+            pattern: {
+              matchingDayCount: number;
+              sampleSize: number;
+            };
           } => entry.pattern !== null,
         )
         .sort(
@@ -2396,7 +2462,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <>
+    <Toaster timeout={10000} limit={3}>
       <main
         role="main"
         aria-label="Admin Dashboard"
@@ -2938,13 +3004,13 @@ const AdminDashboard = () => {
                   {predictionStudentGroup === "regular"
                     ? studentsLikelyOnSelectedWeekday.length
                     : studentsWithoutSelectedWeekdayPattern.length}{" "}
-                  {predictionStudentGroup === "regular"
-                    ? studentsLikelyOnSelectedWeekday.length === 1
-                      ? "student"
-                      : "students"
-                    : studentsWithoutSelectedWeekdayPattern.length === 1
-                      ? "student"
-                      : "students"}{" "}
+                  {(
+                    predictionStudentGroup === "regular"
+                      ? studentsLikelyOnSelectedWeekday.length
+                      : studentsWithoutSelectedWeekdayPattern.length
+                  ) === 1
+                    ? "student"
+                    : "students"}{" "}
                   {predictionStudentGroup === "regular"
                     ? `regular on ${getWeekdayName(predictionWeekday)}`
                     : `not regular on ${getWeekdayName(predictionWeekday)}`}{" "}
@@ -2992,6 +3058,12 @@ const AdminDashboard = () => {
                           trainerNames.join(", ") ||
                           getStudentTrainer(student) ||
                           "Unassigned";
+                        const studentDetailsHref =
+                          getStudentCourseDetailUrl(student);
+                        const studentStatus = getPredictionStudentStatus(
+                          student,
+                          currentDateTime,
+                        );
 
                         return (
                           <li
@@ -2999,18 +3071,41 @@ const AdminDashboard = () => {
                             className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
                           >
                             <div className="min-w-0">
-                              <p className="truncate font-semibold text-gray-900">
-                                {student.displayName}
-                              </p>
-                              <p className="truncate text-sm text-gray-600">
-                                {activeCourses
-                                  .map(
-                                    (course) =>
-                                      course.name || course.courseName || "",
-                                  )
-                                  .filter(Boolean)
-                                  .join(", ") || "Active course"}
-                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                {studentDetailsHref ? (
+                                  <Link
+                                    href={studentDetailsHref}
+                                    className="truncate text-left font-semibold text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                    aria-label={`View course details for ${student.displayName}`}
+                                  >
+                                    {student.displayName}
+                                  </Link>
+                                ) : (
+                                  <p className="truncate font-semibold text-gray-900">
+                                    {student.displayName}
+                                  </p>
+                                )}
+                                <span
+                                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
+                                >
+                                  {studentStatus}
+                                </span>
+                              </div>
+                              {activeCourses.some(
+                                (course) => course.name || course.courseName,
+                              ) ? (
+                                <p className="truncate text-sm text-gray-600">
+                                  {activeCourses
+                                    .map(
+                                      (course) =>
+                                        course.name ||
+                                        course.courseName ||
+                                        "",
+                                    )
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </p>
+                              ) : null}
                               <p className="mt-1 text-sm">
                                 <span className="text-gray-500">Trainer: </span>
                                 <span className="font-semibold text-red-800">
@@ -3071,6 +3166,12 @@ const AdminDashboard = () => {
                             trainerNames.join(", ") ||
                             getStudentTrainer(student) ||
                             "Unassigned";
+                          const studentDetailsHref =
+                            getStudentCourseDetailUrl(student);
+                          const studentStatus = getPredictionStudentStatus(
+                            student,
+                            currentDateTime,
+                          );
 
                           return (
                             <li
@@ -3078,20 +3179,41 @@ const AdminDashboard = () => {
                               className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
                             >
                               <div className="min-w-0">
-                                <p className="truncate font-medium text-gray-900">
-                                  {student.displayName}
-                                </p>
-                                <p className="truncate text-sm text-gray-600">
-                                  {activeCourses
-                                    .map(
-                                      (course) =>
-                                        course.name ||
-                                        course.courseName ||
-                                        "",
-                                    )
-                                    .filter(Boolean)
-                                    .join(", ") || "Class history"}
-                                </p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {studentDetailsHref ? (
+                                    <Link
+                                      href={studentDetailsHref}
+                                      className="truncate text-left font-medium text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                      aria-label={`View course details for ${student.displayName}`}
+                                    >
+                                      {student.displayName}
+                                    </Link>
+                                  ) : (
+                                    <p className="truncate font-medium text-gray-900">
+                                      {student.displayName}
+                                    </p>
+                                  )}
+                                  <span
+                                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
+                                  >
+                                    {studentStatus}
+                                  </span>
+                                </div>
+                                {activeCourses.some(
+                                  (course) => course.name || course.courseName,
+                                ) ? (
+                                  <p className="truncate text-sm text-gray-600">
+                                    {activeCourses
+                                      .map(
+                                        (course) =>
+                                          course.name ||
+                                          course.courseName ||
+                                          "",
+                                      )
+                                      .filter(Boolean)
+                                      .join(", ")}
+                                  </p>
+                                ) : null}
                                 <p className="mt-1 text-sm">
                                   <span className="text-gray-500">
                                     Trainer:{" "}
@@ -3113,12 +3235,13 @@ const AdminDashboard = () => {
                     </ul>
                   ) : (
                     <p className="rounded-xl border border-dashed border-gray-300 px-4 py-5 text-center text-sm text-gray-500">
-                      No students without a regular{" "}
+                      No students with five class days but without a regular{" "}
                       {getWeekdayName(predictionWeekday)} pattern match this
                       filter.
                     </p>
                   )}
                 </div>
+
               </CardContent>
             </Card>
           </section>
@@ -3709,8 +3832,8 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 {loadingActivities ? (
-                  <div className="flex items-center justify-center h-48">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700"></div>
+                  <div className="flex h-48 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-red-700" />
                   </div>
                 ) : recentActivities.length > 0 ? (
                   <div className="max-h-[420px] space-y-6 overflow-y-auto pr-2">
@@ -3731,8 +3854,8 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Activity className="mx-auto mb-3 h-12 w-12 opacity-50" />
                     <p>No recent activity</p>
                     <p className="text-sm">Check back later for updates</p>
                   </div>
@@ -4038,7 +4161,8 @@ const AdminDashboard = () => {
           onClose={() => setNotification(null)}
         />
       )}
-    </>
+
+    </Toaster>
   );
 };
 

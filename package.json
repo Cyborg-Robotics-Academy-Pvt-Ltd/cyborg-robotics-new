@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@codemirror/lang-python": "^6.2.1",
     "@getbrevo/brevo": "^3.0.1",
     "@google/generative-ai": "^0.24.1",
