@@ -2167,11 +2167,22 @@ const AdminDashboard = () => {
       toast.add({
         id,
         title: activity.name,
-        description: `${activity.description} · ${getRelativeTime(activity.time)}`,
+        description: (
+          <>
+            {activity.description} ·{" "}
+            <span className="font-semibold text-current underline decoration-current/40 underline-offset-2">
+              {getRelativeTime(activity.time)}
+            </span>
+          </>
+        ),
         type:
-          activity.type === "payment" || activity.name === "Class Completed"
-            ? "success"
-            : "info",
+          activity.type === "payment"
+            ? "payment"
+            : activity.name === "Class Completed"
+              ? "class-completed"
+              : activity.type === "registration"
+                ? "registration"
+                : "info",
         timeout: 10000,
       });
     });
