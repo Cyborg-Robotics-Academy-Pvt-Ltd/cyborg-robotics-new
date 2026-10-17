@@ -9,7 +9,13 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  onSnapshot,
+} from "firebase/firestore";
 import { getAdminUserData } from "@/lib/admin-utils";
 import Link from "next/link";
 import Image from "next/image";
@@ -87,7 +93,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Toaster, toast } from "@/components/ui/toast";
 import DashboardNotification from "@/components/admin/DashboardNotification";
 
 // Theme configurations
@@ -699,7 +704,6 @@ const AdminDashboard = () => {
   // State for recent activity data
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
-  const shownActivityToastIds = useRef(new Set<string>());
 
   // State for enrollment trends
   const [enrollmentTrendStudents, setEnrollmentTrendStudents] = useState<any[]>(
@@ -1743,10 +1747,10 @@ const AdminDashboard = () => {
         })
         .slice(0, 5);
 
-      recentStudents.forEach((doc, index) => {
+      recentStudents.forEach((doc) => {
         const data = doc.data();
         activities.push({
-          id: `student-${index}`,
+          id: `student-${doc.id}`,
           type: "registration",
           name: "New Student Registration",
           description: data.trainerName
@@ -1865,7 +1869,7 @@ const AdminDashboard = () => {
         })
         .slice(0, 5);
 
-      recentPayments.forEach((doc, index) => {
+      recentPayments.forEach((doc) => {
         const data = doc.data();
         const paidAt = data.updatedAt || data.createdAt;
         const payerName =
@@ -1882,7 +1886,7 @@ const AdminDashboard = () => {
           "program";
 
         activities.push({
-          id: `payment-${index}`,
+          id: `payment-${doc.id}`,
           type: "payment",
           name: "Payment Received",
           description: `${payerName} paid ${formatCurrency(Number(data.amount) || 0)} for ${courseName}`,
@@ -1915,10 +1919,10 @@ const AdminDashboard = () => {
         })
         .slice(0, 3);
 
-      recentTrainers.forEach((doc, index) => {
+      recentTrainers.forEach((doc) => {
         const data = doc.data();
         activities.push({
-          id: `trainer-${index}`,
+          id: `trainer-${doc.id}`,
           type: "trainer_added",
           name: "Instructor Added",
           description: `${data.name || data.username || data.email} joined as instructor`,
@@ -2157,36 +2161,40 @@ const AdminDashboard = () => {
   ]);
 
   useEffect(() => {
-    if (loadingActivities || notification) return;
+    if (authLoading || isLoading) return;
 
-    [...recentActivities].reverse().forEach((activity) => {
-      const id = `admin-activity-${activity.type}-${activity.id}`;
-      if (shownActivityToastIds.current.has(id)) return;
+    const watchActivityCollection = (collectionName: string) => {
+      let isInitialSnapshot = true;
 
-      shownActivityToastIds.current.add(id);
-      toast.add({
-        id,
-        title: activity.name,
-        description: (
-          <>
-            {activity.description} ·{" "}
-            <span className="font-semibold text-current underline decoration-current/40 underline-offset-2">
-              {getRelativeTime(activity.time)}
-            </span>
-          </>
-        ),
-        type:
-          activity.type === "payment"
-            ? "payment"
-            : activity.name === "Class Completed"
-              ? "class-completed"
-              : activity.type === "registration"
-                ? "registration"
-                : "info",
-        timeout: 10000,
-      });
-    });
-  }, [loadingActivities, notification, recentActivities]);
+      return onSnapshot(
+        collection(db, collectionName),
+        () => {
+          if (isInitialSnapshot) {
+            isInitialSnapshot = false;
+            return;
+          }
+
+          void fetchRecentActivities();
+        },
+        (error) => {
+          console.error(
+            `Error monitoring ${collectionName} activity changes:`,
+            error,
+          );
+        },
+      );
+    };
+
+    const unsubscribeStudents = watchActivityCollection("students");
+    const unsubscribePayments = watchActivityCollection("payments");
+    const unsubscribeTrainers = watchActivityCollection("trainers");
+
+    return () => {
+      unsubscribeStudents();
+      unsubscribePayments();
+      unsubscribeTrainers();
+    };
+  }, [authLoading, isLoading, fetchRecentActivities]);
 
   // Overview cards data
   const overviewCards = [
@@ -2473,7 +2481,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <Toaster timeout={10000} limit={3}>
+    <>
       <main
         role="main"
         aria-label="Admin Dashboard"
@@ -4172,8 +4180,7 @@ const AdminDashboard = () => {
           onClose={() => setNotification(null)}
         />
       )}
-
-    </Toaster>
+    </>
   );
 };
 
