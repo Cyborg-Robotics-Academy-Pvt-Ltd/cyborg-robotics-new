@@ -843,7 +843,9 @@ const AdminDashboard = () => {
           student.PrnNumber ||
           student.username ||
           student.fullName,
-        href: getStudentCourseDetailUrl(student),
+        href: student.PrnNumber || student.prnNumber
+          ? `/${encodeURIComponent(String(student.PrnNumber || student.prnNumber).trim())}`
+          : null,
         label:
           student.fullName ||
           student.username ||

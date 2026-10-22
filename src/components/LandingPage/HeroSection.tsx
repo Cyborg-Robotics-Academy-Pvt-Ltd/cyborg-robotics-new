@@ -60,6 +60,15 @@ function trackMetaLead() {
   pixelWindow.fbq?.("track", "Lead", { content_name: "Free Trial" });
 }
 
+function trackFreeTrialPopupOpened() {
+  const pixelWindow = window as Window & {
+    fbq?: (...args: unknown[]) => void;
+  };
+  pixelWindow.fbq?.("trackCustom", "FreeTrialPopupOpened", {
+    content_name: "Free Trial Registration",
+  });
+}
+
 interface TrialLocation {
   id: string;
   name: string;
@@ -269,6 +278,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* ------------------------------------------------------------------------ */
 
   const [open, setOpen] = useState(openRequest > 0);
+  const hasTrackedPopupOpenRef = useRef(false);
   const [step, setStep] = useState<Step>(1);
 
   /* ------------------------------------------------------------------------ */
@@ -625,6 +635,15 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       setOpen(true);
     }
   }, [openRequest]);
+
+  useEffect(() => {
+    if (open && !hasTrackedPopupOpenRef.current) {
+      hasTrackedPopupOpenRef.current = true;
+      trackFreeTrialPopupOpened();
+    } else if (!open) {
+      hasTrackedPopupOpenRef.current = false;
+    }
+  }, [open]);
 
   useEffect(() => {
     const handleOpenTrialForm = () => {
