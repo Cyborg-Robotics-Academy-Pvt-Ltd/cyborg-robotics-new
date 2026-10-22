@@ -30,17 +30,12 @@ import {
   HeartIcon,
   Bot,
   Pause,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import Modal from "@/components/ui/Modal";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { getDefaultTrialSlots } from "@/lib/trial-availability";
@@ -1569,22 +1564,31 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       {/* TRIAL DIALOG                                                        */}
       {/* ------------------------------------------------------------------ */}
 
-      <Dialog
-        open={open}
-        onOpenChange={(value) => {
-          setOpen(value);
-
-          if (!value) {
-            resetScheduleState();
-          }
+      <Modal
+        isOpen={open}
+        onClose={() => {
+          setOpen(false);
+          resetScheduleState();
         }}
+        showHeader={false}
+        className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl rounded-2xl border-none bg-white p-0 sm:max-h-[94dvh] sm:w-[calc(100vw-2rem)]"
       >
-        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overscroll-contain overflow-y-auto rounded-2xl border-none bg-white p-0 sm:max-h-[94dvh] sm:w-[calc(100vw-2rem)]">
           {/* ================================================================ */}
           {/* MODERN HEADER                                                     */}
           {/* ================================================================ */}
 
-          <DialogHeader className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-4 pr-12 text-left text-white sm:p-6 sm:pr-14">
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-4 pr-12 text-left text-white sm:p-6 sm:pr-14">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                resetScheduleState();
+              }}
+              aria-label="Close trial registration"
+              className="absolute right-4 top-4 z-10 grid size-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <X className="size-5" />
+            </button>
             <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
 
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-orange-300/10 blur-3xl" />
@@ -1595,18 +1599,18 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                 Takes under 2 minutes
               </span>
 
-              <DialogTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 {step === 1 && "Trial registration"}
                 {step === 2 && "Pick your slot"}
-              </DialogTitle>
+              </h2>
 
-              <DialogDescription className="mt-1.5 text-sm leading-relaxed text-white/75">
+              <p className="mt-1.5 text-sm leading-relaxed text-white/75">
                 {step === 1 &&
                   "Step 1 of 2 — enter your student and location details."}
 
                 {step === 2 &&
                   `Step 2 of 2 — choose a ${modeLabel.toLowerCase()} trial date and time.`}
-              </DialogDescription>
+              </p>
 
               {/* ============================================================ */}
               {/* MODERN STEPPER                                                 */}
@@ -1679,7 +1683,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                 <span>Date & time</span>
               </div>
             </div>
-          </DialogHeader>
+          </div>
 
           {/* ================================================================ */}
           {/* FORM                                                              */}
@@ -2225,28 +2229,31 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               </div>
             )}
           </form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
       {/* ------------------------------------------------------------------ */}
       {/* SUCCESS MODAL                                                       */}
       {/* ------------------------------------------------------------------ */}
 
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-sm overflow-hidden rounded-2xl border-none bg-white p-0 text-center">
+      <Modal
+        isOpen={successOpen}
+        onClose={() => setSuccessOpen(false)}
+        showHeader={false}
+        className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-2xl border-none bg-white p-0 text-center"
+      >
           <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-8">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
               <CheckCircle2 className="h-9 w-9 text-green-600" />
             </div>
 
             <div>
-              <DialogTitle className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 Thank You !!
-              </DialogTitle>
+              </h2>
 
-              <DialogDescription className="mt-2  whitespace-pre-line text-sm leading-relaxed text-gray-600">
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
                 {successMessage}
-              </DialogDescription>
+              </p>
             </div>
 
             <div className="flex w-full flex-col gap-2">
@@ -2272,8 +2279,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+      </Modal>
     </section>
   );
 };
