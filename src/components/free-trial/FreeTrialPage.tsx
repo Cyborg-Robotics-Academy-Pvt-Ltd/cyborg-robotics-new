@@ -26,7 +26,7 @@ const navItems = [
 const FreeTrialPage = () => {
   const [activeSection, setActiveSection] = useState(navItems[0].id);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [trialModalRequest, setTrialModalRequest] = useState(1);
+  const [trialModalRequest, setTrialModalRequest] = useState(0);
 
   useEffect(() => {
     const sectionIds = navItems.map((item) => item.id);
