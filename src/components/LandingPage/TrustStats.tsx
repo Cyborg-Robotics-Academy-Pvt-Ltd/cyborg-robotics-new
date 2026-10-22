@@ -29,7 +29,7 @@ export default function TrustStats() {
               {label}
             </dt>
             <dd
-              className="text-4xl font-black leading-none tabular-nums tracking-tight text-gray-900 md:text-5xl"
+              className="text-3xl font-black leading-none tabular-nums tracking-tight text-gray-900 sm:text-4xl md:text-5xl"
               aria-label={`${value.toLocaleString("en-IN")}${suffix}`}
             >
               <span aria-hidden="true">

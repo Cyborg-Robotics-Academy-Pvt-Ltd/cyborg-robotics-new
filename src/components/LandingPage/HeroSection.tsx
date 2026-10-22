@@ -53,6 +53,13 @@ import type { TrialAvailabilityOverrides } from "@/lib/trial-availability";
 type TrialMode = "online" | "offline";
 type Step = 1 | 2;
 
+function trackMetaLead() {
+  const pixelWindow = window as Window & {
+    fbq?: (...args: unknown[]) => void;
+  };
+  pixelWindow.fbq?.("track", "Lead", { content_name: "Free Trial" });
+}
+
 interface TrialLocation {
   id: string;
   name: string;
@@ -261,7 +268,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* DIALOG / STEP                                                            */
   /* ------------------------------------------------------------------------ */
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(openRequest > 0);
   const [step, setStep] = useState<Step>(1);
 
   /* ------------------------------------------------------------------------ */
@@ -297,16 +304,20 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     };
 
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.load();
-
-    video
-      .play()
-      .then(() => setIsReelPlaying(true))
-      .catch(() => setIsReelPlaying(false)); // autoplay blocked — falls back to showing the play button
+    if (open) {
+      video.pause();
+      setIsReelPlaying(false);
+    } else {
+      video.load();
+      video
+        .play()
+        .then(() => setIsReelPlaying(true))
+        .catch(() => setIsReelPlaying(false)); // autoplay blocked — falls back to showing the play button
+    }
 
     return () =>
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-  }, []);
+  }, [open]);
   const [isReelPlaying, setIsReelPlaying] = useState(false);
   const formatTime = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -607,10 +618,6 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* ------------------------------------------------------------------------ */
   /* AUTO OPEN                                                                */
   /* ------------------------------------------------------------------------ */
-
-  useEffect(() => {
-    setOpen(true);
-  }, []);
 
   useEffect(() => {
     if (openRequest > 0) {
@@ -1024,6 +1031,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
         throw new Error(data.message || "Could not save your details.");
       }
 
+      if (!leadId) trackMetaLead();
+
       if (data.id) {
         setLeadId(data.id);
       }
@@ -1207,6 +1216,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Registration failed.");
       }
+
+      if (!leadId) trackMetaLead();
 
       setStep(1);
       setForm(initialForm);
@@ -1419,7 +1430,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             </span>
           </div>
         </div>
-        <div className="group relative mx-auto w-80 max-h-[500px] max-w-sm aspect-[9/16] overflow-hidden rounded-3xl border border-red-100 bg-black shadow-2xl">
+        <div className="group relative mx-auto aspect-[9/16] max-h-[500px] w-full max-w-[20rem] overflow-hidden rounded-3xl border border-red-100 bg-black shadow-2xl">
           {/* background video */}
           <video
             ref={reelVideoRef}
@@ -1429,7 +1440,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             muted
             playsInline
             loop
-            preload="metadata"
+            preload="none"
             onClick={toggleReelPlayback}
             onLoadedMetadata={(e) => setReelDuration(e.currentTarget.duration)}
             onTimeUpdate={(e) => updateReelPosition(e.currentTarget)}
@@ -1549,12 +1560,12 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
           }
         }}
       >
-        <DialogContent className="max-h-[94vh] overflow-y-auto rounded-2xl border-none bg-white p-0 sm:max-w-2xl">
+        <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overscroll-contain overflow-y-auto rounded-2xl border-none bg-white p-0 sm:max-h-[94dvh] sm:w-[calc(100vw-2rem)]">
           {/* ================================================================ */}
           {/* MODERN HEADER                                                     */}
           {/* ================================================================ */}
 
-          <DialogHeader className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-6 text-left text-white">
+          <DialogHeader className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-4 pr-12 text-left text-white sm:p-6 sm:pr-14">
             <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
 
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-orange-300/10 blur-3xl" />
@@ -1655,7 +1666,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
           {/* FORM                                                              */}
           {/* ================================================================ */}
 
-          <form onSubmit={handleSubmit} className="grid gap-6 p-6">
+          <form onSubmit={handleSubmit} className="grid gap-5 p-4 sm:gap-6 sm:p-6">
             {/* ============================================================== */}
             {/* STEP 1                                                          */}
             {/* ============================================================== */}

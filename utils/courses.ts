@@ -1,6 +1,6 @@
 const courses = [
     "Bambino Coding",
-    "3D Printing",
+    "3D Designing & Printing",
     "3D Printing + arduino",
     "Arduino",
     "Early Simple Machines",

@@ -133,7 +133,7 @@ const roleLinksMap: Record<
     {
       label: "Student Record",
       href: "/student-list",
-      icon: <IconUsers className="h-5 w-5 shrink-0 text-gray-700" />,
+      icon: <BookOpenText className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Student Media",

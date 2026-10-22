@@ -20,18 +20,27 @@ const app =
 // Initialize Firestore
 const db = getFirestore(app);
 
-// Initialize Auth only on the client side
+// Initialize Auth only on the client side. Consumers can await authReady so
+// they never subscribe before the dynamically imported Firebase Auth is ready.
 let auth: Auth | null = null;
+let resolveAuthReady: (instance: Auth | null) => void = () => {};
+const authReady = new Promise<Auth | null>((resolve) => {
+  resolveAuthReady = resolve;
+});
 let analytics = null;
 
 if (typeof window !== 'undefined') {
   // Import auth-related modules only on client side
   import('firebase/auth').then(({ getAuth, setPersistence, browserLocalPersistence }) => {
     auth = getAuth(app);
+    resolveAuthReady(auth);
     // Enable persistent auth state
     setPersistence(auth, browserLocalPersistence).catch(err => {
       console.error('Failed to set auth persistence:', err);
     });
+  }).catch((error) => {
+    console.error('Failed to initialize Firebase Auth:', error);
+    resolveAuthReady(null);
   });
 
   // Import analytics only on client side
@@ -40,4 +49,4 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export { app, analytics, auth, db }; 
+export { app, analytics, auth, authReady, db };

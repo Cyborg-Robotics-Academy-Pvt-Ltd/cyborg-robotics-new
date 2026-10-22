@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { app, db } from "@/lib/firebase";
+import { app, authReady, db } from "@/lib/firebase";
 import {
   setDoc,
   serverTimestamp,
@@ -123,22 +123,6 @@ const LoginPage = () => {
     }
   }, [user, userRole, authLoading, router]);
 
-  const redirectForRole = (role: Role) => {
-    setTimeout(() => {
-      switch (role) {
-        case "student":
-          router.push("/student-dashboard");
-          break;
-        case "trainer":
-          router.push("/trainer-dashboard");
-          break;
-        case "admin":
-          router.push("/admin-dashboard");
-          break;
-      }
-    }, 300);
-  };
-
   const isValidRole = (role: unknown): role is Role =>
     typeof role === "string" && (VALID_ROLES as string[]).includes(role);
 
@@ -190,7 +174,9 @@ const LoginPage = () => {
 
       // STEP 4: Firebase auth
       try {
-        await signInWithEmailAndPassword(getAuth(app), email, password);
+        const auth = await authReady;
+        if (!auth) throw new Error("Firebase Auth could not be initialized.");
+        await signInWithEmailAndPassword(auth, email, password);
       } catch (authError: unknown) {
         if (authError instanceof FirebaseError) {
           if (
@@ -234,13 +220,15 @@ const LoginPage = () => {
 
       // STEP 6: Persist role for client-side UX only (not an auth boundary)
       localStorage.setItem("userRole", resolvedRole);
+      // Publish the verified role immediately so the protected dashboard does
+      // not race the context's Firestore role lookup after the route change.
+      router.replace(`/${resolvedRole}-dashboard`);
 
       const RoleIcon = ROLE_META[resolvedRole].icon;
       toast.success(
         `Welcome back! Redirecting to your ${ROLE_META[resolvedRole].label} dashboard...`,
       );
 
-      redirectForRole(resolvedRole);
     } catch (err: unknown) {
       console.error("Login error:", err);
       const msg =

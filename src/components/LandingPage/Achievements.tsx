@@ -91,12 +91,12 @@ export default function CompetitionsAwards() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="grid gap-6 lg:grid-cols-2"
+          className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2"
         >
           {/* Competitions */}
           <motion.article
             variants={item}
-            className="flex flex-col rounded-3xl bg-white p-8 shadow-sm sm:p-10"
+            className="flex w-full min-w-0 flex-col rounded-3xl bg-white p-5 shadow-sm sm:p-8 lg:p-10"
           >
             <CardHeading
               icon={Trophy}
@@ -104,7 +104,7 @@ export default function CompetitionsAwards() {
               description={COMPETITIONS.description}
             />
 
-            <div className="mt-8 overflow-hidden rounded-2xl bg-white p-2">
+            <div className="mt-8 min-w-0 overflow-hidden rounded-2xl bg-white p-2">
               <motion.div
                 className="flex w-max items-center gap-3"
                 animate={{ x: ["0%", "-50%"] }}
@@ -148,7 +148,7 @@ export default function CompetitionsAwards() {
 
           <motion.div
             variants={item}
-            className="flex items-center justify-center"
+            className="flex w-full min-w-0 items-center justify-center"
           >
             <AchievementReel />
           </motion.div>
@@ -169,7 +169,22 @@ function AchievementReel() {
     const video = videoRef.current;
     if (!video) return;
 
-    video.play().catch(() => setIsPlaying(false));
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => setIsPlaying(false));
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(video);
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
   }, []);
 
   const togglePlayback = () => {
@@ -194,7 +209,7 @@ function AchievementReel() {
   };
 
   return (
-    <div className="relative aspect-[9/16] h-[460px] max-w-full overflow-hidden rounded-2xl bg-black shadow-lg">
+    <div className="relative mx-auto aspect-[9/16] w-[min(100%,18rem)] min-w-0 overflow-hidden rounded-2xl bg-black shadow-lg">
       <video
         ref={videoRef}
         src={ACHIEVEMENT_REEL_URL}
@@ -203,7 +218,7 @@ function AchievementReel() {
         muted
         playsInline
         loop
-        preload="metadata"
+        preload="none"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}

@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "@/lib/firebase";
+import { authReady, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -34,13 +34,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
+    let unsubscribe: (() => void) | undefined;
+    let disposed = false;
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const startAuthListener = async () => {
+      const auth = await authReady;
+      if (disposed) return;
+      if (!auth) {
+        setLoading(false);
+        return;
+      }
+
+      unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      setLoading(true);
 
       if (user) {
         try {
@@ -105,7 +112,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.removeItem("userRole");
         setLoading(false);
       }
-    });
+      });
+    };
+
+    void startAuthListener();
 
     // Helper function to check all collections
     const checkAllCollections = async (uid: string) => {
@@ -143,9 +153,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      disposed = true;
+      unsubscribe?.();
     };
   }, []);
 
