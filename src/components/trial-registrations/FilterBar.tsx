@@ -1,7 +1,14 @@
 "use client";
 
 import React from "react";
-import { Calendar, CalendarClock, History, Search, X } from "lucide-react";
+import {
+  Calendar,
+  CalendarClock,
+  CalendarDays,
+  History,
+  Search,
+  X,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -44,6 +51,10 @@ type Props = {
   leadOutcomeFilter: LeadOutcomeFilter;
   onLeadOutcomeChange: (value: LeadOutcomeFilter) => void;
 
+  todayOnly: boolean;
+  todayCount: number;
+  onTodayToggle: () => void;
+
   trialDateFilter: string;
   onTrialDateChange: (value: string) => void;
 
@@ -65,6 +76,9 @@ export function FilterBar({
   onLeadTempChange,
   leadOutcomeFilter,
   onLeadOutcomeChange,
+  todayOnly,
+  todayCount,
+  onTodayToggle,
   trialDateFilter,
   onTrialDateChange,
   followUpDateFilter,
@@ -87,6 +101,31 @@ export function FilterBar({
           className="w-full border-stone-200 bg-white pl-9 shadow-sm focus-visible:ring-orange-500 sm:w-72"
         />
       </div>
+
+      {/* TODAY'S ENQUIRIES */}
+
+      <button
+        type="button"
+        onClick={onTodayToggle}
+        aria-pressed={todayOnly}
+        className={cn(
+          "inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-colors sm:w-auto",
+          todayOnly
+            ? "border-orange-300 bg-orange-50 text-orange-700"
+            : "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-orange-600",
+        )}
+      >
+        <CalendarDays className="h-4 w-4" />
+        Today
+        <span
+          className={cn(
+            "rounded-full px-1.5 py-0.5 text-xs",
+            todayOnly ? "bg-orange-100" : "bg-stone-100",
+          )}
+        >
+          {todayCount}
+        </span>
+      </button>
 
       {/* STATUS */}
 

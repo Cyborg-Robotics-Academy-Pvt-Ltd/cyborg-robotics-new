@@ -36,6 +36,7 @@ import {
 import {
   avatarShade,
   getDisplayLocation,
+  isEnquiryFromToday,
   getLocationType,
   initials,
   leadOutcomeStyle,
@@ -292,7 +293,7 @@ function DesktopRowImpl({
     <TableRow className="group border-stone-100 transition-colors hover:bg-orange-50/40 focus-within:bg-orange-50/40">
       {/* STUDENT */}
 
-      <TableCell className="sticky left-0 z-10 w-[190px] min-w-[190px] max-w-[190px] bg-white bg-clip-padding group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
+      <TableCell className="sticky left-0 z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
         {followUpTone === "overdue" && (
           <span
             aria-hidden
@@ -312,11 +313,18 @@ function DesktopRowImpl({
           </div>
 
           <div className="min-w-0">
-            <p
-              className="truncate font-medium text-stone-900"
-              title={registration.studentName}
-            >
-              {registration.studentName}
+            <p className="flex min-w-0 items-center gap-2 font-medium text-stone-900">
+              <span className="min-w-0 truncate" title={registration.studentName}>
+                {registration.studentName}
+              </span>
+              {isEnquiryFromToday(
+                registration.createdAt,
+                registration.dateOfRegistration,
+              ) && (
+                <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                  New
+                </span>
+              )}
             </p>
             <p className="mt-0.5 text-xs text-stone-500">
               Age {registration.age}
@@ -327,19 +335,19 @@ function DesktopRowImpl({
 
       {/* CONTACT */}
 
-      <TableCell className="sticky left-[190px] z-10 w-[230px] min-w-[230px] max-w-[230px] bg-white bg-clip-padding shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)] group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
+      <TableCell className="sticky left-[300px] z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)] group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
         <div className="flex flex-col gap-1 text-sm">
           <a
             href={`mailto:${registration.email}`}
             title={registration.email}
             className={cn(
-              "flex items-center gap-1.5 rounded text-stone-500 hover:text-orange-600",
+              "flex min-w-0 items-start gap-1.5 rounded text-stone-500 hover:text-orange-600",
               focusRing,
             )}
           >
-            <Mail aria-hidden className="h-3.5 w-3.5 shrink-0" />
+            <Mail aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="sr-only">Email </span>
-            <span className="max-w-[180px] truncate">{registration.email}</span>
+            <span className="min-w-0 break-all">{registration.email}</span>
           </a>
 
           <a
@@ -354,6 +362,17 @@ function DesktopRowImpl({
             {registration.contactNumber}
           </a>
         </div>
+      </TableCell>
+
+      {/* ENQUIRY SUBMISSION TIME */}
+
+      <TableCell className="whitespace-nowrap text-stone-600">
+        {registration.createdAt
+          ? new Date(registration.createdAt).toLocaleString("en-IN", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })
+          : "—"}
       </TableCell>
 
       {/* TRIAL SLOT */}
@@ -375,6 +394,12 @@ function DesktopRowImpl({
         >
           {registration.remark || "—"}
         </p>
+      </TableCell>
+
+      {/* REFERRAL SOURCE */}
+
+      <TableCell className="whitespace-nowrap text-stone-700">
+        {registration.referralSource || "—"}
       </TableCell>
 
       {/* LOCATION */}

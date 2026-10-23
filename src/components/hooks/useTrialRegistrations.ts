@@ -25,6 +25,31 @@ import {
 
 const COLLECTION = "freeTrialRegistrations";
 
+function getCreatedAtMillis(value: unknown): number {
+  if (typeof value === "number") {
+    return value > 0 && value < 1_000_000_000_000 ? value * 1000 : value;
+  }
+
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") return Date.parse(value) || 0;
+
+  if (value && typeof value === "object") {
+    const timestamp = value as {
+      toMillis?: () => number;
+      toDate?: () => Date;
+      seconds?: number;
+      _seconds?: number;
+    };
+
+    if (typeof timestamp.toMillis === "function") return timestamp.toMillis();
+    if (typeof timestamp.toDate === "function") return timestamp.toDate().getTime();
+    if (typeof timestamp.seconds === "number") return timestamp.seconds * 1000;
+    if (typeof timestamp._seconds === "number") return timestamp._seconds * 1000;
+  }
+
+  return 0;
+}
+
 /**
  * Pure mapper: Firestore doc -> TrialRegistration.
  * Explicit return type means a missing field fails the build here,
@@ -60,6 +85,7 @@ function mapRegistration(
     age: typeof data.age === "number" ? data.age : Number(data.age || 0),
     contactNumber: data.contactNumber || "",
     email: data.email || "",
+    referralSource: data.referralSource || "",
     trialDate: data.trialDate || "",
     trialTime: data.trialTime || "",
     location,
@@ -77,7 +103,7 @@ function mapRegistration(
     closeRemark: data.closeRemark || "",
     dateOfRegistration: data.dateOfRegistration || "",
     // Pending server timestamps are null until the write is acknowledged.
-    createdAt: data.createdAt?.toMillis?.() ?? 0,
+    createdAt: getCreatedAtMillis(data.createdAt),
   };
 }
 

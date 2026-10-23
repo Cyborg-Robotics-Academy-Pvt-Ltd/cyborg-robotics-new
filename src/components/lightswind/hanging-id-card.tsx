@@ -156,7 +156,8 @@ export const HangingIdCard = ({
       if (!isDraggingRef.current) return;
       const dx = e.clientX - dragStartX.current;
       const L = ropeLength + 100;
-      const newAngle = dragAngle0.current + dx / L;
+      // A rightward swipe should pull the bottom of the hanging card right.
+      const newAngle = dragAngle0.current - dx / L;
       const clamped = Math.max(-1.4, Math.min(1.4, newAngle));
       physRef.current.angle = clamped;
       setAngle(clamped);

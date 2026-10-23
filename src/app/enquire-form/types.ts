@@ -54,6 +54,7 @@ export type TrialRegistration = {
   age: number;
   contactNumber: string;
   email: string;
+  referralSource: string;
 
   trialDate: string;
   trialTime: string;

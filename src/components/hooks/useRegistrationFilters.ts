@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { getDisplayLocation, getLocationType } from "@/app/enquire-form/utils";
+import {
+  getDisplayLocation,
+  getLocationType,
+  isEnquiryFromToday,
+} from "@/app/enquire-form/utils";
 import {
   LeadOutcomeFilter,
   LeadTempFilter,
@@ -17,6 +21,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
   const [leadTempFilter, setLeadTempFilter] = useState<LeadTempFilter>("all");
   const [leadOutcomeFilter, setLeadOutcomeFilter] =
     useState<LeadOutcomeFilter>("all");
+  const [todayOnly, setTodayOnly] = useState(false);
 
   /** Trial Slot date filter (YYYY-MM-DD). Empty string = no filter. */
   const [trialDateFilter, setTrialDateFilter] = useState("");
@@ -59,10 +64,32 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     return { all: registrations.length, online, offline };
   }, [registrations]);
 
+  const todayCount = useMemo(
+    () =>
+      registrations.filter((registration) =>
+        isEnquiryFromToday(
+          registration.createdAt,
+          registration.dateOfRegistration,
+        ),
+      ).length,
+    [registrations],
+  );
+
   /* FILTER + SORT */
 
   const filtered = useMemo(() => {
     let rows = [...registrations];
+
+    /* ENQUIRIES SUBMITTED TODAY */
+
+    if (todayOnly) {
+      rows = rows.filter((registration) =>
+        isEnquiryFromToday(
+          registration.createdAt,
+          registration.dateOfRegistration,
+        ),
+      );
+    }
 
     /* LOCATION */
 
@@ -153,6 +180,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     return rows;
   }, [
     registrations,
+    todayOnly,
     searchTerm,
     statusFilter,
     locationFilter,
@@ -170,6 +198,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     locationFilter !== "all" ||
     leadTempFilter !== "all" ||
     leadOutcomeFilter !== "all" ||
+    todayOnly ||
     trialDateFilter !== "" ||
     followUpDateFilter !== "";
 
@@ -179,6 +208,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setLocationFilter("all");
     setLeadTempFilter("all");
     setLeadOutcomeFilter("all");
+    setTodayOnly(false);
     setTrialDateFilter("");
     setFollowUpDateFilter("");
   };
@@ -204,6 +234,9 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setLeadTempFilter,
     leadOutcomeFilter,
     setLeadOutcomeFilter,
+    todayOnly,
+    setTodayOnly,
+    todayCount,
     trialDateFilter,
     setTrialDateFilter,
     followUpDateFilter,

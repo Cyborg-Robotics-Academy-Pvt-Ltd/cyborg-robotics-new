@@ -172,6 +172,7 @@ function AchievementReel() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          video.muted = false;
           video.play().catch(() => setIsPlaying(false));
         } else {
           video.pause();
@@ -215,7 +216,6 @@ function AchievementReel() {
         src={ACHIEVEMENT_REEL_URL}
         className="absolute inset-0 size-full object-cover"
         aria-label="Cyborg Robotics achievement reel"
-        muted
         playsInline
         loop
         preload="none"

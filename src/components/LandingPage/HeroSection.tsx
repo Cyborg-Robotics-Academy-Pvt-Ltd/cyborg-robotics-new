@@ -30,6 +30,8 @@ import {
   HeartIcon,
   Bot,
   Pause,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 
@@ -90,8 +92,18 @@ const initialForm = {
   age: "",
   contactNumber: "",
   email: "",
+  referralSource: "",
   location: "",
 };
+
+const REFERRAL_SOURCE_OPTIONS = [
+  "Facebook",
+  "Instagram",
+  "Google Search",
+  "YouTube",
+  "Friend / Family",
+  "Other",
+] as const;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -298,6 +310,9 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   const reelProgressThumbRef = useRef<HTMLDivElement>(null);
   const reelCurrentTimeRef = useRef(0);
   const [reelDuration, setReelDuration] = useState(0);
+  const [isHeroVisible, setIsHeroVisible] = useState(false);
+  const [isReelPlaying, setIsReelPlaying] = useState(false);
+  const [isReelMuted, setIsReelMuted] = useState(true);
   useEffect(() => {
     const video = reelVideoRef.current;
     if (!video) return;
@@ -309,21 +324,23 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     };
 
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    if (open) {
+    if (open || !isHeroVisible) {
       video.pause();
       setIsReelPlaying(false);
     } else {
-      video.load();
+      // Attempt playback with sound when the hero enters view.
+      if (!video.paused) return;
+      video.muted = false;
+      setIsReelMuted(false);
       video
         .play()
         .then(() => setIsReelPlaying(true))
-        .catch(() => setIsReelPlaying(false)); // autoplay blocked — falls back to showing the play button
+        .catch(() => setIsReelPlaying(false));
     }
 
     return () =>
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-  }, [open]);
-  const [isReelPlaying, setIsReelPlaying] = useState(false);
+  }, [open, isHeroVisible]);
   const formatTime = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
     const s = Math.floor(seconds);
@@ -367,12 +384,40 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const video = reelVideoRef.current;
     if (!video) return;
 
+    // A tap on an autoplaying, muted reel enables its sound.
+    if (!video.paused && video.muted) {
+      video.muted = false;
+      video.dataset.userEnabledAudio = "true";
+      setIsReelMuted(false);
+      return;
+    }
+
     if (video.paused) {
-      video.play();
-      setIsReelPlaying(true);
+      video.muted = false;
+      video.dataset.userEnabledAudio = "true";
+      setIsReelMuted(false);
+      video
+        .play()
+        .then(() => setIsReelPlaying(true))
+        .catch(() => setIsReelPlaying(false));
     } else {
       video.pause();
       setIsReelPlaying(false);
+    }
+  };
+  const toggleReelMute = () => {
+    const video = reelVideoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    if (!video.muted) video.dataset.userEnabledAudio = "true";
+    setIsReelMuted(video.muted);
+
+    if (video.paused && isHeroVisible && !open) {
+      video
+        .play()
+        .then(() => setIsReelPlaying(true))
+        .catch(() => {});
     }
   };
   /* ------------------------------------------------------------------------ */
@@ -666,8 +711,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       ([entry]) => {
         if (entry.isIntersecting) {
           setShowTrialOverlayText(true);
-          observer.disconnect();
         }
+        setIsHeroVisible(entry.isIntersecting);
       },
       { threshold: 0.3 },
     );
@@ -944,6 +989,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     age: Number(form.age),
     contactNumber: form.contactNumber.trim(),
     email: form.email.trim().toLowerCase(),
+    referralSource: form.referralSource,
 
     location: form.location.trim(),
 
@@ -1451,7 +1497,6 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             src="https://res.cloudinary.com/dqiarwxml/video/upload/v1789994845/a_01007515905417569596144750_2_896025210_hiqll3.mp4"
             poster="/images/cyborg-hero-poster.jpg"
             className="absolute inset-0 h-full w-full cursor-pointer object-cover"
-            muted
             playsInline
             loop
             preload="none"
@@ -1498,6 +1543,19 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
               <Pause className="h-6 w-6 fill-white text-white" />
             ) : (
               <Play className="h-6 w-6 fill-white text-white" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleReelMute}
+            aria-label={isReelMuted ? "Turn video sound on" : "Mute video"}
+            className="absolute right-3 top-14 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm"
+          >
+            {isReelMuted ? (
+              <VolumeX className="h-5 w-5" />
+            ) : (
+              <Volume2 className="h-5 w-5" />
             )}
           </button>
 
@@ -1573,662 +1631,683 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
         showHeader={false}
         className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl rounded-2xl border-none bg-white p-0 sm:max-h-[94dvh] sm:w-[calc(100vw-2rem)]"
       >
-          {/* ================================================================ */}
-          {/* MODERN HEADER                                                     */}
-          {/* ================================================================ */}
+        {/* ================================================================ */}
+        {/* MODERN HEADER                                                     */}
+        {/* ================================================================ */}
 
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-4 pr-12 text-left text-white sm:p-6 sm:pr-14">
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                resetScheduleState();
-              }}
-              aria-label="Close trial registration"
-              className="absolute right-4 top-4 z-10 grid size-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <X className="size-5" />
-            </button>
-            <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#7f1114] via-[#a81b1e] to-[#e4572e] p-4 pr-12 text-left text-white sm:p-6 sm:pr-14">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              resetScheduleState();
+            }}
+            aria-label="Close trial registration"
+            className="absolute right-4 top-4 z-10 grid size-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <X className="size-5" />
+          </button>
+          <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
 
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-orange-300/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-orange-300/10 blur-3xl" />
 
-            <div className="relative">
-              <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-sm">
-                <CalendarCheck className="h-3.5 w-3.5" />
-                Takes under 2 minutes
-              </span>
+          <div className="relative">
+            <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-sm">
+              <CalendarCheck className="h-3.5 w-3.5" />
+              Takes under 2 minutes
+            </span>
 
-              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                {step === 1 && "Trial registration"}
-                {step === 2 && "Pick your slot"}
-              </h2>
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {step === 1 && "Trial registration"}
+              {step === 2 && "Pick your slot"}
+            </h2>
 
-              <p className="mt-1.5 text-sm leading-relaxed text-white/75">
-                {step === 1 &&
-                  "Step 1 of 2 — enter your student and location details."}
+            <p className="mt-1.5 text-sm leading-relaxed text-white/75">
+              {step === 1 &&
+                "Step 1 of 2 — enter your student and location details."}
 
-                {step === 2 &&
-                  `Step 2 of 2 — choose a ${modeLabel.toLowerCase()} trial date and time.`}
-              </p>
+              {step === 2 &&
+                `Step 2 of 2 — choose a ${modeLabel.toLowerCase()} trial date and time.`}
+            </p>
 
-              {/* ============================================================ */}
-              {/* MODERN STEPPER                                                 */}
-              {/* ============================================================ */}
+            {/* ============================================================ */}
+            {/* MODERN STEPPER                                                 */}
+            {/* ============================================================ */}
 
-              <div className="mt-6 flex items-center">
-                <div className="flex min-w-0 items-center">
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
-                      step >= 1
-                        ? "border-white bg-white text-[#a81b1e] shadow-lg shadow-black/10"
-                        : "border-white/40 bg-white/10 text-white/60"
-                    }`}
-                  >
-                    {step > 1 ? <CheckCircle2 className="h-5 w-5" /> : "1"}
-                  </div>
-
-                  <div className="ml-2.5 hidden sm:block">
-                    <p
-                      className={`text-[11px] font-bold tracking-wider transition-colors ${
-                        step >= 1 ? "text-white" : "text-white/50"
-                      }`}
-                    >
-                      DETAILS
-                    </p>
-
-                    <p className="mt-0.5 text-[10px] text-white/55">
-                      Student & location
-                    </p>
-                  </div>
+            <div className="mt-6 flex items-center">
+              <div className="flex min-w-0 items-center">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
+                    step >= 1
+                      ? "border-white bg-white text-[#a81b1e] shadow-lg shadow-black/10"
+                      : "border-white/40 bg-white/10 text-white/60"
+                  }`}
+                >
+                  {step > 1 ? <CheckCircle2 className="h-5 w-5" /> : "1"}
                 </div>
 
-                <div className="mx-3 h-[2px] flex-1 overflow-hidden rounded-full bg-white/20 sm:mx-5">
-                  <div
-                    className={`h-full rounded-full bg-white transition-all duration-500 ${
-                      step >= 2 ? "w-full" : "w-0"
-                    }`}
-                  />
-                </div>
-
-                <div className="flex min-w-0 items-center">
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
-                      step >= 2
-                        ? "border-white bg-white text-[#a81b1e] shadow-lg shadow-black/10"
-                        : "border-white/40 bg-white/10 text-white/60"
+                <div className="ml-2.5 hidden sm:block">
+                  <p
+                    className={`text-[11px] font-bold tracking-wider transition-colors ${
+                      step >= 1 ? "text-white" : "text-white/50"
                     }`}
                   >
-                    2
-                  </div>
+                    DETAILS
+                  </p>
 
-                  <div className="ml-2.5 hidden sm:block">
-                    <p
-                      className={`text-[11px] font-bold tracking-wider transition-colors ${
-                        step >= 2 ? "text-white" : "text-white/50"
-                      }`}
-                    >
-                      SCHEDULE
-                    </p>
-
-                    <p className="mt-0.5 text-[10px] text-white/55">
-                      Date & time
-                    </p>
-                  </div>
+                  <p className="mt-0.5 text-[10px] text-white/55">
+                    Student & location
+                  </p>
                 </div>
               </div>
 
-              <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-white/55 sm:hidden">
-                <span>Student & location</span>
-                <span>Date & time</span>
+              <div className="mx-3 h-[2px] flex-1 overflow-hidden rounded-full bg-white/20 sm:mx-5">
+                <div
+                  className={`h-full rounded-full bg-white transition-all duration-500 ${
+                    step >= 2 ? "w-full" : "w-0"
+                  }`}
+                />
+              </div>
+
+              <div className="flex min-w-0 items-center">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
+                    step >= 2
+                      ? "border-white bg-white text-[#a81b1e] shadow-lg shadow-black/10"
+                      : "border-white/40 bg-white/10 text-white/60"
+                  }`}
+                >
+                  2
+                </div>
+
+                <div className="ml-2.5 hidden sm:block">
+                  <p
+                    className={`text-[11px] font-bold tracking-wider transition-colors ${
+                      step >= 2 ? "text-white" : "text-white/50"
+                    }`}
+                  >
+                    SCHEDULE
+                  </p>
+
+                  <p className="mt-0.5 text-[10px] text-white/55">
+                    Date & time
+                  </p>
+                </div>
               </div>
             </div>
+
+            <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-white/55 sm:hidden">
+              <span>Student & location</span>
+              <span>Date & time</span>
+            </div>
           </div>
+        </div>
 
-          {/* ================================================================ */}
-          {/* FORM                                                              */}
-          {/* ================================================================ */}
+        {/* ================================================================ */}
+        {/* FORM                                                              */}
+        {/* ================================================================ */}
 
-          <form onSubmit={handleSubmit} className="grid gap-5 p-4 sm:gap-6 sm:p-6">
-            {/* ============================================================== */}
-            {/* STEP 1                                                          */}
-            {/* ============================================================== */}
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-5 p-4 sm:gap-6 sm:p-6"
+        >
+          {/* ============================================================== */}
+          {/* STEP 1                                                          */}
+          {/* ============================================================== */}
 
-            {step === 1 && (
-              <div className="grid gap-5">
-                {/* STUDENT DETAILS */}
+          {step === 1 && (
+            <div className="grid gap-5">
+              {/* STUDENT DETAILS */}
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                  <span className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
-                      <UserRound className="h-3.5 w-3.5" />
-                    </span>
-                    Student details
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
+                <span className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
+                    <UserRound className="h-3.5 w-3.5" />
                   </span>
+                  Student details
+                </span>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Student name
-                      <Input
-                        required
-                        value={form.studentName}
-                        onChange={(event) =>
-                          updateField("studentName", event.target.value)
-                        }
-                        className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
-                        placeholder="Child name"
-                      />
-                      {fieldErrors.studentName && (
-                        <span className="text-xs text-red-600">
-                          {fieldErrors.studentName}
-                        </span>
-                      )}
-                    </label>
-
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Age
-                      <Input
-                        required
-                        type="number"
-                        min={4}
-                        max={18}
-                        value={form.age}
-                        onChange={(event) =>
-                          updateField("age", event.target.value)
-                        }
-                        className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
-                        placeholder="8"
-                      />
-                      {fieldErrors.age && (
-                        <span className="text-xs text-red-600">
-                          {fieldErrors.age}
-                        </span>
-                      )}
-                    </label>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Contact number
-                      <div className="relative">
-                        <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
-                        <Input
-                          required
-                          inputMode="numeric"
-                          maxLength={10}
-                          value={form.contactNumber}
-                          onChange={(event) =>
-                            updateField(
-                              "contactNumber",
-                              event.target.value
-                                .replace(/\D/g, "")
-                                .slice(0, 10),
-                            )
-                          }
-                          className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
-                          placeholder="10 digit mobile"
-                        />
-                      </div>
-                      {fieldErrors.contactNumber && (
-                        <span className="text-xs text-red-600">
-                          {fieldErrors.contactNumber}
-                        </span>
-                      )}
-                    </label>
-
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Email
-                      <div className="relative">
-                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
-                        <Input
-                          required
-                          type="email"
-                          value={form.email}
-                          onChange={(event) =>
-                            updateField("email", event.target.value)
-                          }
-                          className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
-                          placeholder="parent@example.com"
-                        />
-                      </div>
-                      {fieldErrors.email && (
-                        <span className="text-xs text-red-600">
-                          {fieldErrors.email}
-                        </span>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                {/* LOCATION */}
-
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                  <span className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
-                      <MapPin className="h-3.5 w-3.5" />
-                    </span>
-                    Your location
-                  </span>
-
-                  <div className="relative">
-                    <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Student name
                     <Input
-                      id="location"
-                      name="location"
                       required
-                      value={form.location}
+                      value={form.studentName}
                       onChange={(event) =>
-                        handleLocationChange(event.target.value)
+                        updateField("studentName", event.target.value)
                       }
-                      placeholder="e.g. Kalyani Nagar, Pune"
-                      className="h-11 border-gray-200 bg-white pl-9 pr-10 focus-visible:ring-red-600"
+                      className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
+                      placeholder="Child name"
                     />
-
-                    {locationLoading && (
-                      <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-red-600" />
+                    {fieldErrors.studentName && (
+                      <span className="text-xs text-red-600">
+                        {fieldErrors.studentName}
+                      </span>
                     )}
-                  </div>
+                  </label>
 
-                  {fieldErrors.location && (
-                    <span className="mt-1.5 block text-xs text-red-600">
-                      {fieldErrors.location}
-                    </span>
-                  )}
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Age
+                    <Input
+                      required
+                      type="number"
+                      min={4}
+                      max={18}
+                      value={form.age}
+                      onChange={(event) =>
+                        updateField("age", event.target.value)
+                      }
+                      className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
+                      placeholder="8"
+                    />
+                    {fieldErrors.age && (
+                      <span className="text-xs text-red-600">
+                        {fieldErrors.age}
+                      </span>
+                    )}
+                  </label>
+                </div>
 
-                  {locationVerified && (
-                    <div
-                      className={`mt-3 rounded-xl border p-3 ${
-                        trial === "offline"
-                          ? "border-green-200 bg-green-50"
-                          : "border-blue-200 bg-blue-50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                            trial === "offline"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {trial === "offline" ? (
-                            <MapPin className="h-4 w-4" />
-                          ) : (
-                            <Wifi className="h-4 w-4" />
-                          )}
-                        </div>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Contact number
+                    <div className="relative">
+                      <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-medium text-gray-500">
-                              Trial mode
-                            </span>
-
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
-                                trial === "offline"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-blue-100 text-blue-700"
-                              }`}
-                            >
-                              {trial === "offline" ? (
-                                <MapPin className="h-3 w-3" />
-                              ) : (
-                                <Wifi className="h-3 w-3" />
-                              )}
-
-                              {modeLabel}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-2 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-
-                        <p className="text-xs font-semibold leading-relaxed text-red-800">
-                          {locationMessage}
-                        </p>
-                      </div>
+                      <Input
+                        required
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={form.contactNumber}
+                        onChange={(event) =>
+                          updateField(
+                            "contactNumber",
+                            event.target.value.replace(/\D/g, "").slice(0, 10),
+                          )
+                        }
+                        className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
+                        placeholder="10 digit mobile"
+                      />
                     </div>
+                    {fieldErrors.contactNumber && (
+                      <span className="text-xs text-red-600">
+                        {fieldErrors.contactNumber}
+                      </span>
+                    )}
+                  </label>
+
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Email
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+                      <Input
+                        required
+                        type="email"
+                        value={form.email}
+                        onChange={(event) =>
+                          updateField("email", event.target.value)
+                        }
+                        className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
+                        placeholder="parent@example.com"
+                      />
+                    </div>
+                    {fieldErrors.email && (
+                      <span className="text-xs text-red-600">
+                        {fieldErrors.email}
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                <label className="mt-4 grid gap-1.5 text-sm font-medium text-gray-700">
+                  How did you hear about us?
+                  <select
+                    value={form.referralSource}
+                    onChange={(event) =>
+                      updateField("referralSource", event.target.value)
+                    }
+                    className="h-11 rounded-md border border-gray-200 bg-white px-3 text-sm font-normal text-gray-700 outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                  >
+                    <option value="">Select an option </option>
+                    {REFERRAL_SOURCE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {/* LOCATION */}
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
+                <span className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
+                    <MapPin className="h-3.5 w-3.5" />
+                  </span>
+                  Your location
+                </span>
+
+                <div className="relative">
+                  <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+                  <Input
+                    id="location"
+                    name="location"
+                    required
+                    value={form.location}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      handleLocationChange(event.target.value)
+                    }
+                    placeholder="e.g. Kalyani Nagar, Pune"
+                    className="h-11 border-gray-200 bg-white pl-9 pr-10 focus-visible:ring-red-600"
+                  />
+
+                  {locationLoading && (
+                    <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-red-600" />
                   )}
                 </div>
 
-                {/* TRIAL VISIT OPTION — offline students only; online trials
-                    can't visit HQ so there's nothing to choose between. */}
-
-                {trial === "offline" && (
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                    <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
-                        <MapPin className="h-3.5 w-3.5" />
-                      </span>
-                      Please select any 1
-                    </span>
-
-                    <div className="grid gap-2">
-                      {TRIAL_VISIT_OPTIONS.map((option) => {
-                        const checked = preferredCenter === option.id;
-
-                        return (
-                          <label
-                            key={option.id}
-                            className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-3 text-sm leading-relaxed transition ${
-                              checked
-                                ? "border-red-700 bg-red-50 text-red-800"
-                                : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50/40"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() =>
-                                handlePreferredCenterToggle(option.id)
-                              }
-                              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-red-700 focus:ring-red-600"
-                            />
-                            <span>{option.label}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-
-                    {preferredCenterError && (
-                      <span className="mt-2 block text-xs text-red-600">
-                        {preferredCenterError}
-                      </span>
-                    )}
-                  </div>
+                {fieldErrors.location && (
+                  <span className="mt-1.5 block text-xs text-red-600">
+                    {fieldErrors.location}
+                  </span>
                 )}
 
-                {/* NOTICE */}
-
-                {notice && (
+                {locationVerified && (
                   <div
-                    role="status"
-                    className={`flex items-start gap-2 rounded-md p-3 text-sm ${
-                      notice.type === "success"
-                        ? "bg-green-50 text-green-800"
-                        : "bg-red-50 text-red-800"
+                    className={`mt-3 rounded-xl border p-3 ${
+                      trial === "offline"
+                        ? "border-green-200 bg-green-50"
+                        : "border-blue-200 bg-blue-50"
                     }`}
                   >
-                    {notice.type === "success" ? (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                    ) : (
-                      <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    )}
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                          trial === "offline"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {trial === "offline" ? (
+                          <MapPin className="h-4 w-4" />
+                        ) : (
+                          <Wifi className="h-4 w-4" />
+                        )}
+                      </div>
 
-                    {notice.message}
-                  </div>
-                )}
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500">
+                            Trial mode
+                          </span>
 
-                {/* NEXT BUTTON */}
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+                              trial === "offline"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {trial === "offline" ? (
+                              <MapPin className="h-3 w-3" />
+                            ) : (
+                              <Wifi className="h-3 w-3" />
+                            )}
 
-                <Button
-                  type="button"
-                  onClick={handleNextFromStep1}
-                  disabled={savingLead || locationLoading}
-                  className="h-12 rounded-full bg-[#a81b1e] text-white shadow-[0_6px_18px_-4px_rgba(168,27,30,0.55)] transition hover:-translate-y-0.5 hover:bg-[#8f1518]"
-                >
-                  {locationLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Finding nearest center...
-                    </>
-                  ) : savingLead ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : trial === "offline" && preferredCenter === "unable-to-visit-hq" ? (
-                    "Submit"
-                  ) : (
-                    <>
-                      Next: pick a slot
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
+                            {modeLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-            {/* ============================================================== */}
-            {/* STEP 2                                                          */}
-            {/* ============================================================== */}
+                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
 
-            {step === 2 && (
-              <div className="grid gap-4">
-                {/* MODE SUMMARY */}
-
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                  <div className="flex items-center gap-3">
-                    {trial === "offline" ? (
-                      <MapPin className="h-5 w-5 text-green-700" />
-                    ) : (
-                      <Wifi className="h-5 w-5 text-blue-700" />
-                    )}
-
-                    <div>
-                      <p className="text-xs text-gray-500">Trial mode</p>
-
-                      <p className="text-sm font-bold text-gray-900">
-                        {modeLabel}
+                      <p className="text-xs font-semibold leading-relaxed text-red-800">
+                        {locationMessage}
                       </p>
                     </div>
                   </div>
+                )}
+              </div>
 
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">Location</p>
+              {/* TRIAL VISIT OPTION — offline students only; online trials
+                    can't visit HQ so there's nothing to choose between. */}
 
-                    <p className="text-sm font-semibold text-gray-900">
-                      {locationLabel}
+              {trial === "offline" && (
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
+                  <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
+                      <MapPin className="h-3.5 w-3.5" />
+                    </span>
+                    Please select any 1
+                  </span>
+
+                  <div className="grid gap-2">
+                    {TRIAL_VISIT_OPTIONS.map((option) => {
+                      const checked = preferredCenter === option.id;
+
+                      return (
+                        <label
+                          key={option.id}
+                          className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-3 text-sm leading-relaxed transition ${
+                            checked
+                              ? "border-red-700 bg-red-50 text-red-800"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50/40"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              handlePreferredCenterToggle(option.id)
+                            }
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-red-700 focus:ring-red-600"
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {preferredCenterError && (
+                    <span className="mt-2 block text-xs text-red-600">
+                      {preferredCenterError}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* NOTICE */}
+
+              {notice && (
+                <div
+                  role="status"
+                  className={`flex items-start gap-2 rounded-md p-3 text-sm ${
+                    notice.type === "success"
+                      ? "bg-green-50 text-green-800"
+                      : "bg-red-50 text-red-800"
+                  }`}
+                >
+                  {notice.type === "success" ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  )}
+
+                  {notice.message}
+                </div>
+              )}
+
+              {/* NEXT BUTTON */}
+
+              <Button
+                type="button"
+                onClick={handleNextFromStep1}
+                disabled={savingLead || locationLoading}
+                className="h-12 rounded-full bg-[#a81b1e] text-white shadow-[0_6px_18px_-4px_rgba(168,27,30,0.55)] transition hover:-translate-y-0.5 hover:bg-[#8f1518]"
+              >
+                {locationLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Finding nearest center...
+                  </>
+                ) : savingLead ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : trial === "offline" &&
+                  preferredCenter === "unable-to-visit-hq" ? (
+                  "Submit"
+                ) : (
+                  <>
+                    Next: pick a slot
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* STEP 2                                                          */}
+          {/* ============================================================== */}
+
+          {step === 2 && (
+            <div className="grid gap-4">
+              {/* MODE SUMMARY */}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <div className="flex items-center gap-3">
+                  {trial === "offline" ? (
+                    <MapPin className="h-5 w-5 text-green-700" />
+                  ) : (
+                    <Wifi className="h-5 w-5 text-blue-700" />
+                  )}
+
+                  <div>
+                    <p className="text-xs text-gray-500">Trial mode</p>
+
+                    <p className="text-sm font-bold text-gray-900">
+                      {modeLabel}
                     </p>
                   </div>
                 </div>
 
-                {/* SCHEDULE LABEL */}
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Location</p>
 
-                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  <CalendarCheck className="h-3.5 w-3.5 text-red-700" />
-                  Schedule
-                </span>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {locationLabel}
+                  </p>
+                </div>
+              </div>
 
-                {/* CALENDAR + SLOTS */}
+              {/* SCHEDULE LABEL */}
 
-                {isManualSchedule ? (
-                  <div className="grid gap-3 rounded-xl border border-gray-200 p-4 sm:grid-cols-2">
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Preferred date
-                      <Input
-                        type="date"
-                        min={toLocalISODate(minBookableDate)}
-                        value={requestedTrialDate}
-                        onChange={(event) =>
-                          setRequestedTrialDate(event.target.value)
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <CalendarCheck className="h-3.5 w-3.5 text-red-700" />
+                Schedule
+              </span>
+
+              {/* CALENDAR + SLOTS */}
+
+              {isManualSchedule ? (
+                <div className="grid gap-3 rounded-xl border border-gray-200 p-4 sm:grid-cols-2">
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Preferred date
+                    <Input
+                      type="date"
+                      min={toLocalISODate(minBookableDate)}
+                      value={requestedTrialDate}
+                      onChange={(event) =>
+                        setRequestedTrialDate(event.target.value)
+                      }
+                      required
+                    />
+                  </label>
+                  <label className="grid gap-1.5 text-sm font-medium text-gray-700">
+                    Preferred time
+                    <Input
+                      type="time"
+                      value={requestedTrialTime}
+                      onChange={(event) =>
+                        setRequestedTrialTime(event.target.value)
+                      }
+                      required
+                    />
+                  </label>
+                  <p className="text-xs text-gray-500 sm:col-span-2">
+                    This is a preferred schedule request, not a confirmed
+                    booking. Our counsellor will confirm availability.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsManualSchedule(false);
+                      setNotice(null);
+                    }}
+                    className="sm:col-span-2"
+                  >
+                    Choose an available slot instead
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
+                  <div className="flex justify-center rounded-xl border border-gray-200 p-2">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        if (!date || Number.isNaN(date.getTime())) {
+                          setSelectedDate(undefined);
+                          setSelectedTime(null);
+                          return;
                         }
-                        required
-                      />
-                    </label>
-                    <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                      Preferred time
-                      <Input
-                        type="time"
-                        value={requestedTrialTime}
-                        onChange={(event) =>
-                          setRequestedTrialTime(event.target.value)
-                        }
-                        required
-                      />
-                    </label>
-                    <p className="text-xs text-gray-500 sm:col-span-2">
-                      This is a preferred schedule request, not a confirmed
-                      booking. Our counsellor will confirm availability.
-                    </p>
+
+                        setSelectedDate(date);
+                        setSelectedTime(null);
+                        setNotice(null);
+                      }}
+                      disabled={(date) =>
+                        availabilityLoading ||
+                        Boolean(availabilityError) ||
+                        isDateDisabledForMode(date)
+                      }
+                      defaultMonth={minBookableDate}
+                      onMonthChange={setVisibleMonth}
+                      className="rounded-md"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    {availabilityError && (
+                      <p role="alert" className="text-sm text-red-700">
+                        {availabilityError}
+                      </p>
+                    )}
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                      <Clock3 className="h-3.5 w-3.5 text-red-700" />
+                      Select time
+                    </span>
+
+                    {selectedDate ? (
+                      activeSlots.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {activeSlots.map((time) => (
+                            <button
+                              key={time}
+                              type="button"
+                              onClick={() => {
+                                setSelectedTime(time);
+                                setNotice(null);
+                              }}
+                              className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                                selectedTime === time
+                                  ? "border-red-700 bg-red-700 text-white"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50"
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400">
+                          No slots available for this mode.
+                        </p>
+                      )
+                    ) : (
+                      <p className="text-xs text-gray-400">
+                        Pick a date to see available time slots.
+                      </p>
+                    )}
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        setIsManualSchedule(false);
+                        setIsManualSchedule(true);
+                        setSelectedDate(undefined);
+                        setSelectedTime(null);
                         setNotice(null);
                       }}
-                      className="sm:col-span-2"
+                      className="justify-self-start"
                     >
-                      Choose an available slot instead
+                      Other date &amp; time
                     </Button>
                   </div>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
-                    <div className="flex justify-center rounded-xl border border-gray-200 p-2">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => {
-                          if (!date || Number.isNaN(date.getTime())) {
-                            setSelectedDate(undefined);
-                            setSelectedTime(null);
-                            return;
-                          }
-
-                          setSelectedDate(date);
-                          setSelectedTime(null);
-                          setNotice(null);
-                        }}
-                        disabled={(date) =>
-                          availabilityLoading ||
-                          Boolean(availabilityError) ||
-                          isDateDisabledForMode(date)
-                        }
-                        defaultMonth={minBookableDate}
-                        onMonthChange={setVisibleMonth}
-                        className="rounded-md"
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      {availabilityError && (
-                        <p role="alert" className="text-sm text-red-700">
-                          {availabilityError}
-                        </p>
-                      )}
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                        <Clock3 className="h-3.5 w-3.5 text-red-700" />
-                        Select time
-                      </span>
-
-                      {selectedDate ? (
-                        activeSlots.length ? (
-                          <div className="flex flex-wrap gap-2">
-                            {activeSlots.map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedTime(time);
-                                  setNotice(null);
-                                }}
-                                className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                                  selectedTime === time
-                                    ? "border-red-700 bg-red-700 text-white"
-                                    : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50"
-                                }`}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-gray-400">
-                            No slots available for this mode.
-                          </p>
-                        )
-                      ) : (
-                        <p className="text-xs text-gray-400">
-                          Pick a date to see available time slots.
-                        </p>
-                      )}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setIsManualSchedule(true);
-                          setSelectedDate(undefined);
-                          setSelectedTime(null);
-                          setNotice(null);
-                        }}
-                        className="justify-self-start"
-                      >
-                        Other date &amp; time
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTICE */}
-
-                {notice && (
-                  <div
-                    role="status"
-                    className={`flex items-start gap-2 rounded-md p-3 text-sm ${
-                      notice.type === "success"
-                        ? "bg-green-50 text-green-800"
-                        : "bg-red-50 text-red-800"
-                    }`}
-                  >
-                    {notice.type === "success" ? (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                    ) : (
-                      <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    )}
-
-                    {notice.message}
-                  </div>
-                )}
-
-                {/* ACTIONS */}
-
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleBack}
-                    className="h-12 flex-1 rounded-full"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    disabled={
-                      submitting ||
-                      (!isManualSchedule &&
-                        (availabilityLoading ||
-                          Boolean(availabilityError) ||
-                          !selectedDate ||
-                          !selectedTime)) ||
-                      (isManualSchedule &&
-                        (!requestedTrialDate || !requestedTrialTime))
-                    }
-                    className="h-12 flex-[2] rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : isManualSchedule ? (
-                      "Send preferred schedule"
-                    ) : (
-                      "Submit registration"
-                    )}
-                  </Button>
                 </div>
+              )}
+
+              {/* NOTICE */}
+
+              {notice && (
+                <div
+                  role="status"
+                  className={`flex items-start gap-2 rounded-md p-3 text-sm ${
+                    notice.type === "success"
+                      ? "bg-green-50 text-green-800"
+                      : "bg-red-50 text-red-800"
+                  }`}
+                >
+                  {notice.type === "success" ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  )}
+
+                  {notice.message}
+                </div>
+              )}
+
+              {/* ACTIONS */}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  className="h-12 flex-1 rounded-full"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={
+                    submitting ||
+                    (!isManualSchedule &&
+                      (availabilityLoading ||
+                        Boolean(availabilityError) ||
+                        !selectedDate ||
+                        !selectedTime)) ||
+                    (isManualSchedule &&
+                      (!requestedTrialDate || !requestedTrialTime))
+                  }
+                  className="h-12 flex-[2] rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : isManualSchedule ? (
+                    "Send preferred schedule"
+                  ) : (
+                    "Submit registration"
+                  )}
+                </Button>
               </div>
-            )}
-          </form>
+            </div>
+          )}
+        </form>
       </Modal>
 
       {/* ------------------------------------------------------------------ */}
@@ -2241,44 +2320,42 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
         showHeader={false}
         className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-2xl border-none bg-white p-0 text-center"
       >
-          <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2 className="h-9 w-9 text-green-600" />
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                Thank You !!
-              </h2>
-
-              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
-                {successMessage}
-              </p>
-            </div>
-
-            <div className="flex w-full flex-col gap-2">
-              <Button
-                type="button"
-                onClick={() => setSuccessOpen(false)}
-                className="h-11 w-full rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
-              >
-                Done
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setSuccessOpen(false);
-                  resetDialogState();
-                  setOpen(true);
-                }}
-                className="h-11 w-full rounded-full border-[#a81b1e] text-[#a81b1e] hover:bg-red-50"
-              >
-                Book For Another Child
-              </Button>
-            </div>
+        <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-8">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+            <CheckCircle2 className="h-9 w-9 text-green-600" />
           </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Thank You !!</h2>
+
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
+              {successMessage}
+            </p>
+          </div>
+
+          <div className="flex w-full flex-col gap-2">
+            <Button
+              type="button"
+              onClick={() => setSuccessOpen(false)}
+              className="h-11 w-full rounded-full bg-[#a81b1e] text-white hover:bg-[#8f1518]"
+            >
+              Done
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSuccessOpen(false);
+                resetDialogState();
+                setOpen(true);
+              }}
+              className="h-11 w-full rounded-full border-[#a81b1e] text-[#a81b1e] hover:bg-red-50"
+            >
+              Book For Another Child
+            </Button>
+          </div>
+        </div>
       </Modal>
     </section>
   );

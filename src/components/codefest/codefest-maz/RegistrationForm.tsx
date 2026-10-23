@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -521,7 +520,9 @@ export default function RegistrationForm({
                           id={id}
                           name={id}
                           type={type}
-                          max={id === "dateOfBirth" ? getTodayDate() : undefined}
+                          max={
+                            id === "dateOfBirth" ? getTodayDate() : undefined
+                          }
                           placeholder={placeholder}
                           value={
                             formData[

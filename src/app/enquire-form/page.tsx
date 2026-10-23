@@ -16,7 +16,6 @@ import { FollowUpDialog } from "@/components/trial-registrations/FollowUpDialog"
 import { ActivityDialog } from "@/components/trial-registrations/ActivityDialog";
 import { DeleteAlertDialog } from "@/components/trial-registrations/DeleteAlertDialog";
 import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDialog";
-
 import { TrialRegistration } from "./types";
 
 const ENQUIRIES_PER_PAGE = 10;
@@ -48,6 +47,9 @@ const Page = () => {
     setLeadTempFilter,
     leadOutcomeFilter,
     setLeadOutcomeFilter,
+    todayOnly,
+    setTodayOnly,
+    todayCount,
     trialDateFilter,
     setTrialDateFilter,
     followUpDateFilter,
@@ -82,6 +84,7 @@ const Page = () => {
     locationFilter,
     leadTempFilter,
     leadOutcomeFilter,
+    todayOnly,
     trialDateFilter,
     followUpDateFilter,
     sortField,
@@ -185,6 +188,9 @@ const Page = () => {
             onLeadTempChange={setLeadTempFilter}
             leadOutcomeFilter={leadOutcomeFilter}
             onLeadOutcomeChange={setLeadOutcomeFilter}
+            todayOnly={todayOnly}
+            todayCount={todayCount}
+            onTodayToggle={() => setTodayOnly((current) => !current)}
             trialDateFilter={trialDateFilter}
             onTrialDateChange={setTrialDateFilter}
             followUpDateFilter={followUpDateFilter}
@@ -264,7 +270,8 @@ const Page = () => {
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between gap-4">
                 <p className="text-sm text-stone-500">
-                  Page {currentPage} of {totalPages} · {filtered.length} enquiries
+                  Page {currentPage} of {totalPages} · {filtered.length}{" "}
+                  enquiries
                 </p>
 
                 <div className="flex items-center gap-2">

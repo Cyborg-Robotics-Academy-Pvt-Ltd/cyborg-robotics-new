@@ -45,71 +45,80 @@ export function DesktopTable({
 }: Props) {
   return (
     <div className="hidden w-full md:block">
-      <div
-        className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm"
-      >
+      <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm">
         <Table
           containerClassName="!overflow-visible"
           className="min-w-[1500px] text-sm [&_th]:h-10 [&_th]:px-3 [&_th]:text-sm [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm [&_td_*]:text-sm"
         >
-        <TableHeader className="bg-stone-50">
-          <TableRow className="border-stone-200 hover:bg-white">
-            <SortableHead
-              label="Student"
-              field="studentName"
-              active={sortField}
-              dir={sortDir}
-              onClick={onToggleSort}
-              className="sticky left-0 z-30 w-[190px] min-w-[190px] max-w-[190px] bg-stone-50"
-            />
+          <TableHeader className="bg-stone-50">
+            <TableRow className="border-stone-200 hover:bg-white">
+              <SortableHead
+                label="Student"
+                field="studentName"
+                active={sortField}
+                dir={sortDir}
+                onClick={onToggleSort}
+                className="sticky left-0 z-30 w-[230px] min-w-[300px] max-w-[300px] bg-stone-50"
+              />
 
-            <TableHead className="sticky left-[190px] z-30 w-[230px] min-w-[230px] max-w-[230px] bg-stone-50 text-stone-500">
-              Contact
-            </TableHead>
-
-            <SortableHead
-              label="Trial Slot"
-              field="trialDate"
-              active={sortField}
-              dir={sortDir}
-              onClick={onToggleSort}
-            />
-
-            <TableHead className="text-stone-500">Enquiry Remark</TableHead>
-            <TableHead className="text-stone-500">Location</TableHead>
-            <TableHead className="text-stone-500">Visit Option</TableHead>
-            <TableHead className="text-stone-500">Mode</TableHead>
-            <TableHead className="text-stone-500">Trial Status</TableHead>
-
-            {hasShowRows && (
-              <TableHead className="text-stone-500">
-                Counsellor Remark
+              <TableHead className="sticky left-[300px] z-30 w-[300px] min-w-[300px] max-w-[300px] bg-stone-50 text-stone-500">
+                Contact
               </TableHead>
-            )}
 
-            <TableHead className="text-stone-500">Lead Temp</TableHead>
-            <TableHead className="text-stone-500">Next Follow-up</TableHead>
-            <TableHead className="text-stone-500">Lead Outcome</TableHead>
+              <SortableHead
+                label="Enquired On"
+                field="createdAt"
+                active={sortField}
+                dir={sortDir}
+                onClick={onToggleSort}
+              />
 
-            {hasClosedRows && (
-              <TableHead className="text-stone-500">Close Remark</TableHead>
-            )}
+              <SortableHead
+                label="Trial Slot"
+                field="trialDate"
+                active={sortField}
+                dir={sortDir}
+                onClick={onToggleSort}
+              />
 
-            <TableHead className="text-right text-stone-500">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+              <TableHead className="text-stone-500">Enquiry Remark</TableHead>
+              <TableHead className="text-stone-500">Heard About Us</TableHead>
+              <TableHead className="text-stone-500">Location</TableHead>
+              <TableHead className="text-stone-500">Visit Option</TableHead>
+              <TableHead className="text-stone-500">Mode</TableHead>
+              <TableHead className="text-stone-500">Trial Status</TableHead>
 
-        <TableBody>
-          {registrations.map((registration) => (
-            <DesktopRow
-              key={registration.id}
-              registration={registration}
-              hasShowRows={hasShowRows}
-              hasClosedRows={hasClosedRows}
-              {...rowHandlers}
-            />
-          ))}
-        </TableBody>
+              {hasShowRows && (
+                <TableHead className="text-stone-500">
+                  Counsellor Remark
+                </TableHead>
+              )}
+
+              <TableHead className="text-stone-500">Lead Temp</TableHead>
+              <TableHead className="text-stone-500">Next Follow-up</TableHead>
+              <TableHead className="text-stone-500">Lead Outcome</TableHead>
+
+              {hasClosedRows && (
+                <TableHead className="text-stone-500">Close Remark</TableHead>
+              )}
+
+              <TableHead className="text-right text-stone-500">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {registrations.map((registration) => (
+              <DesktopRow
+                key={registration.id}
+                registration={registration}
+                hasShowRows={hasShowRows}
+                hasClosedRows={hasClosedRows}
+                {...rowHandlers}
+              />
+            ))}
+          </TableBody>
         </Table>
       </div>
     </div>

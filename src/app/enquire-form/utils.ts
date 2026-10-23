@@ -10,6 +10,33 @@ import {
 } from "./constants";
 import { LocationType, TrialRegistration } from "./types";
 
+export function isEnquiryFromToday(
+  createdAt: number,
+  dateOfRegistration?: string,
+): boolean {
+  let createdDate = createdAt > 0 ? new Date(createdAt) : null;
+
+  if ((!createdDate || Number.isNaN(createdDate.getTime())) && dateOfRegistration) {
+    const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOfRegistration);
+    const dmyDate = /^(\d{2})[/-](\d{2})[/-](\d{4})$/.exec(dateOfRegistration);
+    if (isoDate) {
+      createdDate = new Date(+isoDate[1], +isoDate[2] - 1, +isoDate[3]);
+    } else if (dmyDate) {
+      createdDate = new Date(+dmyDate[3], +dmyDate[2] - 1, +dmyDate[1]);
+    }
+  }
+
+  if (!createdDate || Number.isNaN(createdDate.getTime())) return false;
+
+  const today = new Date();
+
+  return (
+    createdDate.getFullYear() === today.getFullYear() &&
+    createdDate.getMonth() === today.getMonth() &&
+    createdDate.getDate() === today.getDate()
+  );
+}
+
 /* =========================================================
    LOCATION HELPERS
 ========================================================= */

@@ -465,6 +465,8 @@ export async function POST(req: Request) {
       const registrationData = {
         ...core,
 
+        referralSource: getTrimmedString(body.referralSource),
+
         /* User entered location */
 
         location: userLocation,
@@ -636,6 +638,8 @@ export async function POST(req: Request) {
 
     const registrationData = {
       ...core,
+
+      referralSource: getTrimmedString(body.referralSource),
 
       /* User entered location */
 

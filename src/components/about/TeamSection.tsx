@@ -1,18 +1,16 @@
 "use client";
-import React, { useState } from "react";
-import { Users, ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { Navigation, Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide, SwiperRef } from "swiper/react";
 
-// Import Swiper styles
+import React, { useEffect, useRef, useState } from "react";
+import { Users, ChevronLeft, ChevronRight, RotateCw, X } from "lucide-react";
+import Image from "next/image";
+import { A11y, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide, type SwiperRef } from "swiper/react";
+
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 // ==============================
-// Type Definitions
+// Types
 // ==============================
 interface TeamMember {
   id: string;
@@ -27,239 +25,294 @@ interface TeamCardProps {
 }
 
 // ==============================
-// Custom Navigation Buttons Component
+// Data
 // ==============================
-const CustomNavigationButton = ({
-  direction,
-  onClick,
-}: {
-  direction: "prev" | "next";
-  onClick: () => void;
-}) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        absolute top-[40%] z-10 flex items-center justify-center
-        w-10 h-10 rounded-full bg-red-800 text-white
-        shadow-lg transform -translate-y-1/2
-        transition-all duration-300 hover:bg-red-800 hover:scale-110
-        focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-opacity-50
-        ${direction === "prev" ? "left-1" : "right-1"}
-      `}
-      aria-label={direction === "prev" ? "Previous slide" : "Next slide"}
-    >
-      {direction === "prev" ? (
-        <ChevronLeft size={20} />
-      ) : (
-        <ChevronRight size={20} />
-      )}
-    </button>
-  );
-};
-
-// ==============================
-// Team Members Data
-// ==============================
-const teamMembers: TeamMember[] = [
+const teamMembers: readonly TeamMember[] = [
   {
     id: "Pratima",
     name: "Ms. Pratima Thakur",
     title: "Program Manager",
-    image: "assets/team/pratima.png",
+    image: "/assets/team/pratima.png",
     linkedin: "https://www.linkedin.com/in/pratimathakur/",
   },
   {
     id: "Shrikant",
     name: "Mr. Shrikant Gaikwad",
     title: "Full Stack Developer & App Developer",
-    image: "assets/team/shrikant.png",
+    image: "/assets/team/shrikant.png",
     linkedin: "https://www.linkedin.com/in/shrikant-gaikwad-dev/",
   },
   {
     id: "Mahvish",
     name: "Ms. Mahvish Fatima",
     title: "Aero-Electronics Educator",
-    image: "assets/team/mahvish3.png",
+    image: "/assets/team/mahvish3.png",
     linkedin: "https://www.linkedin.com/in/mahvish-fatima03/",
   },
   {
     id: "Nilesh",
     name: "Mr. Nilesh Jaiswar",
     title: "Lead 3D Printing | Technologist",
-    image: "assets/team/nilesh.png",
+    image: "/assets/team/nilesh.png",
     linkedin: "https://www.linkedin.com/in/nileshjaiswar/",
   },
   {
     id: "Anchal",
     name: "Ms. Anchal Mishra",
     title: "Lead Embedded Systems Educator | Technologist",
-    image: "assets/team/anchal.png",
+    image: "/assets/team/anchal.png",
     linkedin: "https://www.linkedin.com/in/anchalmishra1/",
   },
   {
     id: "Omkar",
     name: "Mr. Omkar Shinde",
     title: "Lead Programming Educator",
-    image: "assets/team/omkar.png",
+    image: "/assets/team/omkar.png",
     linkedin: "https://www.linkedin.com/in/omkarshinde711/",
   },
   {
     id: "Sirjana",
-    name: "Ms. Sirjana Vishwakrma",
+    // Fixed spelling to match her LinkedIn slug ("vishwakarma"); revert if intentional.
+    name: "Ms. Sirjana Vishwakarma",
     title: "Lead Educator | Student Success Counsellor",
-    image: "assets/team/sirjana.png",
+    image: "/assets/team/sirjana.png",
     linkedin: "https://www.linkedin.com/in/sirjanavishwakarma/",
   },
   {
     id: "Nikita",
     name: "Ms. Nikita Mangale",
     title: "Build-to-Learn Educator",
-    image: "assets/team/nikita.png",
+    image: "/assets/team/nikita.png",
     linkedin: "https://www.linkedin.com/in/nikita-mangale20/",
   },
 ];
 
 // ==============================
-// TeamCard Component (Flip Animation)
+// Shared bits
 // ==============================
-function TeamCard({ member }: TeamCardProps) {
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-600 focus-visible:ring-offset-2";
+
+function LinkedInIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    </svg>
+  );
+}
+
+function CustomNavigationButton({
+  direction,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={
+        direction === "prev" ? "Previous team members" : "Next team members"
+      }
+      className={`absolute top-[40%] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-red-800 text-white shadow-lg transition-transform duration-300 hover:scale-110 hover:bg-red-900 motion-reduce:transition-none ${FOCUS_RING} ${
+        direction === "prev" ? "left-1" : "right-1"
+      }`}
+    >
+      {direction === "prev" ? (
+        <ChevronLeft size={20} aria-hidden="true" />
+      ) : (
+        <ChevronRight size={20} aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
+// ==============================
+// TeamCard (flip)
+// - Mouse: flips on hover (pointerType === "mouse" only, so touch taps don't double-fire)
+// - Touch / keyboard: front is a real <button>; back has a Close button + real <a>
+// - Hidden face is `inert` (skipped by Tab and screen readers)
+// - Focus moves to the new face on click/keyboard flips; Esc closes
+// ==============================
+export function TeamCard({ member }: TeamCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const handleCardClick = () => {
-    if (isFlipped && member.linkedin) {
-      window.open(member.linkedin, "_blank", "noopener,noreferrer");
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const focusTarget = useRef<"front" | "back" | null>(null);
+
+  useEffect(() => {
+    // Imperative so it works on React 18 and 19 without `inert` typing issues.
+    frontRef.current?.toggleAttribute("inert", isFlipped);
+    backRef.current?.toggleAttribute("inert", !isFlipped);
+
+    if (focusTarget.current === "back") {
+      closeRef.current?.focus({ preventScroll: true });
+    } else if (focusTarget.current === "front") {
+      toggleRef.current?.focus({ preventScroll: true });
+    }
+    focusTarget.current = null;
+  }, [isFlipped]);
+
+  const flipByUser = (next: boolean) => {
+    focusTarget.current = next ? "back" : "front";
+    setIsFlipped(next);
+  };
+
+  const handlePointerEnter = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") setIsFlipped(true);
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse") return;
+    // Don't yank the back face away from someone using the keyboard inside it.
+    if (backRef.current?.contains(document.activeElement)) return;
+    setIsFlipped(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape" && isFlipped) {
+      e.stopPropagation();
+      flipByUser(false);
     }
   };
 
   return (
-    <div className="h-80 w-[85%] sm:w-[70%] md:w-[90%] lg:w-full mx-auto mb-8">
+    <div className="mx-auto mb-8 h-80 w-[85%] sm:w-[70%] md:w-[90%] lg:w-full">
       <div
-        className="relative w-full h-full cursor-pointer"
-        style={{ perspective: "1000px" }}
-        onMouseEnter={() => setIsFlipped(true)}
-        onMouseLeave={() => setIsFlipped(false)}
+        role="group"
+        aria-label={member.name}
+        className="relative h-full w-full [perspective:1000px]"
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onKeyDown={handleKeyDown}
       >
         <div
-          className="relative w-full h-full transition-transform duration-500"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-          }}
+          className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none ${
+            isFlipped
+              ? "[transform:rotateY(180deg)]"
+              : "[transform:rotateY(0deg)]"
+          }`}
         >
           {/* -------- FRONT -------- */}
           <div
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl bg-white "
-            style={{ backfaceVisibility: "hidden" }}
+            ref={frontRef}
+            className={`absolute inset-0 overflow-hidden rounded-2xl bg-white shadow-xl [backface-visibility:hidden] ${
+              isFlipped ? "pointer-events-none" : ""
+            }`}
           >
-            <div className="w-60 h-60  relative mx-auto">
+            <div className="relative mx-auto h-60 w-60">
               <Image
-                src={`/${member.image}`}
-                alt={member.name}
+                src={member.image}
+                alt={`Portrait of ${member.name}`}
                 fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover object-top"
+                sizes="240px"
               />
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 bg-white py-4 px-3">
-              <h4 className="text-black font-extrabold text-sm mb-1 truncate">
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-white px-3 py-2">
+              <h3 className="mb-0.5 truncate text-base font-extrabold text-gray-900">
                 {member.name}
-              </h4>
-              <p className="text-black/90 text-[11px] font-medium line-clamp-2">
+              </h3>
+              <p className="line-clamp-2 text-[13px] font-medium leading-4 text-gray-700">
                 {member.title}
               </p>
-
-              {/* LinkedIn Icon */}
-              {member.linkedin && (
-                <div className="absolute top-2 right-2 bg-white/80 rounded-full p-1 shadow-md hover:bg-blue-50 transition">
-                  <Link
-                    href={member.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                    </svg>
-                  </Link>
-                </div>
-              )}
             </div>
+
+            {/* Full-card toggle (sits under the LinkedIn link) */}
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => flipByUser(true)}
+              className={`absolute inset-0 z-10 rounded-2xl ${FOCUS_RING}`}
+            >
+              <span className="sr-only">Show details for {member.name}</span>
+            </button>
+
+            {/* Flip hint for touch devices only */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-2 right-2 z-10 hidden h-6 w-6 items-center justify-center rounded-full bg-red-800 text-white [@media(hover:none)]:flex"
+            >
+              <RotateCw size={14} />
+            </span>
+
+            {member.linkedin && (
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${member.name} on LinkedIn (opens in new tab)`}
+                className={`absolute right-1 top-1 z-20 flex h-11 w-11 items-center justify-center rounded-full text-blue-700 hover:text-blue-900 ${FOCUS_RING}`}
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md">
+                  <LinkedInIcon />
+                </span>
+              </a>
+            )}
           </div>
 
           {/* -------- BACK -------- */}
           <div
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
-            style={{
-              backfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-            }}
-            onClick={handleCardClick}
+            ref={backRef}
+            className={`absolute inset-0 overflow-hidden rounded-2xl shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] ${
+              isFlipped ? "" : "pointer-events-none"
+            }`}
           >
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-900"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-red-700 via-red-800 to-red-900" />
 
-            {/* Glow Circles */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
-              <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full mix-blend-screen filter blur-3xl"></div>
-            </div>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={() => flipByUser(false)}
+              aria-label="Close details"
+              className={`absolute right-1 top-1 z-10 flex h-11 w-11 items-center justify-center rounded-full text-white hover:bg-white/15 ${FOCUS_RING}`}
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
 
-            {/* Content */}
-            <div className="relative z-10 h-full flex flex-col justify-center items-center px-3 py-4 text-white">
-              {/* Logo */}
-              <div className="mb-2 -mt-12">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2 border-2 border-white/30">
-                  <Image
-                    src="/assets/Cyborg-logo.png"
-                    alt="Logo"
-                    width={100}
-                    height={100}
-                    className="object-contain w-full h-full"
-                  />
-                </div>
+            <div className="relative flex h-full flex-col items-center justify-center px-4 py-4 text-white">
+              <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/30 bg-white p-2 shadow-lg">
+                <Image
+                  src="/assets/Cyborg-logo.png"
+                  alt="Cyborg Robotics Academy logo"
+                  width={100}
+                  height={100}
+                  className="h-full w-full object-contain"
+                />
               </div>
 
-              {/* Decorative Line */}
-              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mb-2"></div>
-
-              <h4 className="font-bold text-base text-center mb-1 px-2 truncate">
+              <h3 className="mb-2 max-w-full px-2 text-center text-lg font-bold">
                 {member.name}
-              </h4>
+              </h3>
 
-              <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-0.5 mb-2 max-w-[90%]">
-                <p className="text-[10px] font-normal text-center text-white/90 line-clamp-3">
-                  {member.title}
-                </p>
-              </div>
+              <p className="mb-4 max-w-[90%] rounded-xl border border-white/25 bg-white/15 px-3 py-1 text-center text-xs font-medium text-white">
+                {member.title}
+              </p>
 
-              <div className="w-8 h-0.5 bg-gradient-to-r from-white/40 to-white rounded-full mt-1 mb-2"></div>
-
-              {/* LinkedIn CTA */}
               {member.linkedin && (
-                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1 hover:bg-white/20 transition-all">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="text-white"
-                  >
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                  </svg>
-                  <span className="text-[10px] font-normal text-white whitespace-nowrap">
-                    View Profile
-                  </span>
-                </div>
+                <a
+                  href={member.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-4 text-sm font-medium text-white transition-colors hover:bg-white/25 motion-reduce:transition-none ${FOCUS_RING}`}
+                >
+                  <LinkedInIcon size={16} />
+                  View profile
+                  <span className="sr-only">(opens in new tab)</span>
+                </a>
               )}
             </div>
           </div>
@@ -270,58 +323,57 @@ function TeamCard({ member }: TeamCardProps) {
 }
 
 // ==============================
-// Main Section
+// Section
 // ==============================
 export default function EnhancedTeamSection() {
-  const swiperRef = React.useRef<SwiperRef>(null);
+  const swiperRef = useRef<SwiperRef>(null);
 
-  const goNext = () => {
-    if (swiperRef.current && swiperRef.current.swiper) {
-      swiperRef.current.swiper.slideNext();
-    }
-  };
-
-  const goPrev = () => {
-    if (swiperRef.current && swiperRef.current.swiper) {
-      swiperRef.current.swiper.slidePrev();
-    }
-  };
+  const goNext = () => swiperRef.current?.swiper.slideNext();
+  const goPrev = () => swiperRef.current?.swiper.slidePrev();
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center mb-2 gap-2 px-3 py-1 bg-gradient-to-r from-red-50 to-blue-50 rounded-full border border-red-100">
-          <Users size={16} />
+    <section
+      aria-labelledby="team-heading"
+      className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
+    >
+      <div className="mb-6 text-center">
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-red-100 bg-gradient-to-r from-red-50 to-blue-50 px-3 py-1 text-gray-800">
+          <Users size={16} aria-hidden="true" />
           <span className="text-sm font-medium">Our Team</span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+        <h2
+          id="team-heading"
+          className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl"
+        >
           Meet the{" "}
           <span className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 bg-clip-text text-transparent">
             Team
           </span>
         </h2>
 
-        <div className="flex items-center justify-center gap-2">
-          <div className="w-10 h-1 bg-gradient-to-r from-transparent to-red-600 rounded-full"></div>
-          <div className="w-20 h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
-          <div className="w-10 h-1 bg-gradient-to-r from-red-800 to-transparent rounded-full"></div>
+        <div
+          className="flex items-center justify-center gap-2"
+          aria-hidden="true"
+        >
+          <div className="h-1 w-10 rounded-full bg-gradient-to-r from-transparent to-red-600" />
+          <div className="h-1 w-20 rounded-full bg-gradient-to-r from-red-600 to-red-800" />
+          <div className="h-1 w-10 rounded-full bg-gradient-to-r from-red-800 to-transparent" />
         </div>
       </div>
 
-      {/* Desktop Grid */}
-      <div className="hidden lg:grid lg:grid-cols-4 gap-6 w-[85%] mx-auto">
+      {/* Desktop grid (display:none below lg, so hidden copies are not focusable) */}
+      <div className="mx-auto hidden w-[85%] gap-6 lg:grid lg:grid-cols-4">
         {teamMembers.map((member) => (
           <TeamCard key={member.id} member={member} />
         ))}
       </div>
 
-      {/* Mobile/Tablet Swiper */}
-      <div className="lg:hidden relative">
+      {/* Mobile / tablet carousel */}
+      <div className="relative lg:hidden">
         <Swiper
           ref={swiperRef}
-          modules={[Navigation, Pagination]}
+          modules={[Pagination, A11y]}
           spaceBetween={10}
           slidesPerView={1}
           pagination={{ clickable: true }}
@@ -340,22 +392,27 @@ export default function EnhancedTeamSection() {
 
         <CustomNavigationButton direction="prev" onClick={goPrev} />
         <CustomNavigationButton direction="next" onClick={goNext} />
-
-        <style jsx global>{`
-          .team-swiper .swiper-pagination-bullet {
-            background: #cbd5e1;
-            opacity: 1;
-            width: 6px;
-            height: 6px;
-            transition: all 0.3s ease;
-          }
-          .team-swiper .swiper-pagination-bullet-active {
-            background: #b92423;
-            width: 18px;
-            border-radius: 4px;
-          }
-        `}</style>
       </div>
+
+      <style jsx global>{`
+        .team-swiper .swiper-pagination-bullet {
+          background: #94a3b8;
+          opacity: 1;
+          width: 8px;
+          height: 8px;
+          transition: all 0.3s ease;
+        }
+        .team-swiper .swiper-pagination-bullet-active {
+          background: #b92423;
+          width: 20px;
+          border-radius: 4px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .team-swiper .swiper-pagination-bullet {
+            transition: none;
+          }
+        }
+      `}</style>
     </section>
   );
 }

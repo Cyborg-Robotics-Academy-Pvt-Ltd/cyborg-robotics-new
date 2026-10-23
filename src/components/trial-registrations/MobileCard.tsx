@@ -36,6 +36,7 @@ import {
 import {
   avatarShade,
   getDisplayLocation,
+  isEnquiryFromToday,
   getLocationType,
   initials,
   leadOutcomeStyle,
@@ -121,8 +122,16 @@ export function MobileCard({
           </div>
 
           <div>
-            <p className="font-medium text-stone-900">
+            <p className="flex flex-wrap items-center gap-2 font-medium text-stone-900">
               {registration.studentName}
+              {isEnquiryFromToday(
+                registration.createdAt,
+                registration.dateOfRegistration,
+              ) && (
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                  New
+                </span>
+              )}
             </p>
             <p className="text-xs text-stone-400">Age {registration.age}</p>
           </div>
@@ -404,6 +413,23 @@ export function MobileCard({
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 shrink-0" />
           {registration.trialDate} · {registration.trialTime}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-4 w-4 shrink-0" />
+          <span>
+            Enquired: {registration.createdAt
+              ? new Date(registration.createdAt).toLocaleString("en-IN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
+              : "Date unavailable"}
+          </span>
+        </div>
+
+        <div>
+          <span className="font-medium text-stone-700">Heard about us: </span>
+          {registration.referralSource || "Not provided"}
         </div>
 
         {registration.remark && (
