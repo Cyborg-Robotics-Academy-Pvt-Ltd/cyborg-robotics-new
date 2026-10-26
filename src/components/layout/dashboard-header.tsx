@@ -33,6 +33,10 @@ export default function DashboardHeader() {
             case "student":
               collectionName = "students";
               break;
+            case "sales":
+            case "marketing":
+              collectionName = userRole;
+              break;
             default:
               collectionName = "students";
           }
@@ -90,6 +94,10 @@ export default function DashboardHeader() {
         return "Trainer";
       case "student":
         return "Student";
+      case "sales":
+        return "Sales";
+      case "marketing":
+        return "Marketing";
       default:
         return "User";
     }

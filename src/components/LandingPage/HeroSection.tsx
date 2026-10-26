@@ -100,9 +100,7 @@ const REFERRAL_SOURCE_OPTIONS = [
   "Facebook",
   "Instagram",
   "Google Search",
-  "YouTube",
   "Friend / Family",
-  "Other",
 ] as const;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -923,6 +921,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const age = form.age.trim();
     const contactNumber = form.contactNumber.trim();
     const email = form.email.trim();
+    const referralSource = form.referralSource.trim();
     const location = form.location.trim();
 
     if (!studentName) {
@@ -941,6 +940,10 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     if (!EMAIL_REGEX.test(email)) {
       errors.email = "Enter a valid email address.";
+    }
+
+    if (!referralSource) {
+      errors.referralSource = "Please select how you heard about us.";
     }
 
     if (!location) {
@@ -1864,6 +1867,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   How did you hear about us?
                   <select
                     value={form.referralSource}
+                    required
                     onChange={(event) =>
                       updateField("referralSource", event.target.value)
                     }
@@ -1876,6 +1880,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                       </option>
                     ))}
                   </select>
+                  {fieldErrors.referralSource && (
+                    <span className="text-xs font-normal text-red-600">
+                      {fieldErrors.referralSource}
+                    </span>
+                  )}
                 </label>
               </div>
 

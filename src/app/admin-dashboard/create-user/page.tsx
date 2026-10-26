@@ -47,21 +47,30 @@ const CreateMultipleUsersPage = () => {
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswords, setShowPasswords] = useState<boolean[]>([false]);
+  const roleCollections: Record<string, string> = {
+    student: "students",
+    trainer: "trainers",
+    admin: "admins",
+    sales: "sales",
+    marketing: "marketing",
+  };
 
   // Role options for dropdown
   const roleOptions = [
     { value: "student", label: "Student" },
     { value: "trainer", label: "Trainer" },
     { value: "admin", label: "Admin" },
+    { value: "sales", label: "Sales" },
+    { value: "marketing", label: "Marketing" },
   ];
 
   // Check if user already exists with the given email
   const checkExistingUser = async (email: string) => {
     try {
       // Check in standard role-based collections
-      const roles = ["student", "trainer", "admin"];
+      const roles = ["student", "trainer", "admin", "sales", "marketing"];
       for (const role of roles) {
-        const roleCollectionRef = collection(db, `${role}s`);
+        const roleCollectionRef = collection(db, roleCollections[role]);
         const q = query(roleCollectionRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
 

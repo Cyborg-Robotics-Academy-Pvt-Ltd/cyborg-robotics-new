@@ -11,10 +11,9 @@ export default function StudentListLayout({
   const { user, userRole } = useAuth();
   const name =
     user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
-  const role =
-    userRole === "admin" || userRole === "trainer" || userRole === "student"
-      ? userRole
-      : "student";
+  const role = userRole === "admin" || userRole === "trainer" || userRole === "student" || userRole === "sales" || userRole === "marketing"
+    ? userRole
+    : "student";
 
   return (
     <div className="flex flex-col min-h-screen">

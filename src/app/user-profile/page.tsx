@@ -50,6 +50,8 @@ const COLLECTIONS: Record<string, string> = {
   admin: "admins",
   trainer: "trainers",
   student: "students",
+  sales: "sales",
+  marketing: "marketing",
 };
 const getCollectionName = (role: string) => COLLECTIONS[role] ?? "students";
 
@@ -62,6 +64,8 @@ const ROLE_STYLES: Record<string, { bg: string; fg: string }> = {
   admin: { bg: "rgba(168,27,30,0.09)", fg: BRAND.red },
   trainer: { bg: "rgba(8,85,171,0.09)", fg: BRAND.blue },
   student: { bg: "rgba(6,35,65,0.08)", fg: BRAND.navy },
+  sales: { bg: "rgba(8,85,171,0.09)", fg: BRAND.blue },
+  marketing: { bg: "rgba(6,35,65,0.08)", fg: BRAND.navy },
 };
 
 const STATUS_STYLES: Record<string, string> = {

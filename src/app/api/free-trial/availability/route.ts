@@ -15,7 +15,7 @@ function isTrialMode(value: string | null): value is TrialMode {
   return value === "online" || value === "offline";
 }
 
-async function requireAdmin(request: Request) {
+async function requireAvailabilityManager(request: Request) {
   const authorization = request.headers.get("authorization");
   const token = authorization?.startsWith("Bearer ")
     ? authorization.slice(7)
@@ -28,8 +28,17 @@ async function requireAdmin(request: Request) {
   } catch {
     throw new Error("Unauthorized");
   }
-  const admin = await adminDb.collection("admins").doc(decoded.uid).get();
-  if (!admin.exists || ["inactive", "pending"].includes(admin.data()?.status)) {
+  const profiles = await Promise.all(
+    ["admins", "sales", "marketing"].map((collection) =>
+      adminDb.collection(collection).doc(decoded.uid).get(),
+    ),
+  );
+  const activeProfile = profiles.find(
+    (profile) =>
+      profile.exists &&
+      !["inactive", "pending"].includes(profile.data()?.status),
+  );
+  if (!activeProfile) {
     throw new Error("Forbidden");
   }
 }
@@ -87,7 +96,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    await requireAdmin(request);
+    await requireAvailabilityManager(request);
     const body = (await request.json()) as Record<string, unknown>;
     const mode = body.mode;
     const date = body.date;
@@ -119,7 +128,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    await requireAdmin(request);
+    await requireAvailabilityManager(request);
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode");
     const date = searchParams.get("date");

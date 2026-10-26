@@ -4,6 +4,14 @@ import { authReady, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
+const ROLE_COLLECTIONS: Record<string, string> = {
+  student: "students",
+  trainer: "trainers",
+  admin: "admins",
+  sales: "sales",
+  marketing: "marketing",
+};
+
 interface AuthContextType {
   user: User | null;
   userRole: string | null;
@@ -60,15 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setLoading(false);
 
             // Verify the stored role is still valid in background
-            const roleMap = {
-              students: "student",
-              trainers: "trainer",
-              admins: "admin",
-            };
-
-            const targetCollection = Object.keys(roleMap).find(
-              (key) => roleMap[key as keyof typeof roleMap] === storedRole
-            );
+            const targetCollection = ROLE_COLLECTIONS[storedRole];
 
             if (targetCollection) {
               // Background verification without blocking UI
@@ -120,14 +120,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Helper function to check all collections
     const checkAllCollections = async (uid: string) => {
       try {
-        const collections = ["students", "trainers", "admins"];
-        for (const collection of collections) {
+        for (const [role, collection] of Object.entries(ROLE_COLLECTIONS)) {
           const docRef = doc(db, collection, uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            const role = collection.slice(0, -1); // Remove 's' from end
-
             // If user status is pending or inactive, don't set the role
             if (data.status === "pending" || data.status === "inactive") {
               setUserRole(null);

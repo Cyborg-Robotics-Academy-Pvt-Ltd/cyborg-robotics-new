@@ -7,7 +7,8 @@ import { ArrowLeft, Clock3, Loader2, Plus, RotateCcw, Save, Trash2 } from "lucid
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getAdminUserData } from "@/lib/admin-utils";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/auth-context";
 import {
   DEFAULT_OFFLINE_TRIAL_SLOTS,
@@ -40,17 +41,27 @@ export default function TrialAvailabilityPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || userRole !== "admin") {
+    if (
+      !user ||
+      (userRole !== "admin" && userRole !== "sales" && userRole !== "marketing")
+    ) {
       router.push("/login");
       return;
     }
 
     let active = true;
-    getAdminUserData(user.uid)
-      .then((adminData) => {
+    const profileCollection =
+      userRole === "admin" ? "admins" : userRole;
+    getDoc(doc(db, profileCollection, user.uid))
+      .then((profileSnapshot) => {
         if (!active) return;
-        if (!adminData) {
+        if (!profileSnapshot.exists()) {
           router.push("/create-user");
+          return;
+        }
+        const profile = profileSnapshot.data();
+        if (["pending", "inactive"].includes(profile.status)) {
+          router.push("/login");
           return;
         }
         setAuthReady(true);

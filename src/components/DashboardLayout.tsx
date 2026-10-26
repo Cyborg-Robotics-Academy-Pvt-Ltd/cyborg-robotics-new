@@ -31,7 +31,7 @@ import {
 import { PanelRightOpen, PanelRightClose } from "@/components/ui/panel-buttons";
 import Link from "next/link";
 
-type Role = "admin" | "trainer" | "student";
+type Role = "admin" | "trainer" | "student" | "sales" | "marketing";
 
 interface DashboardLayoutProps {
   role: Role;
@@ -168,6 +168,19 @@ const roleLinksMap: Record<
       icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" />,
     },
   ],
+  sales: [
+    { label: "Dashboard", href: "/sales-dashboard", icon: <LayoutDashboard className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "User Profile", href: "/user-profile", icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "Trial Availability", href: "/admin-dashboard/trial-availability", icon: <CalendarDays className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "Enquire form", href: "/enquire-form", icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "Logout", href: "/login", icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" /> },
+  ],
+  marketing: [
+    { label: "Dashboard", href: "/marketing-dashboard", icon: <LayoutDashboard className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "User Profile", href: "/user-profile", icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "Enquire form", href: "/enquire-form", icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" /> },
+    { label: "Logout", href: "/login", icon: <LogOut className="h-5 w-5 shrink-0 text-gray-700" /> },
+  ],
 };
 
 export default function DashboardLayout({
@@ -218,6 +231,10 @@ export default function DashboardLayout({
               break;
             case "student":
               collectionName = "students";
+              break;
+            case "sales":
+            case "marketing":
+              collectionName = role;
               break;
             default:
               collectionName = "students";
@@ -327,7 +344,11 @@ export default function DashboardLayout({
                     ? "Admin Panel"
                     : role === "trainer"
                       ? "Trainer Panel"
-                      : "Student Panel"}
+                      : role === "sales"
+                        ? "Sales Panel"
+                        : role === "marketing"
+                          ? "Marketing Panel"
+                          : "Student Panel"}
                 </div>
               )}
             </div>
@@ -445,9 +466,9 @@ export default function DashboardLayout({
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="flex flex-1">
+      <div className="flex min-w-0 flex-1">
         <div
-          className={`flex h-full w-full flex-1 flex-col bg-white  md:pl-[60px] transition-all duration-200 ease-out ${open ? "md:pl-[250px]" : "md:pl-[60px]"}`}
+          className={`flex h-full min-w-0 w-full flex-1 flex-col bg-white transition-all duration-200 ease-out ${open ? "md:pl-[250px]" : "md:pl-[60px]"}`}
         >
           {/* Mobile-only header */}
           <div className="md:hidden flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200 shadow-sm">
@@ -487,7 +508,9 @@ export default function DashboardLayout({
               </div>
             </Link>
           </div>
-          {children}
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            {children}
+          </div>
         </div>
       </div>
     </div>

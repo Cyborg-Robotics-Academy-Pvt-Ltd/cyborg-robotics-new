@@ -12,7 +12,7 @@ export default function UserProfileLayout({
 
   const name =
     user?.displayName || (user?.email ? user.email.split("@")[0] : undefined);
-  const role = (userRole as "admin" | "trainer" | "student") || "student";
+  const role = (userRole as "admin" | "trainer" | "student" | "sales" | "marketing") || "student";
 
   return (
     <div className="flex flex-col min-h-screen">

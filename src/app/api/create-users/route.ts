@@ -6,6 +6,14 @@ import {
   normalizeCenterLocation,
 } from "@/lib/admin-prn";
 
+const ROLE_COLLECTIONS: Record<string, string> = {
+  student: "students",
+  trainer: "trainers",
+  admin: "admins",
+  sales: "sales",
+  marketing: "marketing",
+};
+
 // Function to create a single user with proper error handling
 async function createSingleUser(userData: { fullName: string; email: string; password: string; role: string; center?: string }) {
   const { fullName, email, password, role, center } = userData;
@@ -31,7 +39,7 @@ async function createSingleUser(userData: { fullName: string; email: string; pas
   };
 
   // Save to appropriate collection based on role
-  const collectionName = `${role}s`; // students, trainers, admins
+  const collectionName = ROLE_COLLECTIONS[role];
   await adminDb.collection(collectionName).doc(user.uid).set(firestoreUserData);
   
   // Generate PRN for students
@@ -88,7 +96,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate role
-      const validRoles = ['student', 'trainer', 'admin'];
+      const validRoles = ['student', 'trainer', 'admin', 'sales', 'marketing'];
       if (!validRoles.includes(role)) {
         return Response.json({ error: `Invalid role: ${role}. Must be one of: ${validRoles.join(', ')}` }, { status: 400 });
       }
@@ -109,12 +117,12 @@ export async function POST(request: NextRequest) {
     // Check if any of the users already exist in Firestore
     for (const userData of users) {
       const { email } = userData;
-      const roles = ["student", "trainer", "admin"];
+      const roles = Object.keys(ROLE_COLLECTIONS);
       let userExists = false;
       
       for (const checkRole of roles) {
         const querySnapshot = await adminDb
-          .collection(`${checkRole}s`)
+          .collection(ROLE_COLLECTIONS[checkRole])
           .where("email", "==", email)
           .limit(1)
           .get();

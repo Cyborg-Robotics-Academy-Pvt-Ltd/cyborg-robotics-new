@@ -179,16 +179,6 @@ const themes: Record<
 };
 
 // Chart data for analytics
-const enrollmentData = [
-  { month: "Jan", enrollments: 45, courses: 12 },
-  { month: "Feb", enrollments: 52, courses: 15 },
-  { month: "Mar", enrollments: 48, courses: 14 },
-  { month: "Apr", enrollments: 61, courses: 18 },
-  { month: "May", enrollments: 59, courses: 17 },
-  { month: "Jun", enrollments: 72, courses: 21 },
-  { month: "Jul", enrollments: 84, courses: 25 },
-];
-
 const chartConfig = {
   enrollments: {
     label: "Enrollments",
@@ -286,13 +276,12 @@ const hasTrainerAssignment = (student: Record<string, any>) => {
 };
 
 const getStudentCreatedDate = (student: Record<string, any>) => {
-  const createdAt = student.createdAt;
-  if (!createdAt) return null;
-
-  const createdDate = createdAt.toDate
-    ? createdAt.toDate()
-    : new Date(createdAt);
-  return Number.isNaN(createdDate.getTime()) ? null : createdDate;
+  return getTimestampDate(
+    student.createdAt ||
+      student.dateOfJoining ||
+      student.dateOfRegistration ||
+      student.registrationDate,
+  );
 };
 
 const getStudentCenter = (student: Record<string, any>) =>
@@ -710,6 +699,13 @@ const AdminDashboard = () => {
     [],
   );
   const [enrollmentTrends, setEnrollmentTrends] = useState<any[]>([]);
+  const [selectedNewEnrollmentMonth, setSelectedNewEnrollmentMonth] =
+    useState<string>(() =>
+      new Date().toLocaleDateString("en-US", { month: "short" }),
+    );
+  const [selectedNewEnrollmentYear, setSelectedNewEnrollmentYear] =
+    useState(() => new Date().getFullYear());
+  const [newEnrollmentStudentPage, setNewEnrollmentStudentPage] = useState(1);
   const [loadingTrends, setLoadingTrends] = useState(true);
   const [enrollmentRangeFilter, setEnrollmentRangeFilter] =
     useState("12_months");
@@ -718,6 +714,42 @@ const AdminDashboard = () => {
   const [enrollmentCenterFilter, setEnrollmentCenterFilter] = useState("");
   const [enrollmentCourseFilter, setEnrollmentCourseFilter] = useState("");
   const [enrollmentTrainerFilter, setEnrollmentTrainerFilter] = useState("");
+
+  const newEnrollmentYears = useMemo(() => {
+    const years = enrollmentTrendStudents
+      .map((student) => getStudentCreatedDate(student)?.getFullYear())
+      .filter((year): year is number => typeof year === "number");
+    return Array.from(new Set([...years, new Date().getFullYear()])).sort(
+      (a, b) => b - a,
+    );
+  }, [enrollmentTrendStudents]);
+
+  const newEnrollmentMonthTrends = useMemo(() => {
+    return Array.from({ length: 12 }, (_, monthIndex) => {
+      const monthStart = new Date(selectedNewEnrollmentYear, monthIndex, 1);
+      const monthEnd = new Date(
+        selectedNewEnrollmentYear,
+        monthIndex + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+      const month = monthStart.toLocaleDateString("en-US", { month: "short" });
+      const enrollments = enrollmentTrendStudents.filter((student) => {
+        const createdDate = getStudentCreatedDate(student);
+        return createdDate && createdDate >= monthStart && createdDate <= monthEnd;
+      }).length;
+
+      return {
+        month,
+        enrollments,
+        periodStart: monthStart.toISOString(),
+        periodEnd: monthEnd.toISOString(),
+      };
+    });
+  }, [enrollmentTrendStudents, selectedNewEnrollmentYear]);
 
   // State for course category data
   const [courseCategoryData, setCourseCategoryData] = useState<any[]>([]);
@@ -1963,26 +1995,26 @@ const AdminDashboard = () => {
       }));
       setEnrollmentTrendStudents(students);
 
-      // Group by month for the last 12 months
+      // Group the current calendar year by month, January through December.
       const trends: any[] = [];
       const now = new Date();
 
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthStart = new Date(
-          new Date().getFullYear(),
-          new Date().getMonth(),
-          1,
+      for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+        const date = new Date(now.getFullYear(), monthIndex, 1);
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
         );
-        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
         const enrollments = students.filter((student) => {
-          const createdAt = student.createdAt;
-          if (!createdAt) return false;
-          const createdDate = createdAt.toDate
-            ? createdAt.toDate()
-            : new Date(createdAt);
-          return createdDate >= monthStart && createdDate <= monthEnd;
+          const createdDate = getStudentCreatedDate(student);
+          return createdDate && createdDate >= monthStart && createdDate <= monthEnd;
         }).length;
 
         // Get courses count for this period (simplified - you might want to track this separately)
@@ -1995,22 +2027,15 @@ const AdminDashboard = () => {
           }),
           enrollments: enrollments,
           courses: courses,
+          periodStart: monthStart.toISOString(),
+          periodEnd: monthEnd.toISOString(),
         });
       }
 
       setEnrollmentTrends(trends);
     } catch (error) {
       console.error("Error fetching enrollment trends:", error);
-      // Fallback to static data
-      setEnrollmentTrends([
-        { month: "Jan", enrollments: 45, courses: 12 },
-        { month: "Feb", enrollments: 52, courses: 15 },
-        { month: "Mar", enrollments: 48, courses: 14 },
-        { month: "Apr", enrollments: 61, courses: 18 },
-        { month: "May", enrollments: 59, courses: 17 },
-        { month: "Jun", enrollments: 72, courses: 21 },
-        { month: "Jul", enrollments: 84, courses: 25 },
-      ]);
+      setEnrollmentTrends([]);
     } finally {
       setLoadingTrends(false);
     }
@@ -3501,11 +3526,7 @@ const AdminDashboard = () => {
                   className="h-[350px] w-full"
                 >
                   <AreaChart
-                    data={
-                      filteredEnrollmentTrends.length > 0
-                        ? filteredEnrollmentTrends
-                        : enrollmentData
-                    }
+                    data={filteredEnrollmentTrends}
                   >
                     <defs>
                       <linearGradient
@@ -3834,6 +3855,232 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Newly Enrolled Students by Month */}
+          <Card className="mb-8 bg-white/50 backdrop-blur-sm shadow-lg">
+            <CardHeader>
+              <CardTitle>Newly Enrolled Students</CardTitle>
+              <CardDescription>
+                Select a month to view the students enrolled during that month.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingTrends ? (
+                <div className="py-8 text-center text-sm text-gray-500">
+                  Loading monthly enrollments...
+                </div>
+              ) : newEnrollmentMonthTrends.length > 0 ? (
+                <>
+                  <div className="mb-4 flex items-center gap-3">
+                    <label
+                      htmlFor="new-enrollment-year"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Year
+                    </label>
+                    <select
+                      id="new-enrollment-year"
+                      value={selectedNewEnrollmentYear}
+                      onChange={(event) => {
+                        setSelectedNewEnrollmentYear(Number(event.target.value));
+                        setNewEnrollmentStudentPage(1);
+                      }}
+                      className="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-900 shadow-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                    >
+                      {newEnrollmentYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div
+                    role="tablist"
+                    aria-label="Enrollment month"
+                    className="mb-4 flex flex-wrap gap-2"
+                  >
+                    {newEnrollmentMonthTrends.map((trend) => (
+                    <button
+                      key={`${selectedNewEnrollmentYear}-${trend.month}`}
+                      type="button"
+                      role="tab"
+                      id={`enrollment-tab-${selectedNewEnrollmentYear}-${trend.month}`}
+                      aria-selected={selectedNewEnrollmentMonth === trend.month}
+                      aria-controls="newly-enrolled-students-panel"
+                      onClick={() => {
+                        setSelectedNewEnrollmentMonth(trend.month);
+                        setNewEnrollmentStudentPage(1);
+                      }}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        selectedNewEnrollmentMonth === trend.month
+                          ? "bg-red-800 text-white hover:bg-red-900"
+                          : "border border-red-200 text-red-800 hover:bg-red-50"
+                      }`}
+                    >
+                      {trend.month}{" "}
+                      <span
+                        className={`ml-1 inline-flex min-w-5 justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                          selectedNewEnrollmentMonth === trend.month
+                            ? "bg-white/20 text-white"
+                            : "bg-red-50 text-red-800"
+                        }`}
+                      >
+                        {trend.enrollments}
+                      </span>
+                    </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="py-8 text-center text-sm text-gray-500">
+                  No enrollment records are available yet.
+                </p>
+              )}
+              {selectedNewEnrollmentMonth && !loadingTrends && (
+                <div
+                  id="newly-enrolled-students-panel"
+                  role="tabpanel"
+                  aria-labelledby={`enrollment-tab-${selectedNewEnrollmentYear}-${selectedNewEnrollmentMonth}`}
+                  className="overflow-hidden rounded-xl border border-red-100 bg-white"
+                >
+                  <div className="border-b border-red-100 bg-red-50/50 px-4 py-3">
+                    <h3 className="font-semibold text-gray-900">
+                      Students enrolled in {selectedNewEnrollmentMonth} {selectedNewEnrollmentYear}
+                    </h3>
+                  </div>
+                  {(() => {
+                    const selectedTrend = newEnrollmentMonthTrends.find(
+                      (trend) => trend.month === selectedNewEnrollmentMonth,
+                    );
+                    const monthStart = selectedTrend?.periodStart
+                      ? new Date(selectedTrend.periodStart)
+                      : null;
+                    const monthEnd = selectedTrend?.periodEnd
+                      ? new Date(selectedTrend.periodEnd)
+                      : null;
+                    const students = enrollmentTrendStudents
+                      .filter((student) => {
+                        const createdDate = getStudentCreatedDate(student);
+                        return Boolean(
+                          createdDate &&
+                            monthStart &&
+                            monthEnd &&
+                            createdDate >= monthStart &&
+                            createdDate <= monthEnd,
+                        );
+                      })
+                      .sort(
+                        (a, b) =>
+                          (getStudentCreatedDate(b)?.getTime() || 0) -
+                          (getStudentCreatedDate(a)?.getTime() || 0),
+                      );
+                    const pageSize = 10;
+                    const totalPages = Math.max(
+                      1,
+                      Math.ceil(students.length / pageSize),
+                    );
+                    const currentPage = Math.min(
+                      newEnrollmentStudentPage,
+                      totalPages,
+                    );
+                    const visibleStudents = students.slice(
+                      (currentPage - 1) * pageSize,
+                      currentPage * pageSize,
+                    );
+
+                    return students.length > 0 ? (
+                      <>
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[600px] text-left text-sm">
+                          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                            <tr>
+                              <th className="px-4 py-3 font-medium">Student name</th>
+                              <th className="px-4 py-3 font-medium">PRN number</th>
+                              <th className="px-4 py-3 font-medium">Center</th>
+                              <th className="px-4 py-3 font-medium">Enrolled date &amp; time</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {visibleStudents.map((student, index) => (
+                              <tr key={student.id || student.PrnNumber || index}>
+                                <td className="px-4 py-3 font-medium text-gray-900">
+                                  <span className="inline-flex items-center gap-2">
+                                    {student.fullName || student.name || student.username || student.studentName || "Unnamed student"}
+                                    {(() => {
+                                      const enrolledAt = getStudentCreatedDate(student);
+                                      const isNew = Boolean(
+                                        enrolledAt &&
+                                          Date.now() - enrolledAt.getTime() <
+                                            3 * 24 * 60 * 60 * 1000 &&
+                                          enrolledAt.getTime() <= Date.now(),
+                                      );
+                                      return isNew ? (
+                                        <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                                          New
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-gray-700">
+                                  {student.PrnNumber || student.prnNumber || "—"}
+                                </td>
+                                <td className="px-4 py-3 text-gray-700">
+                                  {getStudentCenter(student) || "—"}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                  {getStudentCreatedDate(student)?.toLocaleString("en-IN", {
+                                    dateStyle: "medium",
+                                    timeStyle: "short",
+                                  }) || "—"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          </table>
+                        </div>
+                        <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-sm text-gray-600" aria-live="polite">
+                            Showing {(currentPage - 1) * pageSize + 1}–
+                            {Math.min(currentPage * pageSize, students.length)} of {students.length} students
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={currentPage === 1}
+                              onClick={() => setNewEnrollmentStudentPage(currentPage - 1)}
+                              aria-label="Previous student page"
+                            >
+                              Previous
+                            </Button>
+                            <span className="text-sm tabular-nums text-gray-600">
+                              Page {currentPage} of {totalPages}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={currentPage === totalPages}
+                              onClick={() => setNewEnrollmentStudentPage(currentPage + 1)}
+                              aria-label="Next student page"
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="px-4 py-6 text-center text-sm text-gray-500">
+                        No students were enrolled in this month.
+                      </p>
+                    );
+                  })()}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 gap-6">
             {/* Recent Actions */}

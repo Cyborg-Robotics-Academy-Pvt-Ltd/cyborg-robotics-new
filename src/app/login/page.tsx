@@ -34,8 +34,15 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
-type Role = "student" | "trainer" | "admin";
-const VALID_ROLES: Role[] = ["student", "trainer", "admin"];
+type Role = "student" | "trainer" | "admin" | "sales" | "marketing";
+const VALID_ROLES: Role[] = ["student", "trainer", "admin", "sales", "marketing"];
+const ROLE_COLLECTIONS: Record<Role, string> = {
+  student: "students",
+  trainer: "trainers",
+  admin: "admins",
+  sales: "sales",
+  marketing: "marketing",
+};
 
 const ROLE_META: Record<
   Role,
@@ -44,6 +51,8 @@ const ROLE_META: Record<
   student: { label: "Student", icon: BookOpen, color: "text-red-600" },
   trainer: { label: "Trainer", icon: Users, color: "text-red-700" },
   admin: { label: "Administrator", icon: Shield, color: "text-red-800" },
+  sales: { label: "Sales", icon: Users, color: "text-blue-700" },
+  marketing: { label: "Marketing", icon: BookOpen, color: "text-purple-700" },
 };
 
 const LoginPage = () => {
@@ -60,7 +69,7 @@ const LoginPage = () => {
   const findUserByEmail = async (userEmail: string) => {
     try {
       for (const role of VALID_ROLES) {
-        const roleCollectionRef = collection(db, `${role}s`);
+        const roleCollectionRef = collection(db, ROLE_COLLECTIONS[role]);
         const q = query(
           roleCollectionRef,
           where("email", "==", userEmail),
@@ -72,7 +81,7 @@ const LoginPage = () => {
           return {
             data: doc.data(),
             ref: doc.ref,
-            collection: `${role}s`,
+            collection: ROLE_COLLECTIONS[role],
             role,
           };
         }

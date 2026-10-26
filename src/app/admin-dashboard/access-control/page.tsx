@@ -57,6 +57,17 @@ interface UserData {
 const CROP_PREVIEW_SIZE = 256;
 const CROPPED_IMAGE_SIZE = 512;
 const PAGE_SIZE = 10;
+const ROLE_COLLECTIONS: Record<string, string> = {
+  student: "students",
+  trainer: "trainers",
+  admin: "admins",
+  sales: "sales",
+  marketing: "marketing",
+};
+const getRoleForCollection = (collectionName: string) =>
+  Object.entries(ROLE_COLLECTIONS).find(
+    ([, name]) => name === collectionName,
+  )?.[0] ?? "unassigned";
 
 // Fixed set of Tailwind classes so the JIT compiler can statically detect
 // them. Template-literal class names like `w-${size}` are silently purged
@@ -106,7 +117,19 @@ const RoleBadge = ({
           dot: "bg-gray-400",
           label: "No profile",
         }
-      : role === "admin"
+      : role === "sales"
+        ? {
+            bg: "bg-blue-50 border-blue-200 text-blue-700",
+            dot: "bg-blue-400",
+            label: "Sales",
+          }
+        : role === "marketing"
+          ? {
+              bg: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
+              dot: "bg-fuchsia-400",
+              label: "Marketing",
+            }
+        : role === "admin"
         ? {
             bg: "bg-violet-50 border-violet-200 text-violet-700",
             dot: "bg-violet-400",
@@ -402,7 +425,7 @@ const AccessControlPage = () => {
     try {
       setLoading(true);
       setFetchError("");
-      const collections = ["students", "trainers", "admins"];
+      const collections = Object.values(ROLE_COLLECTIONS);
       let allUsers: UserData[] = [];
       for (const collectionName of collections) {
         try {
@@ -413,7 +436,7 @@ const AccessControlPage = () => {
               id: doc.id,
               name: data.name || data.fullName || data.username || "",
               email: data.email || "",
-              role: collectionName.slice(0, -1),
+              role: getRoleForCollection(collectionName),
               status: data.status || "active",
               createdAt: getSafeCreatedAt(data.createdAt),
               profileimage:
@@ -577,8 +600,8 @@ const AccessControlPage = () => {
         return;
       }
       if (editFormData.role && originalUser.role !== editFormData.role) {
-        const originalCollectionName = `${originalUser.role}s`;
-        const newCollectionName = `${editFormData.role}s`;
+        const originalCollectionName = ROLE_COLLECTIONS[originalUser.role];
+        const newCollectionName = ROLE_COLLECTIONS[editFormData.role];
         const originalDocRef = doc(db, originalCollectionName, editingUserId);
         const originalDocSnapshot = await getDoc(originalDocRef);
         if (originalDocSnapshot.exists()) {
@@ -600,7 +623,7 @@ const AccessControlPage = () => {
           await deleteDoc(originalDocRef);
         }
       } else {
-        const collectionName = `${originalUser.role}s`;
+        const collectionName = ROLE_COLLECTIONS[originalUser.role];
         const userDocRef = doc(db, collectionName, editingUserId);
         const updateData: any = { updatedAt: new Date() };
         if (editFormData.name !== undefined)
@@ -680,7 +703,7 @@ const AccessControlPage = () => {
     if (!deleteTarget) return;
     try {
       setDeleting(true);
-      const collectionName = `${deleteTarget.role}s`;
+      const collectionName = ROLE_COLLECTIONS[deleteTarget.role];
       await deleteDoc(doc(db, collectionName, deleteTarget.id));
       setUsers((prev) => prev.filter((user) => user.id !== deleteTarget.id));
       setDeleteTarget(null);
@@ -1130,6 +1153,8 @@ const AccessControlPage = () => {
               <option value="admin">Admin</option>
               <option value="trainer">Trainer</option>
               <option value="student">Student</option>
+              <option value="sales">Sales</option>
+              <option value="marketing">Marketing</option>
             </select>
             <select
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all text-gray-700"
@@ -1496,6 +1521,8 @@ const AccessControlPage = () => {
                         <option value="admin">Admin</option>
                         <option value="trainer">Trainer</option>
                         <option value="student">Student</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
                       </select>
                     </div>
                     <div>
