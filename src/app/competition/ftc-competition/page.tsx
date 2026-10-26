@@ -6,13 +6,14 @@ import { OfficialPartnerBadge } from "@/components/ftc-competition/OfficialPartn
 import FtcFooter from "@/components/ftc-competition/Ftc-footer";
 import FTCHero from "@/components/ftc-competition/Hero";
 import FTCNavbar from "@/components/ftc-competition/FTCNavbar";
-import { HeroCanvas } from "@/components/ftc-competition/HeroCanvas";
+
 import About from "@/components/ftc-competition/About";
 import FtcDetails from "@/components/ftc-competition/FtcDetails";
 import CompetitionField from "@/components/ftc-competition/Competitionfield";
 import MeetTheMentors from "@/components/ftc-competition/MeetTheMentors";
 import VideoIntroModal from "@/components/ftc-competition/Videointromodal";
 import FtcGallery from "@/components/ftc-competition/FtcGallery";
+import HeroCanvas from "@/components/ftc-competition/HeroCanvas";
 
 export default function FTCPcompetitionPage() {
   const [activeSection, setActiveSection] = useState("about-ftc");
@@ -95,7 +96,7 @@ export default function FTCPcompetitionPage() {
       <FTCHero />
       <FtcDetails />
       <HeroCanvas />
-      <About />
+
       {/* <HowItWorks /> */}
       <Vision />
       <CompetitionField />

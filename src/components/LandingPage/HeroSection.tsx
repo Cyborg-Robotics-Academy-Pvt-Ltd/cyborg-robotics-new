@@ -101,6 +101,7 @@ const REFERRAL_SOURCE_OPTIONS = [
   "Instagram",
   "Google Search",
   "Friend / Family",
+  "walk-in / Signboard",
 ] as const;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
