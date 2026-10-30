@@ -83,6 +83,10 @@ interface GeocodedLocation {
   displayName: string;
 }
 
+interface LocationSuggestion extends GeocodedLocation {
+  id: string;
+}
+
 /* -------------------------------------------------------------------------- */
 /* FORM                                                                       */
 /* -------------------------------------------------------------------------- */
@@ -433,8 +437,13 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationVerified, setLocationVerified] = useState(false);
   const [locationMessage, setLocationMessage] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [locationSuggestionsOpen, setLocationSuggestionsOpen] = useState(false);
 
   const locationRequestIdRef = useRef(0);
+  const locationSearchAbortRef = useRef<AbortController | null>(null);
 
   const locationDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -465,6 +474,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   } | null>(null);
 
   const [successOpen, setSuccessOpen] = useState(false);
+  const [successTitle, setSuccessTitle] = useState("Thank You !!");
   const [successMessage, setSuccessMessage] = useState("");
 
   /* ------------------------------------------------------------------------ */
@@ -522,6 +532,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
   const resetDialogState = () => {
     locationRequestIdRef.current += 1;
+    locationSearchAbortRef.current?.abort();
 
     if (locationDebounceRef.current) {
       clearTimeout(locationDebounceRef.current);
@@ -545,6 +556,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setLocationLoading(false);
     setLocationVerified(false);
     setLocationMessage("");
+    setLocationSuggestions([]);
+    setLocationSuggestionsOpen(false);
 
     setPreferredCenter(null);
     setPreferredCenterError("");
@@ -743,8 +756,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   /* GEOCODE                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  const geocodeAddress = async (address: string) => {
+  const searchLocationSuggestions = async (address: string) => {
     const requestId = ++locationRequestIdRef.current;
+    locationSearchAbortRef.current?.abort();
+    const controller = new AbortController();
+    locationSearchAbortRef.current = controller;
 
     const trimmed = address.trim();
 
@@ -752,6 +768,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       setDetectedLocation(null);
       setLocationVerified(false);
       setLocationMessage("");
+      setLocationSuggestions([]);
       setLocationId(null);
       setTrial("online");
       setLocationLoading(false);
@@ -765,19 +782,14 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setLocationMessage("Finding your location...");
 
     try {
-      const searchAddress = trimmed.toLowerCase().includes("india")
-        ? trimmed
-        : `${trimmed}, India`;
-
       const url =
         "https://nominatim.openstreetmap.org/search" +
         "?format=json" +
-        "&limit=1" +
-        "&addressdetails=1" +
-        "&countrycodes=in" +
-        `&q=${encodeURIComponent(searchAddress)}`;
+        "&limit=3" +
+        `&q=${encodeURIComponent(trimmed)}`;
 
       const response = await fetch(url, {
+        signal: controller.signal,
         headers: {
           Accept: "application/json",
         },
@@ -792,70 +804,54 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       if (requestId !== locationRequestIdRef.current) return;
 
       if (!Array.isArray(results) || results.length === 0) {
-        setDetectedLocation(null);
-        setLocationVerified(false);
-        setTrial("online");
-        setLocationId(null);
-
-        setLocationMessage(
-          "Location not found. Please enter a valid city, area or address.",
-        );
-
+        setLocationSuggestions([]);
+        setLocationSuggestionsOpen(false);
+        setLocationMessage("No matching locations. Try a nearby area or city.");
         return;
       }
 
-      const lat = Number(results[0].lat);
-      const lng = Number(results[0].lon);
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        throw new Error("Invalid location coordinates.");
-      }
-
-      const geocoded: GeocodedLocation = {
-        lat,
-        lng,
-        displayName: results[0].display_name,
-      };
-
-      setDetectedLocation(geocoded);
-
-      const nearest = findNearestLocation(lat, lng, LOCATIONS);
-
-      if (!nearest) {
-        clearSelectedSchedule();
-        setTrial("online");
-        setLocationId(null);
-        setLocationVerified(true);
-        setLocationMessage("Online trial selected.");
-        return;
-      }
-
-      const distance = nearest.distanceKm;
-
-      if (distance <= MAX_OFFLINE_DISTANCE_KM) {
-        clearSelectedSchedule();
-        setTrial("offline");
-        setLocationId(nearest.location.id);
-        setLocationVerified(true);
-
-        setLocationMessage(
-          "Trial class will be conducted at our headquarters in Kalyani Nagar, Pune.",
+      const suggestions = results
+        .map(
+          (result: {
+            lat: string;
+            lon: string;
+            display_name: string;
+            place_id: number;
+          }) => ({
+            id: String(result.place_id),
+            lat: Number(result.lat),
+            lng: Number(result.lon),
+            displayName: result.display_name,
+          }),
+        )
+        .filter(
+          (result: LocationSuggestion) =>
+            Number.isFinite(result.lat) && Number.isFinite(result.lng),
         );
-      } else {
-        clearSelectedSchedule();
-        setTrial("online");
-        setLocationId(null);
-        setLocationVerified(true);
 
-        setLocationMessage("Trial class will be conducted online.");
-      }
+      setLocationSuggestions(suggestions);
+      setLocationSuggestionsOpen(suggestions.length > 0);
+      setLocationMessage(
+        suggestions.length
+          ? "Select your location from the suggestions."
+          : "No matching locations. Try a nearby area or city.",
+      );
     } catch (error) {
-      console.error("Geocoding error:", error);
+      if (
+        controller.signal.aborted ||
+        (error instanceof DOMException && error.name === "AbortError")
+      ) {
+        return;
+      }
 
       if (requestId !== locationRequestIdRef.current) return;
 
+      console.error("Geocoding error:", error);
+
       setDetectedLocation(null);
       setLocationVerified(false);
+      setLocationSuggestions([]);
+      setLocationSuggestionsOpen(false);
       setTrial("online");
       setLocationId(null);
 
@@ -869,16 +865,56 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     }
   };
 
+  const selectLocationSuggestion = (suggestion: LocationSuggestion) => {
+    locationRequestIdRef.current += 1;
+    locationSearchAbortRef.current?.abort();
+    if (locationDebounceRef.current) {
+      clearTimeout(locationDebounceRef.current);
+      locationDebounceRef.current = null;
+    }
+
+    setForm((current) => ({ ...current, location: suggestion.displayName }));
+    setDetectedLocation(suggestion);
+    setLocationSuggestions([]);
+    setLocationSuggestionsOpen(false);
+    setLocationLoading(false);
+    setLocationVerified(true);
+    setFieldErrors((current) => ({ ...current, location: undefined }));
+    setNotice(null);
+    clearSelectedSchedule();
+
+    const nearest = findNearestLocation(
+      suggestion.lat,
+      suggestion.lng,
+      LOCATIONS,
+    );
+    if (nearest && nearest.distanceKm <= MAX_OFFLINE_DISTANCE_KM) {
+      setTrial("offline");
+      setLocationId(nearest.location.id);
+      setLocationMessage(
+        "Trial class will be conducted at our headquarters in Kalyani Nagar, Pune.",
+      );
+    } else {
+      setTrial("online");
+      setLocationId(null);
+      setLocationMessage("Trial class will be conducted online.");
+    }
+  };
+
   /* ------------------------------------------------------------------------ */
   /* LOCATION INPUT                                                           */
   /* ------------------------------------------------------------------------ */
 
   const handleLocationChange = (value: string) => {
+    locationRequestIdRef.current += 1;
+    locationSearchAbortRef.current?.abort();
     updateField("location", value);
 
     setDetectedLocation(null);
     setLocationVerified(false);
     setLocationMessage("");
+    setLocationSuggestions([]);
+    setLocationSuggestionsOpen(false);
 
     clearSelectedSchedule();
     setTrial("online");
@@ -896,8 +932,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setLocationLoading(true);
 
     locationDebounceRef.current = setTimeout(() => {
-      geocodeAddress(value);
-    }, 800);
+      searchLocationSuggestions(value);
+    }, 400);
   };
 
   /* ------------------------------------------------------------------------ */
@@ -1146,6 +1182,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
         setNotice(null);
 
         setOpen(false);
+        setSuccessTitle("Thank You !!");
         setSuccessMessage(
           "We understand that visiting our Kalyani Nagar HQ may not be convenient.\n\nOur counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292.",
         );
@@ -1283,6 +1320,15 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
       if (!leadId) trackMetaLead();
 
+      const bookingConfirmed = payload.status === "booked";
+      const confirmationMessage = bookingConfirmed
+        ? `Your free trial is booked for ${selectedDate!.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })} at ${selectedTime}. We look forward to seeing you!`
+        : "YOUR RESPONSE IS RECORDED. Our team will contact you shortly to help arrange the best available trial option for your child. Please keep your phone available for a call from our official number 9175159292.";
+
       setStep(1);
       setForm(initialForm);
       setSelectedDate(undefined);
@@ -1306,9 +1352,8 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
       setNotice(null);
 
       setOpen(false);
-      setSuccessMessage(
-        "YOUR RESPONSE IS RECORDED. Our Team will contact you for further assistance. Our counsellor will connect with you shortly to understand your preference and suggest the best available trial option for your child.\n\n📞 Please keep your phone available for a call from our official number 9175159292.",
-      );
+      setSuccessTitle(bookingConfirmed ? "Booking Confirmed!" : "Thank You !!");
+      setSuccessMessage(confirmationMessage);
       setSuccessOpen(true);
     } catch (error) {
       console.error("Registration error:", error);
@@ -1918,7 +1963,36 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   {locationLoading && (
                     <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-red-600" />
                   )}
+
+                  {locationSuggestionsOpen && locationSuggestions.length > 0 && (
+                    <div
+                      role="listbox"
+                      aria-label="Location suggestions"
+                      className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
+                    >
+                      {locationSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion.id}
+                          type="button"
+                          role="option"
+                          aria-selected="false"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => selectLocationSuggestion(suggestion)}
+                          className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-red-50"
+                        >
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                          <span>{suggestion.displayName}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
+                {!locationVerified && locationMessage && (
+                  <p className="mt-1.5 text-xs text-gray-500" role="status">
+                    {locationMessage}
+                  </p>
+                )}
 
                 {fieldErrors.location && (
                   <span className="mt-1.5 block text-xs text-red-600">
@@ -2336,7 +2410,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Thank You !!</h2>
+            <h2 className="text-xl font-bold text-gray-900">{successTitle}</h2>
 
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
               {successMessage}

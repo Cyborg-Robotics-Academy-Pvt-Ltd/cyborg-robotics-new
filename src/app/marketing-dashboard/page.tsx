@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
   type ReactNode,
+  Fragment,
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,6 +18,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
+  ChevronDown,
   ChevronRight,
   CircleAlert,
   Download,
@@ -29,6 +31,7 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
+  X,
 } from "lucide-react";
 
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
@@ -36,14 +39,19 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
 import { useAuth } from "@/lib/auth-context";
 import type { TrialRegistration } from "@/app/enquire-form/types";
+import {
+  LEAD_OUTCOME_OPTIONS,
+  LEAD_OUTCOME_STYLES,
+} from "@/app/enquire-form/constants";
+import { StudentTimelineStrip } from "@/components/trial-registrations/StudentTimelineStrip";
 
 /* ---------- Types & constants ---------- */
 
 type Period = "7" | "30" | "90" | "all";
 type SourceSort = "enquiries" | "trialRate" | "closeRate" | "name";
-type TrialFilter = "all" | "trial" | "none";
 type TableSort = "newest" | "oldest";
 type LeadSegment = "all" | "hot" | "warm" | "cold";
+type LeadOutcomeFilter = "all" | "opened" | "joined" | "closed" | "nurture";
 
 const PERIODS: Array<{ value: Period; label: string; phrase: string }> = [
   { value: "7", label: "7 days", phrase: "last 7 days" },
@@ -90,6 +98,14 @@ const STATUS_STYLES: Record<string, { pill: string; dot: string }> = {
   },
 };
 
+const LEAD_OUTCOME_BADGE_STYLES: Record<string, string> = {
+  opened: "bg-blue-50 text-blue-700 ring-blue-200",
+  joined: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  closed: "bg-red-50 text-red-700 ring-red-200",
+  nurture: "bg-violet-50 text-violet-700 ring-violet-200",
+  later: "bg-slate-100 text-slate-700 ring-slate-200",
+};
+
 const SOURCE_COLORS = [
   "bg-[#A81B1E]",
   "bg-slate-800",
@@ -112,88 +128,6 @@ const SOURCE_PAGE_SIZE = 6;
 const TABLE_PAGE_SIZES = [10, 25, 50];
 const UNSPECIFIED = "Not specified";
 const UNSPECIFIED_KEY = UNSPECIFIED.toLocaleLowerCase();
-const UNKNOWN_STATE = "Unknown state";
-const UNKNOWN_CITY = "Unknown city";
-
-const INDIAN_STATE_ALIASES: Record<string, string> = {
-  "andhra pradesh": "Andhra Pradesh",
-  "arunachal pradesh": "Arunachal Pradesh",
-  assam: "Assam",
-  bihar: "Bihar",
-  chhattisgarh: "Chhattisgarh",
-  goa: "Goa",
-  gujarat: "Gujarat",
-  haryana: "Haryana",
-  "himachal pradesh": "Himachal Pradesh",
-  jharkhand: "Jharkhand",
-  karnataka: "Karnataka",
-  kerala: "Kerala",
-  "madhya pradesh": "Madhya Pradesh",
-  maharashtra: "Maharashtra",
-  manipur: "Manipur",
-  meghalaya: "Meghalaya",
-  mizoram: "Mizoram",
-  nagaland: "Nagaland",
-  odisha: "Odisha",
-  orissa: "Odisha",
-  punjab: "Punjab",
-  rajasthan: "Rajasthan",
-  sikkim: "Sikkim",
-  "tamil nadu": "Tamil Nadu",
-  telangana: "Telangana",
-  tripura: "Tripura",
-  "uttar pradesh": "Uttar Pradesh",
-  uttarakhand: "Uttarakhand",
-  uttaranchal: "Uttarakhand",
-  "west bengal": "West Bengal",
-  "andaman and nicobar islands": "Andaman and Nicobar Islands",
-  chandigarh: "Chandigarh",
-  "dadra and nagar haveli and daman and diu":
-    "Dadra and Nagar Haveli and Daman and Diu",
-  delhi: "Delhi",
-  "national capital territory of delhi": "Delhi",
-  "jammu and kashmir": "Jammu and Kashmir",
-  ladakh: "Ladakh",
-  lakshadweep: "Lakshadweep",
-  puducherry: "Puducherry",
-  pondicherry: "Puducherry",
-  ap: "Andhra Pradesh",
-  ar: "Arunachal Pradesh",
-  as: "Assam",
-  br: "Bihar",
-  cg: "Chhattisgarh",
-  ga: "Goa",
-  gj: "Gujarat",
-  hr: "Haryana",
-  hp: "Himachal Pradesh",
-  jh: "Jharkhand",
-  ka: "Karnataka",
-  kl: "Kerala",
-  mp: "Madhya Pradesh",
-  mh: "Maharashtra",
-  mn: "Manipur",
-  ml: "Meghalaya",
-  mz: "Mizoram",
-  nl: "Nagaland",
-  od: "Odisha",
-  pb: "Punjab",
-  rj: "Rajasthan",
-  sk: "Sikkim",
-  tn: "Tamil Nadu",
-  ts: "Telangana",
-  tr: "Tripura",
-  up: "Uttar Pradesh",
-  uk: "Uttarakhand",
-  wb: "West Bengal",
-  an: "Andaman and Nicobar Islands",
-  ch: "Chandigarh",
-  dd: "Dadra and Nagar Haveli and Daman and Diu",
-  dn: "Dadra and Nagar Haveli and Daman and Diu",
-  jk: "Jammu and Kashmir",
-  ld: "Lakshadweep",
-  py: "Puducherry",
-  dl: "Delhi",
-};
 
 /* Brand: red #A81B1E (primary), neutrals for structure, amber/emerald/orange for status only */
 const HEADING_STYLE = {
@@ -205,6 +139,9 @@ const FOCUS_RING =
 
 const FIELD =
   "rounded-lg border border-slate-300 bg-white text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 hover:border-slate-400 focus:border-[#A81B1E] focus:ring-2 focus:ring-[#A81B1E]/20";
+
+const CARD =
+  "rounded-xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]";
 
 /* ---------- Helpers ---------- */
 
@@ -247,27 +184,12 @@ function isClosed(registration: TrialRegistration) {
   return registration.leadOutcome === "closed";
 }
 
-function displaySource(source: string) {
-  return (source || "").trim() || UNSPECIFIED;
+function isJoined(registration: TrialRegistration) {
+  return registration.leadOutcome === "joined";
 }
 
-function parseLeadLocation(location: string) {
-  const parts = location
-    .split(/[,;|]/)
-    .map((part) => part.trim())
-    .filter((part) => part && !/^india$/i.test(part) && !/^\d{6}$/i.test(part));
-  const stateIndex = parts.findIndex(
-    (part) => INDIAN_STATE_ALIASES[part.toLocaleLowerCase()],
-  );
-  const state =
-    stateIndex >= 0
-      ? INDIAN_STATE_ALIASES[parts[stateIndex].toLocaleLowerCase()]
-      : UNKNOWN_STATE;
-  const city =
-    (stateIndex >= 0 ? parts[stateIndex - 1] : parts[parts.length - 1]) ||
-    UNKNOWN_CITY;
-
-  return { city, state };
+function displaySource(source: string) {
+  return (source || "").trim() || UNSPECIFIED;
 }
 
 function SourceIcon({ source }: { source: string }) {
@@ -293,7 +215,7 @@ function SourceIcon({ source }: { source: string }) {
         alt=""
         width={18}
         height={18}
-        className="h-[18px] w-[18px] shrink-0 rounded-sm object-contain"
+        className="h-[24px] w-[24px] shrink-0 rounded-sm object-contain"
         aria-hidden="true"
       />
     );
@@ -456,13 +378,13 @@ export default function MarketingDashboardPage() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [stateFilter, setStateFilter] = useState("all");
-  const [cityFilter, setCityFilter] = useState("all");
-  const [trialFilter, setTrialFilter] = useState<TrialFilter>("all");
+  const [leadOutcomeFilter, setLeadOutcomeFilter] =
+    useState<LeadOutcomeFilter>("all");
   const [leadSegment, setLeadSegment] = useState<LeadSegment>("all");
   const [tableSort, setTableSort] = useState<TableSort>("newest");
   const [tablePage, setTablePage] = useState(1);
   const [tablePageSize, setTablePageSize] = useState(TABLE_PAGE_SIZES[0]);
+  const [expandedTimelineId, setExpandedTimelineId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && (!user || userRole !== "marketing")) {
@@ -476,6 +398,7 @@ export default function MarketingDashboardPage() {
     attributedCount,
     totalTrials,
     totalClosed,
+    totalJoined,
     previous,
   } = useMemo(() => {
     const start = new Date();
@@ -540,6 +463,7 @@ export default function MarketingDashboardPage() {
       ).length,
       totalTrials: currentRecords.filter(isTrialBooked).length,
       totalClosed: currentRecords.filter(isClosed).length,
+      totalJoined: currentRecords.filter(isJoined).length,
       previous: {
         enquiries: previousRecords.length,
         trials: previousRecords.filter(isTrialBooked).length,
@@ -579,37 +503,6 @@ export default function MarketingDashboardPage() {
     ? sourceFilter
     : "all";
 
-  const locationStateOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          registrations.map(
-            (record) => parseLeadLocation(record.location).state,
-          ),
-        ),
-      ).sort((a, b) => a.localeCompare(b)),
-    [registrations],
-  );
-  const activeState = locationStateOptions.includes(stateFilter)
-    ? stateFilter
-    : "all";
-  const locationCityOptions = useMemo(() => {
-    if (activeState === "all") return [];
-    return Array.from(
-      new Set(
-        registrations
-          .filter(
-            (record) =>
-              parseLeadLocation(record.location).state === activeState,
-          )
-          .map((record) => parseLeadLocation(record.location).city),
-      ),
-    ).sort((a, b) => a.localeCompare(b));
-  }, [activeState, registrations]);
-  const activeCity = locationCityOptions.includes(cityFilter)
-    ? cityFilter
-    : "all";
-
   const filteredRecords = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
     const list = records.filter((record) => {
@@ -619,13 +512,13 @@ export default function MarketingDashboardPage() {
           activeSourceKey
       )
         return false;
-      if (trialFilter === "trial" && !isTrialBooked(record)) return false;
-      if (trialFilter === "none" && isTrialBooked(record)) return false;
+      if (
+        leadOutcomeFilter !== "all" &&
+        record.leadOutcome !== leadOutcomeFilter
+      )
+        return false;
       if (leadSegment !== "all" && record.leadTemp !== leadSegment)
         return false;
-      const location = parseLeadLocation(record.location);
-      if (activeState !== "all" && location.state !== activeState) return false;
-      if (activeCity !== "all" && location.city !== activeCity) return false;
       if (!q) return true;
       return `${record.studentName || ""} ${record.referralSource || ""}`
         .toLowerCase()
@@ -641,9 +534,7 @@ export default function MarketingDashboardPage() {
     records,
     deferredQuery,
     activeSourceKey,
-    activeState,
-    activeCity,
-    trialFilter,
+    leadOutcomeFilter,
     leadSegment,
     tableSort,
   ]);
@@ -658,20 +549,18 @@ export default function MarketingDashboardPage() {
     safeTablePage * tablePageSize,
   );
 
-  const hasActiveFilters =
-    query.trim() !== "" ||
-    activeSourceKey !== "all" ||
-    activeState !== "all" ||
-    activeCity !== "all" ||
-    trialFilter !== "all" ||
-    leadSegment !== "all";
+  const activeFilterCount = [
+    query.trim() !== "",
+    activeSourceKey !== "all",
+    leadOutcomeFilter !== "all",
+    leadSegment !== "all",
+  ].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
 
   const clearFilters = () => {
     setQuery("");
     setSourceFilter("all");
-    setStateFilter("all");
-    setCityFilter("all");
-    setTrialFilter("all");
+    setLeadOutcomeFilter("all");
     setLeadSegment("all");
     setTablePage(1);
   };
@@ -711,20 +600,47 @@ export default function MarketingDashboardPage() {
 
   return (
     <DashboardLayout role="marketing" name={displayName}>
-      <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-6">
+      <main className="min-h-screen bg-[#f6f7fb] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+        <div className="mx-auto max-w-7xl space-y-5">
           {/* Header */}
-          <header className="flex flex-col justify-between gap-5 rounded-xl border-b-4 border-slate-900 bg-[#A81B1E] p-6 text-white sm:flex-row sm:items-end sm:p-8">
-            <div>
-              <p className="text-sm text-red-100">Marketing overview</p>
+          <header className="relative isolate flex flex-col justify-between gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#771218] via-[#A71920] to-[#be3038] p-6 text-white shadow-[0_14px_35px_-22px_rgba(110,18,24,0.8)] sm:flex-row sm:items-end sm:p-8">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] md:block"
+            >
+              <svg
+                viewBox="0 0 520 220"
+                fill="none"
+                className="absolute inset-0 h-full w-full opacity-35"
+                preserveAspectRatio="xMidYMid slice"
+              >
+                <path d="M30 184H510M30 134H510M30 84H510M30 34H510" stroke="white" strokeOpacity=".2" />
+                <path d="M36 182C95 170 112 123 166 139S236 169 287 109 356 119 401 71 457 65 504 31" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                <path d="M36 182C95 170 112 123 166 139S236 169 287 109 356 119 401 71 457 65 504 31V220H36V182Z" fill="url(#marketing-chart-fill)" />
+                <circle cx="287" cy="109" r="6" fill="white" />
+                <circle cx="401" cy="71" r="6" fill="white" />
+                <circle cx="504" cy="31" r="6" fill="white" />
+                <defs>
+                  <linearGradient id="marketing-chart-fill" x1="270" y1="31" x2="270" y2="220" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="white" stopOpacity=".22" />
+                    <stop offset="1" stopColor="white" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#8c171e] via-[#8c171e]/35 to-transparent" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-red-100">
+                Marketing overview
+              </p>
               <h1
                 style={HEADING_STYLE}
-                className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
+                className="mt-2 text-2xl font-semibold tracking-tight sm:text-4xl"
               >
                 See what brings families in
               </h1>
               <p
-                className="mt-3 max-w-2xl text-sm leading-relaxed text-white"
+                className="mt-3 max-w-2xl text-sm leading-relaxed text-white/90 sm:text-base"
                 aria-live="polite"
               >
                 {loading ? (
@@ -752,7 +668,7 @@ export default function MarketingDashboardPage() {
             </div>
             <Link
               href="/enquire-form"
-              className={`inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-semibold text-[#A81B1E] transition-colors hover:bg-red-50 ${FOCUS_RING}`}
+              className={`relative z-10 inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-[#A81B1E] shadow-sm transition duration-150 hover:-translate-y-0.5 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#A81B1E]`}
             >
               View enquiries{" "}
               <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
@@ -760,11 +676,11 @@ export default function MarketingDashboardPage() {
           </header>
 
           {/* Period */}
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-700">
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 font-medium">
                 <CalendarDays
-                  className="h-4 w-4 text-slate-400"
+                  className="h-4 w-4 text-slate-500"
                   aria-hidden="true"
                 />
                 Reporting period
@@ -776,7 +692,7 @@ export default function MarketingDashboardPage() {
             <div
               role="group"
               aria-label="Reporting period"
-              className="inline-flex w-fit rounded-lg border border-slate-200 bg-white p-1"
+              className="inline-flex w-full rounded-lg border border-slate-200 bg-white p-1 shadow-sm sm:w-fit"
             >
               {PERIODS.map((option) => (
                 <button
@@ -788,7 +704,7 @@ export default function MarketingDashboardPage() {
                     setTablePage(1);
                   }}
                   aria-pressed={period === option.value}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${FOCUS_RING} ${
+                  className={`flex-1 rounded-md px-3.5 py-2 text-xs font-semibold transition-colors sm:flex-none ${FOCUS_RING} ${
                     period === option.value
                       ? "bg-[#A81B1E] text-white"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -889,14 +805,14 @@ export default function MarketingDashboardPage() {
           {/* Trend */}
           <section
             aria-labelledby="trend-title"
-            className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
+            className={`${CARD} p-4 sm:p-5`}
           >
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2
                   style={HEADING_STYLE}
                   id="trend-title"
-                  className="text-base font-semibold text-slate-900"
+                  className="text-base font-semibold text-slate-900 sm:text-lg"
                 >
                   Enquiries over time
                 </h2>
@@ -922,25 +838,24 @@ export default function MarketingDashboardPage() {
                     className="h-2.5 w-2.5 rounded-sm bg-[#A81B1E]"
                     aria-hidden="true"
                   />{" "}
-                  Trial booked or attended
+                  Trial booked 
                 </li>
               </ul>
             </div>
             {loading ? (
-              <LoadingRows />
+              <LoadingRows tall />
             ) : (
               <TrendChart buckets={trend} periodPhrase={periodMeta.phrase} />
             )}
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+          <section className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
             {/* Sources */}
-            <div
+            <section
               aria-labelledby="sources-title"
-              role="region"
-              className="rounded-xl border border-slate-200 bg-white"
+              className={`${CARD} self-start`}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3 p-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-3 sm:p-5 sm:pb-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <BarChart3
@@ -950,7 +865,7 @@ export default function MarketingDashboardPage() {
                     <h2
                       style={HEADING_STYLE}
                       id="sources-title"
-                      className="text-base font-semibold text-slate-900"
+                      className="text-base font-semibold text-slate-900 sm:text-lg"
                     >
                       Referral source performance
                     </h2>
@@ -1006,7 +921,7 @@ export default function MarketingDashboardPage() {
                         `sources-${period}-${getLocalDateKey()}.csv`,
                       )
                     }
-                    className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-40 ${FOCUS_RING}`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 ${FOCUS_RING}`}
                   >
                     <Download className="h-3.5 w-3.5" aria-hidden="true" />{" "}
                     Export CSV
@@ -1014,14 +929,17 @@ export default function MarketingDashboardPage() {
                 </div>
               </div>
 
-              <div className="px-5 pb-2 sm:px-6">
+              <div className="px-4 pb-2 sm:px-5">
                 {loading ? (
                   <LoadingRows />
                 ) : pagedSources.length ? (
                   <ul className="divide-y divide-slate-100">
                     {pagedSources.map((source) => (
-                      <li key={source.key} className="py-4 first:pt-1">
-                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <li
+                        key={source.key}
+                        className="-mx-2 rounded-lg px-2 py-3.5 transition-colors first:mt-1 hover:bg-slate-50"
+                      >
+                        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                           <div className="flex min-w-0 items-center gap-2.5">
                             <SourceIcon source={source.name} />
                             <button
@@ -1037,24 +955,25 @@ export default function MarketingDashboardPage() {
                               enquiries
                             </span>
                           </div>
-                          <dl className="flex items-center gap-4 text-xs text-slate-600">
-                            <div className="flex gap-1">
+                          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
+                            {/* dt first for valid markup; flex-row-reverse keeps number-then-label visually */}
+                            <div className="flex flex-row-reverse gap-1">
+                              <dt>enquiries</dt>
                               <dd className="font-semibold tabular-nums text-slate-900">
                                 {source.enquiries}
                               </dd>
-                              <dt>enquiries</dt>
                             </div>
-                            <div className="flex gap-1">
+                            <div className="flex flex-row-reverse gap-1">
+                              <dt>trials ({source.trialRate}%)</dt>
                               <dd className="font-semibold tabular-nums text-slate-900">
                                 {source.trials}
                               </dd>
-                              <dt>trials ({source.trialRate}%)</dt>
                             </div>
-                            <div className="flex gap-1">
+                            <div className="flex flex-row-reverse gap-1">
+                              <dt>closed ({source.closeRate}%)</dt>
                               <dd className="font-semibold tabular-nums text-emerald-700">
                                 {source.closed}
                               </dd>
-                              <dt>closed ({source.closeRate}%)</dt>
                             </div>
                           </dl>
                         </div>
@@ -1064,7 +983,7 @@ export default function MarketingDashboardPage() {
                           aria-label={`${source.name}: ${percent(source.enquiries, records.length)}% of enquiries`}
                         >
                           <div
-                            className={`h-full rounded-full ${source.color}`}
+                            className={`h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 ${source.color}`}
                             style={{
                               width: `${records.length ? Math.max(2, (source.enquiries / records.length) * 100) : 0}%`,
                             }}
@@ -1090,19 +1009,23 @@ export default function MarketingDashboardPage() {
               {(loading || sortedSources.length <= SOURCE_PAGE_SIZE) && (
                 <div className="pb-3" />
               )}
-            </div>
+            </section>
 
             {/* Funnel + insights */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-2">
+            <section
+              aria-labelledby="funnel-title"
+              className={`${CARD} self-start p-4 sm:p-5`}
+            >
+              <div className="mb-5 flex items-start gap-2">
                 <ArrowDownRight
-                  className="h-5 w-5 text-[#A81B1E]"
+                  className="mt-0.5 h-5 w-5 text-[#A81B1E]"
                   aria-hidden="true"
                 />
                 <div>
                   <h2
                     style={HEADING_STYLE}
-                    className="text-base font-semibold text-slate-900"
+                    id="funnel-title"
+                    className="text-base font-semibold text-slate-900 sm:text-lg"
                   >
                     Enquiry funnel
                   </h2>
@@ -1120,7 +1043,7 @@ export default function MarketingDashboardPage() {
                   loading={loading}
                 />
                 <FunnelStep
-                  label="Trial booked or attended"
+                  label="Trial booked"
                   value={totalTrials}
                   total={records.length}
                   previousValue={records.length}
@@ -1132,21 +1055,29 @@ export default function MarketingDashboardPage() {
                   value={totalClosed}
                   total={records.length}
                   previousValue={totalTrials}
+                  color="bg-red-500"
+                  loading={loading}
+                />
+                <FunnelStep
+                  label="Joined"
+                  value={totalJoined}
+                  total={records.length}
+                  previousValue={totalTrials}
                   color="bg-emerald-500"
                   loading={loading}
                 />
               </ol>
 
-              <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-5 rounded-lg border border-slate-200 border-l-4 border-l-[#A81B1E] bg-slate-50 p-4">
                 <div className="flex items-start gap-3">
                   <Lightbulb
                     className="mt-0.5 h-4 w-4 shrink-0 text-[#A81B1E]"
                     aria-hidden="true"
                   />
-                  <div className="min-w-0 space-y-2 text-xs leading-relaxed text-slate-700">
-                    <p className="text-sm font-semibold text-slate-900">
+                  <div className="min-w-0 space-y-2 text-sm leading-relaxed text-slate-700">
+                    <h3 className="font-semibold text-slate-900">
                       What stands out
-                    </p>
+                    </h3>
                     {loading ? (
                       <p>Loading…</p>
                     ) : records.length === 0 ? (
@@ -1157,65 +1088,83 @@ export default function MarketingDashboardPage() {
                     ) : (
                       <>
                         {topSource && (
-                          <p>
-                            <span className="font-semibold text-slate-900">
-                              {topSource.name}
-                            </span>{" "}
-                            is your largest source with {topSource.enquiries}{" "}
-                            {topSource.enquiries === 1
-                              ? "enquiry"
-                              : "enquiries"}
-                            .
-                          </p>
+                          <div className="flex items-start gap-2">
+                            <TrendingUp
+                              className="mt-0.5 h-4 w-4 shrink-0 text-[#A81B1E]"
+                              aria-hidden="true"
+                            />
+                            <p>
+                              <span className="font-semibold text-slate-900">
+                                {topSource.name}
+                              </span>{" "}
+                              is your largest source with {topSource.enquiries}{" "}
+                              {topSource.enquiries === 1
+                                ? "enquiry"
+                                : "enquiries"}
+                              .
+                            </p>
+                          </div>
                         )}
                         {bestTrialSource && (
-                          <p>
-                            <span className="font-semibold text-slate-900">
-                              {bestTrialSource.name}
-                            </span>{" "}
-                            converts best to trials at{" "}
-                            {bestTrialSource.trialRate}% (sources with 3 or more
-                            enquiries).
-                          </p>
+                          <div className="flex items-start gap-2">
+                            <MousePointerClick
+                              className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700"
+                              aria-hidden="true"
+                            />
+                            <p>
+                              <span className="font-semibold text-slate-900">
+                                {bestTrialSource.name}
+                              </span>{" "}
+                              converts best to trials at{" "}
+                              {bestTrialSource.trialRate}% (sources with 3 or more
+                              enquiries).
+                            </p>
+                          </div>
                         )}
-                        <p>
-                          {attributionRate}% of enquiries have a source.
-                          {unspecified && unspecified.enquiries > 0 && (
-                            <>
-                              {" "}
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  showSourceEnquiries(UNSPECIFIED_KEY)
-                                }
-                                className={`rounded font-semibold text-[#A81B1E] underline-offset-4 hover:underline ${FOCUS_RING}`}
-                              >
-                                Review {unspecified.enquiries} without a source
-                              </button>{" "}
-                              and ask families to answer this question.
-                            </>
-                          )}
-                        </p>
+                        <div className="flex items-start gap-2">
+                          <Globe2
+                            className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"
+                            aria-hidden="true"
+                          />
+                          <p>
+                            {attributionRate}% of enquiries have a source.
+                            {unspecified && unspecified.enquiries > 0 && (
+                              <>
+                                {" "}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    showSourceEnquiries(UNSPECIFIED_KEY)
+                                  }
+                                  className={`rounded font-semibold text-[#A81B1E] underline-offset-4 hover:underline ${FOCUS_RING}`}
+                                >
+                                  Review {unspecified.enquiries} without a source
+                                </button>{" "}
+                                and ask families to answer this question.
+                              </>
+                            )}
+                          </p>
+                        </div>
                       </>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </section>
 
           {/* Enquiries table */}
           <section
             id="enquiries-section"
             aria-labelledby="enquiries-title"
-            className="scroll-mt-4 rounded-xl border border-slate-200 bg-white"
+            className={`${CARD} scroll-mt-4`}
           >
-            <div className="flex flex-wrap items-start justify-between gap-3 p-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-3 sm:p-5 sm:pb-4">
               <div>
                 <h2
                   style={HEADING_STYLE}
                   id="enquiries-title"
-                  className="text-base font-semibold text-slate-900"
+                  className="text-base font-semibold text-slate-900 sm:text-lg"
                 >
                   Enquiries
                 </h2>
@@ -1236,13 +1185,23 @@ export default function MarketingDashboardPage() {
                   disabled={loading || filteredRecords.length === 0}
                   onClick={() =>
                     downloadCsv(
-                      ["Student", "Source", "Trial status", "Closed", "Date"],
+                      [
+                        "Student",
+                        "Source",
+                        "Trial status",
+                        "Lead outcome",
+                        "Closed",
+                        "Date",
+                      ],
                       filteredRecords.map((record) => {
                         const time = getRegistrationTime(record);
                         return [
                           record.studentName,
                           displaySource(record.referralSource),
                           TRIAL_STATUS_LABELS[record.status] ?? "",
+                          LEAD_OUTCOME_OPTIONS.find(
+                            (option) => option.value === record.leadOutcome,
+                          )?.label ?? "",
                           isClosed(record) ? "Yes" : "No",
                           time ? new Date(time).toISOString().slice(0, 10) : "",
                         ];
@@ -1250,7 +1209,7 @@ export default function MarketingDashboardPage() {
                       `enquiries-${period}-${getLocalDateKey()}.csv`,
                     )
                   }
-                  className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-40 ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 ${FOCUS_RING}`}
                 >
                   <Download className="h-3.5 w-3.5" aria-hidden="true" /> Export
                   CSV
@@ -1258,8 +1217,9 @@ export default function MarketingDashboardPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 px-5 sm:flex-row sm:flex-wrap sm:items-center sm:px-6">
-              <div className="relative min-w-0 flex-1 sm:min-w-[220px]">
+            {/* Filters */}
+            <div className="mx-4 rounded-xl border border-slate-200/80 bg-white p-3 sm:mx-5 sm:p-4">
+              <div className="relative">
                 <label htmlFor="enquiry-search" className="sr-only">
                   Search by name or source
                 </label>
@@ -1276,156 +1236,129 @@ export default function MarketingDashboardPage() {
                     setTablePage(1);
                   }}
                   placeholder="Search name or source"
-                  className={`${FIELD} w-full py-2 pl-9 pr-3`}
+                  className={`${FIELD} w-full py-2.5 pl-9 pr-3`}
                 />
               </div>
-              <label className="sr-only" htmlFor="enquiry-source">
-                Filter by source
-              </label>
-              <select
-                id="enquiry-source"
-                value={activeSourceKey}
-                onChange={(event) => {
-                  setSourceFilter(event.target.value);
-                  setTablePage(1);
-                }}
-                className={`${FIELD} max-w-[220px] px-3 py-2`}
-              >
-                <option value="all">All sources</option>
-                {sourceStats.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-              <label className="sr-only" htmlFor="enquiry-state">
-                Filter by state
-              </label>
-              <select
-                id="enquiry-state"
-                value={activeState}
-                onChange={(event) => {
-                  setStateFilter(event.target.value);
-                  setCityFilter("all");
-                  setTablePage(1);
-                }}
-                className={`${FIELD} max-w-[220px] px-3 py-2`}
-              >
-                <option value="all">All states</option>
-                {locationStateOptions.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-              <label className="sr-only" htmlFor="enquiry-city">
-                Filter by city
-              </label>
-              <select
-                id="enquiry-city"
-                value={activeCity}
-                disabled={activeState === "all"}
-                onChange={(event) => {
-                  setCityFilter(event.target.value);
-                  setTablePage(1);
-                }}
-                className={`${FIELD} max-w-[220px] px-3 py-2 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
-              >
-                <option value="all">
-                  {activeState === "all"
-                    ? "Select a state first"
-                    : "All cities"}
-                </option>
-                {locationCityOptions.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-              <label className="sr-only" htmlFor="enquiry-trial">
-                Filter by trial
-              </label>
-              <select
-                id="enquiry-trial"
-                value={trialFilter}
-                onChange={(event) => {
-                  setTrialFilter(event.target.value as TrialFilter);
-                  setTablePage(1);
-                }}
-                className={`${FIELD} px-3 py-2`}
-              >
-                <option value="all">All enquiries</option>
-                <option value="trial">Trial booked or attended</option>
-                <option value="none">No trial yet</option>
-              </select>
-              <label className="sr-only" htmlFor="enquiry-segment">
-                Filter by lead segment
-              </label>
-              <select
-                id="enquiry-segment"
-                value={leadSegment}
-                onChange={(event) => {
-                  setLeadSegment(event.target.value as LeadSegment);
-                  setTablePage(1);
-                }}
-                className={`${FIELD} px-3 py-2`}
-              >
-                <option value="all">All lead temperatures</option>
-                <option value="hot">Hot leads</option>
-                <option value="warm">Warm leads</option>
-                <option value="cold">Cold leads</option>
-              </select>
-              <label className="sr-only" htmlFor="enquiry-sort">
-                Sort by date
-              </label>
-              <select
-                id="enquiry-sort"
-                value={tableSort}
-                onChange={(event) => {
-                  setTableSort(event.target.value as TableSort);
-                  setTablePage(1);
-                }}
-                className={`${FIELD} px-3 py-2`}
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-              </select>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className={`rounded text-sm font-medium text-[#A81B1E] underline-offset-4 hover:underline ${FOCUS_RING}`}
-                >
-                  Clear filters
-                </button>
-              )}
+
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <FilterField id="enquiry-source" label="Source">
+                  <select
+                    id="enquiry-source"
+                    value={activeSourceKey}
+                    onChange={(event) => {
+                      setSourceFilter(event.target.value);
+                      setTablePage(1);
+                    }}
+                    className={`${FIELD} w-full px-3 py-2`}
+                  >
+                    <option value="all">All sources</option>
+                    {sourceStats.map((item) => (
+                      <option key={item.key} value={item.key}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </FilterField>
+                <FilterField id="enquiry-outcome" label="Lead outcome">
+                  <select
+                    id="enquiry-outcome"
+                    value={leadOutcomeFilter}
+                    onChange={(event) => {
+                      setLeadOutcomeFilter(
+                        event.target.value as LeadOutcomeFilter,
+                      );
+                      setTablePage(1);
+                    }}
+                    className={`${FIELD} w-full px-3 py-2`}
+                  >
+                    <option value="all">All outcomes</option>
+                    <option value="opened">Opened</option>
+                    <option value="joined">Joined</option>
+                    <option value="closed">Closed</option>
+                    <option value="nurture">Nurture</option>
+                  </select>
+                </FilterField>
+                <FilterField id="enquiry-segment" label="Lead temperature">
+                  <select
+                    id="enquiry-segment"
+                    value={leadSegment}
+                    onChange={(event) => {
+                      setLeadSegment(event.target.value as LeadSegment);
+                      setTablePage(1);
+                    }}
+                    className={`${FIELD} w-full px-3 py-2`}
+                  >
+                    <option value="all">All lead temperatures</option>
+                    <option value="hot">Hot leads</option>
+                    <option value="warm">Warm leads</option>
+                    <option value="cold">Cold leads</option>
+                  </select>
+                </FilterField>
+                <FilterField id="enquiry-sort" label="Sort by date">
+                  <select
+                    id="enquiry-sort"
+                    value={tableSort}
+                    onChange={(event) => {
+                      setTableSort(event.target.value as TableSort);
+                      setTablePage(1);
+                    }}
+                    className={`${FIELD} w-full px-3 py-2`}
+                  >
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                  </select>
+                </FilterField>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <p className="text-slate-600" aria-live="polite">
+                  <span className="font-semibold tabular-nums text-slate-900">
+                    {loading ? "—" : filteredRecords.length}
+                  </span>{" "}
+                  {filteredRecords.length === 1 ? "enquiry" : "enquiries"}
+                  {hasActiveFilters && (
+                    <span className="text-slate-500">
+                      {" "}
+                      · {activeFilterCount}{" "}
+                      {activeFilterCount === 1 ? "filter" : "filters"} applied
+                    </span>
+                  )}
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className={`inline-flex items-center gap-1 rounded px-1 text-sm font-medium text-[#A81B1E] underline-offset-4 hover:underline ${FOCUS_RING}`}
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    Clear filters
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="px-5 pb-2 pt-4 sm:px-6">
               {loading ? (
                 <LoadingRows />
               ) : pagedRecords.length ? (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
                   <table className="w-full min-w-[760px] text-left text-sm">
                     <caption className="sr-only">
                       Enquiries with source, trial status and date
                     </caption>
-                    <thead>
+                    <thead className="bg-slate-50">
                       <tr className="border-b border-slate-200 text-xs text-slate-600">
-                        <th scope="col" className="px-3 py-3 font-medium">
+                        <th scope="col" className="px-4 py-3 font-semibold">
                           Enquiry
                         </th>
-                        <th scope="col" className="px-3 py-3 font-medium">
+                        <th scope="col" className="px-4 py-3 font-semibold">
                           Source
                         </th>
-                        <th scope="col" className="px-3 py-3 font-medium">
+                        <th scope="col" className="px-4 py-3 font-semibold">
                           Trial
                         </th>
-                        <th scope="col" className="px-3 py-3 font-medium">
-                          Lead
-                        </th>
-                        <th scope="col" className="px-3 py-3 font-medium">
-                          Date & time
+                        <th scope="col" className="px-4 py-3 font-semibold">
+                          Status
                         </th>
                       </tr>
                     </thead>
@@ -1437,78 +1370,121 @@ export default function MarketingDashboardPage() {
                           registrationTime > 0 &&
                           getLocalDateKey(new Date(registrationTime)) ===
                             getLocalDateKey();
+                        const isExpanded = expandedTimelineId === record.id;
+                        const outcomeStyle = record.leadOutcome
+                          ? LEAD_OUTCOME_STYLES[record.leadOutcome]
+                          : undefined;
+                        const outcomeLabel = LEAD_OUTCOME_OPTIONS.find(
+                          (option) => option.value === record.leadOutcome,
+                        )?.label;
+                        const timelineId = `timeline-${record.id}`;
                         return (
-                          <tr key={record.id} className="text-slate-700">
-                            <th
-                              scope="row"
-                              className="px-3 py-3 font-medium text-slate-900"
+                          <Fragment key={record.id}>
+                            <tr
+                              className={`text-slate-700 transition-colors hover:bg-slate-50 ${
+                                isExpanded ? "bg-slate-50" : ""
+                              }`}
                             >
-                              <span className="inline-flex items-center gap-2">
-                                {record.studentName || "New enquiry"}
-                                {isNewToday && (
-                                  <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                                    New
+                              <th
+                                scope="row"
+                                className="px-4 py-3 align-top font-medium text-slate-900"
+                              >
+                                <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                  {record.studentName || "New enquiry"}
+                                  {isNewToday && (
+                                    <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                                      New
+                                    </span>
+                                  )}
+                                </span>
+                                {registrationTime > 0 && (
+                                  <span className="mt-0.5 block text-xs font-semibold text-[#A71920]">
+                                    <span>
+                                      Enquired
+                                    </span>{" "}
+                                    {formatDate(registrationTime)}
                                   </span>
                                 )}
-                              </span>
-                            </th>
-                            <td className="px-3 py-3">
-                              {displaySource(record.referralSource) ===
-                              UNSPECIFIED ? (
-                                <span className="inline-flex items-center gap-2 text-slate-500">
-                                  <SourceIcon source={UNSPECIFIED} />
-                                  {UNSPECIFIED}
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedTimelineId(
+                                      isExpanded ? null : record.id,
+                                    )
+                                  }
+                                  aria-expanded={isExpanded}
+                                  aria-controls={timelineId}
+                                  aria-label={`${isExpanded ? "Hide" : "Show"} timeline for ${record.studentName || "student"}`}
+                                  className={`mt-1.5 inline-flex items-center gap-1 rounded px-0.5 text-xs font-medium text-[#A81B1E] hover:underline ${FOCUS_RING}`}
+                                >
+                                  <ChevronDown
+                                    className={`h-4 w-4 motion-safe:transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                    aria-hidden="true"
+                                  />
+                                  {isExpanded ? "Hide timeline" : "Timeline"}
+                                </button>
+                              </th>
+                              <td className="px-4 py-3 align-top text-center">
+                                <span
+                                  role="img"
+                                  aria-label={`Source: ${displaySource(record.referralSource)}`}
+                                  title={displaySource(record.referralSource)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50"
+                                >
                                   <SourceIcon
-                                    source={displaySource(
-                                      record.referralSource,
-                                    )}
+                                    source={displaySource(record.referralSource)}
                                   />
-                                  {displaySource(record.referralSource)}
                                 </span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3">
-                              {status ? (
-                                <span
-                                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${status.pill}`}
-                                >
+                              </td>
+                              <td className="px-4 py-3 align-top">
+                                {status ? (
                                   <span
-                                    className={`h-1.5 w-1.5 rounded-full ${status.dot}`}
-                                    aria-hidden="true"
-                                  />
-                                  {TRIAL_STATUS_LABELS[record.status]}
-                                </span>
-                              ) : (
-                                <span
-                                  className="text-slate-400"
-                                  aria-label="No trial"
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${status.pill}`}
+                                  >
+                                    <span
+                                      className={`h-1.5 w-1.5 rounded-full ${status.dot}`}
+                                      aria-hidden="true"
+                                    />
+                                    {TRIAL_STATUS_LABELS[record.status]}
+                                  </span>
+                                ) : (
+                                  <span
+                                    className="text-slate-400"
+                                    aria-label="No trial"
+                                  >
+                                    —
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 align-top">
+                                {record.leadOutcome && outcomeStyle ? (
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${LEAD_OUTCOME_BADGE_STYLES[record.leadOutcome] ?? "bg-slate-100 text-slate-700 ring-slate-200"}`}
+                                  >
+                                    <span
+                                      className={`h-1.5 w-1.5 rounded-full ${outcomeStyle.dot}`}
+                                      aria-hidden="true"
+                                    />
+                                    {outcomeLabel ?? record.leadOutcome}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-slate-400">
+                                    Not set
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                            {isExpanded && (
+                              <tr id={timelineId}>
+                                <td
+                                  colSpan={4}
+                                  className="border-l-4 border-l-[#A81B1E] bg-slate-50 px-4 py-4"
                                 >
-                                  —
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3">
-                              {isClosed(record) ? (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
-                                  <CheckCircle2
-                                    className="h-3.5 w-3.5"
-                                    aria-hidden="true"
-                                  />{" "}
-                                  Closed
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-500">
-                                  Open
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3 tabular-nums">
-                              {formatDate(getRegistrationTime(record))}
-                            </td>
-                          </tr>
+                                  <StudentTimelineStrip registration={record} />
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
                         );
                       })}
                     </tbody>
@@ -1555,6 +1531,28 @@ export default function MarketingDashboardPage() {
 
 /* ---------- Components ---------- */
 
+function FilterField({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-w-0">
+      <label
+        htmlFor={id}
+        className="mb-1 block text-xs font-medium text-slate-600"
+      >
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 function MetricCard({
   title,
   value,
@@ -1595,19 +1593,23 @@ function MetricCard({
     } else {
       const up = delta.pct > 0;
       deltaNode = (
-        <span
-          className={`inline-flex items-center gap-1 font-medium ${up ? "text-emerald-700" : "text-[#A81B1E]"}`}
-        >
-          {up ? (
-            <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
-          ) : (
-            <TrendingDown className="h-3.5 w-3.5" aria-hidden="true" />
-          )}
-          <span className="tabular-nums">
-            {up ? "+" : ""}
-            {delta.pct}%
+        <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
+              up ? "bg-emerald-50 text-emerald-700" : "bg-[#A81B1E]/10 text-[#A81B1E]"
+            }`}
+          >
+            {up ? (
+              <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <TrendingDown className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            <span className="tabular-nums">
+              {up ? "+" : ""}
+              {delta.pct}%
+            </span>
+            <span className="sr-only">{up ? "increase" : "decrease"}</span>
           </span>
-          <span className="sr-only">{up ? "increase" : "decrease"}</span>
           <span className="font-normal text-slate-600">{delta.label}</span>
         </span>
       );
@@ -1615,7 +1617,7 @@ function MetricCard({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5">
+    <div className={`${CARD} relative overflow-hidden p-4 transition-shadow duration-150 hover:shadow-md sm:p-5`}>
       <span
         className={`absolute inset-y-0 left-0 w-1 ${accent}`}
         aria-hidden="true"
@@ -1623,16 +1625,24 @@ function MetricCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-slate-900">
-            {loading ? "—" : value}
-          </p>
+          {loading ? (
+            <div
+              className="mt-2.5 h-9 w-20 rounded-md bg-slate-100 motion-safe:animate-pulse"
+              role="status"
+              aria-label="Loading"
+            />
+          ) : (
+            <p className="mt-1.5 text-3xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-[2.1rem]">
+              {value}
+            </p>
+          )}
         </div>
         <div className={`rounded-lg p-2.5 ${TONES[tone]}`} aria-hidden="true">
           {icon}
         </div>
       </div>
-      <p className="mt-3 text-xs text-slate-600">{detail}</p>
-      {deltaNode && <p className="mt-1.5 text-xs">{deltaNode}</p>}
+      <p className="mt-2 min-h-8 text-xs leading-relaxed text-slate-600">{detail}</p>
+      {deltaNode && <p className="mt-2 text-xs">{deltaNode}</p>}
     </div>
   );
 }
@@ -1655,42 +1665,90 @@ function TrendChart({
     (best, item) => (item.enquiries > best.enquiries ? item : best),
     buckets[0],
   );
+  const lastIndex = buckets.length - 1;
 
   return (
     <div>
-      <div
-        role="img"
-        aria-label={`${total} enquiries in the ${periodPhrase}. Busiest period: ${peak.label} with ${peak.enquiries}.`}
-        className="flex h-44 items-end gap-1 border-b border-slate-200"
-      >
-        {buckets.map((bucket, index) => (
+                  <div className="flex gap-3">
+        {/* Y axis */}
+        <div
+            className="flex h-52 w-7 shrink-0 flex-col justify-between text-right text-[11px] tabular-nums text-slate-500"
+          aria-hidden="true"
+        >
+          <span className="-translate-y-1.5">{max}</span>
+          <span>{Math.round(max / 2)}</span>
+          <span className="translate-y-1.5">0</span>
+        </div>
+
+        <div className="relative min-w-0 flex-1">
+          {/* Gridlines */}
           <div
-            key={`${bucket.label}-${index}`}
-            className="flex h-full min-w-0 flex-1 items-end"
-            title={`${bucket.label}: ${bucket.enquiries} ${bucket.enquiries === 1 ? "enquiry" : "enquiries"}, ${bucket.trials} ${bucket.trials === 1 ? "trial" : "trials"}`}
+            className="pointer-events-none absolute inset-0 flex flex-col justify-between"
+            aria-hidden="true"
           >
-            {bucket.enquiries === 0 ? (
-              <div className="h-0.5 w-full rounded-full bg-slate-200" />
-            ) : (
-              <div
-                className="relative w-full overflow-hidden rounded-t bg-[#A81B1E]/25"
-                style={{
-                  height: `${Math.max(3, (bucket.enquiries / max) * 100)}%`,
-                }}
-              >
-                <div
-                  className="absolute inset-x-0 bottom-0 bg-[#A81B1E]"
-                  style={{
-                    height: `${(bucket.trials / bucket.enquiries) * 100}%`,
-                  }}
-                />
-              </div>
-            )}
+            <div className="border-t border-dashed border-slate-200" />
+            <div className="border-t border-dashed border-slate-200" />
+            <div className="border-t border-slate-200" />
           </div>
-        ))}
+
+          <div
+            role="group"
+            aria-label={`${total} enquiries in the ${periodPhrase}. Busiest period: ${peak.label} with ${peak.enquiries}.`}
+            className="relative flex h-52 items-end gap-1.5"
+          >
+            {buckets.map((bucket, index) => {
+              const align =
+                index < 3
+                  ? "left-0"
+                  : index > lastIndex - 3
+                    ? "right-0"
+                    : "left-1/2 -translate-x-1/2";
+              return (
+                <div
+                  key={`${bucket.label}-${index}`}
+                  className="group relative flex h-full min-w-0 flex-1 items-end rounded-t-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A81B1E] focus-visible:ring-offset-2"
+                  role="img"
+                  tabIndex={0}
+                  aria-label={`${bucket.label}: ${bucket.enquiries} enquiries and ${bucket.trials} trials`}
+                  title={`${bucket.label}: ${bucket.enquiries} enquiries, ${bucket.trials} trials`}
+                >
+                  {bucket.enquiries === 0 ? (
+                    <div className="h-0.5 w-full rounded-full bg-slate-200" />
+                  ) : (
+                    <div
+                      className="relative w-full overflow-hidden rounded-t bg-[#A81B1E]/25 transition-colors group-hover:bg-[#A81B1E]/40"
+                      style={{
+                        height: `${Math.max(3, (bucket.enquiries / max) * 100)}%`,
+                      }}
+                    >
+                      <div
+                        className="absolute inset-x-0 bottom-0 bg-[#A81B1E]"
+                        style={{
+                          height: `${(bucket.trials / bucket.enquiries) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  )}
+                  {/* Tooltip */}
+                  <div
+                    className={`pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max max-w-[200px] rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg group-hover:block group-focus:block ${align}`}
+                    aria-hidden="true"
+                  >
+                    <p className="font-semibold">{bucket.label}</p>
+                    <p className="mt-0.5 text-slate-200">
+                      {bucket.enquiries}{" "}
+                      {bucket.enquiries === 1 ? "enquiry" : "enquiries"} ·{" "}
+                      {bucket.trials} {bucket.trials === 1 ? "trial" : "trials"}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
       <div
-        className="mt-2 flex justify-between text-xs text-slate-500"
+        className="mt-2 flex justify-between pl-9 text-xs text-slate-500"
         aria-hidden="true"
       >
         <span>{buckets[0].label.split(" to ")[0]}</span>
@@ -1742,7 +1800,7 @@ function FunnelStep({
     <li className="rounded-lg border border-slate-100 bg-slate-50 p-3.5">
       <div className="mb-2 flex items-center justify-between gap-3">
         <span className="text-sm font-medium text-slate-800">{label}</span>
-        <span className="text-sm font-semibold tabular-nums text-slate-900">
+        <span className="text-base font-semibold tabular-nums text-slate-900">
           {loading ? "—" : value}
         </span>
       </div>
@@ -1752,11 +1810,11 @@ function FunnelStep({
         aria-label={`${label}: ${loading ? 0 : share}% of enquiries`}
       >
         <div
-          className={`h-full rounded-full ${color}`}
+          className={`h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 ${color}`}
           style={{ width: `${loading ? 0 : share}%` }}
         />
       </div>
-      <p className="mt-1.5 flex justify-between text-[11px] tabular-nums text-slate-600">
+      <p className="mt-1.5 flex justify-between text-xs tabular-nums text-slate-600">
         <span>{loading ? " " : `${share}% of enquiries`}</span>
         {previousValue !== undefined && !loading && (
           <span>{percent(value, previousValue)}% of previous step</span>
@@ -1883,22 +1941,26 @@ function Pagination({
 
 function EmptyState({ text, action }: { text: string; action?: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center text-sm text-slate-600">
       <p>{text}</p>
       {action}
     </div>
   );
 }
 
-function LoadingRows() {
+function LoadingRows({ tall = false }: { tall?: boolean }) {
   return (
     <div className="space-y-3 py-1" role="status" aria-label="Loading">
-      {[1, 2, 3].map((row) => (
-        <div
-          key={row}
-          className="h-12 rounded-lg bg-slate-100 motion-safe:animate-pulse"
-        />
-      ))}
+      {tall ? (
+        <div className="h-48 rounded-lg bg-slate-100 motion-safe:animate-pulse" />
+      ) : (
+        [1, 2, 3].map((row) => (
+          <div
+            key={row}
+            className="h-12 rounded-lg bg-slate-100 motion-safe:animate-pulse"
+          />
+        )) 
+      )}
     </div>
   );
 }

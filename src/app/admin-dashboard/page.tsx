@@ -50,6 +50,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
+import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
+import type { TrialRegistration } from "@/app/enquire-form/types";
+import { StudentTimelineStrip } from "@/components/trial-registrations/StudentTimelineStrip";
+import { leadOutcomeLabel, statusLabel } from "@/app/enquire-form/utils";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 import {
   XAxis,
@@ -630,6 +634,8 @@ const formatDateLabel = (value?: string | null) => {
 
 const AdminDashboard = () => {
   const router = useRouter();
+  const { registrations: leadTimelineRecords, loading: loadingLeadTimeline } =
+    useTrialRegistrations();
   const [isLoading, setIsLoading] = useState(true);
   const [adminName, setAdminName] = useState("");
   const [currentTheme] = useState("light");
@@ -3292,6 +3298,11 @@ const AdminDashboard = () => {
             </Card>
           </section>
 
+          <AdminLeadTimelineSection
+            registrations={leadTimelineRecords}
+            loading={loadingLeadTimeline}
+          />
+
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
             {overviewCards.map((card) => (
@@ -4574,4 +4585,297 @@ const ActionItem = ({
   );
 };
 export { ActionItem };
+function AdminLeadTimelineSection({
+  registrations,
+  loading,
+}: {
+  registrations: TrialRegistration[];
+  loading: boolean;
+}) {
+  const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState<"all" | "today" | "7days" | "30days">("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const getLocalDateKey = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const todayKey = getLocalDateKey(new Date());
+
+  const filteredRegistrations = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const rangeStart = new Date();
+    rangeStart.setHours(0, 0, 0, 0);
+    if (dateFilter === "7days") rangeStart.setDate(rangeStart.getDate() - 6);
+    if (dateFilter === "30days") rangeStart.setDate(rangeStart.getDate() - 29);
+    return [...registrations]
+      .filter((registration) => {
+        const matchesSearch = !term || [
+          registration.studentName,
+          registration.contactNumber,
+          registration.email,
+          registration.referralSource,
+          registration.leadOutcome,
+        ].some((value) => String(value || "").toLowerCase().includes(term));
+        if (!matchesSearch) return false;
+        if (dateFilter === "all") return true;
+        const created = registration.createdAt
+          ? new Date(registration.createdAt)
+          : registration.dateOfRegistration
+            ? new Date(`${registration.dateOfRegistration}T00:00:00`)
+            : null;
+        if (!created || Number.isNaN(created.getTime())) return false;
+        if (dateFilter === "today") return getLocalDateKey(created) === todayKey;
+        return created >= rangeStart && created <= new Date();
+      })
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }, [registrations, search, dateFilter, todayKey]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRegistrations.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const visibleRegistrations = filteredRegistrations.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const todayCount = registrations.filter((registration) => {
+    const created = registration.createdAt
+      ? new Date(registration.createdAt)
+      : registration.dateOfRegistration
+        ? new Date(`${registration.dateOfRegistration}T00:00:00`)
+        : null;
+    return Boolean(created && !Number.isNaN(created.getTime()) && getLocalDateKey(created) === todayKey);
+  }).length;
+
+  const timelineStats = useMemo(() => [
+    { label: "Enquiries", value: registrations.length },
+    { label: "Enquired today", value: todayCount },
+    {
+      label: "Trials booked",
+      value: registrations.filter((registration) => Boolean(registration.trialDate)).length,
+    },
+    {
+      label: "Follow-ups",
+      value: registrations.filter(
+        (registration) => (registration.followUpHistory || []).length > 0,
+      ).length,
+    },
+    {
+      label: "Outcomes recorded",
+      value: registrations.filter((registration) => Boolean(registration.leadOutcome)).length,
+    },
+  ], [registrations, todayCount]);
+
+  return (
+    <section aria-labelledby="admin-lead-timeline-title" className="mb-8">
+      <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md shadow-slate-200/50">
+        <CardHeader className="gap-4 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/70 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div>
+            <CardTitle id="admin-lead-timeline-title" className="text-xl font-semibold text-slate-900">
+              Student Lead Timelines
+            </CardTitle>
+            <CardDescription className="mt-1 max-w-2xl leading-relaxed">
+              Follow each enquiry from registration through trials, follow-ups, and lead outcomes.
+            </CardDescription>
+          </div>
+          <div className="w-full sm:max-w-sm">
+            <Input
+              value={search}
+              onChange={(event) => { setSearch(event.target.value); setPage(1); }}
+              placeholder="Search name, phone, email, source, or outcome"
+              aria-label="Search student lead timelines"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+            {timelineStats.map((stat) => (
+              <div key={stat.label} className="rounded-lg border border-slate-200/80 bg-white px-3 py-3 shadow-sm shadow-slate-100">
+                <p className="text-xl font-semibold leading-none tabular-nums text-slate-900">{stat.value}</p>
+                <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-slate-500">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3" aria-live="polite">
+            <span className="text-xs text-slate-500">
+              {search.trim() || dateFilter !== "all"
+                ? `${filteredRegistrations.length} matching ${filteredRegistrations.length === 1 ? "enquiry" : "enquiries"}`
+                : "Latest enquiries first"}
+            </span>
+            <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+              Enquiry date
+              <select
+                value={dateFilter}
+                onChange={(event) => { setDateFilter(event.target.value as typeof dateFilter); setPage(1); }}
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Filter enquiries by date"
+              >
+                <option value="all">All time</option>
+                <option value="today">Today</option>
+                <option value="7days">Last 7 days</option>
+                <option value="30days">Last 30 days</option>
+              </select>
+            </label>
+          </div>
+          {loading ? (
+            <p className="py-6 text-center text-sm text-gray-500">Loading student timelines…</p>
+          ) : filteredRegistrations.length === 0 ? (
+            <p className="py-6 text-center text-sm text-gray-500">
+              {registrations.length ? "No timelines match your search." : "No enquiry timelines yet."}
+            </p>
+          ) : (
+            <>
+            <div className="max-h-[70vh] overflow-auto rounded-xl border border-slate-200 shadow-sm">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <caption className="sr-only">
+                  Student enquiries with contact details, trial status, follow-up, and lead outcome
+                </caption>
+                <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
+                  <tr className="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Enquiry</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Contact</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Trial</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Lead outcome</th>
+                  </tr>
+                </thead>
+              {visibleRegistrations.map((registration) => {
+                const expanded = expandedId === registration.id;
+                const date = registration.createdAt
+                  ? new Date(registration.createdAt)
+                  : registration.dateOfRegistration
+                    ? new Date(registration.dateOfRegistration)
+                    : null;
+                const followUpCount = (registration.followUpHistory || []).length;
+                const timelineId = `admin-timeline-${registration.id}`;
+                return (
+                  <tbody key={registration.id} className="divide-y divide-slate-100">
+                    <tr className={`text-slate-700 transition-colors hover:bg-red-50/30 ${expanded ? "bg-red-50/30" : ""}`}>
+                      <th scope="row" className="px-4 py-4 align-top font-medium text-slate-900">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold">{registration.studentName || "New enquiry"}</span>
+                          {date && !Number.isNaN(date.getTime()) && getLocalDateKey(date) === todayKey ? (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">New</span>
+                          ) : null}
+                        </span>
+                        <span className="mt-0.5 block text-xs font-normal text-slate-500">
+                          Enquired {date && !Number.isNaN(date.getTime())
+                            ? date.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "date not recorded"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(expanded ? null : registration.id)}
+                          aria-expanded={expanded}
+                          aria-controls={timelineId}
+                          aria-label={`${expanded ? "Hide" : "View"} timeline for ${registration.studentName || "student"}`}
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-red-100 bg-white px-2 py-1 text-xs font-semibold text-[#A81B1E] shadow-sm transition hover:border-red-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                        >
+                          <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
+                          {expanded ? "Hide" : "View"}
+                        </button>
+                      </th>
+                      <td className="px-4 py-4 align-top text-slate-700">
+                        <span className="block font-medium">{registration.contactNumber || "—"}</span>
+                        <span className="mt-0.5 block text-xs text-slate-500">{registration.email || ""}</span>
+                      </td>
+                      <td className="px-4 py-4 align-top">
+                        <span className="block font-medium text-slate-800">
+                          {registration.trialDate
+                            ? new Date(`${registration.trialDate}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                            : "Not booked"}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-500">
+                          {registration.trialDate ? (
+                            <span className="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 font-medium text-indigo-700">
+                              {statusLabel(registration.status)}{registration.trialTime ? ` · ${registration.trialTime}` : ""}
+                            </span>
+                          ) : null}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 align-top">
+                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${registration.leadOutcome ? "border-red-100 bg-red-50 text-red-800" : "border-amber-100 bg-amber-50 text-amber-800"}`}>
+                          {registration.leadOutcome ? leadOutcomeLabel(registration.leadOutcome) : "Pending"}
+                        </span>
+                      </td>
+                    </tr>
+                    {expanded && (
+                      <tr id={timelineId}>
+                        <td colSpan={4} className="border-t border-slate-100 bg-slate-50 p-3 sm:p-4">
+                          <div className="space-y-4">
+                            <StudentTimelineStrip registration={registration} />
+                            <section aria-label={`Follow-up history for ${registration.studentName || "student"}`} className="rounded-lg border border-slate-200 bg-white p-4">
+                              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                <h3 className="text-sm font-semibold text-slate-900">Follow-up history</h3>
+                                <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-800">
+                                  {followUpCount} {followUpCount === 1 ? "entry" : "entries"}
+                                </span>
+                              </div>
+                              {followUpCount ? (
+                                <ol className="space-y-3">
+                                  {(registration.followUpHistory || []).map((followUp, index) => (
+                                    <li key={`${registration.id}-follow-up-${index}`} className="rounded-md border border-slate-100 bg-slate-50/70 p-3">
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <p className="text-xs font-semibold text-slate-800">
+                                          Follow-up {index + 1}
+                                          {followUp.date ? ` · ${new Date(`${followUp.date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : " · Date not recorded"}
+                                        </p>
+                                        {followUp.updatedByEmail || followUp.updatedBy ? (
+                                          <p className="text-xs text-slate-500">Logged by {followUp.updatedByEmail || followUp.updatedBy}</p>
+                                        ) : null}
+                                      </div>
+                                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+                                        {followUp.remark || "No remark recorded."}
+                                      </p>
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        {followUp.status ? <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700">Trial: {statusLabel(followUp.status)}</span> : null}
+                                        {followUp.leadTemp ? <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs capitalize text-amber-800">Lead: {followUp.leadTemp}</span> : null}
+                                        {followUp.leadOutcome ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-800">Outcome: {leadOutcomeLabel(followUp.leadOutcome)}</span> : null}
+                                      </div>
+                                      {followUp.counsellorRemark ? <p className="mt-2 text-xs text-slate-600">Counsellor: {followUp.counsellorRemark}</p> : null}
+                                      {followUp.closeRemark ? <p className="mt-1 text-xs text-slate-600">Close note: {followUp.closeRemark}</p> : null}
+                                    </li>
+                                  ))}
+                                </ol>
+                              ) : (
+                                <p className="text-sm text-slate-500">No follow-up entries have been logged.</p>
+                              )}
+                            </section>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                );
+              })}
+              </table>
+            </div>
+            <div className="mt-3 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                <span>
+                  Showing <strong className="tabular-nums text-slate-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredRegistrations.length)}</strong> of <strong className="tabular-nums text-slate-900">{filteredRegistrations.length}</strong>
+                </span>
+                <label className="flex items-center gap-2 text-xs">
+                  Rows
+                  <select
+                    value={pageSize}
+                    onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}
+                    className="h-8 rounded-md border border-slate-200 bg-white px-2 text-sm"
+                    aria-label="Rows per page"
+                  >
+                    {[10, 20, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Previous</button>
+                <span className="text-xs tabular-nums text-slate-500">Page {currentPage} of {totalPages}</span>
+                <button type="button" onClick={() => setPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Next</button>
+              </div>
+            </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
 export default AdminDashboard;

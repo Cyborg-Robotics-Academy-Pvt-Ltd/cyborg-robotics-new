@@ -1,19 +1,24 @@
 "use client";
 
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
+  CalendarDays,
   Calendar,
   CalendarClock,
   Check,
   Flag,
   Globe,
+  Globe2,
   History,
   Mail,
   MapPin,
   Pencil,
   Phone,
+  Radio,
   Thermometer,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 
@@ -35,6 +40,9 @@ import {
 } from "@/app/enquire-form/constants";
 import {
   avatarShade,
+  formatTrialScheduleRemark,
+  formatTrialTime,
+  formatYMDDisplay,
   getDisplayLocation,
   isEnquiryFromToday,
   getLocationType,
@@ -51,6 +59,7 @@ type Props = {
   registration: TrialRegistration;
   hasShowRows: boolean;
   hasClosedRows: boolean;
+  canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
   onLeadTempChange: (id: string, value: string) => void;
   onLeadOutcomeChange: (id: string, value: string) => void;
@@ -72,6 +81,48 @@ const selectTriggerBase = cn(
   "h-8 border-0 bg-transparent px-2 shadow-none transition-colors",
   "hover:bg-stone-100 focus:ring-0 focus-visible:ring-2 focus-visible:ring-orange-400/70",
 );
+
+function ReferralSourceIcon({ source }: { source: string }) {
+  const normalized = source.trim().toLocaleLowerCase();
+  const imageSource = normalized.includes("instagram")
+    ? "/assets/social-icons/instagram.webp"
+    : normalized.includes("facebook") || normalized === "fb"
+      ? "/assets/social-icons/Facebook.webp"
+      : normalized.includes("whatsapp")
+        ? "/assets/social-icons/whatsapp.png"
+        : normalized.includes("linkedin")
+          ? "/assets/social-icons/Linkedin.png"
+          : normalized.includes("youtube")
+            ? "/assets/social-icons/youtube.png"
+            : normalized.includes("google")
+              ? "/assets/social-icons/google.png"
+              : null;
+
+  if (imageSource) {
+    return (
+      <Image
+        src={imageSource}
+        alt=""
+        width={18}
+        height={18}
+        className="mx-auto h-[18px] w-[18px] object-contain"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  const Icon = /website|web|site/.test(normalized)
+    ? Globe2
+    : /friend|family|referral/.test(normalized)
+      ? Users
+      : /event|workshop/.test(normalized)
+        ? CalendarDays
+        : /walk.in|signboard/.test(normalized)
+          ? MapPin
+          : Radio;
+
+  return <Icon aria-hidden className="mx-auto h-[18px] w-[18px] text-stone-500" />;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Follow-up urgency                                                          */
@@ -250,6 +301,7 @@ function DesktopRowImpl({
   registration,
   hasShowRows,
   hasClosedRows,
+  canDelete,
   onStatusChange,
   onLeadTempChange,
   onLeadOutcomeChange,
@@ -335,7 +387,7 @@ function DesktopRowImpl({
 
       {/* CONTACT */}
 
-      <TableCell className="sticky left-[300px] z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding shadow-[6px_0_8px_-6px_rgba(0,0,0,0.12)] group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
+      <TableCell className="w-[300px] min-w-[300px] max-w-[300px] bg-white group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
         <div className="flex flex-col gap-1 text-sm">
           <a
             href={`mailto:${registration.email}`}
@@ -378,10 +430,10 @@ function DesktopRowImpl({
       {/* TRIAL SLOT */}
 
       <TableCell>
-        <div className="flex items-center gap-1.5 whitespace-nowrap text-sm text-stone-700">
-          <Calendar aria-hidden className="h-3 w-3 text-stone-400" />
-          <span className="tabular-nums">{registration.trialDate}</span>
-          <span className="text-stone-500">· {registration.trialTime}</span>
+        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-orange-100 bg-orange-50 px-2 py-1 text-sm text-orange-900">
+          <Calendar aria-hidden className="h-3.5 w-3.5 text-orange-600" />
+          <span className="font-medium">{formatYMDDisplay(registration.trialDate)}</span>
+          <span className="text-orange-700">· {formatTrialTime(registration.trialTime)}</span>
         </div>
       </TableCell>
 
@@ -390,16 +442,35 @@ function DesktopRowImpl({
       <TableCell className="min-w-[220px] max-w-[320px]">
         <p
           className="line-clamp-2 whitespace-normal text-sm text-stone-700"
-          title={registration.remark || undefined}
+          title={
+            registration.remark
+              ? formatTrialScheduleRemark(registration.remark)
+              : undefined
+          }
         >
-          {registration.remark || "—"}
+          {registration.remark
+            ? formatTrialScheduleRemark(registration.remark)
+            : "—"}
         </p>
       </TableCell>
 
       {/* REFERRAL SOURCE */}
 
-      <TableCell className="whitespace-nowrap text-stone-700">
-        {registration.referralSource || "—"}
+      <TableCell
+        className="w-10 min-w-10 max-w-10 text-center text-stone-700"
+        title={registration.referralSource || "Not provided"}
+      >
+        {registration.referralSource ? (
+          <span
+            role="img"
+            aria-label={registration.referralSource}
+            className="inline-flex h-6 w-6 items-center justify-center"
+          >
+            <ReferralSourceIcon source={registration.referralSource} />
+          </span>
+        ) : (
+          <span aria-label="Not provided" className="text-stone-400">—</span>
+        )}
       </TableCell>
 
       {/* LOCATION */}
@@ -512,7 +583,7 @@ function DesktopRowImpl({
             <InlineRemark
               value={registration.counsellorRemark || ""}
               label="Counsellor remark"
-              placeholder="Add counsellor remark…"
+              placeholder="Add counsellor remarkâ€¦"
               emptyLabel="Add counsellor remark"
               onSave={saveCounsellor}
             />
@@ -631,7 +702,7 @@ function DesktopRowImpl({
             <InlineRemark
               value={registration.closeRemark || ""}
               label="Close remark"
-              placeholder="Reason for closing…"
+              placeholder="Reason for closingâ€¦"
               emptyLabel="Add close remark"
               onSave={saveClose}
             />
@@ -641,35 +712,37 @@ function DesktopRowImpl({
 
       {/* ACTIONS */}
 
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-          <button
-            type="button"
-            onClick={() => onEdit(registration)}
-            aria-label={`Edit ${registration.studentName}`}
-            title="Edit"
-            className={cn(
-              "rounded-md p-1.5 text-stone-500 hover:bg-stone-100 hover:text-orange-600",
-              focusRing,
-            )}
-          >
-            <Pencil aria-hidden className="h-4 w-4" />
-          </button>
+      {canDelete && (
+        <TableCell className="text-right">
+          <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+            <button
+              type="button"
+              onClick={() => onEdit(registration)}
+              aria-label={`Edit ${registration.studentName}`}
+              title="Edit"
+              className={cn(
+                "rounded-md p-1.5 text-stone-500 hover:bg-stone-100 hover:text-orange-600",
+                focusRing,
+              )}
+            >
+              <Pencil aria-hidden className="h-4 w-4" />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete(registration)}
-            aria-label={`Delete ${registration.studentName}`}
-            title="Delete"
-            className={cn(
-              "rounded-md p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600",
-              focusRing,
-            )}
-          >
-            <Trash2 aria-hidden className="h-4 w-4" />
-          </button>
-        </div>
-      </TableCell>
+            <button
+              type="button"
+              onClick={() => onDelete(registration)}
+              aria-label={`Delete ${registration.studentName}`}
+              title="Delete"
+              className={cn(
+                "rounded-md p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600",
+                focusRing,
+              )}
+            >
+              <Trash2 aria-hidden className="h-4 w-4" />
+            </button>
+          </div>
+        </TableCell>
+      )}
     </TableRow>
   );
 }

@@ -35,6 +35,9 @@ import {
 } from "@/app/enquire-form/constants";
 import {
   avatarShade,
+  formatTrialScheduleRemark,
+  formatTrialTime,
+  formatYMDDisplay,
   getDisplayLocation,
   isEnquiryFromToday,
   getLocationType,
@@ -47,6 +50,7 @@ import { TrialRegistration } from "@/app/enquire-form/types";
 
 type Props = {
   registration: TrialRegistration;
+  canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
   onLeadTempChange: (id: string, value: string) => void;
   onLeadOutcomeChange: (id: string, value: string) => void;
@@ -59,6 +63,7 @@ type Props = {
 
 export function MobileCard({
   registration,
+  canDelete,
   onStatusChange,
   onLeadTempChange,
   onLeadOutcomeChange,
@@ -137,23 +142,25 @@ export function MobileCard({
           </div>
         </div>
 
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => onEdit(registration)}
-            className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-orange-600"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
+        {canDelete && (
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => onEdit(registration)}
+              className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-orange-600"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete(registration)}
-            className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => onDelete(registration)}
+              className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* TRIAL STATUS */}
@@ -411,8 +418,12 @@ export function MobileCard({
         </a>
 
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 shrink-0" />
-          {registration.trialDate} · {registration.trialTime}
+          <span className="inline-flex items-center gap-2 rounded-md border border-orange-100 bg-orange-50 px-2 py-1 text-orange-900">
+            <Calendar className="h-4 w-4 shrink-0 text-orange-600" />
+            <span className="font-medium">
+              {formatYMDDisplay(registration.trialDate)} · {formatTrialTime(registration.trialTime)}
+            </span>
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -438,7 +449,7 @@ export function MobileCard({
               Enquiry Remark
             </p>
             <p className="whitespace-pre-wrap text-sm text-stone-700">
-              {registration.remark}
+              {formatTrialScheduleRemark(registration.remark)}
             </p>
           </div>
         )}

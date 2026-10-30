@@ -22,7 +22,7 @@ export type LeadTemp = "" | "hot" | "warm" | "cold";
  * Where the lead currently stands
  * in the funnel.
  */
-export type LeadOutcome = "" | "opened" | "closed" | "nurture" | "later";
+export type LeadOutcome = "" | "opened" | "closed" | "nurture" | "later" | "joined";
 
 /**
  * A single logged follow-up.

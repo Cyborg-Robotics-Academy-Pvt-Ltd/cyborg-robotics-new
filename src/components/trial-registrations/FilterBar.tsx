@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-
 import {
   LEAD_OUTCOME_OPTIONS,
   LEAD_TEMP_OPTIONS,
@@ -181,7 +180,9 @@ export function FilterBar({
         <SelectContent>
           <SelectItem value="all">All outcomes</SelectItem>
 
-          {LEAD_OUTCOME_OPTIONS.map((option) => (
+          {LEAD_OUTCOME_OPTIONS.filter((option) =>
+            ["opened", "joined", "closed", "nurture"].includes(option.value),
+          ).map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>

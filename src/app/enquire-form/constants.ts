@@ -67,13 +67,15 @@ export const LEAD_TEMP_STYLES: Record<string, { dot: string; text: string }> = {
 export const LEAD_OUTCOME_OPTIONS = [
   { value: "opened", label: "Opened" },
   { value: "closed", label: "Closed" },
+  { value: "joined", label: "Joined" },
   { value: "nurture", label: "Nurture" },
   { value: "later", label: "Later" },
 ];
 
 export const LEAD_OUTCOME_STYLES: Record<string, { dot: string; text: string }> = {
   opened: { dot: "bg-blue-500", text: "text-blue-700" },
-  closed: { dot: "bg-emerald-500", text: "text-emerald-700" },
+  closed: { dot: "bg-red-500", text: "text-red-700" },
+  joined: { dot: "bg-emerald-500", text: "text-emerald-700" },
   nurture: { dot: "bg-violet-500", text: "text-violet-700" },
   later: { dot: "bg-stone-400", text: "text-stone-500" },
 };

@@ -17,10 +17,13 @@ import { ActivityDialog } from "@/components/trial-registrations/ActivityDialog"
 import { DeleteAlertDialog } from "@/components/trial-registrations/DeleteAlertDialog";
 import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDialog";
 import { TrialRegistration } from "./types";
+import { useAuth } from "@/lib/auth-context";
 
-const ENQUIRIES_PER_PAGE = 10;
+const ENQUIRIES_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 const Page = () => {
+  const { userRole } = useAuth();
+  const canDelete = userRole === "admin" || userRole === "superAdmin";
   const {
     registrations,
     loading,
@@ -65,16 +68,17 @@ const Page = () => {
   } = useRegistrationFilters(registrations);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [enquiriesPerPage, setEnquiriesPerPage] = useState(10);
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filtered.length / ENQUIRIES_PER_PAGE),
+    Math.ceil(filtered.length / enquiriesPerPage),
   );
 
   const paginatedRegistrations = useMemo(() => {
-    const start = (currentPage - 1) * ENQUIRIES_PER_PAGE;
-    return filtered.slice(start, start + ENQUIRIES_PER_PAGE);
-  }, [currentPage, filtered]);
+    const start = (currentPage - 1) * enquiriesPerPage;
+    return filtered.slice(start, start + enquiriesPerPage);
+  }, [currentPage, enquiriesPerPage, filtered]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -112,6 +116,10 @@ const Page = () => {
     }
 
     updateStatus(id, status);
+  };
+
+  const handleDelete = (registration: TrialRegistration) => {
+    if (canDelete) setDeleteTarget(registration);
   };
 
   /**
@@ -252,7 +260,8 @@ const Page = () => {
               onCloseRemarkSave={updateCloseRemark}
               onFollowUpClick={setFollowUpTarget}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onDelete={handleDelete}
+              canDelete={canDelete}
             />
 
             <MobileList
@@ -264,17 +273,37 @@ const Page = () => {
               onCloseRemarkSave={updateCloseRemark}
               onFollowUpClick={setFollowUpTarget}
               onEdit={setEditTarget}
-              onDelete={setDeleteTarget}
+              onDelete={handleDelete}
+              canDelete={canDelete}
             />
 
-            {totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between gap-4">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <label htmlFor="enquiries-per-page" className="text-sm text-stone-500">
+                  Entries per page
+                </label>
+                <select
+                  id="enquiries-per-page"
+                  value={enquiriesPerPage}
+                  onChange={(event) => {
+                    setEnquiriesPerPage(Number(event.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-sm text-stone-700"
+                >
+                  {ENQUIRIES_PER_PAGE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-stone-500">
                   Page {currentPage} of {totalPages} · {filtered.length}{" "}
                   enquiries
                 </p>
 
-                <div className="flex items-center gap-2">
+                {totalPages > 1 && <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setCurrentPage((page) => page - 1)}
@@ -292,9 +321,9 @@ const Page = () => {
                   >
                     Next
                   </button>
-                </div>
+                </div>}
               </div>
-            )}
+            </div>
           </>
         )}
       </div>
@@ -317,11 +346,13 @@ const Page = () => {
         registrations={registrations}
       />
 
-      <DeleteAlertDialog
-        target={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={deleteRegistration}
-      />
+      {canDelete && (
+        <DeleteAlertDialog
+          target={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={deleteRegistration}
+        />
+      )}
 
       <RescheduleDialog
         target={rescheduleTarget}

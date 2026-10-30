@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -20,12 +21,12 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  ChevronDown,
   Clock3,
   Download,
   FilePlus2,
   Flame,
   LoaderCircle,
-  MessageCircle,
   MessageSquareText,
   Phone,
   Search,
@@ -39,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
 import type { TrialRegistration } from "@/app/enquire-form/types";
+import { StudentTimelineStrip } from "@/components/trial-registrations/StudentTimelineStrip";
 
 const TRIAL_STATUSES = [
   { value: "booked", label: "Booked" },
@@ -288,6 +290,7 @@ export default function SalesDashboardPage() {
   // Follow-up modal
   const [followUpTarget, setFollowUpTarget] =
     useState<TrialRegistration | null>(null);
+  const [expandedQueueTimelineId, setExpandedQueueTimelineId] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpNote, setFollowUpNote] = useState("");
   const [savingFollowUp, setSavingFollowUp] = useState(false);
@@ -970,6 +973,8 @@ export default function SalesDashboardPage() {
                       today={today}
                       pending={pendingIds.has(registration.id)}
                       onFollowUp={openFollowUp}
+                      timelineExpanded={expandedQueueTimelineId === registration.id}
+                      onTimelineToggle={() => setExpandedQueueTimelineId((current) => current === registration.id ? null : registration.id)}
                       onStatusChange={handleStatusChange}
                     />
                   ))}
@@ -1361,12 +1366,16 @@ function LeadRow({
   today,
   pending,
   onFollowUp,
+  timelineExpanded,
+  onTimelineToggle,
   onStatusChange,
 }: {
   registration: TrialRegistration;
   today: string;
   pending: boolean;
   onFollowUp: (registration: TrialRegistration) => void;
+  timelineExpanded: boolean;
+  onTimelineToggle: () => void;
   onStatusChange: (id: string, status: string) => Promise<void>;
 }) {
   const due = registration.nextFollowUpDate;
@@ -1410,7 +1419,14 @@ function LeadRow({
                 aria-label={`WhatsApp ${name} (opens in a new tab)`}
                 className={`inline-flex items-center gap-1 rounded hover:text-emerald-700 hover:underline ${FOCUS_RING}`}
               >
-                <MessageCircle className="h-3 w-3" aria-hidden="true" />
+                <Image
+                  src="/assets/social-icons/whatsapp.png"
+                  alt=""
+                  width={14}
+                  height={14}
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5"
+                />
                 WhatsApp
               </a>
             )}
@@ -1430,8 +1446,24 @@ function LeadRow({
               </span>
             )}
           </p>
+          <button
+            type="button"
+            onClick={onTimelineToggle}
+            className={`mt-2 inline-flex items-center gap-1 rounded text-xs font-medium text-[#A81B1E] hover:underline ${FOCUS_RING}`}
+            aria-expanded={timelineExpanded}
+            aria-controls={`queue-timeline-${registration.id}`}
+            aria-label={`${timelineExpanded ? "Hide" : "View"} timeline for ${name}`}
+          >
+            <ChevronDown className={`h-4 w-4 motion-safe:transition-transform ${timelineExpanded ? "rotate-180" : ""}`} aria-hidden="true" />
+            {timelineExpanded ? "Hide timeline" : "Timeline"}
+          </button>
         </div>
       </div>
+      {timelineExpanded && (
+        <div id={`queue-timeline-${registration.id}`} className="mt-3 pl-[3.25rem]">
+          <StudentTimelineStrip registration={registration} />
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pl-[3.25rem]">
         <div className="relative">
           <span
