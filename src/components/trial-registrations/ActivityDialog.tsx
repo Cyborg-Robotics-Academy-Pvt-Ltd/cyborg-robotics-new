@@ -134,34 +134,45 @@ export function ActivityDialog({ open, onOpenChange, registrations }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-white border-none">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <History className="h-4 w-4" />
-            Activity
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="border-0 bg-stone-50 p-0 shadow-[0_24px_80px_rgba(28,25,23,0.18)] sm:max-w-2xl">
+        <div className="border-b border-stone-200 bg-gradient-to-r from-red-50 via-white to-stone-50 p-5">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-stone-800">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600">
+                <History className="h-4 w-4" />
+              </div>
+              Activity timeline
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-          <Input
-            autoFocus
-            placeholder="Search name, date, status, remark..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            className="border-stone-200 bg-white pl-9 shadow-sm focus-visible:ring-orange-500"
-          />
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="relative w-full">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+              <Input
+                autoFocus
+                placeholder="Search student, status, remark..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-10 border-stone-200 bg-white pl-9 text-sm shadow-sm ring-0 placeholder:text-stone-400 focus-visible:ring-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-stone-500">
+            <span>{filteredFeed.length} results</span>
+            <span>{activityFeed.length} total entries</span>
+          </div>
         </div>
 
-        <div className="max-h-[65vh] space-y-2 overflow-y-auto">
+        <div className="max-h-[68vh] space-y-3 overflow-y-auto p-4">
           {activityFeed.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-stone-200 bg-stone-50 p-4 text-center text-sm italic text-stone-400">
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-100/80 p-6 text-center text-sm italic text-stone-500">
               No follow-ups logged yet.
-            </p>
+            </div>
           ) : filteredFeed.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-stone-200 bg-stone-50 p-4 text-center text-sm italic text-stone-400">
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-100/80 p-6 text-center text-sm italic text-stone-500">
               No matches for &quot;{searchTerm}&quot;.
-            </p>
+            </div>
           ) : (
             filteredFeed.map((entry) => {
               const status = statusStyle(entry.status || "booked");
@@ -174,97 +185,109 @@ export function ActivityDialog({ open, onOpenChange, registrations }: Props) {
               return (
                 <div
                   key={entry.key}
-                  className="rounded-lg border border-stone-200 bg-stone-50 p-3"
+                  className="relative pl-5"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-stone-700">
-                      {entry.studentName}
-                    </span>
-                    <div className="shrink-0 text-right text-xs tabular-nums text-stone-400">
-                      <span className="flex items-center justify-end gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        Follow-up: {entry.date}
-                      </span>
+                  <div className="absolute left-[6px] top-1.5 h-full w-px bg-stone-200" />
+                  <div className="absolute left-0 top-2 h-3 w-3 rounded-full border-2 border-white bg-red-700 shadow-sm" />
+
+                  <div className="rounded-2xl border border-stone-200 bg-white p-3 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50/30">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-stone-800">
+                          {entry.studentName}
+                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 text-[11px] text-stone-500">
+                          <Calendar className="h-3 w-3" />
+                          Follow-up {entry.date}
+                        </div>
+                      </div>
+
                       {savedAt && (
-                        <p className="mt-1 text-[11px]">Updated: {savedAt}</p>
+                        <span className="shrink-0 rounded-full bg-stone-100 px-2 py-1 text-[10px] font-medium text-stone-500">
+                          Updated {savedAt}
+                        </span>
                       )}
                     </div>
-                  </div>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium",
-                        status.text,
-                      )}
-                    >
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
                       <span
-                        className={cn("h-1.5 w-1.5 rounded-full", status.dot)}
-                      />
-                      {statusLabel(entry.status)}
-                    </span>
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium shadow-sm ring-1 ring-inset ring-stone-200",
+                          status.text,
+                        )}
+                      >
+                        <span
+                          className={cn("h-1.5 w-1.5 rounded-full", status.dot)}
+                        />
+                        {statusLabel(entry.status)}
+                      </span>
 
-                    <span
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium shadow-sm ring-1 ring-inset ring-stone-200",
+                          temp.text,
+                        )}
+                      >
+                        <Thermometer className="h-3 w-3" />
+                        {leadTempLabel(entry.leadTemp)}
+                      </span>
+
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium shadow-sm ring-1 ring-inset ring-stone-200",
+                          outcome.text,
+                        )}
+                      >
+                        <Flag className="h-3 w-3" />
+                        {leadOutcomeLabel(entry.leadOutcome)}
+                      </span>
+                    </div>
+
+                    <div
                       className={cn(
-                        "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium",
-                        temp.text,
+                        "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5",
+                        entry.remark ? "text-stone-600" : "italic text-stone-400",
                       )}
                     >
-                      <Thermometer className="h-3 w-3" />
-                      {leadTempLabel(entry.leadTemp)}
-                    </span>
+                      <div className="flex items-start gap-2 text-sm leading-6">
+                        <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" />
+                        <span>{entry.remark || "No follow-up remark"}</span>
+                      </div>
+                    </div>
 
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-medium",
-                        outcome.text,
-                      )}
-                    >
-                      <Flag className="h-3 w-3" />
-                      {leadOutcomeLabel(entry.leadOutcome)}
-                    </span>
-                  </div>
-
-                  <p
-                    className={cn(
-                      "mt-2 flex items-start gap-1.5 text-sm",
-                      entry.remark ? "text-stone-600" : "italic text-stone-400",
-                    )}
-                  >
-                    <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" />
-                    {entry.remark || "No follow-up remark"}
-                  </p>
-
-                  {entry.updatedBy && (
-                    <p className="mt-1 flex items-center gap-1.5 pl-5 text-xs text-stone-500">
-                      <User className="h-3.5 w-3.5 shrink-0 text-stone-400" />
-                      Updated by: {entry.updatedBy}
-                      {entry.updatedByEmail &&
-                      entry.updatedByEmail !== entry.updatedBy ? (
-                        <span className="text-stone-400">
-                          ({entry.updatedByEmail})
+                    {entry.updatedBy && (
+                      <p className="mt-2 flex items-center gap-1.5 text-xs text-stone-500">
+                        <User className="h-3.5 w-3.5 shrink-0 text-stone-400" />
+                        <span className="">
+                          Updated by: {entry.updatedBy}
+                          {entry.updatedByEmail &&
+                          entry.updatedByEmail !== entry.updatedBy ? (
+                            <span className="text-stone-400">
+                            
+                            </span>
+                          ) : null}
                         </span>
-                      ) : null}
-                    </p>
-                  )}
+                      </p>
+                    )}
 
-                  {isShow && entry.counsellorRemark && (
-                    <p className="mt-1 pl-5 text-xs text-stone-500">
-                      <span className="font-medium text-stone-600">
-                        Counsellor:{" "}
-                      </span>
-                      {entry.counsellorRemark}
-                    </p>
-                  )}
+                    {isShow && entry.counsellorRemark && (
+                      <p className="mt-2 text-xs leading-5 text-stone-600">
+                        <span className="font-semibold text-stone-700">
+                          Counsellor: {" "}
+                        </span>
+                        {entry.counsellorRemark}
+                      </p>
+                    )}
 
-                  {isClosed && entry.closeRemark && (
-                    <p className="mt-1 pl-5 text-xs text-stone-500">
-                      <span className="font-medium text-stone-600">
-                        Close reason:{" "}
-                      </span>
-                      {entry.closeRemark}
-                    </p>
-                  )}
+                    {isClosed && entry.closeRemark && (
+                      <p className="mt-2 text-xs leading-5 text-stone-600">
+                        <span className="font-semibold text-stone-700">
+                          Close reason: {" "}
+                        </span>
+                        {entry.closeRemark}
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })

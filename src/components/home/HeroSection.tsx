@@ -13,7 +13,7 @@ import {
 
 const heroStats = [
   {
-    value: "10K+",
+    value: "100K+",
     label: "Students Trained",
     icon: Users,
   },

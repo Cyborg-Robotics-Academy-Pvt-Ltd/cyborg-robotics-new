@@ -52,6 +52,10 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
 import type { TrialRegistration } from "@/app/enquire-form/types";
+import {
+  LEAD_OUTCOME_OPTIONS,
+  STATUS_OPTIONS,
+} from "@/app/enquire-form/constants";
 import { StudentTimelineStrip } from "@/components/trial-registrations/StudentTimelineStrip";
 import { leadOutcomeLabel, statusLabel } from "@/app/enquire-form/utils";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
@@ -4585,6 +4589,9 @@ const ActionItem = ({
   );
 };
 export { ActionItem };
+const getLocalDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
 function AdminLeadTimelineSection({
   registrations,
   loading,
@@ -4594,19 +4601,26 @@ function AdminLeadTimelineSection({
 }) {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<"all" | "today" | "7days" | "30days">("all");
+  const [enquiryFilter, setEnquiryFilter] = useState<"all" | "today">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | TrialRegistration["status"]>("all");
+  const [trialBookingFilter, setTrialBookingFilter] = useState<"all" | "booked" | "not-booked">("all");
+  const [outcomeFilter, setOutcomeFilter] = useState<
+    "all" | Exclude<TrialRegistration["leadOutcome"], "">
+  >("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const getLocalDateKey = (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   const todayKey = getLocalDateKey(new Date());
+  const isEnquiredToday = useCallback((registration: TrialRegistration) => {
+    const created = registration.createdAt
+      ? new Date(registration.createdAt)
+      : registration.dateOfRegistration
+        ? new Date(`${registration.dateOfRegistration}T00:00:00`)
+        : null;
+    return Boolean(created && !Number.isNaN(created.getTime()) && getLocalDateKey(created) === todayKey);
+  }, [todayKey]);
 
   const filteredRegistrations = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const rangeStart = new Date();
-    rangeStart.setHours(0, 0, 0, 0);
-    if (dateFilter === "7days") rangeStart.setDate(rangeStart.getDate() - 6);
-    if (dateFilter === "30days") rangeStart.setDate(rangeStart.getDate() - 29);
     return [...registrations]
       .filter((registration) => {
         const matchesSearch = !term || [
@@ -4617,18 +4631,15 @@ function AdminLeadTimelineSection({
           registration.leadOutcome,
         ].some((value) => String(value || "").toLowerCase().includes(term));
         if (!matchesSearch) return false;
-        if (dateFilter === "all") return true;
-        const created = registration.createdAt
-          ? new Date(registration.createdAt)
-          : registration.dateOfRegistration
-            ? new Date(`${registration.dateOfRegistration}T00:00:00`)
-            : null;
-        if (!created || Number.isNaN(created.getTime())) return false;
-        if (dateFilter === "today") return getLocalDateKey(created) === todayKey;
-        return created >= rangeStart && created <= new Date();
+        if (enquiryFilter === "today" && !isEnquiredToday(registration)) return false;
+        if (statusFilter !== "all" && registration.status !== statusFilter) return false;
+        if (trialBookingFilter === "booked" && !registration.trialDate) return false;
+        if (trialBookingFilter === "not-booked" && registration.trialDate) return false;
+        if (outcomeFilter !== "all" && registration.leadOutcome !== outcomeFilter) return false;
+        return true;
       })
       .sort((a, b) => b.createdAt - a.createdAt);
-  }, [registrations, search, dateFilter, todayKey]);
+  }, [registrations, search, enquiryFilter, statusFilter, trialBookingFilter, outcomeFilter, isEnquiredToday]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRegistrations.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -4636,33 +4647,7 @@ function AdminLeadTimelineSection({
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-  const todayCount = registrations.filter((registration) => {
-    const created = registration.createdAt
-      ? new Date(registration.createdAt)
-      : registration.dateOfRegistration
-        ? new Date(`${registration.dateOfRegistration}T00:00:00`)
-        : null;
-    return Boolean(created && !Number.isNaN(created.getTime()) && getLocalDateKey(created) === todayKey);
-  }).length;
-
-  const timelineStats = useMemo(() => [
-    { label: "Enquiries", value: registrations.length },
-    { label: "Enquired today", value: todayCount },
-    {
-      label: "Trials booked",
-      value: registrations.filter((registration) => Boolean(registration.trialDate)).length,
-    },
-    {
-      label: "Follow-ups",
-      value: registrations.filter(
-        (registration) => (registration.followUpHistory || []).length > 0,
-      ).length,
-    },
-    {
-      label: "Outcomes recorded",
-      value: registrations.filter((registration) => Boolean(registration.leadOutcome)).length,
-    },
-  ], [registrations, todayCount]);
+  const todayCount = registrations.filter(isEnquiredToday).length;
 
   return (
     <section aria-labelledby="admin-lead-timeline-title" className="mb-8">
@@ -4686,34 +4671,79 @@ function AdminLeadTimelineSection({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-            {timelineStats.map((stat) => (
-              <div key={stat.label} className="rounded-lg border border-slate-200/80 bg-white px-3 py-3 shadow-sm shadow-slate-100">
-                <p className="text-xl font-semibold leading-none tabular-nums text-slate-900">{stat.value}</p>
-                <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-slate-500">{stat.label}</p>
-              </div>
-            ))}
-          </div>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3" aria-live="polite">
             <span className="text-xs text-slate-500">
-              {search.trim() || dateFilter !== "all"
+              {search.trim() ||
+              enquiryFilter !== "all" ||
+              statusFilter !== "all" ||
+              trialBookingFilter !== "all" ||
+              outcomeFilter !== "all"
                 ? `${filteredRegistrations.length} matching ${filteredRegistrations.length === 1 ? "enquiry" : "enquiries"}`
                 : "Latest enquiries first"}
             </span>
-            <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
-              Enquiry date
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="sr-only" htmlFor="admin-timeline-enquiries-filter">Filter enquiries</label>
               <select
-                value={dateFilter}
-                onChange={(event) => { setDateFilter(event.target.value as typeof dateFilter); setPage(1); }}
+                id="admin-timeline-enquiries-filter"
+                value={enquiryFilter}
+                onChange={(event) => {
+                  setEnquiryFilter(event.target.value as typeof enquiryFilter);
+                  setPage(1);
+                }}
                 className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-500"
-                aria-label="Filter enquiries by date"
+                aria-label="Filter enquiries"
               >
-                <option value="all">All time</option>
-                <option value="today">Today</option>
-                <option value="7days">Last 7 days</option>
-                <option value="30days">Last 30 days</option>
+                <option value="all">All enquiries ({registrations.length})</option>
+                <option value="today">Today ({todayCount})</option>
               </select>
-            </label>
+              <label className="sr-only" htmlFor="admin-timeline-status-filter">Filter by status</label>
+              <select
+                id="admin-timeline-status-filter"
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value as typeof statusFilter);
+                  setPage(1);
+                }}
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Filter by status"
+              >
+                <option value="all">All statuses</option>
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor="admin-timeline-trial-booking-filter">Filter by trial booking</label>
+              <select
+                id="admin-timeline-trial-booking-filter"
+                value={trialBookingFilter}
+                onChange={(event) => {
+                  setTrialBookingFilter(event.target.value as typeof trialBookingFilter);
+                  setPage(1);
+                }}
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Filter by trial booking"
+              >
+                <option value="all">All trial bookings</option>
+                <option value="booked">Booked</option>
+                <option value="not-booked">Not booked</option>
+              </select>
+              <label className="sr-only" htmlFor="admin-timeline-outcome-filter">Filter by outcome</label>
+              <select
+                id="admin-timeline-outcome-filter"
+                value={outcomeFilter}
+                onChange={(event) => {
+                  setOutcomeFilter(event.target.value as typeof outcomeFilter);
+                  setPage(1);
+                }}
+                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Filter by outcome"
+              >
+                <option value="all">All outcomes</option>
+                {LEAD_OUTCOME_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
           {loading ? (
             <p className="py-6 text-center text-sm text-gray-500">Loading student timelines…</p>

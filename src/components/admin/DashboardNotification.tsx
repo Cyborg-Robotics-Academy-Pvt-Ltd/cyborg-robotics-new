@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bell, Info, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -21,29 +21,45 @@ const DashboardNotification: React.FC<DashboardNotificationProps> = ({
   showAutomatically = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const onCloseRef = useRef(onClose);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (showAutomatically) {
-      const showTimer = setTimeout(() => setIsVisible(true), 1500); // Small delay for better UX
+      const showTimer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(showTimer);
     }
   }, [showAutomatically]);
 
+  const handleClose = useCallback(() => {
+    if (closeTimerRef.current !== null) return;
+
+    setIsVisible(false);
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null;
+      onCloseRef.current?.();
+    }, 300);
+  }, []);
+
   useEffect(() => {
     if (isVisible && duration > 0) {
-      const closeTimer = setTimeout(() => {
-        handleClose();
-      }, duration);
-      return () => clearTimeout(closeTimer);
+      const autoCloseTimer = setTimeout(handleClose, duration);
+      return () => clearTimeout(autoCloseTimer);
     }
-  }, [isVisible, duration]);
+  }, [isVisible, duration, handleClose]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    if (onClose) {
-      setTimeout(onClose, 300); // Match exit animation duration
-    }
-  };
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current !== null) {
+        clearTimeout(closeTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const getTypeStyles = () => {
     switch (type) {
