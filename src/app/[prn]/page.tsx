@@ -465,6 +465,21 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [actionSaving, setActionSaving] = React.useState(false);
+  const [taskDate = "", taskTime = "00:00"] = taskDateTime.split("T");
+  const [taskHour24 = "00", taskMinute = "00"] = taskTime.split(":");
+  const taskHour12 = String(Number(taskHour24) % 12 || 12).padStart(2, "0");
+  const taskPeriod = Number(taskHour24) < 12 ? "AM" : "PM";
+  const updateTaskTime = (
+    part: "hour" | "minute" | "period",
+    value: string,
+  ) => {
+    const hour12 = Number(part === "hour" ? value : taskHour12);
+    const minute = part === "minute" ? value : taskMinute;
+    const period =
+      part === "period" ? (value === "PM" ? "PM" : "AM") : taskPeriod;
+    const hour24 = (hour12 % 12) + (period === "PM" ? 12 : 0);
+    setTaskDateTime(`${taskDate}T${String(hour24).padStart(2, "0")}:${minute}`);
+  };
 
   React.useEffect(() => {
     getStudentData(prn).then(setStudent);
@@ -567,7 +582,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
       setActionNotice("Task cannot be empty", "error");
       return;
     }
-    if (!taskDateTime) {
+    if (!taskDateTime || !taskDateTime.split("T")[0]) {
       setActionNotice("Date and time required", "error");
       return;
     }
@@ -1460,29 +1475,84 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                 value={student.PrnNumber}
               />
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2  ">
               <div>
-                <label className={labelCls}>Date & Time</label>
+                <label className={labelCls}>Date</label>
                 <input
-                  type="datetime-local"
-                  value={taskDateTime}
-                  onChange={(event) => setTaskDateTime(event.target.value)}
-                  className={inputCls}
+                  type="date"
+                  value={taskDate}
+                  onChange={(event) =>
+                    setTaskDateTime(
+                      event.target.value
+                        ? `${event.target.value}T${taskTime}`
+                        : "",
+                    )
+                  }
+                  className={`${inputCls} shadow-sm`}
                 />
               </div>
               <div>
-                <label className={labelCls}>Status</label>
-                <select
-                  value={taskStatus}
-                  onChange={(event) =>
-                    setTaskStatus(event.target.value as "ongoing" | "complete")
-                  }
-                  className={inputCls}
-                >
-                  <option value="ongoing">Ongoing</option>
-                  <option value="complete">Complete</option>
-                </select>
+                <label className={labelCls}>Time (AM/PM)</label>
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_minmax(0,1fr)] items-center gap-1">
+                  <select
+                    value={taskHour12}
+                    onChange={(event) =>
+                      updateTaskTime("hour", event.target.value)
+                    }
+                    aria-label="Hour"
+                    className={inputCls}
+                  >
+                    {Array.from({ length: 12 }, (_, index) =>
+                      String(index + 1).padStart(2, "0"),
+                    ).map((hour) => (
+                      <option key={hour} value={hour}>
+                        {hour}
+                      </option>
+                    ))}
+                  </select>
+                  <span aria-hidden="true">:</span>
+                  <select
+                    value={taskMinute}
+                    onChange={(event) =>
+                      updateTaskTime("minute", event.target.value)
+                    }
+                    aria-label="Minute"
+                    className={inputCls}
+                  >
+                    {Array.from({ length: 60 }, (_, index) =>
+                      String(index).padStart(2, "0"),
+                    ).map((minute) => (
+                      <option key={minute} value={minute}>
+                        {minute}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={taskPeriod}
+                    onChange={(event) =>
+                      updateTaskTime("period", event.target.value)
+                    }
+                    aria-label="AM or PM"
+                    className={inputCls}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
+            </div>
+            <div>
+              <label className={labelCls}>Status</label>
+              <select
+                value={taskStatus}
+                onChange={(event) =>
+                  setTaskStatus(event.target.value as "ongoing" | "complete")
+                }
+                className={inputCls}
+              >
+                <option value="ongoing">Ongoing</option>
+                <option value="complete">Complete</option>
+              </select>
             </div>
             <div>
               <label className={labelCls}>Course</label>

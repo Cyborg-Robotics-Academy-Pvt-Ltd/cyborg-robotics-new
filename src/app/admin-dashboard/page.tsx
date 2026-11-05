@@ -4753,7 +4753,12 @@ function AdminLeadTimelineSection({
             </p>
           ) : (
             <>
-            <div className="max-h-[70vh] overflow-auto rounded-xl border border-slate-200 shadow-sm">
+            <div
+              aria-label="Student lead timeline records"
+              className="h-[70vh] overflow-x-auto overflow-y-auto overscroll-contain rounded-xl border border-slate-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"
+              role="region"
+              tabIndex={0}
+            >
               <table className="w-full min-w-[900px] text-left text-sm">
                 <caption className="sr-only">
                   Student enquiries with contact details, trial status, follow-up, and lead outcome

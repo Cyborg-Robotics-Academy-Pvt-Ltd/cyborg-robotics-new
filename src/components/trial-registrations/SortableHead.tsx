@@ -46,7 +46,7 @@ export function SortableHead({
         <Icon
           className={cn(
             "h-3 w-3",
-            isActive ? "text-orange-600" : "text-stone-300",
+            isActive ? "text-red-700" : "text-stone-300",
           )}
         />
       </div>

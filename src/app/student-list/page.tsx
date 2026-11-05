@@ -2856,23 +2856,23 @@ const Page = () => {
               value={selectedStudent?.PrnNumber || ""}
             />
           </div>
-          <div className="grid grid-cols-2 gap-1">
-            <div>
+          <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] gap-2 ">
+            <div className="">
               <label className={labelCls}>Date & Time</label>
-              <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_112px] gap-2 ">
                 <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       type="button"
                       variant="outline"
-                      className={`${inputCls} h-10 justify-start border-none font-normal text-gray-900 hover:bg-white`}
+                      className={`${inputCls} h-10 justify-start border-none font-normal text-gray-900 shadow-sm hover:bg-white`}
                     >
                       {selectedDateLabel}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 -mt-14" align="start">
                     <Calendar
-                      className="[--cell-size:1.55rem] bg-white rounded-2xl"
+                      className="[--cell-size:1.55rem] bg-white rounded-2xl "
                       mode="single"
                       selected={parsedDateTime}
                       onSelect={handleDateSelect}

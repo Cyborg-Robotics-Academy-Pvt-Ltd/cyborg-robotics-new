@@ -6,8 +6,10 @@ import { TrialRegistration } from "@/app/enquire-form/types";
 
 type Props = {
   registrations: TrialRegistration[];
+  canModify: boolean;
   canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
+  onSalesSelectedCenterChange: (id: string, center: string | null) => void;
   onLeadTempChange: (id: string, value: string) => void;
   onLeadOutcomeChange: (id: string, value: string) => void;
   onCounsellorRemarkSave: (id: string, value: string) => void;

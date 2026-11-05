@@ -2,9 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Clock3, Loader2, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock3,
+  Loader2,
+  Plus,
+  RotateCcw,
+  Save,
+  Trash2,
+} from "lucide-react";
 
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
@@ -19,10 +28,31 @@ import {
 } from "@/lib/trial-availability";
 import type { TrialMode } from "@/lib/trial-location";
 
+const MAX_BULK_DATES = 63;
+
 function getTomorrow() {
   const date = new Date();
   date.setDate(date.getDate() + 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function dateToYMD(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function ymdToDate(date: string) {
+  return new Date(`${date}T12:00:00`);
+}
+
+function formatTrialTime(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export default function TrialAvailabilityPage() {
@@ -31,13 +61,48 @@ export default function TrialAvailabilityPage() {
   const [authReady, setAuthReady] = useState(false);
   const [mode, setMode] = useState<TrialMode>("offline");
   const [date, setDate] = useState(getTomorrow);
+  const [calendarMonth, setCalendarMonth] = useState(() =>
+    ymdToDate(getTomorrow()),
+  );
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [closedDates, setClosedDates] = useState<string[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
   const [timeInput, setTimeInput] = useState("");
   const [hasOverride, setHasOverride] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [bulkNotice, setBulkNotice] = useState("");
+  const [bulkError, setBulkError] = useState("");
+  const [calendarError, setCalendarError] = useState("");
+
+  const setCalendarAvailability = useCallback(
+    (availabilityDate: string, availabilitySlots: string[]) => {
+      if (availabilitySlots.length > 0) {
+        setAvailableDates((current) =>
+          current.includes(availabilityDate)
+            ? current
+            : [...current, availabilityDate],
+        );
+        setClosedDates((current) =>
+          current.filter((value) => value !== availabilityDate),
+        );
+      } else {
+        setClosedDates((current) =>
+          current.includes(availabilityDate)
+            ? current
+            : [...current, availabilityDate],
+        );
+        setAvailableDates((current) =>
+          current.filter((value) => value !== availabilityDate),
+        );
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (authLoading) return;
@@ -116,6 +181,82 @@ export default function TrialAvailabilityPage() {
     if (authReady) void loadAvailability();
   }, [authReady, loadAvailability]);
 
+  useEffect(() => {
+    if (!authReady) return;
+
+    const from = dateToYMD(
+      new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1),
+    );
+    const to = dateToYMD(
+      new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0),
+    );
+    let active = true;
+
+    const loadMonthAvailability = async () => {
+      setLoadingCalendar(true);
+      setCalendarError("");
+      try {
+        const response = await fetch(
+          `/api/free-trial/availability?mode=${mode}&from=${from}&to=${to}`,
+        );
+        const result = (await response.json()) as {
+          success: boolean;
+          availability?: Record<string, string[]>;
+          message?: string;
+        };
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Unable to load calendar availability.");
+        }
+        if (active) {
+          const monthDates = Array.from(
+            { length: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate() },
+            (_, index) =>
+              dateToYMD(
+                new Date(
+                  calendarMonth.getFullYear(),
+                  calendarMonth.getMonth(),
+                  index + 1,
+                ),
+              ),
+          );
+          const availability = result.availability ?? {};
+          const monthAvailableDates = monthDates.filter(
+            (monthDate) =>
+              (availability[monthDate] ??
+                getDefaultTrialSlots(mode, monthDate)).length > 0,
+          );
+          const monthClosedDates = monthDates.filter(
+            (monthDate) => !monthAvailableDates.includes(monthDate),
+          );
+          setAvailableDates((current) => [
+            ...current.filter((value) => value < from || value > to),
+            ...monthAvailableDates,
+          ]);
+          setClosedDates((current) => [
+            ...current.filter((value) => value < from || value > to),
+            ...monthClosedDates,
+          ]);
+        }
+      } catch (calendarLoadError) {
+        console.error("Unable to load trial availability calendar:", calendarLoadError);
+        if (active) {
+          setCalendarError(
+            calendarLoadError instanceof Error
+              ? calendarLoadError.message
+              : "Unable to load calendar availability.",
+          );
+        }
+      } finally {
+        if (active) setLoadingCalendar(false);
+      }
+    };
+
+    void loadMonthAvailability();
+    return () => {
+      active = false;
+    };
+  }, [authReady, calendarMonth, mode]);
+
   const saveAvailability = async (slotsToSave = slots) => {
     if (!user) return;
     setSaving(true);
@@ -140,6 +281,7 @@ export default function TrialAvailabilityPage() {
       }
       setSlots(slotsToSave);
       setHasOverride(true);
+      setCalendarAvailability(date, slotsToSave);
       setNotice(
         slotsToSave.length === 0
           ? "Date closed. It is disabled in the booking calendar."
@@ -179,7 +321,9 @@ export default function TrialAvailabilityPage() {
         throw new Error(result.message || "Unable to reset availability.");
       }
       setHasOverride(false);
-      setSlots(getDefaultTrialSlots(mode, date));
+      const defaultSlots = getDefaultTrialSlots(mode, date);
+      setSlots(defaultSlots);
+      setCalendarAvailability(date, defaultSlots);
       setNotice("The default availability schedule has been restored.");
     } catch (resetError) {
       console.error("Unable to reset trial availability:", resetError);
@@ -208,6 +352,59 @@ export default function TrialAvailabilityPage() {
     setNotice("");
   };
 
+  const applyBulkAvailability = async (slotsToSave: string[]) => {
+    if (!user || selectedDates.length === 0) return;
+
+    setSaving(true);
+    setBulkNotice("");
+    setBulkError("");
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/free-trial/availability", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode,
+          dates: selectedDates,
+          slots: slotsToSave,
+        }),
+      });
+      const result = (await response.json()) as {
+        success: boolean;
+        message?: string;
+      };
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to update selected dates.");
+      }
+
+      if (selectedDates.includes(date)) {
+        setSlots(slotsToSave);
+        setHasOverride(true);
+      }
+      selectedDates.forEach((selectedDate) =>
+        setCalendarAvailability(selectedDate, slotsToSave),
+      );
+      setSelectedDates([]);
+      setBulkNotice(
+        slotsToSave.length === 0
+          ? `${selectedDates.length} selected date${selectedDates.length === 1 ? "" : "s"} closed.`
+          : `Availability applied to ${selectedDates.length} selected date${selectedDates.length === 1 ? "" : "s"}.`,
+      );
+    } catch (bulkSaveError) {
+      console.error("Unable to update selected trial availability:", bulkSaveError);
+      setBulkError(
+        bulkSaveError instanceof Error
+          ? bulkSaveError.message
+          : "Unable to update selected dates.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (authLoading || !authReady) return <AuthLoadingSpinner />;
 
   return (
@@ -226,9 +423,8 @@ export default function TrialAvailabilityPage() {
             Trial availability
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Set the exact dates and times parents can book. Saving an empty
-            schedule closes that date, including a weekend holiday. Add times
-            to open any date, including weekdays.
+            Set the exact dates and times parents can book. Select multiple
+            dates to apply the same times or close them together.
           </p>
         </header>
 
@@ -253,6 +449,114 @@ export default function TrialAvailabilityPage() {
                 onChange={(event) => setDate(event.target.value)}
               />
             </label>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+            <div className="mb-4">
+              <h2 className="font-semibold text-slate-900">Update multiple dates</h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Click individual dates to select or deselect them. Closed dates
+                are shown in red.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <Calendar
+                mode="multiple"
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                selected={selectedDates.map(ymdToDate)}
+                onSelect={(selected) => {
+                  const nextDates = (selected ?? []).map(dateToYMD);
+                  if (nextDates.length > MAX_BULK_DATES) {
+                    setBulkError(`Select no more than ${MAX_BULK_DATES} dates at a time.`);
+                    return;
+                  }
+                  setSelectedDates(nextDates.sort());
+                  setBulkError("");
+                  setBulkNotice("");
+                }}
+                modifiers={{
+                  available: availableDates.map(ymdToDate),
+                  closed: closedDates.map(ymdToDate),
+                }}
+                modifiersClassNames={{
+                  selected:
+                    "ring-2 ring-blue-600 ring-offset-1",
+                  available:
+                    "bg-emerald-100 text-emerald-800 hover:bg-emerald-200",
+                  closed:
+                    "bg-red-100 text-red-700 line-through hover:bg-red-200",
+                }}
+                disabled={saving || loadingCalendar}
+                showOutsideDays={false}
+                className="rounded-lg border border-slate-200 bg-white"
+              />
+              <div className="pt-2 text-sm text-slate-600">
+                <p className="font-medium text-slate-800">
+                  {selectedDates.length} date{selectedDates.length === 1 ? "" : "s"} selected
+                </p>
+                <p className="mt-1 text-xs">
+                  <span className="font-medium text-emerald-700">Green</span> dates
+                  have booking times; <span className="font-medium text-red-700">red</span>{" "}
+                  dates are unavailable. Click dates to select or deselect them.
+                </p>
+                {calendarError && (
+                  <p role="alert" className="mt-3 text-sm text-red-700">
+                    {calendarError}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button
+                type="button"
+                onClick={() => void applyBulkAvailability(slots)}
+                disabled={
+                  saving ||
+                  loadingAvailability ||
+                  selectedDates.length === 0 ||
+                  slots.length === 0
+                }
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Apply these times
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void applyBulkAvailability([])}
+                disabled={saving || selectedDates.length === 0}
+                className="border-red-200 text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Close selected dates
+              </Button>
+              {selectedDates.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setSelectedDates([]);
+                    setBulkNotice("");
+                    setBulkError("");
+                  }}
+                  disabled={saving}
+                >
+                  Clear selection
+                </Button>
+              )}
+            </div>
+            {bulkError && (
+              <p role="alert" className="mt-3 text-sm text-red-700">
+                {bulkError}
+              </p>
+            )}
+            {bulkNotice && (
+              <p role="status" className="mt-3 text-sm text-green-700">
+                {bulkNotice}
+              </p>
+            )}
           </div>
 
           <div className="mt-7 border-t border-slate-100 pt-6">
@@ -280,7 +584,7 @@ export default function TrialAvailabilityPage() {
                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700"
                   >
                     <Clock3 className="h-4 w-4 text-slate-500" />
-                    {slot}
+                    {formatTrialTime(slot)}
                     <button
                       type="button"
                       aria-label={`Remove ${slot}`}
@@ -354,8 +658,9 @@ export default function TrialAvailabilityPage() {
 
         <p className="mt-4 text-xs text-slate-500">
           Defaults: offline trials run Saturday/Sunday (
-          {DEFAULT_OFFLINE_TRIAL_SLOTS.join(", ")}); online trials run
-          Monday–Saturday ({DEFAULT_ONLINE_TRIAL_SLOTS.join(", ")}). A saved
+          {DEFAULT_OFFLINE_TRIAL_SLOTS.map(formatTrialTime).join(", ")}); online
+          trials run Wednesday–Monday (
+          {DEFAULT_ONLINE_TRIAL_SLOTS.map(formatTrialTime).join(", ")}). A saved
           date-specific schedule takes precedence.
         </p>
       </div>

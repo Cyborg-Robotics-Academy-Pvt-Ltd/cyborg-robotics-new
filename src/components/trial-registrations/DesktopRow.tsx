@@ -36,10 +36,10 @@ import { cn } from "@/lib/utils";
 import {
   LEAD_OUTCOME_OPTIONS,
   LEAD_TEMP_OPTIONS,
+  OFFLINE_CENTERS,
   STATUS_OPTIONS,
 } from "@/app/enquire-form/constants";
 import {
-  avatarShade,
   formatTrialScheduleRemark,
   formatTrialTime,
   formatYMDDisplay,
@@ -59,8 +59,10 @@ type Props = {
   registration: TrialRegistration;
   hasShowRows: boolean;
   hasClosedRows: boolean;
+  canModify: boolean;
   canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
+  onSalesSelectedCenterChange: (id: string, center: string | null) => void;
   onLeadTempChange: (id: string, value: string) => void;
   onLeadOutcomeChange: (id: string, value: string) => void;
   onCounsellorRemarkSave: (id: string, value: string) => void;
@@ -77,10 +79,15 @@ type Props = {
 const focusRing =
   "outline-none focus-visible:ring-2 focus-visible:ring-orange-400/70 focus-visible:ring-offset-1";
 
+/* Inline select: reads as a quiet pill, clearly interactive on hover/focus */
 const selectTriggerBase = cn(
-  "h-8 border-0 bg-transparent px-2 shadow-none transition-colors",
-  "hover:bg-stone-100 focus:ring-0 focus-visible:ring-2 focus-visible:ring-orange-400/70",
+  "h-8 rounded-full border border-stone-200 bg-white px-2.5 text-xs font-medium shadow-none transition-colors",
+  "hover:border-stone-300 hover:bg-stone-50 focus:ring-0 focus-visible:ring-2 focus-visible:ring-orange-400/70",
+  "disabled:cursor-default disabled:opacity-70 disabled:hover:border-stone-200 disabled:hover:bg-white",
 );
+
+/* Same colour as the header's sticky divider (stone-200) */
+const STICKY_DIVIDER = "shadow-[1px_0_0_0_#e7e5e4]";
 
 function ReferralSourceIcon({ source }: { source: string }) {
   const normalized = source.trim().toLocaleLowerCase();
@@ -162,10 +169,13 @@ function getFollowUpTone(raw?: string | null): FollowUpTone | null {
 }
 
 const FOLLOW_UP_STYLES: Record<FollowUpTone | "none", string> = {
-  overdue: "bg-red-50 text-red-700 hover:bg-red-100",
-  today: "bg-amber-50 text-amber-700 hover:bg-amber-100",
-  upcoming: "text-stone-600 hover:bg-stone-100 hover:text-orange-600",
-  none: "text-stone-500 hover:bg-stone-100 hover:text-orange-600",
+  overdue:
+    "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200 hover:bg-red-100",
+  today:
+    "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200 hover:bg-amber-100",
+  upcoming:
+    "text-stone-600 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-orange-600",
+  none: "text-stone-500 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-orange-600",
 };
 
 const FOLLOW_UP_LABEL: Record<FollowUpTone, string> = {
@@ -183,6 +193,7 @@ type InlineRemarkProps = {
   label: string;
   placeholder: string;
   emptyLabel: string;
+  canEdit: boolean;
   onSave: (value: string) => void;
 };
 
@@ -191,6 +202,7 @@ function InlineRemark({
   label,
   placeholder,
   emptyLabel,
+  canEdit,
   onSave,
 }: InlineRemarkProps) {
   const [editing, setEditing] = useState(false);
@@ -217,6 +229,20 @@ function InlineRemark({
     setEditing(false);
   };
 
+  if (!canEdit) {
+    return (
+      <span
+        title={value || undefined}
+        className={cn(
+          "block max-w-[220px] truncate px-1.5 py-1 text-sm",
+          value ? "text-stone-700" : "text-stone-400",
+        )}
+      >
+        {value || emptyLabel}
+      </span>
+    );
+  }
+
   if (editing) {
     return (
       <div className="flex items-center gap-1">
@@ -238,7 +264,7 @@ function InlineRemark({
               cancel();
             }
           }}
-          className="h-8 text-sm"
+          className="h-8 rounded-lg border-orange-300 bg-white text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-orange-400/40"
         />
 
         <button
@@ -247,7 +273,7 @@ function InlineRemark({
           aria-label="Save remark"
           title="Save (Enter)"
           className={cn(
-            "rounded-md p-1.5 text-emerald-600 hover:bg-emerald-50",
+            "rounded-md p-1.5 text-emerald-600 transition-colors hover:bg-emerald-50",
             focusRing,
           )}
         >
@@ -260,7 +286,7 @@ function InlineRemark({
           aria-label="Cancel editing"
           title="Cancel (Esc)"
           className={cn(
-            "rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600",
+            "rounded-md p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600",
             focusRing,
           )}
         >
@@ -278,16 +304,16 @@ function InlineRemark({
       title={value || undefined}
       aria-label={value ? `${label}: ${value}. Edit` : `${emptyLabel}`}
       className={cn(
-        "group/remark flex max-w-[220px] items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm",
+        "group/remark flex max-w-[220px] items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm transition-colors",
         "hover:bg-stone-100 hover:text-orange-600",
-        value ? "text-stone-700" : "text-stone-400",
+        value ? "text-stone-700" : "text-stone-400 italic",
         focusRing,
       )}
     >
       <span className="truncate">{value || emptyLabel}</span>
       <Pencil
         aria-hidden
-        className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/remark:opacity-100"
+        className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/remark:opacity-100 group-focus-visible/remark:opacity-100"
       />
     </button>
   );
@@ -301,8 +327,10 @@ function DesktopRowImpl({
   registration,
   hasShowRows,
   hasClosedRows,
+  canModify,
   canDelete,
   onStatusChange,
+  onSalesSelectedCenterChange,
   onLeadTempChange,
   onLeadOutcomeChange,
   onCounsellorRemarkSave,
@@ -330,6 +358,11 @@ function DesktopRowImpl({
     ? null
     : getFollowUpTone(registration.nextFollowUpDate);
 
+  const createdAt = registration.createdAt
+    ? new Date(registration.createdAt)
+    : null;
+  const hasCreatedAt = createdAt !== null && !Number.isNaN(createdAt.getTime());
+
   const saveCounsellor = useCallback(
     (value: string) => onCounsellorRemarkSave(id, value),
     [id, onCounsellorRemarkSave],
@@ -345,7 +378,12 @@ function DesktopRowImpl({
     <TableRow className="group border-stone-100 transition-colors hover:bg-orange-50/40 focus-within:bg-orange-50/40">
       {/* STUDENT */}
 
-      <TableCell className="sticky left-0 z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
+      <TableCell
+        className={cn(
+          "sticky left-0 z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding transition-colors group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]",
+          STICKY_DIVIDER,
+        )}
+      >
         {followUpTone === "overdue" && (
           <span
             aria-hidden
@@ -356,16 +394,13 @@ function DesktopRowImpl({
         <div className="flex items-center gap-3">
           <div
             aria-hidden
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white shadow-sm",
-              avatarShade(registration.studentName),
-            )}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#A81B1E] to-[#7a1215] text-xs font-semibold tracking-wide text-white shadow-sm ring-2 ring-white"
           >
             {initials(registration.studentName)}
           </div>
 
           <div className="min-w-0">
-            <p className="flex min-w-0 items-center gap-2 font-medium text-stone-900">
+            <p className="flex min-w-0 items-center gap-2 font-semibold text-stone-900">
               <span className="min-w-0 truncate" title={registration.studentName}>
                 {registration.studentName}
               </span>
@@ -373,7 +408,7 @@ function DesktopRowImpl({
                 registration.createdAt,
                 registration.dateOfRegistration,
               ) && (
-                <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-inset ring-emerald-200">
                   New
                 </span>
               )}
@@ -387,17 +422,20 @@ function DesktopRowImpl({
 
       {/* CONTACT */}
 
-      <TableCell className="w-[300px] min-w-[300px] max-w-[300px] bg-white group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
-        <div className="flex flex-col gap-1 text-sm">
+      <TableCell className="w-[300px] min-w-[300px] max-w-[300px]">
+        <div className="flex flex-col gap-1.5 text-sm">
           <a
             href={`mailto:${registration.email}`}
             title={registration.email}
             className={cn(
-              "flex min-w-0 items-start gap-1.5 rounded text-stone-500 hover:text-orange-600",
+              "flex min-w-0 items-start gap-1.5 rounded text-stone-600 transition-colors hover:text-orange-600 hover:underline",
               focusRing,
             )}
           >
-            <Mail aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <Mail
+              aria-hidden
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400"
+            />
             <span className="sr-only">Email </span>
             <span className="min-w-0 break-all">{registration.email}</span>
           </a>
@@ -405,35 +443,62 @@ function DesktopRowImpl({
           <a
             href={phoneHref}
             className={cn(
-              "flex items-center gap-1.5 rounded text-stone-500 hover:text-orange-600",
+              "flex items-center gap-1.5 rounded text-stone-600 tabular-nums transition-colors hover:text-orange-600 hover:underline",
               focusRing,
             )}
           >
-            <Phone aria-hidden className="h-3.5 w-3.5 shrink-0" />
+            <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-stone-400" />
             <span className="sr-only">Call </span>
             {registration.contactNumber}
           </a>
         </div>
       </TableCell>
 
+      {/* PROGRAM OF INTEREST */}
+
+      <TableCell>
+        {registration.programInterest ? (
+          <span
+            className="inline-flex whitespace-nowrap rounded-md bg-stone-100 px-2 py-0.5 text-sm font-medium text-stone-700"
+            title={registration.programInterest}
+          >
+            {registration.programInterest}
+          </span>
+        ) : (
+          <span className="text-stone-400" title="Not provided">
+            —
+          </span>
+        )}
+      </TableCell>
+
       {/* ENQUIRY SUBMISSION TIME */}
 
-      <TableCell className="whitespace-nowrap text-stone-600">
-        {registration.createdAt
-          ? new Date(registration.createdAt).toLocaleString("en-IN", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })
-          : "—"}
+      <TableCell>
+        {hasCreatedAt ? (
+          <div className="whitespace-nowrap leading-tight">
+            <p className="text-stone-700 tabular-nums">
+              {createdAt.toLocaleDateString("en-IN", { dateStyle: "medium" })}
+            </p>
+            <p className="mt-0.5 text-xs text-stone-400 tabular-nums">
+              {createdAt.toLocaleTimeString("en-IN", { timeStyle: "short" })}
+            </p>
+          </div>
+        ) : (
+          <span className="text-stone-400">—</span>
+        )}
       </TableCell>
 
       {/* TRIAL SLOT */}
 
       <TableCell>
-        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-orange-100 bg-orange-50 px-2 py-1 text-sm text-orange-900">
+        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 text-sm text-orange-900">
           <Calendar aria-hidden className="h-3.5 w-3.5 text-orange-600" />
-          <span className="font-medium">{formatYMDDisplay(registration.trialDate)}</span>
-          <span className="text-orange-700">· {formatTrialTime(registration.trialTime)}</span>
+          <span className="font-medium">
+            {formatYMDDisplay(registration.trialDate)}
+          </span>
+          <span className="text-orange-700">
+            · {formatTrialTime(registration.trialTime)}
+          </span>
         </div>
       </TableCell>
 
@@ -441,7 +506,10 @@ function DesktopRowImpl({
 
       <TableCell className="min-w-[220px] max-w-[320px]">
         <p
-          className="line-clamp-2 whitespace-normal text-sm text-stone-700"
+          className={cn(
+            "line-clamp-2 whitespace-normal text-sm",
+            registration.remark ? "text-stone-700" : "text-stone-400",
+          )}
           title={
             registration.remark
               ? formatTrialScheduleRemark(registration.remark)
@@ -464,12 +532,14 @@ function DesktopRowImpl({
           <span
             role="img"
             aria-label={registration.referralSource}
-            className="inline-flex h-6 w-6 items-center justify-center"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-50 ring-1 ring-stone-200"
           >
             <ReferralSourceIcon source={registration.referralSource} />
           </span>
         ) : (
-          <span aria-label="Not provided" className="text-stone-400">—</span>
+          <span aria-label="Not provided" className="text-stone-400">
+            —
+          </span>
         )}
       </TableCell>
 
@@ -504,7 +574,10 @@ function DesktopRowImpl({
               registration.locationName &&
               normalizeLocation(registration.location) !==
                 normalizeLocation(registration.locationName) && (
-                <p className="max-w-[180px] truncate text-xs text-stone-500">
+                <p
+                  className="max-w-[180px] truncate text-xs text-stone-500"
+                  title={registration.location}
+                >
                   {registration.location}
                 </p>
               )}
@@ -515,13 +588,44 @@ function DesktopRowImpl({
       {/* VISIT OPTION */}
 
       <TableCell>
-        <span className="whitespace-nowrap text-sm text-stone-700">
-          {registration.preferredCenter === "kalyani-nagar"
-            ? "Kalyani Nagar HQ trial"
-            : registration.preferredCenter === "unable-to-visit-hq"
-              ? "Unable to visit HQ"
+        {registration.preferredCenter === "unable-to-visit-hq" ? (
+          <div className="space-y-1.5">
+            <p className="whitespace-nowrap text-sm font-medium text-amber-700">
+              Unable to visit HQ
+            </p>
+            <Select
+              value={registration.salesSelectedCenter ?? "unselected"}
+              onValueChange={(value) =>
+                onSalesSelectedCenterChange(
+                  id,
+                  value === "unselected" ? null : value,
+                )
+              }
+              disabled={!canModify}
+            >
+              <SelectTrigger
+                aria-label={`Center selected after sales call for ${registration.studentName}`}
+                className={cn(selectTriggerBase, "h-7 w-[170px] text-xs")}
+              >
+                <SelectValue placeholder="Select center after call" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unselected">Select after call</SelectItem>
+                {OFFLINE_CENTERS.map((center) => (
+                  <SelectItem key={center.id} value={center.id}>
+                    {center.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <span className="whitespace-nowrap text-sm text-stone-700">
+            {registration.preferredCenter === "kalyani-nagar"
+              ? "Kalyani Nagar HQ trial"
               : "—"}
-        </span>
+          </span>
+        )}
       </TableCell>
 
       {/* MODE */}
@@ -529,10 +633,10 @@ function DesktopRowImpl({
       <TableCell>
         <div
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset",
             locationType === "online"
-              ? "bg-blue-50 text-blue-700"
-              : "bg-orange-50 text-orange-700",
+              ? "bg-blue-50 text-blue-700 ring-blue-200"
+              : "bg-orange-50 text-orange-700 ring-orange-200",
           )}
         >
           {locationType === "online" ? (
@@ -550,6 +654,7 @@ function DesktopRowImpl({
         <Select
           value={registration.status || "booked"}
           onValueChange={(value) => onStatusChange(id, value)}
+          disabled={!canModify}
         >
           <SelectTrigger
             aria-label={`Trial status for ${registration.studentName}`}
@@ -558,7 +663,7 @@ function DesktopRowImpl({
             <div className="flex items-center gap-1.5">
               <span
                 aria-hidden
-                className={cn("h-1.5 w-1.5 rounded-full", status.dot)}
+                className={cn("h-2 w-2 rounded-full", status.dot)}
               />
               <SelectValue />
             </div>
@@ -579,14 +684,19 @@ function DesktopRowImpl({
 
       {hasShowRows && (
         <TableCell className="min-w-[200px]">
-          {isShow && (
+          {isShow ? (
             <InlineRemark
               value={registration.counsellorRemark || ""}
               label="Counsellor remark"
-              placeholder="Add counsellor remarkâ€¦"
+              placeholder="Add counsellor remark…"
               emptyLabel="Add counsellor remark"
+              canEdit={canModify}
               onSave={saveCounsellor}
             />
+          ) : (
+            <span aria-hidden className="px-1.5 text-stone-300">
+              —
+            </span>
           )}
         </TableCell>
       )}
@@ -597,10 +707,11 @@ function DesktopRowImpl({
         <Select
           value={registration.leadTemp ?? ""}
           onValueChange={(value) => onLeadTempChange(id, value)}
+          disabled={!canModify}
         >
           <SelectTrigger
             aria-label={`Lead temperature for ${registration.studentName}`}
-            className={cn(selectTriggerBase, "w-[115px]", temp.text)}
+            className={cn(selectTriggerBase, "w-[120px]", temp.text)}
           >
             <div className="flex items-center gap-1.5">
               <Thermometer aria-hidden className="h-3.5 w-3.5" />
@@ -624,14 +735,16 @@ function DesktopRowImpl({
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
+          disabled={!canModify}
           title={
             followUpTone
               ? `${FOLLOW_UP_LABEL[followUpTone]} — ${registration.nextFollowUpDate}`
               : undefined
           }
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-sm transition-colors",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-sm font-medium transition-colors",
             FOLLOW_UP_STYLES[followUpTone ?? "none"],
+            !canModify && "cursor-default opacity-80 hover:bg-transparent",
             focusRing,
           )}
         >
@@ -672,10 +785,11 @@ function DesktopRowImpl({
         <Select
           value={registration.leadOutcome ?? ""}
           onValueChange={(value) => onLeadOutcomeChange(id, value)}
+          disabled={!canModify}
         >
           <SelectTrigger
             aria-label={`Lead outcome for ${registration.studentName}`}
-            className={cn(selectTriggerBase, "w-[125px]", outcome.text)}
+            className={cn(selectTriggerBase, "w-[130px]", outcome.text)}
           >
             <div className="flex items-center gap-1.5">
               <Flag aria-hidden className="h-3.5 w-3.5" />
@@ -698,48 +812,57 @@ function DesktopRowImpl({
 
       {hasClosedRows && (
         <TableCell className="min-w-[200px]">
-          {isClosed && (
+          {isClosed ? (
             <InlineRemark
               value={registration.closeRemark || ""}
               label="Close remark"
-              placeholder="Reason for closingâ€¦"
+              placeholder="Reason for closing…"
               emptyLabel="Add close remark"
+              canEdit={canModify}
               onSave={saveClose}
             />
+          ) : (
+            <span aria-hidden className="px-1.5 text-stone-300">
+              —
+            </span>
           )}
         </TableCell>
       )}
 
       {/* ACTIONS */}
 
-      {canDelete && (
+      {(canModify || canDelete) && (
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-            <button
-              type="button"
-              onClick={() => onEdit(registration)}
-              aria-label={`Edit ${registration.studentName}`}
-              title="Edit"
-              className={cn(
-                "rounded-md p-1.5 text-stone-500 hover:bg-stone-100 hover:text-orange-600",
-                focusRing,
-              )}
-            >
-              <Pencil aria-hidden className="h-4 w-4" />
-            </button>
+            {canModify && (
+              <button
+                type="button"
+                onClick={() => onEdit(registration)}
+                aria-label={`Edit ${registration.studentName}`}
+                title="Edit"
+                className={cn(
+                  "rounded-lg p-1.5 text-stone-500 transition-colors hover:bg-orange-50 hover:text-orange-600",
+                  focusRing,
+                )}
+              >
+                <Pencil aria-hidden className="h-4 w-4" />
+              </button>
+            )}
 
-            <button
-              type="button"
-              onClick={() => onDelete(registration)}
-              aria-label={`Delete ${registration.studentName}`}
-              title="Delete"
-              className={cn(
-                "rounded-md p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600",
-                focusRing,
-              )}
-            >
-              <Trash2 aria-hidden className="h-4 w-4" />
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(registration)}
+                aria-label={`Delete ${registration.studentName}`}
+                title="Delete"
+                className={cn(
+                  "rounded-lg p-1.5 text-stone-500 transition-colors hover:bg-red-50 hover:text-red-600",
+                  focusRing,
+                )}
+              >
+                <Trash2 aria-hidden className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </TableCell>
       )}

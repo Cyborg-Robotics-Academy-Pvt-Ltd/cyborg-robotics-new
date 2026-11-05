@@ -6,13 +6,11 @@ import {
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp,
-  updateDoc,
   type QueryDocumentSnapshot,
   type DocumentData,
 } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import { authReady, db } from "@/lib/firebase";
 import { getTrialModeFromLocation } from "@/app/enquire-form/utils";
 import {
   EditDraft,
@@ -24,6 +22,13 @@ import {
 } from "@/app/enquire-form/types";
 
 const COLLECTION = "freeTrialRegistrations";
+
+async function getAuthToken(): Promise<string> {
+  const auth = await authReady;
+  const token = await auth?.currentUser?.getIdToken();
+  if (!token) throw new Error("Please sign in before updating enquiries.");
+  return token;
+}
 
 function getCreatedAtMillis(value: unknown): number {
   if (typeof value === "number") {
@@ -75,6 +80,11 @@ function mapRegistration(
       ? data.preferredCenter.trim()
       : null;
 
+  const salesSelectedCenter =
+    typeof data.salesSelectedCenter === "string"
+      ? data.salesSelectedCenter
+      : null;
+
   const followUpHistory: FollowUpEntry[] = Array.isArray(data.followUpHistory)
     ? data.followUpHistory
     : [];
@@ -85,6 +95,8 @@ function mapRegistration(
     age: typeof data.age === "number" ? data.age : Number(data.age || 0),
     contactNumber: data.contactNumber || "",
     email: data.email || "",
+    programInterest:
+      typeof data.programInterest === "string" ? data.programInterest : "",
     referralSource: data.referralSource || "",
     trialDate: data.trialDate || "",
     trialTime: data.trialTime || "",
@@ -93,6 +105,7 @@ function mapRegistration(
     locationId,
     locationName,
     preferredCenter,
+    salesSelectedCenter,
     status: (data.status as TrialStatus) || "booked",
     remark: data.remark || "",
     counsellorRemark: data.counsellorRemark || "",
@@ -141,11 +154,30 @@ export function useTrialRegistrations() {
     );
   }, []);
 
-  /* PATCH HELPER — Firestore write only; listener updates state */
+  /* PATCH HELPER — server write; listener updates state */
 
   const patchRegistration = useCallback(
     async (id: string, payload: Record<string, unknown>) => {
-      await updateDoc(doc(db, COLLECTION, id), payload);
+      const token = await getAuthToken();
+      const response = await fetch(
+        `/api/enquire-form/registrations/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const data = (await response.json()) as {
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to update the enquiry.");
+      }
     },
     [],
   );
@@ -164,12 +196,28 @@ export function useTrialRegistrations() {
     [patchRegistration],
   );
 
+  const updateSalesSelectedCenter = useCallback(
+    async (id: string, center: string | null) => {
+      try {
+        await patchRegistration(id, { salesSelectedCenter: center });
+      } catch (err) {
+        console.error("Error updating selected enquiry center:", err);
+        alert("Failed to save the selected center. Please try again.");
+      }
+    },
+    [patchRegistration],
+  );
+
   const rescheduleTrial = useCallback(
     async (id: string, trialDate: string, trialTime: string) => {
       try {
+        const token = await getAuthToken();
         const response = await fetch(`/api/free-trial/${id}/reschedule`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ trialDate, trialTime }),
         });
         const data = await response.json();
@@ -318,7 +366,6 @@ export function useTrialRegistrations() {
           trialMode: locationResult.trialMode,
           locationId: locationResult.locationId,
           locationName: locationResult.locationName,
-          updatedAt: serverTimestamp(),
         });
 
         return true;
@@ -349,6 +396,7 @@ export function useTrialRegistrations() {
     loading,
     error,
     updateStatus,
+    updateSalesSelectedCenter,
     rescheduleTrial,
     updateRemark,
     updateCounsellorRemark,

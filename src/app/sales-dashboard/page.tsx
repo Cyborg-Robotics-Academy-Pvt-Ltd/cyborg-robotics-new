@@ -15,9 +15,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  CalendarClock,
   CalendarDays,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -30,7 +28,6 @@ import {
   MessageSquareText,
   Phone,
   Search,
-  Users,
   X,
 } from "lucide-react";
 
@@ -52,17 +49,20 @@ const TRIAL_STATUSES = [
 
 /* ---------- Types ---------- */
 
-type QueueTab = "new" | "due" | "all";
+type QueueTab = "new" | "overdue" | "today" | "trials" | "due" | "all";
 type SortKey = "default" | "newest" | "hot" | "followup";
 
 const QUEUE_TABS: { id: QueueTab; label: string }[] = [
   { id: "new", label: "New" },
-  { id: "due", label: "Follow-ups due" },
+  { id: "overdue", label: "Overdue" },
+  { id: "today", label: "Due today" },
+  { id: "trials", label: "Trials today" },
+  { id: "due", label: "All follow-ups" },
   { id: "all", label: "All leads" },
 ];
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "default", label: "Default order" },
+  { value: "default", label: "Recommended first" },
   { value: "newest", label: "Newest first" },
   { value: "hot", label: "Hot leads first" },
   { value: "followup", label: "Follow-up date" },
@@ -70,6 +70,9 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 
 const QUEUE_EMPTY_TEXT: Record<QueueTab, string> = {
   new: "You’re all caught up. New enquiries will appear here.",
+  overdue: "No overdue follow-ups. Great work staying on top of leads.",
+  today: "No follow-ups are scheduled for today.",
+  trials: "No trials are scheduled for today.",
   due: "No follow-ups are due right now.",
   all: "No enquiries yet.",
 };
@@ -121,13 +124,6 @@ const STAGE_STYLES: Record<string, { bar: string; dot: string }> = {
   Lost: { bar: "bg-slate-400", dot: "bg-slate-400" },
 };
 
-const METRIC_COLORS = {
-  red: { chip: "bg-[#A81B1E]/10 text-[#A81B1E]", accent: "bg-[#A81B1E]" },
-  amber: { chip: "bg-amber-50 text-amber-700", accent: "bg-amber-500" },
-  slate: { chip: "bg-slate-100 text-slate-700", accent: "bg-slate-700" },
-  green: { chip: "bg-emerald-50 text-emerald-700", accent: "bg-emerald-500" },
-} as const;
-
 /* ---------- Helpers ---------- */
 
 function getLocalDateKey(date = new Date()) {
@@ -173,6 +169,17 @@ function formatLongDate(date = new Date()) {
   }).format(date);
 }
 
+function formatActivityDate(value?: string) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(parsed);
+}
+
 function plural(count: number, singular: string, pluralForm = `${singular}s`) {
   return `${count} ${count === 1 ? singular : pluralForm}`;
 }
@@ -185,6 +192,101 @@ function getPipelineStage(registration: TrialRegistration) {
   if (registration.followUpHistory.length || registration.remark.trim())
     return "Contacted";
   return "New";
+}
+
+type LeadInsight = {
+  priority: "High" | "Medium" | "Low";
+  rank: number;
+  score: number;
+  reasons: string[];
+  action: string;
+};
+
+function getLeadInsight(
+  registration: TrialRegistration,
+  today: string,
+): LeadInsight {
+  const due = registration.nextFollowUpDate;
+  const trialDate = registration.trialDate;
+  const isClosed = registration.leadOutcome === "closed";
+  const isOverdue = Boolean(due) && due < today;
+  const isDueToday = due === today;
+  const missedTrial = registration.status === "no-show";
+  const bookedTrial = ["booked", "reschedule"].includes(registration.status);
+  const trialToday = bookedTrial && trialDate === today;
+  const trialSoon =
+    bookedTrial && trialDate > today && trialDate <= addDays(today, 3);
+  if (isClosed) {
+    return {
+      priority: "Low",
+      rank: 0,
+      score: 0,
+      reasons: [],
+      action: "Enrolled",
+    };
+  }
+  const noFirstContact =
+    !registration.followUpHistory.length && !registration.remark.trim();
+  const waitingDays =
+    registration.createdAt > 0
+      ? Math.max(
+          0,
+          Math.floor((Date.now() - registration.createdAt) / 86_400_000),
+        )
+      : 0;
+  const firstContactLate = noFirstContact && waitingDays >= 2;
+
+  const factors = [
+    { active: isOverdue, label: "Overdue follow-up", points: 50 },
+    { active: missedTrial, label: "Missed trial", points: 40 },
+    { active: trialToday, label: "Trial today", points: 40 },
+    {
+      active: !trialToday && trialSoon,
+      label: "Trial within 3 days",
+      points: 20,
+    },
+    { active: isDueToday, label: "Follow-up due today", points: 40 },
+    {
+      active: noFirstContact && !firstContactLate,
+      label: "No contact logged yet",
+      points: 15,
+    },
+    {
+      active: firstContactLate,
+      label: `No first contact after ${plural(waitingDays, "day")}`,
+      points: 40,
+    },
+    {
+      active: registration.leadTemp === "hot",
+      label: "Marked hot by sales",
+      points: 10,
+    },
+  ];
+  const activeFactors = factors.filter((factor) => factor.active);
+  const reasons = activeFactors.map((factor) => factor.label);
+  const score = Math.min(
+    100,
+    activeFactors.reduce((total, factor) => total + factor.points, 0),
+  );
+  const priority = score >= 40 ? "High" : score >= 20 ? "Medium" : "Low";
+  let action = "Review lead and set a follow-up";
+  if (isOverdue || isDueToday) action = "Contact today";
+  else if (missedTrial) action = "Offer a new trial time";
+  else if (trialToday) action = "Confirm today's trial";
+  else if (trialSoon) action = "Confirm trial attendance";
+  else if (noFirstContact) action = "Contact this enquiry";
+  else if (registration.leadTemp === "hot")
+    action = "Contact while interest is high";
+  else if (due && due > today)
+    action = `Follow up on ${formatDate(due)}`;
+
+  return {
+    priority,
+    rank: score,
+    score,
+    reasons,
+    action,
+  };
 }
 
 function initials(name: string) {
@@ -290,7 +392,9 @@ export default function SalesDashboardPage() {
   // Follow-up modal
   const [followUpTarget, setFollowUpTarget] =
     useState<TrialRegistration | null>(null);
-  const [expandedQueueTimelineId, setExpandedQueueTimelineId] = useState<string | null>(null);
+  const [expandedQueueTimelineId, setExpandedQueueTimelineId] = useState<
+    string | null
+  >(null);
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpNote, setFollowUpNote] = useState("");
   const [savingFollowUp, setSavingFollowUp] = useState(false);
@@ -302,6 +406,8 @@ export default function SalesDashboardPage() {
   const [tab, setTab] = useState<QueueTab>("new");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
+  const [receivedFrom, setReceivedFrom] = useState("");
+  const [receivedTo, setReceivedTo] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [hotOnly, setHotOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("default");
@@ -319,8 +425,16 @@ export default function SalesDashboardPage() {
   }, [authLoading, router, user, userRole]);
 
   const today = getLocalDateKey();
-  const { newEnquiries, dueFollowUps, upcomingTrials, allLeads, pipeline } =
-    useMemo(() => {
+  const {
+    newEnquiries,
+    overdueFollowUps,
+    dueTodayFollowUps,
+    trialsToday,
+    dueFollowUps,
+    upcomingTrials,
+    allLeads,
+    pipeline,
+  } = useMemo(() => {
       const active = registrations.filter(
         (item) => item.leadOutcome !== "closed" && item.status !== "cancelled",
       );
@@ -340,6 +454,12 @@ export default function SalesDashboardPage() {
             item.leadOutcome !== "closed",
         )
         .sort((a, b) => a.nextFollowUpDate.localeCompare(b.nextFollowUpDate));
+      const overdueItems = dueItems.filter(
+        (item) => item.nextFollowUpDate < today,
+      );
+      const dueTodayItems = dueItems.filter(
+        (item) => item.nextFollowUpDate === today,
+      );
       const trialItems = registrations
         .filter(
           (item) =>
@@ -351,6 +471,9 @@ export default function SalesDashboardPage() {
             `${b.trialDate} ${b.trialTime}`,
           ),
         );
+      const todayTrialItems = trialItems.filter(
+        (item) => item.trialDate === today,
+      );
       const everyone = [...registrations].sort(
         (a, b) => b.createdAt - a.createdAt,
       );
@@ -363,6 +486,9 @@ export default function SalesDashboardPage() {
 
       return {
         newEnquiries: newItems,
+        overdueFollowUps: overdueItems,
+        dueTodayFollowUps: dueTodayItems,
+        trialsToday: todayTrialItems,
         dueFollowUps: dueItems,
         upcomingTrials: trialItems,
         allLeads: everyone,
@@ -372,19 +498,39 @@ export default function SalesDashboardPage() {
 
   const tabCounts: Record<QueueTab, number> = {
     new: newEnquiries.length,
+    overdue: overdueFollowUps.length,
+    today: dueTodayFollowUps.length,
+    trials: trialsToday.length,
     due: dueFollowUps.length,
     all: allLeads.length,
   };
 
   const filteredQueue = useMemo(() => {
     const base =
-      tab === "new" ? newEnquiries : tab === "due" ? dueFollowUps : allLeads;
+      tab === "new"
+        ? newEnquiries
+        : tab === "overdue"
+          ? overdueFollowUps
+          : tab === "today"
+            ? dueTodayFollowUps
+            : tab === "trials"
+              ? trialsToday
+            : tab === "due"
+              ? dueFollowUps
+              : allLeads;
     const q = deferredQuery.trim().toLowerCase();
     const qDigits = q.replace(/\D/g, "");
 
     const list = base.filter((item) => {
       if (statusFilter !== "all" && item.status !== statusFilter) return false;
       if (hotOnly && item.leadTemp !== "hot") return false;
+      if (receivedFrom || receivedTo) {
+        const receivedDate =
+          item.createdAt > 0 ? getLocalDateKey(new Date(item.createdAt)) : "";
+        if (!receivedDate) return false;
+        if (receivedFrom && receivedDate < receivedFrom) return false;
+        if (receivedTo && receivedDate > receivedTo) return false;
+      }
       if (!q) return true;
       const haystack =
         `${item.studentName || ""} ${item.locationName || ""} ${item.location || ""}`.toLowerCase();
@@ -394,6 +540,10 @@ export default function SalesDashboardPage() {
       );
     });
 
+    if (sortBy === "default")
+      list.sort(
+        (a, b) => getLeadInsight(b, today).rank - getLeadInsight(a, today).rank,
+      );
     if (sortBy === "newest") list.sort((a, b) => b.createdAt - a.createdAt);
     if (sortBy === "hot")
       list.sort(
@@ -411,16 +561,26 @@ export default function SalesDashboardPage() {
   }, [
     tab,
     newEnquiries,
+    overdueFollowUps,
+    dueTodayFollowUps,
+    trialsToday,
     dueFollowUps,
     allLeads,
     deferredQuery,
+    receivedFrom,
+    receivedTo,
     statusFilter,
     hotOnly,
     sortBy,
+    today,
   ]);
 
   const hasActiveFilters =
-    query.trim() !== "" || statusFilter !== "all" || hotOnly;
+    query.trim() !== "" ||
+    receivedFrom !== "" ||
+    receivedTo !== "" ||
+    statusFilter !== "all" ||
+    hotOnly;
 
   const queuePages = Math.max(1, Math.ceil(filteredQueue.length / pageSize));
   const safePage = Math.min(page, queuePages);
@@ -446,6 +606,8 @@ export default function SalesDashboardPage() {
 
   const clearFilters = () => {
     setQuery("");
+    setReceivedFrom("");
+    setReceivedTo("");
     setStatusFilter("all");
     setHotOnly(false);
     setSortBy("default");
@@ -560,8 +722,6 @@ export default function SalesDashboardPage() {
     return <AuthLoadingSpinner />;
 
   const displayName = user.displayName || user.email?.split("@")[0] || "Sales";
-  const enrolledCount =
-    pipeline.find((item) => item.label === "Enrolled")?.count ?? 0;
   const totalLeads = registrations.length;
   const followUpPresets = [
     { label: "Tomorrow", value: addDays(today, 1) },
@@ -575,7 +735,7 @@ export default function SalesDashboardPage() {
   return (
     <DashboardLayout role="sales" name={displayName}>
       <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6">
           {/* Header */}
           <header className="flex flex-col justify-between gap-5 rounded-xl border-b-4 border-slate-900 bg-[#A81B1E] p-6 text-white sm:flex-row sm:items-end sm:p-8">
             <div>
@@ -594,11 +754,14 @@ export default function SalesDashboardPage() {
                   "Loading your day…"
                 ) : (
                   <>
-                    You have{" "}
                     <span className="font-semibold text-white underline decoration-white/40 underline-offset-4">
-                      {plural(dueFollowUps.length, "follow-up")} due
-                    </span>{" "}
-                    and{" "}
+                      {plural(overdueFollowUps.length, "overdue follow-up")}
+                    </span>
+                    ,{" "}
+                    <span className="font-semibold text-white underline decoration-white/40 underline-offset-4">
+                      {plural(dueTodayFollowUps.length, "follow-up")} due today
+                    </span>
+                    , and{" "}
                     <span className="font-semibold text-white underline decoration-white/40 underline-offset-4">
                       {plural(
                         newEnquiries.length,
@@ -671,53 +834,74 @@ export default function SalesDashboardPage() {
             </div>
           )}
 
-          {/* Metrics */}
           <section
-            aria-label="Key numbers"
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            aria-labelledby="today-work-title"
+            className="order-1 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5"
           >
-            <MetricCard
-              title="New enquiries"
-              value={newEnquiries.length}
-              detail="Waiting for first follow-up"
-              icon={<Users className="h-5 w-5" />}
-              color="red"
-              loading={registrationsLoading}
-              onSelect={() => selectTab("new")}
-              active={tab === "new"}
-            />
-            <MetricCard
-              title="Follow-ups due"
-              value={dueFollowUps.length}
-              detail="Due today or overdue"
-              icon={<Clock3 className="h-5 w-5" />}
-              color="amber"
-              loading={registrationsLoading}
-              onSelect={() => selectTab("due")}
-              active={tab === "due"}
-            />
-            <MetricCard
-              title="Upcoming trials"
-              value={upcomingTrials.length}
-              detail="Booked from today onward"
-              icon={<CalendarClock className="h-5 w-5" />}
-              color="slate"
-              loading={registrationsLoading}
-            />
-            <MetricCard
-              title="Enrolled"
-              value={enrolledCount}
-              detail="Closed successfully"
-              icon={<CheckCircle2 className="h-5 w-5" />}
-              color="green"
-              loading={registrationsLoading}
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="shrink-0">
+                <h2
+                  id="today-work-title"
+                  style={HEADING_STYLE}
+                  className="text-base font-semibold text-slate-900"
+                >
+                  Today&apos;s work
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Select a count to see who needs attention.
+                </p>
+              </div>
+              <div
+                className="flex flex-wrap items-center gap-2 sm:justify-end"
+                role="group"
+                aria-label="Today's sales priorities"
+              >
+                <TodayWorkLink
+                  label="Follow-ups overdue"
+                  count={overdueFollowUps.length}
+                  loading={registrationsLoading}
+                  tone="red"
+                  active={tab === "overdue"}
+                  onClick={() => selectTab("overdue")}
+                />
+                <TodayWorkLink
+                  label="Follow-ups today"
+                  count={dueTodayFollowUps.length}
+                  loading={registrationsLoading}
+                  tone="amber"
+                  active={tab === "today"}
+                  onClick={() => selectTab("today")}
+                />
+                <TodayWorkLink
+                  label="New leads to contact"
+                  count={newEnquiries.length}
+                  loading={registrationsLoading}
+                  tone="blue"
+                  active={tab === "new"}
+                  onClick={() => selectTab("new")}
+                />
+                <TodayWorkLink
+                  label="Trials today"
+                  count={trialsToday.length}
+                  loading={registrationsLoading}
+                  tone="slate"
+                  active={tab === "trials"}
+                  onClick={() => selectTab("trials")}
+                />
+              </div>
+            </div>
           </section>
 
           {/* Pipeline */}
+          <details className="order-4 rounded-xl border border-slate-200 bg-white">
+            <summary
+              className={`cursor-pointer px-5 py-4 text-sm font-semibold text-slate-900 sm:px-6 ${FOCUS_RING}`}
+            >
+              Where enquiries are now
+            </summary>
           <section
             aria-labelledby="pipeline-title"
-            className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
+              className="border-t border-slate-100 p-5 sm:p-6"
           >
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
@@ -726,10 +910,11 @@ export default function SalesDashboardPage() {
                   id="pipeline-title"
                   className="text-base font-semibold text-slate-900"
                 >
-                  Lead pipeline
+                    Enquiry stages
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Current stage for every enquiry
+                    Counts by current stage; percentages are of all enquiries,
+                    not conversion rates.
                 </p>
               </div>
               <Link
@@ -753,7 +938,9 @@ export default function SalesDashboardPage() {
                     <div
                       key={stage.label}
                       className={`h-full ${STAGE_STYLES[stage.label].bar}`}
-                      style={{ width: `${(stage.count / totalLeads) * 100}%` }}
+                        style={{
+                          width: `${(stage.count / totalLeads) * 100}%`,
+                        }}
                     />
                   ))}
             </div>
@@ -795,11 +982,12 @@ export default function SalesDashboardPage() {
               ))}
             </ul>
           </section>
+          </details>
 
           {/* Lead queue */}
           <section
             aria-labelledby="queue-title"
-            className="rounded-xl border border-slate-200 bg-white"
+            className="order-2 rounded-xl border border-slate-200 bg-white"
           >
             <div className="flex flex-col gap-4 p-5 pb-0 sm:p-6 sm:pb-0">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -809,10 +997,15 @@ export default function SalesDashboardPage() {
                     id="queue-title"
                     className="text-base font-semibold text-slate-900"
                   >
-                    Lead queue
+                    What needs attention
                   </h2>
                   <p className="mt-1 text-sm text-slate-600">
-                    Search, filter and work through your enquiries
+                    Work through recommended leads first. Each suggestion
+                    explains why it needs attention and what to do next.
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Priority is a rule-based work guide, not a prediction of
+                    enrolment.
                   </p>
                 </div>
                 <Button
@@ -892,6 +1085,48 @@ export default function SalesDashboardPage() {
                   className={`${FIELD} w-full py-2 pl-9 pr-3`}
                 />
               </div>
+              <fieldset className="flex flex-wrap items-center gap-2">
+                <legend className="sr-only">
+                  Filter by enquiry received date
+                </legend>
+                <label
+                  htmlFor="queue-received-from"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  Received
+                </label>
+                <input
+                  id="queue-received-from"
+                  type="date"
+                  aria-label="Enquiries received from"
+                  max={receivedTo || today}
+                  value={receivedFrom}
+                  onChange={(event) => {
+                    setReceivedFrom(event.target.value);
+                    setPage(1);
+                  }}
+                  className={`${FIELD} min-w-0 px-2.5 py-2`}
+                />
+                <label
+                  htmlFor="queue-received-to"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  to
+                </label>
+                <input
+                  id="queue-received-to"
+                  type="date"
+                  aria-label="Enquiries received to"
+                  min={receivedFrom || undefined}
+                  max={today}
+                  value={receivedTo}
+                  onChange={(event) => {
+                    setReceivedTo(event.target.value);
+                    setPage(1);
+                  }}
+                  className={`${FIELD} min-w-0 px-2.5 py-2`}
+                />
+              </fieldset>
               <label className="sr-only" htmlFor="queue-status">
                 Filter by trial status
               </label>
@@ -943,6 +1178,9 @@ export default function SalesDashboardPage() {
                 }`}
               >
                 <Flame className="h-4 w-4" aria-hidden="true" /> Hot only
+                <span className="text-xs font-normal text-slate-500">
+                  (marked by sales)
+                </span>
               </button>
               {hasActiveFilters && (
                 <button
@@ -973,8 +1211,14 @@ export default function SalesDashboardPage() {
                       today={today}
                       pending={pendingIds.has(registration.id)}
                       onFollowUp={openFollowUp}
-                      timelineExpanded={expandedQueueTimelineId === registration.id}
-                      onTimelineToggle={() => setExpandedQueueTimelineId((current) => current === registration.id ? null : registration.id)}
+                      timelineExpanded={
+                        expandedQueueTimelineId === registration.id
+                      }
+                      onTimelineToggle={() =>
+                        setExpandedQueueTimelineId((current) =>
+                          current === registration.id ? null : registration.id,
+                        )
+                      }
                       onStatusChange={handleStatusChange}
                     />
                   ))}
@@ -1014,9 +1258,16 @@ export default function SalesDashboardPage() {
           </section>
 
           {/* Upcoming trials */}
+          <details className="order-3 rounded-xl border border-slate-200 bg-white">
+            <summary
+              className={`cursor-pointer px-5 py-4 text-sm font-semibold text-slate-900 sm:px-6 ${FOCUS_RING}`}
+            >
+              Upcoming trials (
+              {registrationsLoading ? "…" : upcomingTrials.length})
+            </summary>
           <section
             aria-labelledby="trials-title"
-            className="rounded-xl border border-slate-200 bg-white"
+              className="border-t border-slate-100"
           >
             <div className="flex items-center justify-between gap-3 p-5 pb-4 sm:p-6 sm:pb-4">
               <div>
@@ -1138,6 +1389,7 @@ export default function SalesDashboardPage() {
               <div className="pb-3" />
             )}
           </section>
+          </details>
         </div>
       </main>
 
@@ -1298,65 +1550,46 @@ export default function SalesDashboardPage() {
 
 /* ---------- Components ---------- */
 
-function MetricCard({
-  title,
-  value,
-  detail,
-  icon,
-  color,
+function TodayWorkLink({
+  label,
+  count,
   loading,
-  onSelect,
+  tone,
+  onClick,
   active = false,
 }: {
-  title: string;
-  value: number;
-  detail: string;
-  icon: ReactNode;
-  color: "red" | "amber" | "slate" | "green";
+  label: string;
+  count: number;
   loading: boolean;
-  onSelect?: () => void;
+  tone: "red" | "amber" | "blue" | "slate";
+  onClick: () => void;
   active?: boolean;
 }) {
-  const palette = METRIC_COLORS[color];
-  const base =
-    "relative block w-full overflow-hidden rounded-xl border bg-white p-5 text-left";
-  const body = (
-    <>
-      <span
-        className={`absolute inset-y-0 left-0 w-1 ${palette.accent}`}
-        aria-hidden="true"
-      />
-      <span className="flex items-start justify-between gap-3">
-        <span>
-          <span className="block text-sm font-medium text-slate-600">
-            {title}
-          </span>
-          <span className="mt-2 block text-3xl font-semibold tabular-nums tracking-tight text-slate-900">
-            {loading ? "—" : value}
-          </span>
-        </span>
-        <span className={`rounded-lg p-2.5 ${palette.chip}`} aria-hidden="true">
-          {icon}
-        </span>
-      </span>
-      <span className="mt-3 block text-xs text-slate-600">{detail}</span>
-    </>
-  );
-
-  if (!onSelect)
-    return <div className={`${base} border-slate-200`}>{body}</div>;
-
+  const toneStyles = {
+    red: active
+      ? "border-red-300 bg-red-50 text-red-800"
+      : "border-slate-200 bg-white text-slate-700 hover:border-red-200 hover:bg-red-50/60",
+    amber: active
+      ? "border-amber-300 bg-amber-50 text-amber-800"
+      : "border-slate-200 bg-white text-slate-700 hover:border-amber-200 hover:bg-amber-50/60",
+    blue: active
+      ? "border-blue-300 bg-blue-50 text-blue-800"
+      : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50/60",
+    slate: active
+      ? "border-slate-400 bg-slate-100 text-slate-900"
+      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+  }[tone];
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={onClick}
       aria-pressed={active}
-      aria-label={`${title}: ${loading ? "loading" : value}. Show in lead queue`}
-      className={`${base} transition-colors hover:border-slate-300 ${FOCUS_RING} ${
-        active ? "border-[#A81B1E] ring-1 ring-[#A81B1E]" : "border-slate-200"
-      }`}
+      className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${FOCUS_RING} ${toneStyles}`}
     >
-      {body}
+      <span className="font-semibold tabular-nums">
+        {loading ? "—" : count}
+      </span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -1385,6 +1618,27 @@ function LeadRow({
     STATUS_STYLES[registration.status] ?? STATUS_STYLES.booked;
   const whatsapp = toWhatsAppNumber(registration.contactNumber);
   const name = registration.studentName || "New enquiry";
+  const insight = getLeadInsight(registration, today);
+  const recentFollowUp =
+    registration.followUpHistory[registration.followUpHistory.length - 1];
+  const lastFollowUpLogged = formatActivityDate(recentFollowUp?.createdAt);
+  const latestNote = recentFollowUp?.remark || registration.remark.trim();
+  const trialStatusLabel =
+    TRIAL_STATUSES.find((status) => status.value === registration.status)
+      ?.label ?? registration.status;
+  const waitingDays =
+    registration.createdAt > 0
+      ? Math.max(
+          0,
+          Math.floor((Date.now() - registration.createdAt) / 86_400_000),
+        )
+      : null;
+  const priorityStyle =
+    insight.priority === "High"
+      ? "bg-red-50 text-red-700 ring-red-200"
+      : insight.priority === "Medium"
+        ? "bg-amber-50 text-amber-800 ring-amber-200"
+        : "bg-slate-100 text-slate-700 ring-slate-200";
 
   return (
     <li className="py-3">
@@ -1408,7 +1662,7 @@ function LeadRow({
                 className={`inline-flex items-center gap-1 rounded hover:text-[#A81B1E] hover:underline ${FOCUS_RING}`}
               >
                 <Phone className="h-3 w-3" aria-hidden="true" />
-                {registration.contactNumber}
+                Call {registration.contactNumber}
               </a>
             )}
             {whatsapp && (
@@ -1445,7 +1699,100 @@ function LeadRow({
                 {isDueToday ? "today" : formatDate(due)}
               </span>
             )}
+            {waitingDays !== null && (
+              <span>
+                {waitingDays === 0
+                  ? "Received today"
+                  : `Waiting ${plural(waitingDays, "day")}`}
+              </span>
+            )}
           </p>
+          <div
+            role="group"
+            aria-label={`Recommended next step for ${name}`}
+            className={`mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${
+              insight.priority === "High"
+                ? "border-l-4 border-l-red-500"
+                : insight.priority === "Medium"
+                  ? "border-l-4 border-l-amber-400"
+                  : "border-l-4 border-l-slate-300"
+            }`}
+          >
+            <div className="p-3 sm:p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Recommended next step
+                  </p>
+                  <p className="mt-1 text-base font-semibold leading-snug text-slate-900">
+                    {insight.action}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${priorityStyle}`}
+                >
+                  {insight.priority} priority
+                </span>
+              </div>
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <p className="text-[11px] font-medium text-slate-500">
+                  {insight.reasons.length
+                    ? "Why this needs attention"
+                    : "No urgent follow-up risks"}
+                </p>
+                {insight.reasons.length > 0 && (
+                  <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                    {insight.reasons.map((reason) => (
+                      <li
+                        key={reason}
+                        className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700"
+                      >
+                        {insight.priority === "High" && (
+                          <CircleAlert
+                            className="h-3 w-3 text-red-600"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {reason}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-xs sm:grid-cols-3">
+                <div className="min-w-0">
+                  <p className="text-slate-500">Trial status</p>
+                  <p className="mt-0.5 truncate font-medium text-slate-800">
+                    {trialStatusLabel}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-slate-500">Follow-ups</p>
+                  <p className="mt-0.5 truncate font-medium text-slate-800">
+                    {plural(registration.followUpHistory.length, "follow-up")}{" "}
+                    logged
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-slate-500">Last contact</p>
+                  <p className="mt-0.5 truncate font-medium text-slate-800">
+                    {lastFollowUpLogged ??
+                      (recentFollowUp
+                        ? `Scheduled ${formatDate(recentFollowUp.date)}`
+                        : "No follow-up logged")}
+                  </p>
+                </div>
+              </div>
+              {latestNote && (
+                <p className="mt-3 line-clamp-2 border-l-2 border-slate-300 pl-2.5 text-xs leading-relaxed text-slate-600">
+                  <span className="font-semibold text-slate-700">
+                    Latest note:
+                  </span>{" "}
+                  {latestNote}
+                </p>
+              )}
+            </div>
+          </div>
           <button
             type="button"
             onClick={onTimelineToggle}
@@ -1454,13 +1801,21 @@ function LeadRow({
             aria-controls={`queue-timeline-${registration.id}`}
             aria-label={`${timelineExpanded ? "Hide" : "View"} timeline for ${name}`}
           >
-            <ChevronDown className={`h-4 w-4 motion-safe:transition-transform ${timelineExpanded ? "rotate-180" : ""}`} aria-hidden="true" />
-            {timelineExpanded ? "Hide timeline" : "Timeline"}
+            <ChevronDown
+              className={`h-4 w-4 motion-safe:transition-transform ${timelineExpanded ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+            {timelineExpanded
+              ? "Hide timeline"
+              : `Timeline (${registration.followUpHistory.length} follow-ups)`}
           </button>
         </div>
       </div>
       {timelineExpanded && (
-        <div id={`queue-timeline-${registration.id}`} className="mt-3 pl-[3.25rem]">
+        <div
+          id={`queue-timeline-${registration.id}`}
+          className="mt-3 pl-[3.25rem]"
+        >
           <StudentTimelineStrip registration={registration} />
         </div>
       )}
@@ -1493,7 +1848,7 @@ function LeadRow({
           className={`inline-flex items-center gap-1.5 rounded-lg bg-[#A81B1E] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#8C1518] ${FOCUS_RING}`}
         >
           <MessageSquareText className="h-3.5 w-3.5" aria-hidden="true" />{" "}
-          Follow up
+          Schedule follow-up
         </button>
       </div>
     </li>

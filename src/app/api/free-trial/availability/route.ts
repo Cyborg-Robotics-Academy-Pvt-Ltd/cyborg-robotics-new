@@ -5,11 +5,12 @@ import {
   isValidTrialDate,
   isValidTrialTime,
   listTrialAvailabilityOverrides,
-  saveTrialAvailabilityOverride,
+  saveTrialAvailabilityOverrides,
 } from "@/lib/trial-availability-server";
 import type { TrialMode } from "@/lib/trial-location";
 
 export const runtime = "nodejs";
+const MAX_BULK_DATES = 63;
 
 function isTrialMode(value: string | null): value is TrialMode {
   return value === "online" || value === "offline";
@@ -99,12 +100,16 @@ export async function PUT(request: Request) {
     await requireAvailabilityManager(request);
     const body = (await request.json()) as Record<string, unknown>;
     const mode = body.mode;
-    const date = body.date;
+    const dates = body.dates === undefined ? [body.date] : body.dates;
     const slots = body.slots;
 
     if (
       (mode !== "online" && mode !== "offline") ||
-      !isValidTrialDate(date) ||
+      !Array.isArray(dates) ||
+      dates.length === 0 ||
+      dates.length > MAX_BULK_DATES ||
+      !dates.every(isValidTrialDate) ||
+      new Set(dates).size !== dates.length ||
       !Array.isArray(slots) ||
       !slots.every(isValidTrialTime) ||
       new Set(slots).size !== slots.length
@@ -112,13 +117,14 @@ export async function PUT(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "A valid mode, date, and unique time slots are required.",
+          message:
+            "A valid mode, up to 63 unique dates, and unique time slots are required.",
         },
         { status: 400 },
       );
     }
 
-    await saveTrialAvailabilityOverride(mode, date, slots);
+    await saveTrialAvailabilityOverrides(mode, dates, slots);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Unable to save trial availability:", error);

@@ -80,9 +80,31 @@ export async function saveTrialAvailabilityOverride(
     });
 }
 
-export async function deleteTrialAvailabilityOverride(
+export async function saveTrialAvailabilityOverrides(
   mode: TrialMode,
-  date: string,
+    dates: string[],
+    slots: string[],
+) {
+    const batch = adminDb.batch();
+    dates.forEach((date) => {
+      batch.set(
+        adminDb
+          .collection(availabilityCollection)
+          .doc(availabilityDocId(mode, date)),
+        {
+          mode,
+          date,
+          slots,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+      );
+    });
+    await batch.commit();
+}
+
+export async function deleteTrialAvailabilityOverride(
+    mode: TrialMode,
+    date: string,
 ) {
   await adminDb
     .collection(availabilityCollection)

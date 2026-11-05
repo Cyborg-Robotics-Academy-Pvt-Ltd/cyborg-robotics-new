@@ -14,7 +14,6 @@ import {
 import { db } from "@/lib/firebase";
 
 import {
-  MAX_BOOKINGS_PER_SLOT,
   getTrimmedString,
   slotIdFor,
   validateCoreFields,
@@ -52,6 +51,13 @@ type CacheEntry = {
 const enquiryCache = new Map<string, CacheEntry>();
 
 const CACHE_TTL = 5 * 60 * 1000;
+const PROGRAM_INTEREST_OPTIONS = new Set([
+  "Competition",
+  "Regular classes",
+  "Diwali workshop",
+  "Year long course",
+  "Workshop",
+]);
 
 /* -------------------------------------------------------------------------- */
 /* NORMALIZE CACHE VALUE                                                     */
@@ -300,6 +306,13 @@ export async function POST(req: Request) {
     }
 
     const core = coreResult.data;
+    const programInterest = getTrimmedString(body.programInterest);
+    if (!PROGRAM_INTEREST_OPTIONS.has(programInterest)) {
+      return NextResponse.json(
+        { success: false, message: "Please select a valid program of interest." },
+        { status: 400 },
+      );
+    }
 
     /* ====================================================================== */
     /* 2. GET USER LOCATION                                                   */
@@ -464,6 +477,8 @@ export async function POST(req: Request) {
 
       const registrationData = {
         ...core,
+
+        programInterest,
 
         referralSource: getTrimmedString(body.referralSource),
 
@@ -639,6 +654,8 @@ export async function POST(req: Request) {
     const registrationData = {
       ...core,
 
+      programInterest,
+
       referralSource: getTrimmedString(body.referralSource),
 
       /* User entered location */
@@ -693,7 +710,7 @@ export async function POST(req: Request) {
     );
 
     /* ====================================================================== */
-    /* 9. SLOT CAPACITY + REGISTRATION                                       */
+    /* 9. SLOT COUNT + REGISTRATION                                          */
     /* ====================================================================== */
 
     await runTransaction(
@@ -714,15 +731,6 @@ export async function POST(req: Request) {
           "📊 CURRENT SLOT COUNT:",
           currentCount,
         );
-
-        if (
-          currentCount >=
-          MAX_BOOKINGS_PER_SLOT
-        ) {
-          throw new Error(
-            "SLOT_FULL",
-          );
-        }
 
         /* -------------------------------------------------------------- */
         /* UPDATE SLOT COUNTER                                             */
@@ -811,35 +819,6 @@ export async function POST(req: Request) {
       },
     );
   } catch (error) {
-    /* ====================================================================== */
-    /* SLOT FULL                                                              */
-    /* ====================================================================== */
-
-    if (
-      error instanceof Error &&
-      error.message ===
-        "SLOT_FULL"
-    ) {
-      console.warn(
-        "⚠️ SLOT FULL",
-        body,
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-
-          alreadyEnquired: false,
-
-          message:
-            "This slot is fully booked. Please pick another time.",
-        },
-        {
-          status: 409,
-        },
-      );
-    }
-
     /* ====================================================================== */
     /* GENERAL ERROR                                                          */
     /* ====================================================================== */

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
+import {
+  EnquireFormAccessError,
+  requireEnquireFormEditor,
+} from "@/lib/enquire-form-access";
 import { validateSlotFields } from "@/lib/free-trial-validation";
 import { getTrialAvailabilityOverride } from "@/lib/trial-availability-server";
 import { sendTrialRescheduleEmails } from "@/lib/mailer";
@@ -10,19 +14,33 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-
   try {
-    const body = (await req.json()) as Record<string, unknown>;
-    const registrationRef = doc(db, "freeTrialRegistrations", id);
-    const registrationSnapshot = await getDoc(registrationRef);
+    await requireEnquireFormEditor(req);
 
-    if (!registrationSnapshot.exists()) {
-      return NextResponse.json({ success: false, message: "Trial registration was not found." }, { status: 404 });
+    const { id } = await params;
+    const body = (await req.json()) as Record<string, unknown>;
+    const registrationRef = adminDb
+      .collection("freeTrialRegistrations")
+      .doc(id);
+    const registrationSnapshot = await registrationRef.get();
+
+    if (!registrationSnapshot.exists) {
+      return NextResponse.json(
+        { success: false, message: "Trial registration was not found." },
+        { status: 404 },
+      );
     }
 
     const registration = registrationSnapshot.data();
-    const trialMode = registration.trialMode === "offline" ? "offline" : "online";
+    if (!registration) {
+      return NextResponse.json(
+        { success: false, message: "Trial registration was not found." },
+        { status: 404 },
+      );
+    }
+
+    const trialMode =
+      registration.trialMode === "offline" ? "offline" : "online";
     const configuredSlots = await getTrialAvailabilityOverride(
       trialMode,
       typeof body.trialDate === "string" ? body.trialDate.trim() : "",
@@ -30,18 +48,21 @@ export async function PATCH(
     const slotResult = validateSlotFields(body, trialMode, configuredSlots);
 
     if (!slotResult.ok) {
-      return NextResponse.json({ success: false, message: slotResult.message }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: slotResult.message },
+        { status: 400 },
+      );
     }
 
     const { date, time } = slotResult.data;
 
-    await updateDoc(registrationRef, {
+    await registrationRef.update({
       trialDate: date,
       trialTime: time,
       status: "reschedule",
       reminderSent: false,
       reminderSentAt: null,
-      updatedAt: serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
 
     await sendTrialRescheduleEmails({
@@ -56,11 +77,25 @@ export async function PATCH(
       trialTime: time,
     });
 
-    return NextResponse.json({ success: true, trialDate: date, trialTime: time });
+    return NextResponse.json({
+      success: true,
+      trialDate: date,
+      trialTime: time,
+    });
   } catch (error) {
     console.error("Unable to reschedule trial:", error);
+    if (error instanceof EnquireFormAccessError) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: error.status },
+      );
+    }
+
     return NextResponse.json(
-      { success: false, message: "Unable to reschedule the trial. Please try again." },
+      {
+        success: false,
+        message: "Unable to reschedule the trial. Please try again.",
+      },
       { status: 500 },
     );
   }

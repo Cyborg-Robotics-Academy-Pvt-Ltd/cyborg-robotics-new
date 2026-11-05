@@ -1,8 +1,7 @@
 import type { TrialMode } from "@/lib/trial-location";
 
 export const DEFAULT_ONLINE_TRIAL_SLOTS = [
-  "10:00",
-  "12:00",
+  "18:00"
 ];
 
 export const DEFAULT_OFFLINE_TRIAL_SLOTS = [
@@ -15,7 +14,7 @@ export type TrialAvailabilityOverrides = Record<string, string[]>;
 export function getDefaultTrialSlots(mode: TrialMode, date: string) {
   const dayOfWeek = new Date(`${date}T00:00:00.000Z`).getUTCDay();
   if (mode === "offline" && dayOfWeek !== 0 && dayOfWeek !== 6) return [];
-  if (mode === "online" && dayOfWeek === 0) return [];
+  if (mode === "online" && dayOfWeek === 2) return [];
 
   return mode === "offline"
     ? DEFAULT_OFFLINE_TRIAL_SLOTS

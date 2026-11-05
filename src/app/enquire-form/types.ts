@@ -54,6 +54,7 @@ export type TrialRegistration = {
   age: number;
   contactNumber: string;
   email: string;
+  programInterest: string;
   referralSource: string;
 
   trialDate: string;
@@ -88,6 +89,11 @@ export type TrialRegistration = {
    * The visit option selected before booking a trial slot.
    */
   preferredCenter: string | null;
+
+  /**
+   * Center selected by sales after contacting an enquiry that cannot visit HQ.
+   */
+  salesSelectedCenter: string | null;
 
   /**
    * Trial Status.
@@ -140,6 +146,11 @@ export type SortField = "studentName" | "trialDate" | "createdAt";
 export type SortDir = "asc" | "desc";
 
 export type LocationFilter = "all" | "online" | "offline";
+export type CenterFilter =
+  | "all"
+  | "kalyani-nagar-pune"
+  | "kharadi-pune"
+  | "magarpatta-pune";
 export type LeadTempFilter = "all" | LeadTemp;
 export type LeadOutcomeFilter = "all" | LeadOutcome;
 

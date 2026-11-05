@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import {
   getDisplayLocation,
+  getRegistrationCenter,
   getLocationType,
   isEnquiryFromToday,
 } from "@/app/enquire-form/utils";
 import {
+  CenterFilter,
   LeadOutcomeFilter,
   LeadTempFilter,
   LocationFilter,
@@ -18,6 +20,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
+  const [centerFilter, setCenterFilter] = useState<CenterFilter>("all");
   const [leadTempFilter, setLeadTempFilter] = useState<LeadTempFilter>("all");
   const [leadOutcomeFilter, setLeadOutcomeFilter] =
     useState<LeadOutcomeFilter>("all");
@@ -96,6 +99,12 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     if (locationFilter !== "all") {
       rows = rows.filter(
         (registration) => getLocationType(registration) === locationFilter,
+      );
+    }
+
+    if (centerFilter !== "all") {
+      rows = rows.filter(
+        (registration) => getRegistrationCenter(registration) === centerFilter,
       );
     }
 
@@ -184,6 +193,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     searchTerm,
     statusFilter,
     locationFilter,
+    centerFilter,
     leadTempFilter,
     leadOutcomeFilter,
     trialDateFilter,
@@ -196,6 +206,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     searchTerm.trim() !== "" ||
     statusFilter !== "all" ||
     locationFilter !== "all" ||
+    centerFilter !== "all" ||
     leadTempFilter !== "all" ||
     leadOutcomeFilter !== "all" ||
     todayOnly ||
@@ -206,6 +217,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setSearchTerm("");
     setStatusFilter("all");
     setLocationFilter("all");
+    setCenterFilter("all");
     setLeadTempFilter("all");
     setLeadOutcomeFilter("all");
     setTodayOnly(false);
@@ -230,6 +242,8 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setStatusFilter,
     locationFilter,
     setLocationFilter,
+    centerFilter,
+    setCenterFilter,
     leadTempFilter,
     setLeadTempFilter,
     leadOutcomeFilter,

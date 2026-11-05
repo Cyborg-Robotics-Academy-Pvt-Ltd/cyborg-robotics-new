@@ -31,10 +31,10 @@ import { cn } from "@/lib/utils";
 import {
   LEAD_OUTCOME_OPTIONS,
   LEAD_TEMP_OPTIONS,
+  OFFLINE_CENTERS,
   STATUS_OPTIONS,
 } from "@/app/enquire-form/constants";
 import {
-  avatarShade,
   formatTrialScheduleRemark,
   formatTrialTime,
   formatYMDDisplay,
@@ -50,8 +50,10 @@ import { TrialRegistration } from "@/app/enquire-form/types";
 
 type Props = {
   registration: TrialRegistration;
+  canModify: boolean;
   canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
+  onSalesSelectedCenterChange: (id: string, center: string | null) => void;
   onLeadTempChange: (id: string, value: string) => void;
   onLeadOutcomeChange: (id: string, value: string) => void;
   onCounsellorRemarkSave: (id: string, value: string) => void;
@@ -63,8 +65,10 @@ type Props = {
 
 export function MobileCard({
   registration,
+  canModify,
   canDelete,
   onStatusChange,
+  onSalesSelectedCenterChange,
   onLeadTempChange,
   onLeadOutcomeChange,
   onCounsellorRemarkSave,
@@ -119,8 +123,7 @@ export function MobileCard({
         <div className="flex items-start gap-3">
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white",
-              avatarShade(registration.studentName),
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-800 text-xs font-semibold text-white",
             )}
           >
             {initials(registration.studentName)}
@@ -142,23 +145,29 @@ export function MobileCard({
           </div>
         </div>
 
-        {canDelete && (
+        {(canModify || canDelete) && (
           <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={() => onEdit(registration)}
-              className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-orange-600"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
+            {canModify && (
+              <button
+                type="button"
+                onClick={() => onEdit(registration)}
+                aria-label={`Edit ${registration.studentName}`}
+                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-orange-600"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
 
-            <button
-              type="button"
-              onClick={() => onDelete(registration)}
-              className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(registration)}
+                aria-label={`Delete ${registration.studentName}`}
+                className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -173,6 +182,7 @@ export function MobileCard({
         <Select
           value={registration.status || "booked"}
           onValueChange={(value) => onStatusChange(registration.id, value)}
+          disabled={!canModify}
         >
           <SelectTrigger
             className={cn(
@@ -200,7 +210,7 @@ export function MobileCard({
 
       {isShow && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
-          {editingCounsellor ? (
+          {editingCounsellor && canModify ? (
             <div className="space-y-2">
               <Input
                 autoFocus
@@ -230,7 +240,7 @@ export function MobileCard({
                 </button>
               </div>
             </div>
-          ) : (
+          ) : canModify ? (
             <button
               type="button"
               onClick={() => setEditingCounsellor(true)}
@@ -259,6 +269,25 @@ export function MobileCard({
 
               <Pencil className="h-4 w-4 shrink-0 text-stone-300" />
             </button>
+          ) : (
+            <div className="flex items-start gap-2 text-left">
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+                  Counsellor Remark
+                </p>
+                <p
+                  className={cn(
+                    "mt-1 text-sm",
+                    registration.counsellorRemark
+                      ? "text-stone-700"
+                      : "italic text-stone-400",
+                  )}
+                >
+                  {registration.counsellorRemark || "No remark"}
+                </p>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -274,6 +303,7 @@ export function MobileCard({
           <Select
             value={registration.leadTemp}
             onValueChange={(value) => onLeadTempChange(registration.id, value)}
+            disabled={!canModify}
           >
             <SelectTrigger
               className={cn(
@@ -307,6 +337,7 @@ export function MobileCard({
             onValueChange={(value) =>
               onLeadOutcomeChange(registration.id, value)
             }
+            disabled={!canModify}
           >
             <SelectTrigger
               className={cn(
@@ -335,7 +366,7 @@ export function MobileCard({
 
       {isClosed && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
-          {editingClose ? (
+          {editingClose && canModify ? (
             <div className="space-y-2">
               <Input
                 autoFocus
@@ -365,7 +396,7 @@ export function MobileCard({
                 </button>
               </div>
             </div>
-          ) : (
+          ) : canModify ? (
             <button
               type="button"
               onClick={() => setEditingClose(true)}
@@ -394,6 +425,25 @@ export function MobileCard({
 
               <Pencil className="h-4 w-4 shrink-0 text-stone-300" />
             </button>
+          ) : (
+            <div className="flex items-start gap-2 text-left">
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+                  Close Remark
+                </p>
+                <p
+                  className={cn(
+                    "mt-1 text-sm",
+                    registration.closeRemark
+                      ? "text-stone-700"
+                      : "italic text-stone-400",
+                  )}
+                >
+                  {registration.closeRemark || "No remark"}
+                </p>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -439,6 +489,11 @@ export function MobileCard({
         </div>
 
         <div>
+          <span className="font-medium text-stone-700">Program: </span>
+          {registration.programInterest || "Not provided"}
+        </div>
+
+        <div>
           <span className="font-medium text-stone-700">Heard about us: </span>
           {registration.referralSource || "Not provided"}
         </div>
@@ -474,13 +529,40 @@ export function MobileCard({
         </div>
 
         {registration.preferredCenter && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <MapPin className="h-4 w-4 shrink-0 text-orange-500" />
             <span>
               {registration.preferredCenter === "kalyani-nagar"
                 ? "Kalyani Nagar HQ trial"
                 : "Unable to visit HQ"}
             </span>
+            {registration.preferredCenter === "unable-to-visit-hq" && (
+              <Select
+                value={registration.salesSelectedCenter ?? "unselected"}
+                onValueChange={(value) =>
+                  onSalesSelectedCenterChange(
+                    registration.id,
+                    value === "unselected" ? null : value,
+                  )
+                }
+                disabled={!canModify}
+              >
+                <SelectTrigger
+                  aria-label={`Center selected after sales call for ${registration.studentName}`}
+                  className="h-8 w-[190px]"
+                >
+                  <SelectValue placeholder="Select center after call" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unselected">Select after call</SelectItem>
+                  {OFFLINE_CENTERS.map((center) => (
+                    <SelectItem key={center.id} value={center.id}>
+                      {center.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         )}
 
@@ -488,7 +570,12 @@ export function MobileCard({
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
-          className="flex items-center gap-2 hover:text-orange-600"
+          disabled={!canModify}
+          className={cn(
+            "flex items-center gap-2",
+            canModify && "hover:text-orange-600",
+            !canModify && "cursor-default",
+          )}
         >
           <CalendarClock className="h-4 w-4 shrink-0" />
 

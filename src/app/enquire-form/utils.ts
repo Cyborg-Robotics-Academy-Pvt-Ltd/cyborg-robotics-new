@@ -8,7 +8,7 @@ import {
   STATUS_OPTIONS,
   STATUS_STYLES,
 } from "./constants";
-import { LocationType, TrialRegistration } from "./types";
+import { CenterFilter, LocationType, TrialRegistration } from "./types";
 
 export function isEnquiryFromToday(
   createdAt: number,
@@ -87,6 +87,53 @@ export function getTrialModeFromLocation(location: string) {
 
 export function getLocationType(registration: TrialRegistration): LocationType {
   return registration.trialMode === "offline" ? "offline" : "online";
+}
+
+export function getRegistrationCenter(
+  registration: TrialRegistration,
+): Exclude<CenterFilter, "all"> | null {
+  const centerIds = [
+    "kalyani-nagar-pune",
+    "kharadi-pune",
+    "magarpatta-pune",
+  ] as const;
+  const isCenterId = (
+    value: string,
+  ): value is (typeof centerIds)[number] =>
+    centerIds.some((centerId) => centerId === value);
+
+  if (
+    registration.salesSelectedCenter &&
+    isCenterId(registration.salesSelectedCenter)
+  ) {
+    return registration.salesSelectedCenter;
+  }
+
+  if (registration.preferredCenter === "kalyani-nagar") {
+    return "kalyani-nagar-pune";
+  }
+
+  const locationCenter = OFFLINE_CENTERS.find((center) =>
+    center.keywords.some((keyword) =>
+      normalizeLocation(registration.location).includes(
+        normalizeLocation(keyword),
+      ),
+    ),
+  );
+  if (locationCenter && isCenterId(locationCenter.id)) {
+    return locationCenter.id;
+  }
+
+  const registeredCenter = OFFLINE_CENTERS.find(
+    (center) =>
+      center.id === registration.locationId ||
+      normalizeLocation(registration.locationName).includes(
+        normalizeLocation(center.name.replace(", Pune", "")),
+      ),
+  );
+  return registeredCenter && isCenterId(registeredCenter.id)
+    ? registeredCenter.id
+    : null;
 }
 
 /* =========================================================

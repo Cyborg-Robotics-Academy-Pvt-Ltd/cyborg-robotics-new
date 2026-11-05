@@ -96,9 +96,18 @@ const initialForm = {
   age: "",
   contactNumber: "",
   email: "",
+  programInterest: "",
   referralSource: "",
   location: "",
 };
+
+const PROGRAM_INTEREST_OPTIONS = [
+  "Competition",
+  "Regular classes",
+  "Diwali workshop",
+  "Year long course",
+  "Workshop",
+] as const;
 
 const REFERRAL_SOURCE_OPTIONS = [
   "Facebook",
@@ -116,7 +125,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const ONLINE_CONFIG = {
   slots: ["18:00"],
-  daysClosed: [0],
+  daysClosed: [2],
 };
 
 /* -------------------------------------------------------------------------- */
@@ -276,6 +285,17 @@ function getMinBookableDate() {
   date.setDate(date.getDate() + 1);
 
   return date;
+}
+
+function formatTrialTime(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -958,6 +978,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const age = form.age.trim();
     const contactNumber = form.contactNumber.trim();
     const email = form.email.trim();
+    const programInterest = form.programInterest.trim();
     const referralSource = form.referralSource.trim();
     const location = form.location.trim();
 
@@ -977,6 +998,10 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     if (!EMAIL_REGEX.test(email)) {
       errors.email = "Enter a valid email address.";
+    }
+
+    if (!PROGRAM_INTEREST_OPTIONS.some((option) => option === programInterest)) {
+      errors.programInterest = "Please select a program of interest.";
     }
 
     if (!referralSource) {
@@ -1029,6 +1054,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     age: Number(form.age),
     contactNumber: form.contactNumber.trim(),
     email: form.email.trim().toLowerCase(),
+    programInterest: form.programInterest,
     referralSource: form.referralSource,
 
     location: form.location.trim(),
@@ -1857,6 +1883,30 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   </label>
                 </div>
 
+                <label className="mt-4 grid gap-1.5 text-sm font-medium text-gray-700">
+                  Program of interest
+                  <select
+                    value={form.programInterest}
+                    required
+                    onChange={(event) =>
+                      updateField("programInterest", event.target.value)
+                    }
+                    className="h-11 rounded-md border border-gray-200 bg-white px-3 text-sm font-normal text-gray-700 outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                  >
+                    <option value="">Select a program</option>
+                    {PROGRAM_INTEREST_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldErrors.programInterest && (
+                    <span className="text-xs font-normal text-red-600">
+                      {fieldErrors.programInterest}
+                    </span>
+                  )}
+                </label>
+
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
                     Contact number
@@ -2248,6 +2298,16 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     <Calendar
                       mode="single"
                       selected={selectedDate}
+                      modifiers={{
+                        available: (calendarDate) =>
+                          !isDateDisabledForMode(calendarDate),
+                      }}
+                      modifiersClassNames={{
+                        available:
+                          "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-full",
+                        selected:
+                          "bg-emerald-600 text-white hover:bg-emerald-700 hover:text-white rounded-full",
+                      }}
                       onSelect={(date) => {
                         if (!date || Number.isNaN(date.getTime())) {
                           setSelectedDate(undefined);
@@ -2260,7 +2320,6 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         setNotice(null);
                       }}
                       disabled={(date) =>
-                        availabilityLoading ||
                         Boolean(availabilityError) ||
                         isDateDisabledForMode(date)
                       }
@@ -2270,20 +2329,31 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     />
                   </div>
 
-                  <div className="grid gap-2">
+                  <div className="grid content-start gap-3 rounded-xl border border-gray-200 bg-gray-50/70 p-4">
                     {availabilityError && (
                       <p role="alert" className="text-sm text-red-700">
                         {availabilityError}
                       </p>
                     )}
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                      <Clock3 className="h-3.5 w-3.5 text-red-700" />
-                      Select time
-                    </span>
+                    <div>
+                      <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <Clock3 className="h-4 w-4 text-red-700" />
+                        Select a time
+                      </h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {selectedDate
+                          ? selectedDate.toLocaleDateString("en-IN", {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                            })
+                          : "Choose a date to see available times"}
+                      </p>
+                    </div>
 
                     {selectedDate ? (
                       activeSlots.length ? (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid gap-2">
                           {activeSlots.map((time) => (
                             <button
                               key={time}
@@ -2292,25 +2362,38 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                                 setSelectedTime(time);
                                 setNotice(null);
                               }}
-                              className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                              aria-pressed={selectedTime === time}
+                              className={`flex min-h-12 items-center justify-between rounded-xl border px-4 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 ${
                                 selectedTime === time
-                                  ? "border-red-700 bg-red-700 text-white"
-                                  : "border-gray-200 bg-white text-gray-700 hover:border-red-200 hover:bg-red-50"
+                                  ? "border-red-700 bg-red-50 text-red-800 shadow-sm"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50/70"
                               }`}
                             >
-                              {time}
+                              <span className="flex items-center gap-3">
+                                <Clock3
+                                  className={`h-4 w-4 ${
+                                    selectedTime === time
+                                      ? "text-red-700"
+                                      : "text-gray-400"
+                                  }`}
+                                />
+                                {formatTrialTime(time)}
+                              </span>
+                              {selectedTime === time && (
+                                <CheckCircle2 className="h-4 w-4 text-red-700" />
+                              )}
                             </button>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400">
+                        <p className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-4 text-center text-sm text-gray-500">
                           No slots available for this mode.
                         </p>
                       )
                     ) : (
-                      <p className="text-xs text-gray-400">
+                      <div className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-5 text-center text-sm text-gray-500">
                         Pick a date to see available time slots.
-                      </p>
+                      </div>
                     )}
                     <Button
                       type="button"
@@ -2321,7 +2404,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         setSelectedTime(null);
                         setNotice(null);
                       }}
-                      className="justify-self-start"
+                      className="mt-1 w-full justify-center"
                     >
                       Other date &amp; time
                     </Button>
