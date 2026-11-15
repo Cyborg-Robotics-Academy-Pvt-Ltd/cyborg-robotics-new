@@ -14,7 +14,7 @@ declare global {
 }
 
 const BADGES = [
-  { label: "CodeFest 2.O Python Edition", variant: "solid" as const },
+  { label: " CODE FEST 1.0 SENIOR EDITION/PYTHON EDITION", variant: "solid" as const },
   { label: "Python-based", variant: "outline" as const, icon: "🐍" },
   { label: "Submission-based hackathon", variant: "outline" as const },
 ];
@@ -74,7 +74,7 @@ const STATS = [
   },
 ];
 
-const DEFAULT_CODE = `# CodeFest 2.O Python Edition — build your entry
+const DEFAULT_CODE = `#  CODE FEST 1.0 SENIOR EDITION/PYTHON EDITION — build your entry
 class Participant:
     def build_project(self):
         idea = "solve a real problem"
@@ -114,7 +114,7 @@ function TryItCallout({
       transition={{ duration: 0.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
       className="absolute -top-16 right-2 z-20 hidden sm:block lg:-top-[4.5rem] lg:right-10"
     >
-      <div className="relative -rotate-[2deg] rounded-2xl border border-orange-200/80 bg-white/95 px-4 py-3 shadow-[0_18px_38px_-16px_rgba(220,38,38,0.35)] backdrop-blur-sm">
+      <div className="relative -rotate-[2deg] rounded-2xl border border-red-200/80 bg-white/95 px-4 py-3 shadow-[0_18px_38px_-16px_rgba(220,38,38,0.35)] backdrop-blur-sm">
         <button
           onClick={onDismiss}
           aria-label="Dismiss"
@@ -123,7 +123,7 @@ function TryItCallout({
           ✕
         </button>
 
-        <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-[#C2410C] ring-1 ring-orange-200/80">
+        <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-[#C2410C] ring-1 ring-red-200/80">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" />
           For trial
         </span>
@@ -553,7 +553,7 @@ function HeroSection() {
         >
           {/* Badge pill: Code Fest 1.0 */}
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#0A1F44] px-4 py-1.5 text-xs font-bold">
-            <span className="text-white">CodeFest 2.O Python Edition</span>
+            <span className="text-white"> CODE FEST 1.0 SENIOR EDITION/PYTHON EDITION</span>
           </div>
 
           <h1 className="font-syne max-w-[640px] text-[2.25rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-[#0A1F44] sm:text-[2.75rem] lg:text-[3.25rem]">

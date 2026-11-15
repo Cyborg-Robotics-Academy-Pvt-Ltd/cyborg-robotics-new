@@ -23,7 +23,7 @@ import Footer from "@/components/codefest/codefest-python/Footer";
 
 export const metadata: Metadata = {
   title:
-    "CodeFest 2.O Python Edition | Online Coding Competitions For Students",
+    " CODE FEST 1.0 SENIOR EDITION/PYTHON EDITION | Online Coding Competitions For Students",
   description:
     "CodeFest 2026 registrations are closed. Results for the Pan-India online coding competition for school students will be declared soon.",
   keywords: [
