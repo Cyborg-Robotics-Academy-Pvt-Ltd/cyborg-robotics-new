@@ -217,7 +217,7 @@ export async function PATCH(
 
     const preferredCenter =
       body.preferredCenter === "kalyani-nagar" ||
-      body.preferredCenter === "unable-to-visit-hq"
+        body.preferredCenter === "unable-to-visit-hq"
         ? body.preferredCenter
         : null;
 
@@ -450,8 +450,8 @@ export async function PATCH(
         const newSlotCount =
           newSlotSnap.exists()
             ? Number(
-                newSlotSnap.data()?.count ?? 0,
-              )
+              newSlotSnap.data()?.count ?? 0,
+            )
             : 0;
 
         console.log(
@@ -470,9 +470,9 @@ export async function PATCH(
           const previousCount =
             previousSlotSnap.exists()
               ? Number(
-                  previousSlotSnap.data()?.count ??
-                    0,
-                )
+                previousSlotSnap.data()?.count ??
+                0,
+              )
               : 0;
 
           transaction.set(
@@ -551,12 +551,12 @@ export async function PATCH(
             ...(existing.trialDate
               ? {}
               : {
-                  bookingOrigin:
-                    Array.isArray(existing.followUpHistory) &&
+                bookingOrigin:
+                  Array.isArray(existing.followUpHistory) &&
                     existing.followUpHistory.length > 0
-                      ? "follow-up"
-                      : "direct",
-                }),
+                    ? "follow-up"
+                    : "direct",
+              }),
 
             trialTime: time,
 
