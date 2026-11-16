@@ -10,7 +10,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebsiteLoadingProvider } from "@/components/WebsiteLoading";
 import { Toaster } from "react-hot-toast";
-import AdminActivityNotifications from "@/components/admin/AdminActivityNotifications";
 import { GoogleTagManager } from "@next/third-parties/google";
 import TawkWidget from "@/components/widgets/TawkWidget";
 
@@ -77,7 +76,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Analytics />
             <SpeedInsights />
             <Toaster position="top-right" />
-            <AdminActivityNotifications />
           </AuthProvider>
         </WebsiteLoadingProvider>
       </body>

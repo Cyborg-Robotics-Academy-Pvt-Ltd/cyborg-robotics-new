@@ -670,7 +670,7 @@ export default function OverlayMenu({
                 {/* Right: privacy/support/social/FAQs */}
                 <div className="flex flex-col justify-between self-start space-y-3 max-w-xl">
                   {/* Privacy Notice */}
-                  <div className="bg-gradient-to-r from-red-50 to-orange-50 p-3 rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <div className="bg-gradient-to-r from-red-50 to-red-50 p-3 rounded-xl border border-red-100 shadow-sm hover:shadow-md transition-shadow duration-300">
                     <div className="flex items-start space-x-2">
                       <div className="mt-1 p-1.5 bg-red-100 rounded-lg">
                         <Shield className="h-4 w-4 text-red-800" />

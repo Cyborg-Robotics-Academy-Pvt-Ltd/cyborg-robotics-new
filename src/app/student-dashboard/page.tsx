@@ -75,7 +75,7 @@ const getInitials = (name?: string) =>
 const LEVEL_BADGE_STYLES: Record<string, string> = {
   Beginner: "bg-emerald-50 text-emerald-700 border-emerald-200",
   Intermediate: "bg-blue-50 text-blue-700 border-blue-200",
-  Advanced: "bg-orange-50 text-orange-700 border-orange-200",
+  Advanced: "bg-red-50 text-red-700 border-red-200",
   Expert: "bg-purple-50 text-purple-700 border-purple-200",
 };
 

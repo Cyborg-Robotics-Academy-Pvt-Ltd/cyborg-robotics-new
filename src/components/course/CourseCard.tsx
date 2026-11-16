@@ -48,7 +48,7 @@ const getLevelColor = React.memo((level: string) => {
       return "bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 shadow-purple-100";
     case "4":
     case "expert":
-      return "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-700 shadow-orange-100";
+      return "bg-gradient-to-r from-red-50 to-amber-50 text-red-700 shadow-red-100";
     default:
       return "bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 shadow-gray-100";
   }

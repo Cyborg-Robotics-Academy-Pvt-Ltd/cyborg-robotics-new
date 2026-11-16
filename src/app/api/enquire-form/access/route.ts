@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { adminDb } from "@/lib/firebase-admin";
 import {
+  getEnquireFormAccess,
+  invalidateEnquireFormAccessCache,
+} from "@/lib/enquire-form-access-cache";
+import {
   EnquireFormAccessError,
   getEnquireFormActor,
   requireEnquireFormAdmin,
@@ -21,14 +25,29 @@ function isActive(profile: {
   );
 }
 
-function errorResponse(error: unknown) {
+function errorResponse(error: unknown, operation: "load" | "save") {
   const message = error instanceof Error ? error.message : "Request failed.";
-  const status = error instanceof EnquireFormAccessError ? error.status : 500;
+  const errorCode =
+    error && typeof error === "object" && "code" in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+  const isQuotaError = errorCode === 8 || errorCode === "resource-exhausted";
+  const status = error instanceof EnquireFormAccessError
+    ? error.status
+    : isQuotaError
+      ? 503
+      : 500;
   return NextResponse.json(
     {
       success: false,
       message:
-        status === 500 ? "Unable to update Enquire form access." : message,
+        isQuotaError
+          ? "Firebase quota is temporarily exceeded. Please try again after it resets."
+          : status === 500
+            ? operation === "load"
+              ? "Unable to load Enquire form access."
+              : "Unable to update Enquire form access."
+            : message,
     },
     { status },
   );
@@ -40,15 +59,17 @@ export async function GET(request: Request) {
     if (requester.role !== "admin" && requester.role !== "trainer") {
       throw new EnquireFormAccessError("Forbidden", 403);
     }
-    const accessRef = adminDb.doc(ACCESS_DOCUMENT);
-    const accessSnapshot = await accessRef.get();
-    const selectedTrainerId =
-      typeof accessSnapshot.data()?.selectedTrainerId === "string"
-        ? accessSnapshot.data()?.selectedTrainerId
-        : null;
+    const { selectedTrainerId } = await getEnquireFormAccess();
 
     if (requester.role !== "admin") {
-      return NextResponse.json({ success: true, selectedTrainerId });
+      return NextResponse.json(
+        {
+          success: true,
+          selectedTrainerId,
+          roleClaimUpdated: requester.roleClaimUpdated,
+        },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
     }
 
     const trainerSnapshot = await adminDb.collection("trainers").get();
@@ -73,10 +94,18 @@ export async function GET(request: Request) {
       })
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return NextResponse.json({ success: true, selectedTrainerId, trainers });
+    return NextResponse.json(
+      {
+        success: true,
+        selectedTrainerId,
+        trainers,
+        roleClaimUpdated: requester.roleClaimUpdated,
+      },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (error) {
     console.error("Unable to load Enquire form access:", error);
-    return errorResponse(error);
+    return errorResponse(error, "load");
   }
 }
 
@@ -115,10 +144,11 @@ export async function PUT(request: Request) {
       selectedTrainerId: trainerId,
       updatedAt: new Date(),
     });
+    invalidateEnquireFormAccessCache();
 
     return NextResponse.json({ success: true, selectedTrainerId: trainerId });
   } catch (error) {
     console.error("Unable to save Enquire form access:", error);
-    return errorResponse(error);
+    return errorResponse(error, "save");
   }
 }

@@ -1,8 +1,6 @@
     import type { TrialMode } from "@/lib/trial-location";
     import { getDefaultTrialSlots, isValidTrialDate, isValidTrialTime } from "@/lib/trial-availability";
 
-        export const MAX_BOOKINGS_PER_SLOT = 3;
-
     export function getTrimmedString(value: unknown) {
     return typeof value === "string" ? value.trim() : "";
     }

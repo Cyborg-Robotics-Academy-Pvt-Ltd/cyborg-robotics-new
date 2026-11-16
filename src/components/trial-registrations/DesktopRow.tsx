@@ -6,11 +6,13 @@ import {
   CalendarDays,
   Calendar,
   CalendarClock,
+  CalendarPlus,
   Check,
   Flag,
   Globe,
   Globe2,
   History,
+  Loader2,
   Mail,
   MapPin,
   Pencil,
@@ -54,12 +56,19 @@ import {
 } from "@/app/enquire-form/utils";
 
 import { TrialRegistration } from "@/app/enquire-form/types";
+import { StudentTimelineStrip } from "./StudentTimelineStrip";
 
 type Props = {
   registration: TrialRegistration;
   hasShowRows: boolean;
   hasClosedRows: boolean;
   canModify: boolean;
+  trainerView: boolean;
+  marketingView: boolean;
+  showContact: boolean;
+  canAddTrialSlot: boolean;
+  openTimelineId: string | null;
+  onTimelineToggle: (id: string) => void;
   canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
   onSalesSelectedCenterChange: (id: string, center: string | null) => void;
@@ -68,6 +77,8 @@ type Props = {
   onCounsellorRemarkSave: (id: string, value: string) => void;
   onCloseRemarkSave: (id: string, value: string) => void;
   onFollowUpClick: (registration: TrialRegistration) => void;
+  onAddTrialSlot: (registration: TrialRegistration) => void;
+  onSendTrialMeetingEmail: (id: string) => Promise<boolean>;
   onEdit: (registration: TrialRegistration) => void;
   onDelete: (registration: TrialRegistration) => void;
 };
@@ -77,12 +88,12 @@ type Props = {
 /* -------------------------------------------------------------------------- */
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-orange-400/70 focus-visible:ring-offset-1";
+  "outline-none focus-visible:ring-2 focus-visible:ring-red-400/70 focus-visible:ring-offset-1";
 
 /* Inline select: reads as a quiet pill, clearly interactive on hover/focus */
 const selectTriggerBase = cn(
   "h-8 rounded-full border border-stone-200 bg-white px-2.5 text-xs font-medium shadow-none transition-colors",
-  "hover:border-stone-300 hover:bg-stone-50 focus:ring-0 focus-visible:ring-2 focus-visible:ring-orange-400/70",
+  "hover:border-stone-300 hover:bg-stone-50 focus:ring-0 focus-visible:ring-2 focus-visible:ring-red-400/70",
   "disabled:cursor-default disabled:opacity-70 disabled:hover:border-stone-200 disabled:hover:bg-white",
 );
 
@@ -102,7 +113,7 @@ function ReferralSourceIcon({ source }: { source: string }) {
           : normalized.includes("youtube")
             ? "/assets/social-icons/youtube.png"
             : normalized.includes("google")
-              ? "/assets/social-icons/google.png"
+              ? "/assets/social-icons/Google1.png"
               : null;
 
   if (imageSource) {
@@ -110,9 +121,9 @@ function ReferralSourceIcon({ source }: { source: string }) {
       <Image
         src={imageSource}
         alt=""
-        width={18}
-        height={18}
-        className="mx-auto h-[18px] w-[18px] object-contain"
+        width={24}
+        height={24}
+        className="mx-auto h-6 w-6 object-contain rounded-full"
         aria-hidden="true"
       />
     );
@@ -174,8 +185,8 @@ const FOLLOW_UP_STYLES: Record<FollowUpTone | "none", string> = {
   today:
     "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200 hover:bg-amber-100",
   upcoming:
-    "text-stone-600 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-orange-600",
-  none: "text-stone-500 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-orange-600",
+    "text-stone-600 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-red-600",
+  none: "text-stone-500 ring-1 ring-inset ring-transparent hover:bg-stone-100 hover:text-red-600",
 };
 
 const FOLLOW_UP_LABEL: Record<FollowUpTone, string> = {
@@ -264,7 +275,7 @@ function InlineRemark({
               cancel();
             }
           }}
-          className="h-8 rounded-lg border-orange-300 bg-white text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-orange-400/40"
+          className="h-8 rounded-lg border-red-300 bg-white text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-red-400/40"
         />
 
         <button
@@ -305,7 +316,7 @@ function InlineRemark({
       aria-label={value ? `${label}: ${value}. Edit` : `${emptyLabel}`}
       className={cn(
         "group/remark flex max-w-[220px] items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm transition-colors",
-        "hover:bg-stone-100 hover:text-orange-600",
+        "hover:bg-stone-100 hover:text-red-600",
         value ? "text-stone-700" : "text-stone-400 italic",
         focusRing,
       )}
@@ -328,6 +339,12 @@ function DesktopRowImpl({
   hasShowRows,
   hasClosedRows,
   canModify,
+  trainerView,
+  marketingView,
+  showContact,
+  canAddTrialSlot,
+  openTimelineId,
+  onTimelineToggle,
   canDelete,
   onStatusChange,
   onSalesSelectedCenterChange,
@@ -336,10 +353,13 @@ function DesktopRowImpl({
   onCounsellorRemarkSave,
   onCloseRemarkSave,
   onFollowUpClick,
+  onAddTrialSlot,
+  onSendTrialMeetingEmail,
   onEdit,
   onDelete,
 }: Props) {
   const { id } = registration;
+  const timelineOpen = openTimelineId === id;
 
   const status = statusStyle(registration.status || "booked");
   const temp = leadTempStyle(registration.leadTemp);
@@ -371,11 +391,33 @@ function DesktopRowImpl({
     (value: string) => onCloseRemarkSave(id, value),
     [id, onCloseRemarkSave],
   );
+  const [sendingTrialEmail, setSendingTrialEmail] = useState(false);
+
+  const sendTrialEmail = async () => {
+    if (
+      !window.confirm(
+        `Send the online trial meeting link to ${registration.email}?`,
+      )
+    ) {
+      return;
+    }
+
+    setSendingTrialEmail(true);
+    await onSendTrialMeetingEmail(id);
+    setSendingTrialEmail(false);
+  };
 
   const phoneHref = `tel:${registration.contactNumber.replace(/\s+/g, "")}`;
 
+  const timelineColSpan = trainerView
+    ? 5
+    : marketingView
+      ? 6
+      : 12 + Number(showContact) + Number(hasShowRows) + Number(hasClosedRows) + Number(canModify || canDelete);
+
   return (
-    <TableRow className="group border-stone-100 transition-colors hover:bg-orange-50/40 focus-within:bg-orange-50/40">
+    <>
+    <TableRow className="group border-stone-100 transition-colors hover:bg-red-50/40 focus-within:bg-red-50/40">
       {/* STUDENT */}
 
       <TableCell
@@ -416,43 +458,62 @@ function DesktopRowImpl({
             <p className="mt-0.5 text-xs text-stone-500">
               Age {registration.age}
             </p>
+            {hasCreatedAt && (
+              <p className="mt-0.5 text-xs text-stone-400 tabular-nums">
+                {createdAt.toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                {" · "}
+                {createdAt.toLocaleTimeString("en-IN", { timeStyle: "short" })}
+              </p>
+            )}
+            {!trainerView && !marketingView && <button
+              type="button"
+              onClick={() => onTimelineToggle(id)}
+              aria-expanded={timelineOpen}
+              aria-label={`${timelineOpen ? "Hide" : "View"} ${registration.studentName}'s timeline`}
+              className={cn("mt-1 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs font-medium text-stone-500 transition-colors hover:bg-red-50 hover:text-red-700", focusRing)}
+            >
+              <History aria-hidden className="h-3.5 w-3.5" />
+              {timelineOpen ? "Hide timeline" : "Timeline"}
+            </button>}
           </div>
         </div>
       </TableCell>
 
       {/* CONTACT */}
 
-      <TableCell className="w-[300px] min-w-[300px] max-w-[300px]">
-        <div className="flex flex-col gap-1.5 text-sm">
-          <a
-            href={`mailto:${registration.email}`}
-            title={registration.email}
-            className={cn(
-              "flex min-w-0 items-start gap-1.5 rounded text-stone-600 transition-colors hover:text-orange-600 hover:underline",
-              focusRing,
-            )}
-          >
-            <Mail
-              aria-hidden
-              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400"
-            />
-            <span className="sr-only">Email </span>
-            <span className="min-w-0 break-all">{registration.email}</span>
-          </a>
+      {showContact && !trainerView && !marketingView && (
+        <TableCell className="w-[300px] min-w-[300px] max-w-[300px]">
+          <div className="flex flex-col gap-1.5 text-sm">
+            <a
+              href={`mailto:${registration.email}`}
+              title={registration.email}
+              className={cn(
+                "flex min-w-0 items-start gap-1.5 rounded text-stone-600 transition-colors hover:text-red-600 hover:underline",
+                focusRing,
+              )}
+            >
+              <Mail
+                aria-hidden
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400"
+              />
+              <span className="sr-only">Email </span>
+              <span className="min-w-0 break-all">{registration.email}</span>
+            </a>
 
-          <a
-            href={phoneHref}
-            className={cn(
-              "flex items-center gap-1.5 rounded text-stone-600 tabular-nums transition-colors hover:text-orange-600 hover:underline",
-              focusRing,
-            )}
-          >
-            <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-stone-400" />
-            <span className="sr-only">Call </span>
-            {registration.contactNumber}
-          </a>
-        </div>
-      </TableCell>
+            <a
+              href={phoneHref}
+              className={cn(
+                "flex items-center gap-1.5 rounded text-stone-600 tabular-nums transition-colors hover:text-red-600 hover:underline",
+                focusRing,
+              )}
+            >
+              <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-stone-400" />
+              <span className="sr-only">Call </span>
+              {registration.contactNumber}
+            </a>
+          </div>
+        </TableCell>
+      )}
 
       {/* PROGRAM OF INTEREST */}
 
@@ -471,40 +532,70 @@ function DesktopRowImpl({
         )}
       </TableCell>
 
-      {/* ENQUIRY SUBMISSION TIME */}
-
-      <TableCell>
-        {hasCreatedAt ? (
-          <div className="whitespace-nowrap leading-tight">
-            <p className="text-stone-700 tabular-nums">
-              {createdAt.toLocaleDateString("en-IN", { dateStyle: "medium" })}
-            </p>
-            <p className="mt-0.5 text-xs text-stone-400 tabular-nums">
-              {createdAt.toLocaleTimeString("en-IN", { timeStyle: "short" })}
-            </p>
-          </div>
-        ) : (
-          <span className="text-stone-400">—</span>
-        )}
-      </TableCell>
-
       {/* TRIAL SLOT */}
 
       <TableCell>
-        <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 text-sm text-orange-900">
-          <Calendar aria-hidden className="h-3.5 w-3.5 text-orange-600" />
-          <span className="font-medium">
-            {formatYMDDisplay(registration.trialDate)}
-          </span>
-          <span className="text-orange-700">
-            · {formatTrialTime(registration.trialTime)}
-          </span>
-        </div>
+        {registration.trialDate && registration.trialTime ? (
+          <div className="flex flex-col items-start gap-1.5">
+            <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-sm text-red-900">
+              <Calendar aria-hidden className="h-3.5 w-3.5 text-red-600" />
+              <span className="font-medium">
+                {formatYMDDisplay(registration.trialDate)}
+              </span>
+              <span className="text-red-700">
+                · {formatTrialTime(registration.trialTime)}
+              </span>
+            </div>
+            {!trainerView &&
+              canAddTrialSlot &&
+              registration.trialMode === "online" &&
+              (registration.status === "booked" ||
+                registration.status === "reschedule") && (
+              registration.trialConfirmationEmailSentAt ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                  <Check aria-hidden className="h-3.5 w-3.5" />
+                  Meeting link sent
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void sendTrialEmail()}
+                  disabled={sendingTrialEmail || !registration.email}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50",
+                    focusRing,
+                  )}
+                >
+                  {sendingTrialEmail ? (
+                    <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Mail aria-hidden className="h-3.5 w-3.5" />
+                  )}
+                  {sendingTrialEmail ? "Sending..." : "Send meeting link"}
+                </button>
+              )
+            )}
+          </div>
+        ) : canAddTrialSlot && !trainerView ? (
+          <button
+            type="button"
+            onClick={() => onAddTrialSlot(registration)}
+            className={cn(
+              "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-dashed border-red-300 px-2.5 py-1 text-sm font-medium text-red-700 transition-colors hover:border-red-400 hover:bg-red-50",
+              focusRing,
+            )}
+          >
+            <CalendarPlus aria-hidden className="h-3.5 w-3.5" />
+            Add trial slot
+          </button>
+        ) : (
+          <span className="text-stone-400">No trial slot</span>
+        )}
       </TableCell>
 
       {/* ENQUIRY REMARK */}
 
-      <TableCell className="min-w-[220px] max-w-[320px]">
+      {!trainerView && !marketingView && <TableCell className="min-w-[220px] max-w-[320px]">
         <p
           className={cn(
             "line-clamp-2 whitespace-normal text-sm",
@@ -520,19 +611,20 @@ function DesktopRowImpl({
             ? formatTrialScheduleRemark(registration.remark)
             : "—"}
         </p>
-      </TableCell>
+      </TableCell>}
 
       {/* REFERRAL SOURCE */}
 
-      <TableCell
-        className="w-10 min-w-10 max-w-10 text-center text-stone-700"
+      {!trainerView && <TableCell
+        className="!w-8 !min-w-8 !max-w-8 !px-1 text-center text-stone-700"
         title={registration.referralSource || "Not provided"}
+        style={{ width: 32, minWidth: 32, maxWidth: 32 }}
       >
         {registration.referralSource ? (
           <span
             role="img"
             aria-label={registration.referralSource}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-50 ring-1 ring-stone-200"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-50 ring-1 ring-stone-200"
           >
             <ReferralSourceIcon source={registration.referralSource} />
           </span>
@@ -541,23 +633,23 @@ function DesktopRowImpl({
             —
           </span>
         )}
-      </TableCell>
+      </TableCell>}
 
       {/* LOCATION */}
 
-      <TableCell>
+      {!trainerView && <TableCell>
         <div className="flex items-center gap-2">
           <div
             aria-hidden
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-              locationType === "online" ? "bg-blue-50" : "bg-orange-50",
+              locationType === "online" ? "bg-blue-50" : "bg-red-50",
             )}
           >
             {locationType === "online" ? (
               <Globe className="h-4 w-4 text-blue-600" />
             ) : (
-              <MapPin className="h-4 w-4 text-orange-600" />
+              <MapPin className="h-4 w-4 text-red-600" />
             )}
           </div>
 
@@ -582,15 +674,27 @@ function DesktopRowImpl({
                 </p>
               )}
           </div>
+          {marketingView && (
+            <span
+              className={cn(
+                "ml-2 inline-flex shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ring-1 ring-inset",
+                locationType === "online"
+                  ? "bg-blue-50 text-blue-700 ring-blue-200"
+                  : "bg-red-50 text-red-700 ring-red-200",
+              )}
+            >
+              {locationType === "online" ? "Online" : "Offline"}
+            </span>
+          )}
         </div>
-      </TableCell>
+      </TableCell>}
 
       {/* VISIT OPTION */}
 
-      <TableCell>
+      {!trainerView && !marketingView && <TableCell>
         {registration.preferredCenter === "unable-to-visit-hq" ? (
           <div className="space-y-1.5">
-            <p className="whitespace-nowrap text-sm font-medium text-amber-700">
+            <p className="whitespace-nowrap text-sm font-medium text-red-700">
               Unable to visit HQ
             </p>
             <Select
@@ -626,17 +730,17 @@ function DesktopRowImpl({
               : "—"}
           </span>
         )}
-      </TableCell>
+      </TableCell>}
 
       {/* MODE */}
 
-      <TableCell>
+      {!marketingView && <TableCell>
         <div
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset",
             locationType === "online"
               ? "bg-blue-50 text-blue-700 ring-blue-200"
-              : "bg-orange-50 text-orange-700 ring-orange-200",
+              : "bg-red-50 text-red-700 ring-red-200",
           )}
         >
           {locationType === "online" ? (
@@ -646,14 +750,14 @@ function DesktopRowImpl({
           )}
           {locationType === "online" ? "Online" : "Offline"}
         </div>
-      </TableCell>
+      </TableCell>}
 
       {/* TRIAL STATUS */}
 
       <TableCell>
         <Select
-          value={registration.status || "booked"}
-          onValueChange={(value) => onStatusChange(id, value)}
+          value={registration.status || "__blank__"}
+          onValueChange={(value) => onStatusChange(id, value === "__blank__" ? "" : value)}
           disabled={!canModify}
         >
           <SelectTrigger
@@ -661,15 +765,18 @@ function DesktopRowImpl({
             className={cn(selectTriggerBase, "w-[145px]", status.text)}
           >
             <div className="flex items-center gap-1.5">
-              <span
-                aria-hidden
-                className={cn("h-2 w-2 rounded-full", status.dot)}
-              />
-              <SelectValue />
+              {registration.status && (
+                <span
+                  aria-hidden
+                  className={cn("h-2 w-2 rounded-full", status.dot)}
+                />
+              )}
+              <SelectValue>{registration.status ? undefined : ""}</SelectValue>
             </div>
           </SelectTrigger>
 
           <SelectContent>
+            <SelectItem value="__blank__">Clear status</SelectItem>
             {STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -682,7 +789,7 @@ function DesktopRowImpl({
       {/* COUNSELLOR REMARK — column only when at least one visible row
           is "show"; cell content only when THIS row is "show" */}
 
-      {hasShowRows && (
+      {!trainerView && !marketingView && hasShowRows && (
         <TableCell className="min-w-[200px]">
           {isShow ? (
             <InlineRemark
@@ -703,7 +810,7 @@ function DesktopRowImpl({
 
       {/* LEAD TEMP */}
 
-      <TableCell>
+      {!trainerView && !marketingView && <TableCell>
         <Select
           value={registration.leadTemp ?? ""}
           onValueChange={(value) => onLeadTempChange(id, value)}
@@ -727,11 +834,11 @@ function DesktopRowImpl({
             ))}
           </SelectContent>
         </Select>
-      </TableCell>
+      </TableCell>}
 
-      {/* NEXT FOLLOW-UP */}
+      {/* NEXT FOLLOW-UP */} 
 
-      <TableCell>
+      {!trainerView && !marketingView && <TableCell>
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
@@ -777,11 +884,11 @@ function DesktopRowImpl({
             </span>
           )}
         </button>
-      </TableCell>
+      </TableCell>}
 
       {/* LEAD OUTCOME */}
 
-      <TableCell>
+      {!trainerView && !marketingView && <TableCell>
         <Select
           value={registration.leadOutcome ?? ""}
           onValueChange={(value) => onLeadOutcomeChange(id, value)}
@@ -805,12 +912,12 @@ function DesktopRowImpl({
             ))}
           </SelectContent>
         </Select>
-      </TableCell>
+      </TableCell>}
 
       {/* CLOSE REMARK — column only when at least one visible row is
           "closed"; cell content only when THIS row is "closed" */}
 
-      {hasClosedRows && (
+      {!trainerView && !marketingView && hasClosedRows && (
         <TableCell className="min-w-[200px]">
           {isClosed ? (
             <InlineRemark
@@ -831,7 +938,7 @@ function DesktopRowImpl({
 
       {/* ACTIONS */}
 
-      {(canModify || canDelete) && (
+      {!trainerView && !marketingView && (canModify || canDelete) && (
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             {canModify && (
@@ -841,7 +948,7 @@ function DesktopRowImpl({
                 aria-label={`Edit ${registration.studentName}`}
                 title="Edit"
                 className={cn(
-                  "rounded-lg p-1.5 text-stone-500 transition-colors hover:bg-orange-50 hover:text-orange-600",
+                  "rounded-lg p-1.5 text-stone-500 transition-colors hover:bg-red-50 hover:text-red-600",
                   focusRing,
                 )}
               >
@@ -867,6 +974,27 @@ function DesktopRowImpl({
         </TableCell>
       )}
     </TableRow>
+    <TableRow className={timelineOpen ? "" : "border-0"}>
+      <TableCell
+        colSpan={timelineColSpan}
+        className={cn("p-0", !timelineOpen && "border-0")}
+      >
+        <div
+          aria-hidden={!timelineOpen}
+          className={cn(
+            "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none",
+            timelineOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          )}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="bg-stone-50 p-3">
+              <StudentTimelineStrip registration={registration} />
+            </div>
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
+    </>
   );
 }
 

@@ -22,9 +22,11 @@ import { FollowUpDialog } from "@/components/trial-registrations/FollowUpDialog"
 import { ActivityDialog } from "@/components/trial-registrations/ActivityDialog";
 import { DeleteAlertDialog } from "@/components/trial-registrations/DeleteAlertDialog";
 import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDialog";
+import { ManualEnquiryDialog } from "@/components/trial-registrations/ManualEnquiryDialog";
 import { TrialRegistration } from "./types";
 import { useAuth } from "@/lib/auth-context";
 import { authReady } from "@/lib/firebase";
+import { readApiJson } from "@/lib/read-api-json";
 
 const ENQUIRIES_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
@@ -32,6 +34,50 @@ type TrainerOption = {
   id: string;
   name: string;
 };
+
+type CachedTrainerAccess = {
+  selectedTrainerId: string | null;
+  trainers: TrainerOption[];
+  savedAt: number;
+};
+
+const TRAINER_ACCESS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function trainerAccessCacheKey(uid: string, role: string) {
+  return `enquire-form-access:v1:${uid}:${role}`;
+}
+
+function parseCachedTrainerAccess(value: unknown): CachedTrainerAccess | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const selectedTrainerId = record.selectedTrainerId;
+  const savedAt = record.savedAt;
+  const trainersValue = record.trainers;
+
+  if (
+    !(selectedTrainerId === null || typeof selectedTrainerId === "string") ||
+    typeof savedAt !== "number" ||
+    !Number.isFinite(savedAt) ||
+    !Array.isArray(trainersValue) ||
+    !trainersValue.every(
+      (trainer) =>
+        !!trainer &&
+        typeof trainer === "object" &&
+        "id" in trainer &&
+        typeof trainer.id === "string" &&
+        "name" in trainer &&
+        typeof trainer.name === "string",
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    selectedTrainerId,
+    trainers: trainersValue as TrainerOption[],
+    savedAt,
+  };
+}
 
 const Page = () => {
   const { user, userRole } = useAuth();
@@ -45,9 +91,17 @@ const Page = () => {
   );
   const [savingTrainerSelection, setSavingTrainerSelection] = useState(false);
   const [accessError, setAccessError] = useState("");
+  const [accessWarning, setAccessWarning] = useState("");
+  const [accessRefreshKey, setAccessRefreshKey] = useState(0);
   const canModify =
     userRole !== null &&
+    userRole !== "marketing" &&
     (userRole !== "trainer" || selectedTrainerId === user?.uid);
+  const trainerView = userRole === "trainer";
+  const marketingView = userRole === "marketing";
+  const canAddTrialSlot =
+    userRole === "admin" ||
+    userRole === "sales";
   const selectedTrainer = trainerOptions.find(
     (trainer) => trainer.id === selectedTrainerId,
   );
@@ -58,11 +112,14 @@ const Page = () => {
     updateStatus,
     updateSalesSelectedCenter,
     rescheduleTrial,
+    addTrialSlot,
+    sendTrialMeetingEmail,
     updateCounsellorRemark,
     updateLeadTemp,
     updateLeadOutcome,
     updateCloseRemark,
     addFollowUp,
+    updateFollowUp,
     editRegistration,
     deleteRegistration,
   } = useTrialRegistrations();
@@ -77,10 +134,43 @@ const Page = () => {
     }
 
     let disposed = false;
-    setSelectedTrainerId(null);
-    setTrainerOptions([]);
-    setAccessLoading(true);
+    let cachedAt = 0;
+    let hasCachedAccess = false;
+    let retryAfter = 0;
+    const cacheKey = trainerAccessCacheKey(user.uid, userRole || "unknown");
+
+    try {
+      const cachedValue = parseCachedTrainerAccess(
+        JSON.parse(window.localStorage.getItem(cacheKey) || "null"),
+      );
+      if (cachedValue) {
+        cachedAt = cachedValue.savedAt;
+        hasCachedAccess = true;
+        setSelectedTrainerId(cachedValue.selectedTrainerId);
+        setTrainerOptions(cachedValue.trainers);
+        setAccessLoading(false);
+        setAccessError("");
+        setAccessWarning(
+          Date.now() - cachedValue.savedAt > TRAINER_ACCESS_CACHE_TTL_MS
+            ? "Using saved trainer access while checking for updates."
+            : "",
+        );
+      }
+    } catch (cacheError) {
+      console.warn("Unable to read saved trainer access:", cacheError);
+    }
+
+    if (!hasCachedAccess) {
+      setAccessLoading(true);
+      setAccessWarning("");
+    }
     const loadAccess = async () => {
+      if (hasCachedAccess && Date.now() - cachedAt < TRAINER_ACCESS_CACHE_TTL_MS) {
+        setAccessLoading(false);
+        return;
+      }
+      if (Date.now() < retryAfter) return;
+
       try {
         const auth = await authReady;
         const token = await auth?.currentUser?.getIdToken();
@@ -89,42 +179,73 @@ const Page = () => {
         const response = await fetch("/api/enquire-form/access", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = (await response.json()) as {
+        const data = await readApiJson<{
           success?: boolean;
           selectedTrainerId?: string | null;
           trainers?: TrainerOption[];
           message?: string;
-        };
+          roleClaimUpdated?: boolean;
+        }>(response);
         if (!response.ok || !data.success) {
           throw new Error(data.message || "Unable to load trainer access.");
         }
 
         if (disposed) return;
-        setSelectedTrainerId(data.selectedTrainerId ?? null);
-        if (data.trainers) setTrainerOptions(data.trainers);
+        const selectedId = data.selectedTrainerId ?? null;
+        const trainers = data.trainers ?? [];
+        const savedAt = Date.now();
+        setSelectedTrainerId(selectedId);
+        setTrainerOptions(trainers);
+        cachedAt = savedAt;
+        hasCachedAccess = true;
+        try {
+          window.localStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              selectedTrainerId: selectedId,
+              trainers,
+              savedAt,
+            } satisfies CachedTrainerAccess),
+          );
+        } catch (cacheError) {
+          console.warn("Unable to save trainer access locally:", cacheError);
+        }
+        if (data.roleClaimUpdated) {
+          await auth?.currentUser?.getIdToken(true);
+        }
         setAccessError("");
+        setAccessWarning("");
       } catch (error) {
         if (disposed) return;
         console.error("Unable to load Enquire form trainer access:", error);
-        setAccessError(
-          error instanceof Error ? error.message : "Unable to load trainer access.",
-        );
+        retryAfter = Date.now() + 60_000;
+        if (hasCachedAccess) {
+          setAccessWarning(
+            "Firebase is unavailable. Showing the last saved trainer access; it may be out of date.",
+          );
+        } else {
+          setAccessError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load trainer access.",
+          );
+        }
       } finally {
         if (!disposed) setAccessLoading(false);
       }
     };
 
     void loadAccess();
-    const refreshTimer =
-      userRole === "trainer"
-        ? window.setInterval(() => void loadAccess(), 15000)
-        : undefined;
+    const refreshAccess = () => {
+      if (document.visibilityState === "visible") void loadAccess();
+    };
+    document.addEventListener("visibilitychange", refreshAccess);
 
     return () => {
       disposed = true;
-      if (refreshTimer !== undefined) window.clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", refreshAccess);
     };
-  }, [user, userRole]);
+  }, [user, userRole, accessRefreshKey]);
 
   const handleTrainerSelection = async (trainerId: string) => {
     setSavingTrainerSelection(true);
@@ -143,16 +264,32 @@ const Page = () => {
         },
         body: JSON.stringify({ trainerId: trainerId || null }),
       });
-      const data = (await response.json()) as {
+      const data = await readApiJson<{
         success?: boolean;
         selectedTrainerId?: string | null;
         message?: string;
-      };
+      }>(response);
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Unable to update trainer access.");
       }
 
       setSelectedTrainerId(data.selectedTrainerId ?? null);
+      const savedAt = Date.now();
+      if (user) {
+        try {
+          window.localStorage.setItem(
+            trainerAccessCacheKey(user.uid, userRole || "unknown"),
+            JSON.stringify({
+              selectedTrainerId: data.selectedTrainerId ?? null,
+              trainers: trainerOptions,
+              savedAt,
+            } satisfies CachedTrainerAccess),
+          );
+        } catch (cacheError) {
+          console.warn("Unable to save trainer access locally:", cacheError);
+        }
+      }
+      setAccessWarning("");
     } catch (error) {
       console.error("Unable to update Enquire form trainer access:", error);
       setAccessError(
@@ -233,18 +370,43 @@ const Page = () => {
   );
   const [rescheduleTarget, setRescheduleTarget] =
     useState<TrialRegistration | null>(null);
+  const [openTimelineId, setOpenTimelineId] = useState<string | null>(null);
+  const [manualEnquiryOpen, setManualEnquiryOpen] = useState(false);
 
   const handleStatusChange = (id: string, status: string) => {
     if (!canModify) return;
 
     const registration = registrations.find((item) => item.id === id);
+    if (!registration) return;
 
-    if (status === "reschedule" && registration) {
+    if (
+      status !== "reschedule" &&
+      (!registration.trialDate || !registration.trialTime)
+    ) {
+      alert("Add a trial date and time before changing the trial status.");
+      return;
+    }
+
+    if (status === "reschedule" && !trainerView) {
       setRescheduleTarget(registration);
       return;
     }
 
     updateStatus(id, status);
+  };
+
+  const saveTrialSlot = (
+    id: string,
+    date: string,
+    time: string,
+    trialMode?: "online" | "offline",
+  ) => {
+    const registration = registrations.find((item) => item.id === id);
+    if (!registration) return Promise.resolve(false);
+
+    return !registration.trialDate || !registration.trialTime
+      ? addTrialSlot(id, date, time, trialMode)
+      : rescheduleTrial(id, date, time);
   };
 
   const handleDelete = (registration: TrialRegistration) => {
@@ -275,7 +437,7 @@ const Page = () => {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center bg-stone-50">
-        <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
+        <Loader2 className="h-5 w-5 animate-spin text-red-600" />
         <span className="ml-2.5 text-sm text-stone-500">
           Loading registrations…
         </span>
@@ -315,6 +477,17 @@ const Page = () => {
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        {canAddTrialSlot && (
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setManualEnquiryOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-800"
+            >
+              New Enquiry
+            </button>
+          </div>
+        )}
         <div className="mb-1 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <FilterBar
             searchTerm={searchTerm}
@@ -340,11 +513,40 @@ const Page = () => {
           />
         </div>
 
+        <div className="mb-5 grid grid-cols-2 gap-3 sm:max-w-lg">
+          <div className="rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+              Direct trial bookings
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-stone-900">
+              {registrations.filter(
+                (registration) =>
+                  registration.trialDate &&
+                  registration.status !== "cancelled" &&
+                  registration.bookingOrigin === "direct",
+              ).length}
+            </p>
+          </div>
+          <div className="rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+              Booked after follow-up
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-stone-900">
+              {registrations.filter(
+                (registration) =>
+                  registration.trialDate &&
+                  registration.status !== "cancelled" &&
+                  registration.bookingOrigin === "follow-up",
+              ).length}
+            </p>
+          </div>
+        </div>
+
         {(userRole === "admin" || userRole === "superAdmin") && (
           <div className="mb-5 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-l-4 border-orange-500 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex flex-col gap-4 border-l-4 border-red-500 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-700">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-700">
                   <ShieldCheck className="h-5 w-5" aria-hidden />
                 </div>
                 <div className="min-w-0">
@@ -361,16 +563,18 @@ const Page = () => {
                     >
                       {accessLoading
                         ? "Loading access"
-                        : selectedTrainer
-                          ? `Enabled for ${selectedTrainer.name}`
-                          : selectedTrainerId
-                            ? "Trainer assigned"
-                            : "No trainer selected"}
+                        : accessError
+                          ? "Access unavailable"
+                          : selectedTrainer
+                            ? `Enabled for ${selectedTrainer.name}`
+                            : selectedTrainerId
+                              ? "Trainer assigned"
+                              : "No trainer selected"}
                     </span>
                   </div>
                   <p className="mt-1 max-w-xl text-sm text-stone-500">
-                    Select one trainer who can update enquiry columns. All
-                    other trainers will have read-only access.
+                    Only the selected trainer can update trial status. All
+                    other trainers have read-only access.
                   </p>
                 </div>
               </div>
@@ -388,13 +592,17 @@ const Page = () => {
                   onChange={(event) =>
                     void handleTrainerSelection(event.target.value)
                   }
-                  disabled={accessLoading || savingTrainerSelection}
-                  className="h-10 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
+                  disabled={
+                    accessLoading || savingTrainerSelection || Boolean(accessError)
+                  }
+                  className="h-10 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800 shadow-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
                 >
                   <option value="">
                     {accessLoading
                       ? "Loading trainers..."
-                      : "No trainer selected"}
+                      : accessError
+                        ? "Unable to load trainers"
+                        : "No trainer selected"}
                   </option>
                   {trainerOptions.map((trainer) => (
                     <option key={trainer.id} value={trainer.id}>
@@ -403,13 +611,32 @@ const Page = () => {
                   ))}
                 </select>
                 {accessError && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-600">
-                    {accessError}
-                  </p>
+                  <div className="mt-1.5 flex items-start justify-between gap-2">
+                    <p role="alert" className="text-xs text-red-600">
+                      {accessError}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setAccessRefreshKey((value) => value + 1)}
+                      className="shrink-0 text-xs font-semibold text-red-700 underline"
+                    >
+                      Retry
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
           </div>
+        )}
+
+        {accessWarning && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+          >
+            {accessWarning}
+          </p>
         )}
 
         {userRole === "trainer" && accessLoading && (
@@ -417,7 +644,19 @@ const Page = () => {
             Checking edit access…
           </p>
         )}
-        {userRole === "trainer" && !accessLoading && !canModify && (
+        {userRole === "trainer" && !accessLoading && accessError && (
+          <div className="mb-4 flex items-center gap-3 text-sm text-red-600">
+            <p role="alert">{accessError}</p>
+            <button
+              type="button"
+              onClick={() => setAccessRefreshKey((value) => value + 1)}
+              className="shrink-0 font-semibold text-red-700 underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {userRole === "trainer" && !accessLoading && !accessError && !canModify && (
           <p className="mb-4 text-sm text-stone-500">
             An admin must select your trainer account before you can edit enquiries.
           </p>
@@ -447,7 +686,7 @@ const Page = () => {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-sm font-medium text-orange-600 hover:text-orange-700"
+                className="text-sm font-medium text-red-600 hover:text-red-700"
               >
                 Clear filters
               </button>
@@ -460,6 +699,14 @@ const Page = () => {
               hasShowRows={hasShowRows}
               hasClosedRows={hasClosedRows}
               canModify={canModify}
+              trainerView={trainerView}
+              marketingView={marketingView}
+              showContact={!trainerView && canModify}
+              canAddTrialSlot={canAddTrialSlot}
+              openTimelineId={openTimelineId}
+              onTimelineToggle={(id) =>
+                setOpenTimelineId((current) => (current === id ? null : id))
+              }
               sortField={sortField}
               sortDir={sortDir}
               onToggleSort={toggleSort}
@@ -470,6 +717,8 @@ const Page = () => {
               onCounsellorRemarkSave={updateCounsellorRemark}
               onCloseRemarkSave={updateCloseRemark}
               onFollowUpClick={setFollowUpTarget}
+              onAddTrialSlot={setRescheduleTarget}
+              onSendTrialMeetingEmail={sendTrialMeetingEmail}
               onEdit={setEditTarget}
               onDelete={handleDelete}
               canDelete={canDelete}
@@ -478,6 +727,14 @@ const Page = () => {
             <MobileList
               registrations={paginatedRegistrations}
               canModify={canModify}
+              trainerView={trainerView}
+              marketingView={marketingView}
+              showContact={!trainerView && canModify}
+              canAddTrialSlot={canAddTrialSlot}
+              openTimelineId={openTimelineId}
+              onTimelineToggle={(id) =>
+                setOpenTimelineId((current) => (current === id ? null : id))
+              }
               onStatusChange={handleStatusChange}
               onSalesSelectedCenterChange={updateSalesSelectedCenter}
               onLeadTempChange={updateLeadTemp}
@@ -485,6 +742,8 @@ const Page = () => {
               onCounsellorRemarkSave={updateCounsellorRemark}
               onCloseRemarkSave={updateCloseRemark}
               onFollowUpClick={setFollowUpTarget}
+              onAddTrialSlot={setRescheduleTarget}
+              onSendTrialMeetingEmail={sendTrialMeetingEmail}
               onEdit={setEditTarget}
               onDelete={handleDelete}
               canDelete={canDelete}
@@ -551,6 +810,7 @@ const Page = () => {
         target={canModify ? followUpTarget : null}
         onClose={() => setFollowUpTarget(null)}
         onSave={addFollowUp}
+        onUpdate={updateFollowUp}
       />
 
       <ActivityDialog
@@ -569,8 +829,14 @@ const Page = () => {
 
       <RescheduleDialog
         target={canModify ? rescheduleTarget : null}
+        allowAllDayAddSlot={canAddTrialSlot}
         onClose={() => setRescheduleTarget(null)}
-        onSave={rescheduleTrial}
+        onSave={saveTrialSlot}
+      />
+
+      <ManualEnquiryDialog
+        open={manualEnquiryOpen}
+        onOpenChange={setManualEnquiryOpen}
       />
     </div>
   );

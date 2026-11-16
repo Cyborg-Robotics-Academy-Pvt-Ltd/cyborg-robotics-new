@@ -80,7 +80,7 @@ const uniqueAgeRanges = [...new Set(courseList.map((c) => c.ageRange))].sort(
  */
 const CATEGORY_STYLE: Record<string, { icon: LucideIcon; gradient: string }> = {
   Programming: { icon: Code2, gradient: "from-indigo-500 to-purple-600" },
-  Robotics: { icon: Bot, gradient: "from-red-500 to-orange-500" },
+  Robotics: { icon: Bot, gradient: "from-red-500 to-red-500" },
   "Web Design": { icon: Palette, gradient: "from-blue-500 to-indigo-500" },
   Electronics: { icon: Cpu, gradient: "from-emerald-500 to-teal-600" },
 };
@@ -163,7 +163,7 @@ const CourseCard = ({ course }: { course: (typeof courseList)[number] }) => {
             <Users className="h-3.5 w-3.5" />
             Age: {course.ageRange}
           </Badge>
-          <Badge className="flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
+          <Badge className="flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
             <Code2 className="h-3.5 w-3.5" />
             {course.category}
           </Badge>

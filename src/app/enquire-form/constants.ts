@@ -85,10 +85,10 @@ export const LEAD_OUTCOME_STYLES: Record<string, { dot: string; text: string }> 
 ========================================================= */
 
 export const AVATAR_SHADES = [
-  "from-orange-500 to-red-600",
-  "from-amber-500 to-orange-600",
+  "from-red-500 to-red-600",
+  "from-amber-500 to-red-600",
   "from-red-500 to-rose-600",
-  "from-orange-600 to-red-700",
+  "from-red-600 to-red-700",
 ];
 
 /* =========================================================

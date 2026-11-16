@@ -168,7 +168,7 @@ const getStudentDetailHref = (student: Student, trainerId?: string) => {
 };
 
 const theme = {
-  background: "bg-gradient-to-br from-slate-50 via-red-50 to-orange-100",
+  background: "bg-gradient-to-br from-slate-50 via-red-50 to-red-100",
   cardBg: "bg-white/70 backdrop-blur-sm",
   textPrimary: "text-gray-900",
   textSecondary: "text-gray-600",
@@ -970,7 +970,7 @@ export default function TrainerDashboard() {
                         />
                       </div>
                     ) : (
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-red-50 to-orange-100 text-red-700 shadow-sm ring-1 ring-red-100">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-red-50 to-red-100 text-red-700 shadow-sm ring-1 ring-red-100">
                         <User className="h-9 w-9" />
                       </div>
                     )}

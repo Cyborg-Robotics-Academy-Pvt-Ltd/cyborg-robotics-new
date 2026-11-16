@@ -33,6 +33,10 @@ import {
   Volume2,
   VolumeX,
   X,
+  Search,
+  UsersRound,
+  Signpost,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -93,6 +97,7 @@ interface LocationSuggestion extends GeocodedLocation {
 
 const initialForm = {
   studentName: "",
+  dateOfBirth: "",
   age: "",
   contactNumber: "",
   email: "",
@@ -102,10 +107,10 @@ const initialForm = {
 };
 
 const PROGRAM_INTEREST_OPTIONS = [
+  "Year Long Course",
+  "Regular Classes",
   "Competition",
-  "Regular classes",
-  "Diwali workshop",
-  "Year long course",
+  "Camp",
   "Workshop",
 ] as const;
 
@@ -116,6 +121,14 @@ const REFERRAL_SOURCE_OPTIONS = [
   "Friend / Family",
   "walk-in / Signboard",
 ] as const;
+
+const REFERRAL_SOURCE_ICONS = {
+  Facebook: "/assets/social-icons/Facebook.webp",
+  Instagram: "/assets/social-icons/instagram.webp",
+  "Google Search": "/assets/social-icons/Google1.png",
+  "Friend / Family": UsersRound,
+  "walk-in / Signboard": MapPin,
+} satisfies Record<(typeof REFERRAL_SOURCE_OPTIONS)[number], string | LucideIcon>;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -276,6 +289,36 @@ function toLocalISODate(date: Date | undefined): string {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function calculateAge(dateOfBirth: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOfBirth);
+  if (!match) return null;
+
+  const [, yearValue, monthValue, dayValue] = match;
+  const year = Number(yearValue);
+  const month = Number(monthValue);
+  const day = Number(dayValue);
+  const birthDate = new Date(year, month - 1, day);
+
+  if (
+    birthDate.getFullYear() !== year ||
+    birthDate.getMonth() !== month - 1 ||
+    birthDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  if (
+    today.getMonth() + 1 < month ||
+    (today.getMonth() + 1 === month && today.getDate() < day)
+  ) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : null;
 }
 
 function getMinBookableDate() {
@@ -505,6 +548,14 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
   const [showTrialOverlayText, setShowTrialOverlayText] = useState(false);
 
   const minBookableDate = useMemo(() => getMinBookableDate(), []);
+  const calendarMinBookableDate = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return trial === "offline" && (today.getDay() === 0 || today.getDay() === 6)
+      ? today
+      : minBookableDate;
+  }, [minBookableDate, trial]);
 
   /* ------------------------------------------------------------------------ */
   /* SELECTED CENTER                                                          */
@@ -534,6 +585,10 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
     return selectedLocation?.offlineDaysClosed ?? [];
   }, [trial, selectedLocation]);
+
+  useEffect(() => {
+    setVisibleMonth(calendarMinBookableDate);
+  }, [calendarMinBookableDate]);
 
   /* ------------------------------------------------------------------------ */
   /* MODE LABEL                                                               */
@@ -621,7 +676,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const normalized = new Date(date);
     normalized.setHours(0, 0, 0, 0);
 
-    if (normalized < minBookableDate) {
+    if (normalized < calendarMinBookableDate) {
       return true;
     }
 
@@ -769,6 +824,21 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     setFieldErrors((current) => ({
       ...current,
       [field]: undefined,
+    }));
+  };
+
+  const updateDateOfBirth = (value: string) => {
+    const age = calculateAge(value);
+
+    setForm((current) => ({
+      ...current,
+      dateOfBirth: value,
+      age: age === null ? "" : String(age),
+    }));
+    setNotice(null);
+    setFieldErrors((current) => ({
+      ...current,
+      dateOfBirth: undefined,
     }));
   };
 
@@ -975,7 +1045,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const errors: Partial<Record<keyof typeof initialForm, string>> = {};
 
     const studentName = form.studentName.trim();
-    const age = form.age.trim();
+    const dateOfBirth = form.dateOfBirth.trim();
     const contactNumber = form.contactNumber.trim();
     const email = form.email.trim();
     const programInterest = form.programInterest.trim();
@@ -983,13 +1053,12 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const location = form.location.trim();
 
     if (!studentName) {
-      errors.studentName = "Student name is required.";
+      errors.studentName = "Child’s name is required.";
     }
 
-    const ageNum = Number(age);
-
-    if (!age || Number.isNaN(ageNum) || ageNum < 4 || ageNum > 18) {
-      errors.age = "Enter a valid age (4–18).";
+    const age = calculateAge(dateOfBirth);
+    if (age === null || age < 4 || age > 18) {
+      errors.dateOfBirth = "Select a valid date of birth for ages 4–18.";
     }
 
     if (!/^\d{10}$/.test(contactNumber)) {
@@ -1404,7 +1473,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     <section
       id="home"
       ref={sectionRef}
-      className="relative w-full overflow-hidden bg-gradient-to-r from-red-300/40 via-white to-orange-50/40 px-6 py-8 font-sans md:pt-20 lg:flex lg:min-h-screen lg:items-center"
+      className="relative w-full overflow-hidden bg-gradient-to-r from-red-300/40 via-white to-red-50/40 px-6 py-8 font-sans md:pt-20 lg:flex lg:min-h-screen lg:items-center"
     >
       {/* ------------------------------------------------------------------ */}
       {/* HERO OVERLAY                                                        */}
@@ -1724,7 +1793,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
           </button>
           <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
 
-          <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-orange-300/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-red-300/10 blur-3xl" />
 
           <div className="relative">
             <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-sm">
@@ -1733,13 +1802,13 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
             </span>
 
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {step === 1 && "Trial registration"}
+              {step === 1 && "Trial Registration"}
               {step === 2 && "Pick your slot"}
             </h2>
 
             <p className="mt-1.5 text-sm leading-relaxed text-white/75">
               {step === 1 &&
-                "Step 1 of 2 — enter your student and location details."}
+                "Step 1 of 2 — Enter your student and location details."}
 
               {step === 2 &&
                 `Step 2 of 2 — choose a ${modeLabel.toLowerCase()} trial date and time.`}
@@ -1844,56 +1913,108 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Student name
+                    <span>
+                      Child’s name{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <Input
                       required
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.studentName)}
+                      aria-describedby={
+                        fieldErrors.studentName
+                          ? "student-name-error"
+                          : undefined
+                      }
                       value={form.studentName}
                       onChange={(event) =>
                         updateField("studentName", event.target.value)
                       }
                       className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
-                      placeholder="Child name"
+                      placeholder="e.g., Aarav Patil"
                     />
                     {fieldErrors.studentName && (
-                      <span className="text-xs text-red-600">
+                      <span
+                        id="student-name-error"
+                        aria-live="polite"
+                        className="text-xs text-red-600"
+                      >
                         {fieldErrors.studentName}
                       </span>
                     )}
                   </label>
 
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Age
+                    <span>
+                      Date of birth{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <Input
                       required
-                      type="number"
-                      min={4}
-                      max={18}
-                      value={form.age}
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.dateOfBirth)}
+                      aria-describedby={
+                        fieldErrors.dateOfBirth
+                          ? "date-of-birth-error"
+                          : undefined
+                      }
+                      type="date"
+                      max={toLocalISODate(new Date())}
+                      value={form.dateOfBirth}
                       onChange={(event) =>
-                        updateField("age", event.target.value)
+                        updateDateOfBirth(event.target.value)
                       }
                       className="h-11 border-gray-200 bg-white focus-visible:ring-red-600"
-                      placeholder="8"
                     />
-                    {fieldErrors.age && (
-                      <span className="text-xs text-red-600">
-                        {fieldErrors.age}
+                    {form.age ? (
+                      <span className="text-xs text-gray-500">
+                        Age: {form.age}{" "}
+                        {Number(form.age) === 1 ? "year" : "years"}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-500">
+                        Age will be calculated automatically.
+                      </span>
+                    )}
+                    {fieldErrors.dateOfBirth && (
+                      <span
+                        id="date-of-birth-error"
+                        aria-live="polite"
+                        className="text-xs text-red-600"
+                      >
+                        {fieldErrors.dateOfBirth}
                       </span>
                     )}
                   </label>
                 </div>
 
                 <label className="mt-4 grid gap-1.5 text-sm font-medium text-gray-700">
-                  Program of interest
+                  <span>
+                    Program of interest{" "}
+                    <span aria-hidden="true" className="text-red-600">
+                      *
+                    </span>
+                  </span>
                   <select
                     value={form.programInterest}
                     required
+                    aria-required="true"
+                    aria-invalid={Boolean(fieldErrors.programInterest)}
+                    aria-describedby={
+                      fieldErrors.programInterest
+                        ? "program-interest-error"
+                        : undefined
+                    }
                     onChange={(event) =>
                       updateField("programInterest", event.target.value)
                     }
                     className="h-11 rounded-md border border-gray-200 bg-white px-3 text-sm font-normal text-gray-700 outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                   >
-                    <option value="">Select a program</option>
+                    <option value="">Choose a program</option>
                     {PROGRAM_INTEREST_OPTIONS.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -1901,7 +2022,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     ))}
                   </select>
                   {fieldErrors.programInterest && (
-                    <span className="text-xs font-normal text-red-600">
+                    <span
+                      id="program-interest-error"
+                      aria-live="polite"
+                      className="text-xs font-normal text-red-600"
+                    >
                       {fieldErrors.programInterest}
                     </span>
                   )}
@@ -1909,12 +2034,24 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Contact number
+                    <span>
+                      Contact number{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <div className="relative">
                       <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
                       <Input
                         required
+                        aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.contactNumber)}
+                        aria-describedby={
+                          fieldErrors.contactNumber
+                            ? "contact-number-error"
+                            : undefined
+                        }
                         inputMode="numeric"
                         maxLength={10}
                         value={form.contactNumber}
@@ -1925,63 +2062,122 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                           )
                         }
                         className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
-                        placeholder="10 digit mobile"
+                        placeholder="Parent/guardian’s mobile number"
                       />
                     </div>
                     {fieldErrors.contactNumber && (
-                      <span className="text-xs text-red-600">
+                      <span
+                        id="contact-number-error"
+                        aria-live="polite"
+                        className="text-xs text-red-600"
+                      >
                         {fieldErrors.contactNumber}
                       </span>
                     )}
                   </label>
 
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Email
+                    <span>
+                      Email{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <div className="relative">
                       <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
                       <Input
                         required
+                        aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.email)}
+                        aria-describedby={
+                          fieldErrors.email ? "email-error" : undefined
+                        }
                         type="email"
                         value={form.email}
                         onChange={(event) =>
                           updateField("email", event.target.value)
                         }
                         className="h-11 border-gray-200 bg-white pl-9 focus-visible:ring-red-600"
-                        placeholder="parent@example.com"
+                        placeholder="Parent/guardian’s email address"
                       />
                     </div>
                     {fieldErrors.email && (
-                      <span className="text-xs text-red-600">
+                      <span
+                        id="email-error"
+                        aria-live="polite"
+                        className="text-xs text-red-600"
+                      >
                         {fieldErrors.email}
                       </span>
                     )}
                   </label>
                 </div>
 
-                <label className="mt-4 grid gap-1.5 text-sm font-medium text-gray-700">
-                  How did you hear about us?
-                  <select
-                    value={form.referralSource}
-                    required
-                    onChange={(event) =>
-                      updateField("referralSource", event.target.value)
-                    }
-                    className="h-11 rounded-md border border-gray-200 bg-white px-3 text-sm font-normal text-gray-700 outline-none focus-visible:ring-2 focus-visible:ring-red-600"
-                  >
-                    <option value="">Select an option </option>
-                    {REFERRAL_SOURCE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                <fieldset
+                  className="mt-4 grid gap-2 text-sm font-medium text-gray-700"
+                  aria-required="true"
+                  aria-invalid={Boolean(fieldErrors.referralSource)}
+                  aria-describedby={
+                    fieldErrors.referralSource
+                      ? "referral-source-error"
+                      : undefined
+                  }
+                >
+                  <legend>
+                    How did you hear about us?{" "}
+                    <span aria-hidden="true" className="text-red-600">
+                      *
+                    </span>
+                  </legend>
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                    {REFERRAL_SOURCE_OPTIONS.map((option) => {
+                      const Icon = REFERRAL_SOURCE_ICONS[option];
+                      return (
+                        <label
+                          key={option}
+                          className="flex h-10 min-w-0 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 text-xs font-normal outline-none transition-colors hover:border-red-300 focus-within:ring-2 focus-within:ring-red-600"
+                        >
+                          <input
+                            type="radio"
+                            name="referralSource"
+                            value={option}
+                            checked={form.referralSource === option}
+                            required
+                            onChange={(event) =>
+                              updateField("referralSource", event.target.value)
+                            }
+                            className="h-3.5 w-3.5 shrink-0 accent-red-600"
+                          />
+                          {typeof Icon === "string" ? (
+                            <Image
+                              src={Icon}
+                              alt=""
+                              width={14}
+                              height={14}
+                              className="h-5 w-5 shrink-0 object-contain rounded-full"
+                            />
+                          ) : (
+                            <Icon
+                              aria-hidden="true"
+                              className="h-4 w-4 shrink-0 text-gray-500"
+                            />
+                          )}
+                          <span className="truncate">{option}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                   {fieldErrors.referralSource && (
-                    <span className="text-xs font-normal text-red-600">
+                    <span
+                      id="referral-source-error"
+                      aria-live="polite"
+                      className="text-xs font-normal text-red-600"
+                    >
                       {fieldErrors.referralSource}
                     </span>
                   )}
-                </label>
+                </fieldset>
               </div>
 
               {/* LOCATION */}
@@ -1994,6 +2190,16 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   Your location
                 </span>
 
+                <label
+                  htmlFor="location"
+                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                >
+                  Neighborhood or city{" "}
+                  <span aria-hidden="true" className="text-red-600">
+                    *
+                  </span>
+                </label>
+
                 <div className="relative">
                   <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
@@ -2001,12 +2207,17 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     id="location"
                     name="location"
                     required
+                    aria-required="true"
+                    aria-invalid={Boolean(fieldErrors.location)}
+                    aria-describedby={
+                      fieldErrors.location ? "location-error" : undefined
+                    }
                     value={form.location}
                     autoComplete="off"
                     onChange={(event) =>
                       handleLocationChange(event.target.value)
                     }
-                    placeholder="e.g. Kalyani Nagar, Pune"
+                    placeholder="e.g., Kalyani Nagar, Pune"
                     className="h-11 border-gray-200 bg-white pl-9 pr-10 focus-visible:ring-red-600"
                   />
 
@@ -2045,7 +2256,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                 )}
 
                 {fieldErrors.location && (
-                  <span className="mt-1.5 block text-xs text-red-600">
+                  <span
+                    id="location-error"
+                    aria-live="polite"
+                    className="mt-1.5 block text-xs text-red-600"
+                  >
                     {fieldErrors.location}
                   </span>
                 )}
@@ -2118,10 +2333,18 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-red-700">
                       <MapPin className="h-3.5 w-3.5" />
                     </span>
-                    Please select any 1
+                    Please select any 1 <span aria-hidden="true" className="text-red-600">*</span>
                   </span>
 
-                  <div className="grid gap-2">
+                  <div
+                    role="group"
+                    aria-label="Preferred trial visit option"
+                    aria-required="true"
+                    aria-describedby={
+                      preferredCenterError ? "preferred-center-error" : undefined
+                    }
+                    className="grid gap-2"
+                  >
                     {TRIAL_VISIT_OPTIONS.map((option) => {
                       const checked = preferredCenter === option.id;
 
@@ -2149,7 +2372,11 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   </div>
 
                   {preferredCenterError && (
-                    <span className="mt-2 block text-xs text-red-600">
+                    <span
+                      id="preferred-center-error"
+                      aria-live="polite"
+                      className="mt-2 block text-xs text-red-600"
+                    >
                       {preferredCenterError}
                     </span>
                   )}
@@ -2246,15 +2473,28 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
 
               <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
                 <CalendarCheck className="h-3.5 w-3.5 text-red-700" />
-                Schedule
+                Schedule{" "}
+                <span aria-hidden="true" className="text-red-600">
+                  *
+                </span>
               </span>
 
               {/* CALENDAR + SLOTS */}
 
               {isManualSchedule ? (
-                <div className="grid gap-3 rounded-xl border border-gray-200 p-4 sm:grid-cols-2">
+                <div
+                  role="group"
+                  aria-label="Preferred trial date and time"
+                  aria-required="true"
+                  className="grid gap-3 rounded-xl border border-gray-200 p-4 sm:grid-cols-2"
+                >
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Preferred date
+                    <span>
+                      Preferred date{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <Input
                       type="date"
                       min={toLocalISODate(minBookableDate)}
@@ -2263,10 +2503,16 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         setRequestedTrialDate(event.target.value)
                       }
                       required
+                      aria-required="true"
                     />
                   </label>
                   <label className="grid gap-1.5 text-sm font-medium text-gray-700">
-                    Preferred time
+                    <span>
+                      Preferred time{" "}
+                      <span aria-hidden="true" className="text-red-600">
+                        *
+                      </span>
+                    </span>
                     <Input
                       type="time"
                       value={requestedTrialTime}
@@ -2274,6 +2520,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         setRequestedTrialTime(event.target.value)
                       }
                       required
+                      aria-required="true"
                     />
                   </label>
                   <p className="text-xs text-gray-500 sm:col-span-2">
@@ -2293,7 +2540,12 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                   </Button>
                 </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
+                <div
+                  role="group"
+                  aria-label="Trial date and time"
+                  aria-required="true"
+                  className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start"
+                >
                   <div className="flex justify-center rounded-xl border border-gray-200 p-2">
                     <Calendar
                       mode="single"
@@ -2323,7 +2575,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         Boolean(availabilityError) ||
                         isDateDisabledForMode(date)
                       }
-                      defaultMonth={minBookableDate}
+                      defaultMonth={calendarMinBookableDate}
                       onMonthChange={setVisibleMonth}
                       className="rounded-md"
                     />
@@ -2338,7 +2590,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                     <div>
                       <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
                         <Clock3 className="h-4 w-4 text-red-700" />
-                        Select a time
+                        Select a time <span aria-hidden="true" className="text-red-600">*</span>
                       </h3>
                       <p className="mt-1 text-xs text-gray-500">
                         {selectedDate

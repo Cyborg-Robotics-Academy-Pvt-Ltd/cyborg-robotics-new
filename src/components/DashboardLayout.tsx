@@ -8,17 +8,18 @@ import React, {
 import { useEffect, useRef } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { IconUserBolt, IconUsers } from "@tabler/icons-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "../../public/assets/logo1.png";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
   BookOpenText,
   CalendarDays,
+  ChevronDown,
   Clapperboard,
   FilePen,
   Images,
@@ -42,14 +43,22 @@ interface DashboardLayoutProps {
   >;
 }
 
-const roleLinksMap: Record<
-  Role,
-  Array<{
+interface DashboardNavItem {
+  label: string;
+  href?: string;
+  icon: React.ReactNode;
+  activeWhen?: (pathname: string) => boolean;
+  children?: Array<{
     label: string;
     href: string;
     icon: React.ReactNode;
     activeWhen?: (pathname: string) => boolean;
-  }>
+  }>;
+}
+
+const roleLinksMap: Record<
+  Role,
+  DashboardNavItem[]
 > = {
   admin: [
     {
@@ -64,54 +73,71 @@ const roleLinksMap: Record<
       icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
-      label: "Student Enrollment",
-      href: "/create-user",
-      icon: <UserPlus className="h-5 w-5 shrink-0 text-gray-700" />,
+      label: "Students",
+      icon: <IconUsers className="h-5 w-5 shrink-0 text-gray-700" />,
+      children: [
+        {
+          label: "Student Enrollment",
+          href: "/create-user",
+          icon: <UserPlus className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+        {
+          label: "Student Record",
+          href: "/student-list",
+          icon: <BookOpenText className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+        {
+          label: "Registrations",
+          href: "/admin-dashboard/registrations",
+          icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" />,
+          activeWhen: (pathname) =>
+            [
+              "/admin-dashboard/registrations",
+              "/admin-dashboard/new-registration",
+              "/admin-dashboard/workshop-registration",
+              "/admin-dashboard/competition-registration",
+              "/admin-dashboard/renewal",
+            ].some((path) => pathname.startsWith(path)),
+        },
+      ],
     },
     {
-      label: "Student Record",
-      href: "/student-list",
-      icon: <BookOpenText className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-
-    {
-      label: "Registrations",
-      href: "/admin-dashboard/registrations",
-      icon: <IconUserBolt className="h-5 w-5 shrink-0 text-gray-700" />,
-      activeWhen: (pathname) =>
-        [
-          "/admin-dashboard/registrations",
-          "/admin-dashboard/new-registration",
-          "/admin-dashboard/workshop-registration",
-          "/admin-dashboard/competition-registration",
-          "/admin-dashboard/renewal",
-        ].some((path) => pathname.startsWith(path)),
-    },
-    {
-      label: "Trial Availability",
-      href: "/admin-dashboard/trial-availability",
-      icon: <CalendarDays className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-    {
-      label: "Enquire form",
-      href: "/enquire-form",
+      label: "Lead Management",
       icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" />,
+      children: [
+        {
+          label: "Trial Availability",
+          href: "/admin-dashboard/trial-availability",
+          icon: <CalendarDays className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+        {
+          label: "Enquire form",
+          href: "/enquire-form",
+          icon: <FilePen className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+      ],
     },
     {
-      label: "Student Media",
-      href: "/media",
-      icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
+      label: "Content & Media",
+      icon: <Images className="h-5 w-5 shrink-0 text-gray-700" />,
+      children: [
+        {
+          label: "Student Media",
+          href: "/media",
+          icon: <Clapperboard className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+        {
+          label: "Gallery Management",
+          href: "/admin-dashboard/photo-upload",
+          icon: <Images className="h-5 w-5 shrink-0 text-gray-700" />,
+        },
+      ],
     },
 
     {
       label: "Access Control",
       href: "/admin-dashboard/access-control",
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
-    },
-    {
-      label: "Gallery Management",
-      href: "/admin-dashboard/photo-upload",
-      icon: <Images className="h-5 w-5 shrink-0 text-gray-700" />,
     },
     {
       label: "Logout",
@@ -206,8 +232,26 @@ export default function DashboardLayout({
   const [profileEmail, setProfileEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | undefined>(name);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const openRef = useRef(open);
   const profileMenuRef = useReactRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const activeGroup = roleLinksMap[role].find((item) =>
+      item.children?.some(
+        (child) =>
+          (child.activeWhen?.(pathname) ?? false) || pathname === child.href,
+      ),
+    );
+    if (activeGroup) {
+      setExpandedGroups((current) => ({
+        ...current,
+        [activeGroup.label]: true,
+      }));
+    }
+  }, [pathname, role]);
 
   useEffect(() => {
     if (openRef.current !== open) {
@@ -358,11 +402,146 @@ export default function DashboardLayout({
               )}
             </div>
 
-            <div className="flex-1 overflow-x-hidden overflow-y-auto mt-2 hide-scrollbar">
+            <div
+              className={cn(
+                "flex-1 mt-2 hide-scrollbar",
+                open
+                  ? "overflow-x-hidden overflow-y-auto"
+                  : "overflow-visible",
+              )}
+            >
               <div className="flex flex-col gap-2 pb-4">
-                {linksWithHandlers.map((link, idx) => (
-                  <SidebarLink key={idx} link={link} />
-                ))}
+                {linksWithHandlers.map((link, idx) => {
+                  if (link.children) {
+                    const isGroupActive = link.children.some(
+                      (child) =>
+                        (child.activeWhen?.(pathname) ?? false) ||
+                        pathname === child.href,
+                    );
+                    const isExpanded = expandedGroups[link.label] ?? false;
+
+                    return (
+                      <div
+                        key={link.label}
+                        className="relative"
+                        onMouseEnter={() => !open && setHoveredGroup(link.label)}
+                        onMouseLeave={() => setHoveredGroup(null)}
+                        onFocus={() => !open && setHoveredGroup(link.label)}
+                        onBlur={(event) => {
+                          if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                            setHoveredGroup(null);
+                          }
+                        }}
+                      >
+                        <button
+                          type="button"
+                          aria-expanded={isExpanded}
+                          onClick={() => {
+                            if (!open) setOpen(true);
+                            else {
+                              setExpandedGroups((current) => ({
+                                [link.label]: !isExpanded,
+                              }));
+                            }
+                          }}
+                          className={cn(
+                            "group/nav relative flex w-full items-center rounded-md py-2 text-left transition-colors duration-200 hover:bg-gray-100",
+                            open ? "justify-start gap-2 pl-3 pr-2" : "justify-center",
+                            isGroupActive && "text-[#B13133]",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "shrink-0 [&>svg]:h-5 [&>svg]:w-5",
+                              isGroupActive
+                                ? "[&>svg]:text-[#B13133]"
+                                : "[&>svg]:text-gray-700",
+                            )}
+                          >
+                            {link.icon}
+                          </span>
+                          {open && (
+                            <>
+                              <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left text-[15px] text-gray-700 group-hover/nav:text-[#B13133]">
+                                {link.label}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "h-4 w-4 shrink-0 text-gray-600 transition-transform duration-200 ease-in-out",
+                                  isExpanded && "rotate-180",
+                                )}
+                              />
+                            </>
+                          )}
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {open && isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className="ml-4 overflow-hidden border-l border-gray-200 pl-2"
+                            >
+                              <div className="flex flex-col gap-1 py-1">
+                                {link.children.map((child) => (
+                                  <SidebarLink key={child.href} link={child} />
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <AnimatePresence>
+                          {!open && hoveredGroup === link.label && (
+                            <motion.div
+                              initial={{ opacity: 0, x: -6, scale: 0.98 }}
+                              animate={{ opacity: 1, x: 0, scale: 1 }}
+                              exit={{ opacity: 0, x: -6, scale: 0.98 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              className="absolute left-full top-0 z-[60] ml-2 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-xl"
+                            >
+                              <div className="mb-1 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                {link.label}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                {link.children.map((child) => {
+                                  const isChildActive =
+                                    (child.activeWhen?.(pathname) ?? false) ||
+                                    pathname === child.href;
+                                  return (
+                                    <Link
+                                      key={child.href}
+                                      href={child.href}
+                                      onClick={() => setHoveredGroup(null)}
+                                      className={cn(
+                                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-red-50 hover:text-[#B13133]",
+                                        isChildActive
+                                          ? "bg-red-200 font-semibold text-[#B13133]"
+                                          : "text-gray-700",
+                                      )}
+                                    >
+                                      {child.icon}
+                                      <span className="whitespace-nowrap">
+                                        {child.label}
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  }
+
+                  if (link.href) {
+                    return (
+                      <SidebarLink key={idx} link={{ ...link, href: link.href }} />
+                    );
+                  }
+                  return null;
+                })}
               </div>
             </div>
 

@@ -62,7 +62,7 @@ function LocationTab({
       onClick={onClick}
       className={cn(
         "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-        active ? "text-orange-600" : "text-stone-500 hover:text-stone-800",
+        active ? "text-red-600" : "text-stone-500 hover:text-stone-800",
       )}
     >
       {icon}
@@ -73,7 +73,7 @@ function LocationTab({
         className={cn(
           "rounded-full px-2 py-0.5 text-xs",
           active
-            ? "bg-orange-50 text-orange-600"
+            ? "bg-red-50 text-red-600"
             : "bg-stone-100 text-stone-500",
         )}
       >
@@ -81,7 +81,7 @@ function LocationTab({
       </span>
 
       {active && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-orange-600" />
+        <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-red-600" />
       )}
     </button>
   );

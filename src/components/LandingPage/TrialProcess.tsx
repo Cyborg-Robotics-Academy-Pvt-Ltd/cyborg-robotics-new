@@ -146,7 +146,7 @@ export default function TrialProcess() {
                       "transition-[transform,box-shadow,border-color] duration-300",
                       "hover:shadow-lg motion-safe:hover:-translate-y-1",
                       isLast
-                        ? "border-red-800/40 bg-orange-50"
+                        ? "border-red-800/40 bg-red-50"
                         : "border-zinc-200 bg-white hover:border-red-800/40",
                     )}
                   >

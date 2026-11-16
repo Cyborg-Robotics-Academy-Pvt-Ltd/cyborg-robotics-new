@@ -23,6 +23,12 @@ type Props = {
   hasShowRows: boolean;
   hasClosedRows: boolean;
   canModify: boolean;
+  trainerView: boolean;
+  marketingView: boolean;
+  showContact: boolean;
+  canAddTrialSlot: boolean;
+  openTimelineId: string | null;
+  onTimelineToggle: (id: string) => void;
   canDelete: boolean;
   sortField: SortField;
   sortDir: SortDir;
@@ -34,6 +40,8 @@ type Props = {
   onCounsellorRemarkSave: (id: string, value: string) => void;
   onCloseRemarkSave: (id: string, value: string) => void;
   onFollowUpClick: (registration: TrialRegistration) => void;
+  onAddTrialSlot: (registration: TrialRegistration) => void;
+  onSendTrialMeetingEmail: (id: string) => Promise<boolean>;
   onEdit: (registration: TrialRegistration) => void;
   onDelete: (registration: TrialRegistration) => void;
 };
@@ -51,6 +59,12 @@ export function DesktopTable({
   hasShowRows,
   hasClosedRows,
   canModify,
+  trainerView,
+  marketingView,
+  showContact,
+  canAddTrialSlot,
+  openTimelineId,
+  onTimelineToggle,
   canDelete,
   sortField,
   sortDir,
@@ -132,33 +146,80 @@ export function DesktopTable({
           <Table
             ref={tableRef}
             containerClassName="!overflow-visible"
-            className="min-w-[1500px] text-sm [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_td]:text-sm [&_td_*]:text-sm [&_th]:h-11 [&_th]:px-3 [&_tbody_tr]:border-stone-100 [&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-stone-50/80"
+            className={`${trainerView ? "min-w-[780px]" : marketingView ? "min-w-[1050px]" : "min-w-[1380px]"} text-sm [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_td]:text-sm [&_td_*]:text-sm [&_th]:h-11 [&_th]:px-3 [&_tbody_tr]:border-stone-100 [&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-stone-50/80`}
           >
             <TableHeader className="bg-stone-50 [&_tr]:border-b [&_tr]:border-stone-200">
               <TableRow className="hover:bg-transparent">
-                <SortableHead
-                  label="Student"
-                  field="studentName"
-                  active={sortField}
-                  dir={sortDir}
-                  onClick={onToggleSort}
-                  className={STICKY_TH}
-                />
+                {trainerView ? (
+                  <>
+                    <SortableHead
+                      label="Student"
+                      field="studentName"
+                      active={sortField}
+                      dir={sortDir}
+                      onClick={onToggleSort}
+                      className={STICKY_TH}
+                    />
+                    <TableHead className={TH}>Program of interest</TableHead>
+                    <SortableHead
+                      label="Trial Slot"
+                      field="trialDate"
+                      active={sortField}
+                      dir={sortDir}
+                      onClick={onToggleSort}
+                      className={TH}
+                    />
+                    <TableHead className={TH}>Mode</TableHead>
+                    <TableHead className={TH}>Trial status</TableHead>
+                  </>
+                ) : marketingView ? (
+                  <>
+                    <SortableHead
+                      label="Student"
+                      field="studentName"
+                      active={sortField}
+                      dir={sortDir}
+                      onClick={onToggleSort}
+                      className={STICKY_TH}
+                    />
+                    <TableHead className={TH}>Program of interest</TableHead>
+                    <SortableHead
+                      label="Trial Slot"
+                      field="trialDate"
+                      active={sortField}
+                      dir={sortDir}
+                      onClick={onToggleSort}
+                      className={TH}
+                    />
+                    <TableHead
+                      className={`${TH} !w-8 !min-w-8 !max-w-8 !px-1 text-center`}
+                      aria-label="Heard About Us"
+                      title="Heard About Us"
+                      style={{ width: 32, minWidth: 32, maxWidth: 32 }}
+                    >
+                      <Megaphone aria-hidden className="mx-auto h-4 w-4" />
+                    </TableHead>
+                    <TableHead className={TH}>Location &amp; Mode</TableHead>
+                    <TableHead className={TH}>Trial status</TableHead>
+                  </>
+                ) : (
+                  <>
+                    <SortableHead
+                      label="Student"
+                      field="studentName"
+                      active={sortField}
+                      dir={sortDir}
+                      onClick={onToggleSort}
+                      className={STICKY_TH}
+                    />
 
-                <TableHead className={`${TH} w-[300px] min-w-[300px] max-w-[300px]`}>
-                  Contact
-                </TableHead>
+                    {showContact && (
+                  <TableHead className={`${TH} w-[300px] min-w-[300px] max-w-[300px]`}>
+                    Contact
+                  </TableHead>
+                    )}
 
-                <TableHead className={TH}>Program of interest</TableHead>
-
-                <SortableHead
-                  label="Enquired On"
-                  field="createdAt"
-                  active={sortField}
-                  dir={sortDir}
-                  onClick={onToggleSort}
-                  className={TH}
-                />
+                    <TableHead className={TH}>Program of interest</TableHead>
 
                 <SortableHead
                   label="Trial Slot"
@@ -194,8 +255,10 @@ export function DesktopTable({
                   <TableHead className={TH}>Close Remark</TableHead>
                 )}
 
-                {(canModify || canDelete) && (
-                  <TableHead className={`${TH} text-right`}>Actions</TableHead>
+                    {(canModify || canDelete) && (
+                      <TableHead className={`${TH} text-right`}>Actions</TableHead>
+                    )}
+                  </>
                 )}
               </TableRow>
             </TableHeader>
@@ -208,6 +271,12 @@ export function DesktopTable({
                   hasShowRows={hasShowRows}
                   hasClosedRows={hasClosedRows}
                   canModify={canModify}
+                  trainerView={trainerView}
+                  marketingView={marketingView}
+                  showContact={showContact}
+                  canAddTrialSlot={canAddTrialSlot}
+                  openTimelineId={openTimelineId}
+                  onTimelineToggle={onTimelineToggle}
                   canDelete={canDelete}
                   {...rowHandlers}
                 />

@@ -81,11 +81,11 @@ type Props = {
 
 /* Shared control look: uniform height, radius, hover and keyboard focus */
 const CONTROL =
-  "h-10 rounded-lg border border-stone-200 bg-white text-sm shadow-sm transition-colors hover:border-stone-300 focus-visible:border-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/30";
+  "h-10 rounded-lg border border-stone-200 bg-white text-sm shadow-sm transition-colors hover:border-stone-300 focus-visible:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30";
 
 /* Applied when a filter is narrowing the list */
 const CONTROL_ACTIVE =
-  "border-orange-300 bg-orange-50/60 text-orange-800 hover:border-orange-400";
+  "border-red-300 bg-red-50/60 text-red-800 hover:border-red-400";
 
 const BUTTON = `inline-flex items-center justify-center gap-2 whitespace-nowrap px-3.5 font-medium ${CONTROL}`;
 
@@ -124,7 +124,7 @@ function FilterTrigger({
         aria-hidden
         className={cn(
           "h-4 w-4 shrink-0",
-          active ? "text-orange-600" : "text-stone-400",
+          active ? "text-red-600" : "text-stone-400",
         )}
       />
       <SelectValue placeholder={placeholder} />
@@ -167,7 +167,7 @@ export function FilterBar({
           aria-hidden
           className={cn(
             "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2",
-            searchTerm ? "text-orange-600" : "text-stone-400",
+            searchTerm ? "text-red-600" : "text-stone-400",
           )}
         />
 
@@ -219,7 +219,7 @@ export function FilterBar({
           "w-full sm:w-auto",
           todayOnly
             ? CONTROL_ACTIVE
-            : "text-stone-600 hover:text-orange-600",
+            : "text-stone-600 hover:text-red-600",
         )}
       >
         <CalendarDays aria-hidden className="h-4 w-4" />
@@ -228,7 +228,7 @@ export function FilterBar({
           className={cn(
             "min-w-5 rounded-full px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
             todayOnly
-              ? "bg-orange-500 text-white"
+              ? "bg-red-500 text-white"
               : "bg-stone-100 text-stone-600",
           )}
         >
@@ -332,7 +332,7 @@ export function FilterBar({
               aria-hidden
               className={cn(
                 "h-4 w-4 shrink-0",
-                trialDateFilter ? "text-orange-600" : "text-stone-400",
+                trialDateFilter ? "text-red-600" : "text-stone-400",
               )}
             />
 
@@ -389,7 +389,7 @@ export function FilterBar({
               aria-hidden
               className={cn(
                 "h-4 w-4 shrink-0",
-                followUpDateFilter ? "text-orange-600" : "text-stone-400",
+                followUpDateFilter ? "text-red-600" : "text-stone-400",
               )}
             />
 
@@ -452,7 +452,7 @@ export function FilterBar({
           onClick={onActivityClick}
           className={cn(
             BUTTON,
-            "flex-1 text-stone-600 hover:text-orange-600 sm:flex-none",
+            "flex-1 text-stone-600 hover:text-red-600 sm:flex-none",
           )}
         >
           <History aria-hidden className="h-4 w-4" />

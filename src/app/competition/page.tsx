@@ -136,7 +136,7 @@ export default function CompetitionHubPage() {
       title: "🏆 Proven Competition Track Record",
       description:
         "Our students consistently podium at competitions like IRO, WRO, and World STEM at regional, national, and international levels.",
-      color: "from-yellow-500 to-orange-500",
+      color: "from-yellow-500 to-red-500",
     },
     {
       icon: Users,
@@ -171,7 +171,7 @@ export default function CompetitionHubPage() {
       image: "/assets/competitions/iro.jpg",
       icon: Crown,
       iconColor: "text-yellow-600",
-      gradient: "from-yellow-500 to-orange-500",
+      gradient: "from-yellow-500 to-red-500",
       level: "International",
       achievement: "1st Place",
       participants: 45,
@@ -220,7 +220,7 @@ export default function CompetitionHubPage() {
       image: "/assets/events/ftc-thumbnail1.png",
       icon: Zap,
       iconColor: "text-red-600",
-      gradient: "from-red-500 to-orange-500",
+      gradient: "from-red-500 to-red-500",
       level: "International",
       achievement: "Finalist",
       participants: 32,
@@ -391,7 +391,7 @@ export default function CompetitionHubPage() {
       title: "🏁 Final Preparation",
       description: "Last-minute adjustments and mental readiness",
       icon: Flame,
-      color: "bg-orange-500",
+      color: "bg-red-500",
     },
   ];
 
@@ -920,7 +920,7 @@ export default function CompetitionHubPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-700 px-6 py-2 text-base font-semibold mb-4 shadow-md">
+                <Badge className="bg-gradient-to-r from-yellow-500/20 to-red-500/20 text-yellow-700 px-6 py-2 text-base font-semibold mb-4 shadow-md">
                   <Star className="w-4 h-4 mr-2 inline" />
                   Recognition & Awards
                 </Badge>

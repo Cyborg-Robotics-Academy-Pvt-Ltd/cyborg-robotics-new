@@ -46,15 +46,32 @@ async function requireAvailabilityManager(request: Request) {
 
 function errorResponse(error: unknown) {
   const message = error instanceof Error ? error.message : "Request failed.";
-  const status =
-    message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "unknown";
+  const normalizedError = `${code} ${message}`.toLowerCase();
+  const temporarilyUnavailable =
+    normalizedError.includes("resource_exhausted") ||
+    normalizedError.includes("quota") ||
+    normalizedError.includes("unavailable");
+  const status = message === "Unauthorized"
+    ? 401
+    : message === "Forbidden"
+      ? 403
+      : temporarilyUnavailable
+        ? 503
+        : 500;
   return NextResponse.json(
     {
       success: false,
       message:
-        status === 500
-          ? "Unable to process the availability request."
-          : message,
+        status === 401 || status === 403
+          ? message
+          : temporarilyUnavailable
+            ? "Availability is temporarily unavailable. Please try again shortly."
+            : "Unable to process the availability request.",
+      code,
     },
     { status },
   );
@@ -88,7 +105,14 @@ export async function GET(request: Request) {
     }
 
     const availability = await listTrialAvailabilityOverrides(mode, from, to);
-    return NextResponse.json({ success: true, availability });
+    return NextResponse.json(
+      { success: true, availability },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
   } catch (error) {
     console.error("Unable to load trial availability:", error);
     return errorResponse(error);

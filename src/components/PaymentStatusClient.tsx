@@ -230,6 +230,28 @@ export default function PaymentStatusClient() {
     );
   }
 
+  if (currentStatus === "PENDING_VBV") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff8f8] via-white to-[#f8ebeb] px-4">
+        <div className="w-full max-w-sm rounded-2xl border border-amber-200 bg-white/95 px-6 py-7 text-center shadow-2xl shadow-[#8D0F11]/10">
+          <Clock className="mx-auto mb-4 h-9 w-9 text-amber-600" />
+          <h1 className="text-xl font-semibold text-slate-900">
+            Bank verification pending
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Your bank has not completed secure payment verification yet. We are
+            checking the status automatically. Your registration will be
+            confirmed once the payment is successful; please do not pay again
+            for this order.
+          </p>
+          <p className="mt-4 break-all font-mono text-xs text-slate-500">
+            {orderId}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!shouldShowFailed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff8f8] via-white to-[#f8ebeb] px-4">

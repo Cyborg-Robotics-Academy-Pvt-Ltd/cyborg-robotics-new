@@ -10,7 +10,7 @@ export type BentoTone =
   | "amber"
   | "rose"
   | "teal"
-  | "orange"
+  | "red"
   | "violet";
 
 export type BentoIconMotion = "spin" | "tilt" | "lift" | "pop" | "launch";
@@ -73,7 +73,7 @@ const TONES: Record<BentoTone, ToneStyles> = {
     vars: "[--spot:rgba(20,184,166,0.15)] [--ring:rgba(20,184,166,0.55)]",
     sheen: false,
   },
-  orange: {
+  red: {
     card: "border-[#ffd9cf] bg-gradient-to-br from-[#fff1ec] to-white text-zinc-900 hover:shadow-[#e8431f]/15",
     badge: "bg-[#e8431f] text-white",
     mark: "text-[#e8431f]/[0.08]",
@@ -154,7 +154,7 @@ export const BentoGridItem = ({
   description,
   icon: Icon,
   index,
-  tone = "orange",
+  tone = "red",
   iconMotion = "pop",
 }: BentoGridItemProps) => {
   const reduceMotion = useReducedMotion();

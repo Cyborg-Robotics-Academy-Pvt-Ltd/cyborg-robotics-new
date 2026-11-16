@@ -25,6 +25,8 @@ async function createSingleUser(userData: { fullName: string; email: string; pas
     password,
   });
 
+  await adminAuth.setCustomUserClaims(user.uid, { role });
+
   // Create user document in Firestore with verified status and active role
   const firestoreUserData = {
     uid: user.uid,

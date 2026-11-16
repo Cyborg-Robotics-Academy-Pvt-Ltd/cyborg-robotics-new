@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 
 import { authReady, db } from "@/lib/firebase";
+import { readApiJson } from "@/lib/read-api-json";
 import { getTrialModeFromLocation } from "@/app/enquire-form/utils";
 import {
   EditDraft,
@@ -65,10 +66,13 @@ function mapRegistration(
 ): TrialRegistration {
   const data = docSnapshot.data();
 
-  const trialMode: TrialRegistration["trialMode"] =
-    data.trialMode === "offline" ? "offline" : "online";
-
   const location = typeof data.location === "string" ? data.location.trim() : "";
+  const trialMode: TrialRegistration["trialMode"] =
+    data.trialMode === "offline"
+      ? "offline"
+      : data.trialMode === "online"
+        ? "online"
+        : getTrialModeFromLocation(location).trialMode;
 
   const locationId = typeof data.locationId === "string" ? data.locationId : null;
 
@@ -91,6 +95,15 @@ function mapRegistration(
 
   return {
     id: docSnapshot.id,
+    assignedTo: typeof data.assignedTo === "string" ? data.assignedTo : null,
+    assignedToName: typeof data.assignedToName === "string" ? data.assignedToName : null,
+    assignedToEmail: typeof data.assignedToEmail === "string" ? data.assignedToEmail : null,
+    bookingOrigin:
+      data.bookingOrigin === "direct" || data.bookingOrigin === "follow-up"
+        ? data.bookingOrigin
+        : data.createdFrom === "free-trial-page" && data.trialDate
+          ? "direct"
+          : undefined,
     studentName: data.studentName || "",
     age: typeof data.age === "number" ? data.age : Number(data.age || 0),
     contactNumber: data.contactNumber || "",
@@ -100,13 +113,15 @@ function mapRegistration(
     referralSource: data.referralSource || "",
     trialDate: data.trialDate || "",
     trialTime: data.trialTime || "",
+    trialConfirmationEmailSentAt:
+      getCreatedAtMillis(data.trialConfirmationEmailSentAt) || null,
     location,
     trialMode,
     locationId,
     locationName,
     preferredCenter,
     salesSelectedCenter,
-    status: (data.status as TrialStatus) || "booked",
+    status: (data.status as TrialStatus | undefined) ?? "booked",
     remark: data.remark || "",
     counsellorRemark: data.counsellorRemark || "",
     leadTemp: (data.leadTemp as LeadTemp) || "",
@@ -170,10 +185,10 @@ export function useTrialRegistrations() {
           body: JSON.stringify(payload),
         },
       );
-      const data = (await response.json()) as {
+      const data = await readApiJson<{
         success?: boolean;
         message?: string;
-      };
+      }>(response);
 
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Unable to update the enquiry.");
@@ -218,7 +233,12 @@ export function useTrialRegistrations() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ trialDate, trialTime }),
+            body: JSON.stringify({
+              trialDate,
+              trialTime,
+              bookingOrigin: "follow-up",
+              action: "reschedule",
+            }),
         });
         const data = await response.json();
 
@@ -235,6 +255,79 @@ export function useTrialRegistrations() {
     },
     [],
   );
+
+  const addTrialSlot = useCallback(
+    async (
+      id: string,
+      trialDate: string,
+      trialTime: string,
+      trialMode?: "online" | "offline",
+    ) => {
+      try {
+        const token = await getAuthToken();
+        const response = await fetch(
+          `/api/free-trial/${encodeURIComponent(id)}/reschedule`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              trialDate,
+              trialTime,
+              bookingOrigin: "follow-up",
+              action: "add-slot",
+              ...(trialMode ? { trialMode } : {}),
+            }),
+          },
+        );
+        const data = (await response.json()) as {
+          success?: boolean;
+          message?: string;
+        };
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Unable to add the trial slot.");
+        }
+
+        return true;
+      } catch (err) {
+        console.error("Error adding trial slot:", err);
+        alert(err instanceof Error ? err.message : "Unable to add the trial slot.");
+        return false;
+      }
+    },
+    [],
+  );
+
+  const sendTrialMeetingEmail = useCallback(async (id: string) => {
+    try {
+      const token = await getAuthToken();
+      const response = await fetch(
+        `/api/enquire-form/registrations/${encodeURIComponent(id)}/trial-email`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const data = (await response.json()) as {
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to send the trial email.");
+      }
+
+      alert("Trial meeting link email sent.");
+      return true;
+    } catch (err) {
+      console.error("Error sending trial meeting link email:", err);
+      alert(err instanceof Error ? err.message : "Unable to send the trial email.");
+      return false;
+    }
+  }, []);
 
   /* REMARK (general — kept for parity; not currently wired to any column) */
 
@@ -333,6 +426,37 @@ export function useTrialRegistrations() {
     [patchRegistration],
   );
 
+  const updateFollowUp = useCallback(
+    async (
+      registration: TrialRegistration,
+      currentHistory: FollowUpEntry[],
+      index: number,
+      entry: FollowUpEntry,
+    ): Promise<FollowUpEntry[] | null> => {
+      try {
+        const updatedHistory = [...currentHistory];
+        if (index < 0 || index >= updatedHistory.length) {
+          throw new Error("The follow-up entry no longer exists.");
+        }
+
+        updatedHistory[index] = entry;
+        await patchRegistration(registration.id, {
+          ...(index === updatedHistory.length - 1
+            ? { nextFollowUpDate: entry.date }
+            : {}),
+          followUpHistory: updatedHistory,
+        });
+
+        return updatedHistory;
+      } catch (err) {
+        console.error("Error updating follow-up:", err);
+        alert("Failed to update follow-up. Please try again.");
+        return null;
+      }
+    },
+    [patchRegistration],
+  );
+
   /* EDIT */
 
   const editRegistration = useCallback(
@@ -398,12 +522,15 @@ export function useTrialRegistrations() {
     updateStatus,
     updateSalesSelectedCenter,
     rescheduleTrial,
+    addTrialSlot,
+    sendTrialMeetingEmail,
     updateRemark,
     updateCounsellorRemark,
     updateLeadTemp,
     updateLeadOutcome,
     updateCloseRemark,
     addFollowUp,
+    updateFollowUp,
     editRegistration,
     deleteRegistration,
   };

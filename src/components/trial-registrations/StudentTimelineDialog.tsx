@@ -73,7 +73,7 @@ export function StudentTimelineDialog({
       icon: MessageSquareText,
       tone: entry.leadOutcome
         ? getLeadOutcomeTone(entry.leadOutcome)
-        : "orange",
+        : "red",
     })),
     ...(registration.leadOutcome
       ? [{

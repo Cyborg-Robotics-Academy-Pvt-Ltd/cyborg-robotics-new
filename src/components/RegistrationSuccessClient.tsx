@@ -463,7 +463,7 @@ export default function RegistrationSuccessClient() {
               <div className="px-4 pt-5 sm:px-8 sm:pt-8">
                 <div className="relative overflow-hidden rounded-[24px] sm:rounded-[32px] border-2 border-[#f5c9c1] bg-gradient-to-br from-[#fff7f5] via-[#fffafa] to-[#fff1ee] px-4 py-8 text-center sm:px-10 sm:py-14">
                   <div className="absolute -top-20 left-0 h-72 w-72 rounded-full bg-[#C73E1D]/10 blur-3xl" />
-                  <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-orange-300/10 blur-3xl" />
+                  <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-red-300/10 blur-3xl" />
                   <div className="absolute -left-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
                   <div className="absolute -right-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full bg-[#f3f5f9]" />
                   <div className="absolute inset-0 opacity-[0.03]">

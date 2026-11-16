@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 
 import {
   getTrimmedString,
@@ -22,6 +23,32 @@ import {
 } from "@/lib/free-trial-validation";
 import { getTrialModeFromCoordinates } from "@/lib/trial-location";
 import { getTrialAvailabilityOverride } from "@/lib/trial-availability-server";
+
+async function getAutomaticSalesAssignment() {
+  try {
+    const snapshot = await adminDb.collection("sales").get();
+    const activeSales = snapshot.docs.filter(
+      (employee) => !["inactive", "pending"].includes(employee.data().status ?? ""),
+    );
+    if (activeSales.length !== 1) {
+      return { assignedTo: null, assignedToName: null, assignedToEmail: null };
+    }
+
+    const employee = activeSales[0];
+    const data = employee.data();
+    const name = [data.name, data.fullName, data.displayName, data.username].find(
+      (value) => typeof value === "string" && value.trim(),
+    )?.trim() ?? "Sales employee";
+    return {
+      assignedTo: employee.id,
+      assignedToName: name,
+      assignedToEmail: typeof data.email === "string" ? data.email : null,
+    };
+  } catch (error) {
+    console.error("Unable to determine sales assignment:", error);
+    return { assignedTo: null, assignedToName: null, assignedToEmail: null };
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /* SIMPLE SERVER CACHE                                                       */
@@ -53,9 +80,12 @@ const enquiryCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 const PROGRAM_INTEREST_OPTIONS = new Set([
   "Competition",
+  "Regular Classes",
   "Regular classes",
   "Diwali workshop",
+  "Year Long Course",
   "Year long course",
+  "Camp",
   "Workshop",
 ]);
 
@@ -453,6 +483,7 @@ export async function POST(req: Request) {
       body.preferredCenter === "unable-to-visit-hq"
         ? body.preferredCenter
         : null;
+    const salesAssignment = await getAutomaticSalesAssignment();
 
     /* ====================================================================== */
     /* STEP 1 - SAVE INCOMPLETE LEAD                                          */
@@ -507,7 +538,7 @@ export async function POST(req: Request) {
 
         nextFollowUpDate: null,
 
-        assignedTo: null,
+        ...salesAssignment,
 
         remark: manualScheduleResult.remark ?? "",
 
@@ -677,13 +708,15 @@ export async function POST(req: Request) {
 
       trialDate: date,
 
+      bookingOrigin: "direct",
+
       trialTime: time,
 
       status: "booked",
 
       nextFollowUpDate: null,
 
-      assignedTo: null,
+      ...salesAssignment,
 
       remark: "",
 

@@ -56,7 +56,10 @@ export async function GET(request: Request) {
 
     return new Response(JSON.stringify({ photos: photos as Photo[] }), { 
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      }
     });
   } catch (error) {
     console.error('Error fetching photos:', error);

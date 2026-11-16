@@ -41,10 +41,21 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ users });
   } catch (error) {
-    console.error("Error listing Firebase Authentication users:", error);
+    const errorCode =
+      typeof error === "object" && error !== null && "code" in error
+        ? String(error.code)
+        : "unknown";
+    console.error("Error listing Firebase Authentication users:", {
+      code: errorCode,
+      message: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
-      { error: "Unable to load authentication users" },
-      { status: 500 },
+      { error: "Unable to load authentication users", code: errorCode },
+      {
+        status: errorCode.includes("quota") || errorCode.includes("RESOURCE_EXHAUSTED")
+          ? 503
+          : 500,
+      },
     );
   }
 }

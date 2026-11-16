@@ -1045,8 +1045,8 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                     value: certCount,
                     label: "Certificates",
                     sublabel: "Issued",
-                    color: "text-orange-500",
-                    bg: "bg-orange-50",
+                    color: "text-red-500",
+                    bg: "bg-red-50",
                   },
                 ].map((item) => (
                   <div
@@ -1088,9 +1088,9 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                 </button>
                 <button
                   onClick={openRemarkModal}
-                  className="flex h-11 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <MessageSquarePlus className="h-4 w-4 shrink-0 text-orange-500 sm:h-5 sm:w-5" />
+                  <MessageSquarePlus className="h-4 w-4 shrink-0 text-red-500 sm:h-5 sm:w-5" />
                   <span className="truncate">Add Remark</span>
                 </button>
                 <button
@@ -1106,7 +1106,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
 
           {!student.courses || student.courses.length === 0 ? (
             <section className="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center sm:p-16">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-orange-50">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-red-50">
                 <BookOpen className="h-8 w-8 text-[#A81B1E]" />
               </div>
               <h2

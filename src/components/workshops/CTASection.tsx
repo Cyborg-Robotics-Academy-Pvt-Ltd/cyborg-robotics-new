@@ -42,8 +42,8 @@ const CTASection = ({ activeLocation, earlyBirdPrice, onRegister }: Props) => {
           variants={fadeUpVariants}
           className="mb-5 inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.08)] px-4 py-1.5"
         >
-          <span className="relative h-1.5 w-1.5 rounded-full bg-orange-400">
-            <span className="absolute inset-0 animate-ping rounded-full bg-orange-400 opacity-75" />
+          <span className="relative h-1.5 w-1.5 rounded-full bg-red-400">
+            <span className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-75" />
           </span>
           {/* was font-bold uppercase tracking-widest */}
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/65">

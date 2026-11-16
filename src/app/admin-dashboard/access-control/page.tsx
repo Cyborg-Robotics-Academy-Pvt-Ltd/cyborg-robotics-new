@@ -457,9 +457,26 @@ const AccessControlPage = () => {
           const response = await fetch("/api/admin/auth-users", {
             headers: { Authorization: `Bearer ${token}` },
           });
-          if (!response.ok)
-            throw new Error("Unable to load authentication users");
-          const { users: authUsers } = (await response.json()) as {
+          const responseData = (await response.json().catch(() => ({}))) as {
+            error?: string;
+            code?: string;
+            users?: Array<{
+              id: string;
+              name: string;
+              email: string;
+              disabled: boolean;
+              createdAt: string;
+            }>;
+          };
+          if (!response.ok) {
+            const details = responseData.code
+              ? ` (${responseData.code})`
+              : ` (HTTP ${response.status})`;
+            throw new Error(
+              `${responseData.error || "Unable to load authentication users"}${details}`,
+            );
+          }
+          const { users: authUsers = [] } = responseData as {
             users: Array<{
               id: string;
               name: string;
@@ -488,6 +505,11 @@ const AccessControlPage = () => {
           console.error(
             "Error fetching Firebase Authentication users:",
             authUsersError,
+          );
+          setFetchError(
+            authUsersError instanceof Error
+              ? authUsersError.message
+              : "Unable to load Firebase Authentication users.",
           );
         }
       }

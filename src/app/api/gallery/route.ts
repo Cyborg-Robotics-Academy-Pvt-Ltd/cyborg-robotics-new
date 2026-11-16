@@ -21,7 +21,8 @@ export async function GET() {
     return new Response(JSON.stringify(images), { 
       status: 200,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       }
     });
   } catch (error) {

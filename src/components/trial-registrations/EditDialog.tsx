@@ -184,7 +184,7 @@ export function EditDialog({ target, onClose, onSave }: Props) {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-orange-600 hover:bg-orange-700"
+            className="bg-red-600 hover:bg-red-700"
           >
             {saving ? (
               <>

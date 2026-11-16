@@ -99,7 +99,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "fixed left-0  h-screen  hidden md:flex md:flex-col bg-white z-40 hide-scrollbar ", // changed to use full screen height
+          "fixed left-0 h-screen hidden md:flex md:flex-col bg-white z-40 hide-scrollbar overflow-visible ",
           open ? "w-[250px] px-4" : "w-[60px] px-2",
           className,
         )}
@@ -107,11 +107,6 @@ export const DesktopSidebar = ({
           width: animate ? (open ? "250px" : "60px") : "300px",
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        style={
-          {
-            overflow: "hidden",
-          } as React.CSSProperties
-        }
         {...props}
       >
         {children}

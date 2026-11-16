@@ -1,4 +1,5 @@
 import { FieldValue } from "firebase-admin/firestore";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import { adminDb } from "@/lib/firebase-admin";
 import type { TrialMode } from "@/lib/trial-location";
@@ -8,6 +9,7 @@ import {
 } from "@/lib/trial-availability";
 
 const availabilityCollection = "trialAvailability";
+const availabilityCacheTag = "trial-availability";
 
 function availabilityDocId(mode: TrialMode, date: string) {
   return `${mode}_${date}`;
@@ -37,31 +39,44 @@ export async function getTrialAvailabilityOverride(
   return slots;
 }
 
+const getCachedTrialAvailabilityOverrides = unstable_cache(
+  async (mode: TrialMode, from: string, to: string) => {
+    const snapshots = await adminDb
+      .collection(availabilityCollection)
+      .where("mode", "==", mode)
+      .where("date", ">=", from)
+      .where("date", "<=", to)
+      .get();
+
+    return Object.fromEntries(
+      snapshots.docs.flatMap((snapshot) => {
+        const data = snapshot.data();
+        if (
+          !isValidTrialDate(data.date) ||
+          !Array.isArray(data.slots) ||
+          !data.slots.every(isValidTrialTime)
+        ) {
+          throw new Error(`Invalid availability configuration in ${snapshot.id}.`);
+        }
+        return [[data.date, data.slots as string[]]];
+      }),
+    );
+  },
+  ["trial-availability-overrides"],
+  {
+    // Availability changes go through the helpers below, which invalidate this
+    // tag after a successful write. Keep reads cached until that happens.
+    revalidate: false,
+    tags: [availabilityCacheTag],
+  },
+);
+
 export async function listTrialAvailabilityOverrides(
   mode: TrialMode,
   from: string,
   to: string,
 ) {
-  const snapshots = await adminDb
-    .collection(availabilityCollection)
-    .where("date", ">=", from)
-    .where("date", "<=", to)
-    .get();
-
-  return Object.fromEntries(
-    snapshots.docs.flatMap((snapshot) => {
-      const data = snapshot.data();
-      if (data.mode !== mode) return [];
-      if (
-        !isValidTrialDate(data.date) ||
-        !Array.isArray(data.slots) ||
-        !data.slots.every(isValidTrialTime)
-      ) {
-        throw new Error(`Invalid availability configuration in ${snapshot.id}.`);
-      }
-      return [[data.date, data.slots as string[]]];
-    }),
-  );
+  return getCachedTrialAvailabilityOverrides(mode, from, to);
 }
 
 export async function saveTrialAvailabilityOverride(
@@ -78,6 +93,7 @@ export async function saveTrialAvailabilityOverride(
       slots,
       updatedAt: FieldValue.serverTimestamp(),
     });
+  revalidateTag(availabilityCacheTag, { expire: 0 });
 }
 
 export async function saveTrialAvailabilityOverrides(
@@ -100,6 +116,7 @@ export async function saveTrialAvailabilityOverrides(
       );
     });
     await batch.commit();
+    revalidateTag(availabilityCacheTag, { expire: 0 });
 }
 
 export async function deleteTrialAvailabilityOverride(
@@ -110,6 +127,7 @@ export async function deleteTrialAvailabilityOverride(
     .collection(availabilityCollection)
     .doc(availabilityDocId(mode, date))
     .delete();
+  revalidateTag(availabilityCacheTag, { expire: 0 });
 }
 
 export { isValidTrialDate, isValidTrialTime };

@@ -2,7 +2,7 @@ export type TimelineTone =
   | "blue"
   | "indigo"
   | "amber"
-  | "orange"
+  | "red"
   | "emerald"
   | "violet"
   | "red"
@@ -24,9 +24,9 @@ export const TIMELINE_TONES: Record<
     marker: "border-amber-200 bg-amber-50 text-amber-700",
     title: "text-amber-800",
   },
-  orange: {
-    marker: "border-orange-200 bg-orange-50 text-orange-700",
-    title: "text-orange-800",
+  red: {
+    marker: "border-red-200 bg-red-50 text-red-700",
+    title: "text-red-800",
   },
   emerald: {
     marker: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -35,10 +35,6 @@ export const TIMELINE_TONES: Record<
   violet: {
     marker: "border-violet-200 bg-violet-50 text-violet-700",
     title: "text-violet-800",
-  },
-  red: {
-    marker: "border-red-200 bg-red-50 text-red-700",
-    title: "text-red-800",
   },
   slate: {
     marker: "border-slate-200 bg-slate-100 text-slate-600",
@@ -59,6 +55,6 @@ export function getLeadOutcomeTone(outcome?: string): TimelineTone {
     case "later":
       return "slate";
     default:
-      return "orange";
+      return "red";
   }
 }

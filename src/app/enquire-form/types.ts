@@ -7,7 +7,7 @@ export type LocationType = "online" | "offline";
  * attended, missed, moved, or
  * cancelled.
  */
-export type TrialStatus = "booked" | "show" | "no-show" | "reschedule" | "cancelled";
+export type TrialStatus = "" | "booked" | "show" | "no-show" | "reschedule" | "cancelled";
 
 /**
  * Lead Temp
@@ -36,6 +36,7 @@ export type LeadOutcome = "" | "opened" | "closed" | "nurture" | "later" | "join
 export type FollowUpEntry = {
   date: string;
   createdAt?: string;
+  updatedAt?: string;
   /** The authenticated account that saved this follow-up. */
   updatedBy?: string;
   updatedByEmail?: string;
@@ -49,6 +50,10 @@ export type FollowUpEntry = {
 
 export type TrialRegistration = {
   id: string;
+  bookingOrigin?: "direct" | "follow-up";
+  assignedTo?: string | null;
+  assignedToName?: string | null;
+  assignedToEmail?: string | null;
 
   studentName: string;
   age: number;
@@ -59,6 +64,7 @@ export type TrialRegistration = {
 
   trialDate: string;
   trialTime: string;
+  trialConfirmationEmailSentAt: number | null;
 
   /**
    * Actual location entered by the user.

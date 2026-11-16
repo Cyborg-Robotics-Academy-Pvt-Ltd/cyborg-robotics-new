@@ -62,7 +62,7 @@ export default function Navbar({
                 aria-current={isActive ? "page" : undefined}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                   isActive
-                    ? "bg-orange-100 font-semibold text-red-800"
+                    ? "bg-red-100 font-semibold text-red-800"
                     : "text-black hover:bg-black/5 hover:text-red-800"
                 }`}
               >

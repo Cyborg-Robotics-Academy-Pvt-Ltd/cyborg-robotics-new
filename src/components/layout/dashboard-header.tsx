@@ -129,7 +129,7 @@ export default function DashboardHeader() {
                 }}
                 className="flex items-center space-x-2 focus:outline-none user-dropdown"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-red-600 to-orange-500 flex items-center justify-center overflow-hidden">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center overflow-hidden">
                   {userData?.profileimage ? (
                     <Image
                       src={userData.profileimage}

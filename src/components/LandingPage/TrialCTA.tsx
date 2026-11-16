@@ -34,7 +34,7 @@ export default function TrialCTA(): ReactElement {
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:gap-16">
         {/* Left: message + CTA */}
         <div>
-          <p className="text-sm font-bold uppercase tracking-widest text-orange-100">
+          <p className="text-sm font-bold uppercase tracking-widest text-red-100">
             Free trial session
           </p>
 

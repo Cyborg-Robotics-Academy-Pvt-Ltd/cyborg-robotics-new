@@ -53,7 +53,7 @@ const STRING_FIELDS = new Set([
 const FIELD_OPTIONS: Record<string, Set<string>> = {
   trialMode: new Set(["online", "offline"]),
   salesSelectedCenter: new Set(OFFLINE_CENTERS.map((center) => center.id)),
-  status: new Set(["booked", "show", "no-show", "reschedule", "cancelled"]),
+  status: new Set(["", "booked", "show", "no-show", "reschedule", "cancelled"]),
   leadTemp: new Set(["", "hot", "warm", "cold"]),
   leadOutcome: new Set(["", "opened", "closed", "nurture", "later", "joined"]),
 };
@@ -94,13 +94,31 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await requireEnquireFormEditor(request);
+    const actor = await requireEnquireFormEditor(request);
 
     const updates: unknown = await request.json();
     if (!isValidUpdate(updates)) {
       return NextResponse.json(
         { success: false, message: "Invalid enquiry updates." },
         { status: 400 },
+      );
+    }
+    if (actor.role === "marketing") {
+      return NextResponse.json(
+        { success: false, message: "Marketing accounts have read-only access." },
+        { status: 403 },
+      );
+    }
+    if (
+      actor.role === "trainer" &&
+      (Object.keys(updates).length !== 1 || !Object.hasOwn(updates, "status"))
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Trainers can only update trial status.",
+        },
+        { status: 403 },
       );
     }
 
@@ -114,8 +132,35 @@ export async function PATCH(
       );
     }
 
+    const shouldResetTrialEmailSentAt = [
+      "age",
+      "email",
+      "trialDate",
+      "trialMode",
+      "trialTime",
+    ].some((field) => Object.hasOwn(updates, field));
+
+    const existingData = snapshot.data();
+    const isFirstTrialBooking =
+      Object.hasOwn(updates, "trialDate") &&
+      typeof updates.trialDate === "string" &&
+      updates.trialDate.length > 0 &&
+      !existingData?.trialDate;
+
     await registration.update({
       ...updates,
+      ...(isFirstTrialBooking
+        ? {
+            bookingOrigin:
+              Array.isArray(existingData?.followUpHistory) &&
+              existingData.followUpHistory.length > 0
+                ? "follow-up"
+                : "direct",
+          }
+        : {}),
+      ...(shouldResetTrialEmailSentAt
+        ? { trialConfirmationEmailSentAt: null }
+        : {}),
       updatedAt: FieldValue.serverTimestamp(),
     });
 
@@ -129,8 +174,17 @@ export async function PATCH(
     }
 
     console.error("Unable to update enquiry:", error);
+    const errorCode =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: unknown }).code ?? "")
+        : "";
     return NextResponse.json(
-      { success: false, message: "Unable to update the enquiry." },
+      {
+        success: false,
+        message: errorCode
+          ? `Unable to update the enquiry (server error ${errorCode}).`
+          : "Unable to update the enquiry.",
+      },
       { status: 500 },
     );
   }

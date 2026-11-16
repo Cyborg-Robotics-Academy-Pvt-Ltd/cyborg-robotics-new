@@ -25,6 +25,19 @@ function formatEventDate(value?: string | number) {
   });
 }
 
+function formatEventTimestamp(value?: string | number) {
+  if (!value) return "";
+  const date = typeof value === "number" ? new Date(value) : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function StudentTimelineStrip({ registration }: Props) {
   const followUps = registration.followUpHistory || [];
   const events = [
@@ -61,18 +74,17 @@ export function StudentTimelineStrip({ registration }: Props) {
     ...followUps.map((followUp, index) => ({
       key: `follow-up-${index}`,
       title: `Follow-up ${index + 1}`,
-      date: followUp.date || followUp.createdAt,
+      date: followUp.date,
       detail: [
         followUp.remark || "No remark recorded",
-        followUp.status ? `Trial: ${statusLabel(followUp.status)}` : "",
-        followUp.leadTemp ? `Lead: ${followUp.leadTemp}` : "",
-        followUp.leadOutcome ? `Outcome: ${leadOutcomeLabel(followUp.leadOutcome)}` : "",
-        followUp.updatedByEmail || followUp.updatedBy
-          ? `Logged by ${followUp.updatedByEmail || followUp.updatedBy}`
+        followUp.updatedAt || followUp.createdAt
+          ? `Updated: ${formatEventTimestamp(followUp.updatedAt || followUp.createdAt)}`
           : "",
+      
+  
       ].filter(Boolean).join(" · "),
       icon: CalendarClock,
-      tone: "orange",
+      tone: "red",
     })),
     ...(registration.nextFollowUpDate
       ? [{

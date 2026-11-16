@@ -111,7 +111,7 @@ const SOURCE_COLORS = [
   "bg-slate-800",
   "bg-amber-500",
   "bg-emerald-500",
-  "bg-orange-500",
+  "bg-red-500",
   "bg-slate-400",
   "bg-rose-400",
   "bg-stone-500",
@@ -128,8 +128,15 @@ const SOURCE_PAGE_SIZE = 6;
 const TABLE_PAGE_SIZES = [10, 25, 50];
 const UNSPECIFIED = "Not specified";
 const UNSPECIFIED_KEY = UNSPECIFIED.toLocaleLowerCase();
+const PROGRAM_INTEREST_OPTIONS = [
+  "Year Long Course",
+  "Regular Classes",
+  "Competition",
+  "Camp",
+  "Workshop",
+] as const;
 
-/* Brand: red #A81B1E (primary), neutrals for structure, amber/emerald/orange for status only */
+/* Brand: red #A81B1E (primary), neutrals for structure, amber/emerald/red for status only */
 const HEADING_STYLE = {
   fontFamily: "Syne, ui-sans-serif, system-ui, sans-serif",
 } as const;
@@ -378,6 +385,7 @@ export default function MarketingDashboardPage() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [programInterestFilter, setProgramInterestFilter] = useState("all");
   const [leadOutcomeFilter, setLeadOutcomeFilter] =
     useState<LeadOutcomeFilter>("all");
   const [leadSegment, setLeadSegment] = useState<LeadSegment>("all");
@@ -503,6 +511,27 @@ export default function MarketingDashboardPage() {
     ? sourceFilter
     : "all";
 
+  const programInterestOptions = useMemo(() => {
+    const options = new Map<string, string>(
+      PROGRAM_INTEREST_OPTIONS.map((label) => [label.toLowerCase(), label]),
+    );
+    records.forEach((record) => {
+      const label = record.programInterest.trim();
+      if (label) {
+        const key = label.toLowerCase();
+        if (!options.has(key)) options.set(key, label);
+      }
+    });
+    return [...options.entries()]
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [records]);
+  const activeProgramInterestKey = programInterestOptions.some(
+    (option) => option.key === programInterestFilter,
+  )
+    ? programInterestFilter
+    : "all";
+
   const filteredRecords = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
     const list = records.filter((record) => {
@@ -513,6 +542,12 @@ export default function MarketingDashboardPage() {
       )
         return false;
       if (
+        activeProgramInterestKey !== "all" &&
+        record.programInterest.trim().toLowerCase() !==
+          activeProgramInterestKey
+      )
+        return false;
+      if (
         leadOutcomeFilter !== "all" &&
         record.leadOutcome !== leadOutcomeFilter
       )
@@ -520,7 +555,12 @@ export default function MarketingDashboardPage() {
       if (leadSegment !== "all" && record.leadTemp !== leadSegment)
         return false;
       if (!q) return true;
-      return `${record.studentName || ""} ${record.referralSource || ""}`
+      return [
+        record.studentName || "",
+        record.programInterest || "",
+        record.referralSource || "",
+      ]
+        .join(" ")
         .toLowerCase()
         .includes(q);
     });
@@ -534,6 +574,7 @@ export default function MarketingDashboardPage() {
     records,
     deferredQuery,
     activeSourceKey,
+    activeProgramInterestKey,
     leadOutcomeFilter,
     leadSegment,
     tableSort,
@@ -552,6 +593,7 @@ export default function MarketingDashboardPage() {
   const activeFilterCount = [
     query.trim() !== "",
     activeSourceKey !== "all",
+    activeProgramInterestKey !== "all",
     leadOutcomeFilter !== "all",
     leadSegment !== "all",
   ].filter(Boolean).length;
@@ -560,6 +602,7 @@ export default function MarketingDashboardPage() {
   const clearFilters = () => {
     setQuery("");
     setSourceFilter("all");
+    setProgramInterestFilter("all");
     setLeadOutcomeFilter("all");
     setLeadSegment("all");
     setTablePage(1);
@@ -1187,6 +1230,7 @@ export default function MarketingDashboardPage() {
                     downloadCsv(
                       [
                         "Student",
+                        "Program of interest",
                         "Source",
                         "Trial status",
                         "Lead outcome",
@@ -1197,6 +1241,7 @@ export default function MarketingDashboardPage() {
                         const time = getRegistrationTime(record);
                         return [
                           record.studentName,
+                          record.programInterest || "Not provided",
                           displaySource(record.referralSource),
                           TRIAL_STATUS_LABELS[record.status] ?? "",
                           LEAD_OUTCOME_OPTIONS.find(
@@ -1221,7 +1266,7 @@ export default function MarketingDashboardPage() {
             <div className="mx-4 rounded-xl border border-slate-200/80 bg-white p-3 sm:mx-5 sm:p-4">
               <div className="relative">
                 <label htmlFor="enquiry-search" className="sr-only">
-                  Search by name or source
+                  Search by name, program, or source
                 </label>
                 <Search
                   className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -1235,7 +1280,7 @@ export default function MarketingDashboardPage() {
                     setQuery(event.target.value);
                     setTablePage(1);
                   }}
-                  placeholder="Search name or source"
+                  placeholder="Search name, program, or source"
                   className={`${FIELD} w-full py-2.5 pl-9 pr-3`}
                 />
               </div>
@@ -1255,6 +1300,24 @@ export default function MarketingDashboardPage() {
                     {sourceStats.map((item) => (
                       <option key={item.key} value={item.key}>
                         {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </FilterField>
+                <FilterField id="enquiry-program-interest" label="Program of interest">
+                  <select
+                    id="enquiry-program-interest"
+                    value={activeProgramInterestKey}
+                    onChange={(event) => {
+                      setProgramInterestFilter(event.target.value);
+                      setTablePage(1);
+                    }}
+                    className={`${FIELD} w-full px-3 py-2`}
+                  >
+                    <option value="all">All programs</option>
+                    {programInterestOptions.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
                       </option>
                     ))}
                   </select>
@@ -1342,14 +1405,18 @@ export default function MarketingDashboardPage() {
                 <LoadingRows />
               ) : pagedRecords.length ? (
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
-                  <table className="w-full min-w-[760px] text-left text-sm">
+                  <table className="w-full min-w-[900px] text-left text-sm">
                     <caption className="sr-only">
-                      Enquiries with source, trial status and date
+                      Enquiries with program of interest, source, trial status,
+                      and date
                     </caption>
                     <thead className="bg-slate-50">
                       <tr className="border-b border-slate-200 text-xs text-slate-600">
                         <th scope="col" className="px-4 py-3 font-semibold">
                           Enquiry
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-semibold">
+                          Program of interest
                         </th>
                         <th scope="col" className="px-4 py-3 font-semibold">
                           Source
@@ -1424,6 +1491,20 @@ export default function MarketingDashboardPage() {
                                   {isExpanded ? "Hide timeline" : "Timeline"}
                                 </button>
                               </th>
+                              <td className="px-4 py-3 align-top">
+                                {record.programInterest ? (
+                                  <span
+                                    className="inline-flex max-w-[220px] truncate rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
+                                    title={record.programInterest}
+                                  >
+                                    {record.programInterest}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-slate-400">
+                                    Not provided
+                                  </span>
+                                )}
+                              </td>
                               <td className="px-4 py-3 align-top text-center">
                                 <span
                                   role="img"
@@ -1477,7 +1558,7 @@ export default function MarketingDashboardPage() {
                             {isExpanded && (
                               <tr id={timelineId}>
                                 <td
-                                  colSpan={4}
+                                  colSpan={5}
                                   className="border-l-4 border-l-[#A81B1E] bg-slate-50 px-4 py-4"
                                 >
                                   <StudentTimelineStrip registration={record} />

@@ -434,7 +434,7 @@ export default function Header() {
           aria-expanded={showProfileMenu}
           title={profileName}
         >
-          <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-red-600 via-red-700 to-orange-500 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
+          <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-500 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
             {profileImage ? (
               <Image
                 src={profileImage}
@@ -543,7 +543,12 @@ export default function Header() {
               className={`w-auto transition-all duration-300 ${
                 isScrolled ? "h-8 sm:h-9" : "h-9 sm:h-10"
               }`}
-              style={{ width: "auto" }}
+              style={{
+                width: "auto",
+                filter: isTransparentMode
+                  ? "brightness(1.35)"
+                  : undefined,
+              }}
               priority
             />
           </Link>
@@ -572,11 +577,21 @@ export default function Header() {
                         isTransparentMode
                           ? "text-white/88 hover:text-white"
                           : "text-[#1a1a1a] hover:text-red-800"
-                      } ${isActive ? "bg-red-50/80 font-semibold text-red-800" : ""}`}
+                      } ${
+                        isActive
+                          ? "bg-[#8b0000] font-semibold text-white hover:text-white"
+                          : ""
+                      }`}
                     >
                       <span>{item.label}</span>
                       {item.badge && (
-                        <span className="rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white shadow-sm">
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${
+                            isTransparentMode
+                              ? "bg-red-500/15 text-red-100"
+                              : "bg-red-50 text-red-700"
+                          }`}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -588,10 +603,10 @@ export default function Header() {
                         />
                       )}
                       <span
-                        className={`absolute inset-x-1 -bottom-1 h-[2px] origin-left rounded-full bg-gradient-to-r from-red-700 to-orange-500 transition-transform duration-300 ${
+                        className={`absolute inset-x-1 -bottom-1 h-[2px] origin-left rounded-full transition-transform duration-300 ${
                           isActive
-                            ? "scale-x-100"
-                            : "scale-x-0 group-hover:scale-x-100"
+                            ? "scale-x-100 bg-red-500"
+                            : "scale-x-0 bg-gradient-to-r from-red-700 to-red-500 group-hover:scale-x-100"
                         }`}
                       />
                     </Link>
@@ -639,7 +654,7 @@ export default function Header() {
                 className={`flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isTransparentMode
                     ? "bg-white/10 text-white hover:bg-white/16"
-                    : "bg-red-50/70 text-[#1a1a1a] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-red-50/90"
+                    : "bg-white/85 text-[#1a1a1a] shadow-[0_4px_14px_rgba(15,23,42,0.04)] hover:bg-white"
                 }`}
                 aria-label="Open course search"
               >
@@ -650,7 +665,7 @@ export default function Header() {
 
               <Link href="/free-trial">
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
-                  <Button className="h-10 rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-4 xl:px-5 text-xs xl:text-sm font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)]">
+                  <Button className="h-10 rounded-full bg-gradient-to-r from-[#991b1b] via-[#b91c1c] to-[#dc2626] px-4 xl:px-5 text-xs xl:text-sm font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.18),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all duration-300 hover:shadow-[0_14px_24px_rgba(239,68,68,0.22),inset_0_1px_0_rgba(255,255,255,0.26)]">
                     <span className="flex items-center gap-1.5">
                       <span className="xl:hidden">Free Trial</span>
                       <span className="hidden xl:inline">
@@ -667,16 +682,16 @@ export default function Header() {
               <Link href="/free-trial" className="shrink-0">
                 <Button
                   size="sm"
-                  className="h-9 rounded-full bg-gradient-to-r from-[#ff7a18] via-[#ff5b1f] to-[#ff3131] px-3 text-[10.5px] font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.16)] transition-all duration-300 hover:shadow-[0_12px_24px_rgba(239,68,68,0.2)]"
+                  className="h-9 rounded-full bg-gradient-to-r from-[#991b1b] via-[#b91c1c] to-[#dc2626] px-3 text-[10.5px] font-semibold text-white shadow-[0_10px_20px_rgba(239,68,68,0.16)] transition-all duration-300 hover:shadow-[0_12px_24px_rgba(239,68,68,0.2)]"
                 >
                   Book a FREE Trial
                 </Button>
               </Link>
               <div
-                className={`rounded-2xl p-0.5 shadow-sm transition-all duration-300 ${
+                className={`rounded-2xl border border-transparent p-0.5 shadow-sm transition-all duration-300 hover:border-red-600 ${
                   isTransparentMode
                     ? "bg-white/10 text-white"
-                    : "bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
+                    : "bg-white/85 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
                 }`}
               >
                 <HamburgerButton
@@ -688,10 +703,10 @@ export default function Header() {
 
             <div className="hidden lg:block">
               <div
-                className={`rounded-[10px] p-0.5 shadow-sm transition-all duration-300 ${
+                className={`rounded-[10px] border border-transparent p-0.5 shadow-sm transition-all duration-300 hover:border-red-600 ${
                   isTransparentMode
-                    ? "bg-red-800/20 text-white"
-                    : "bg-white/82 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
+                    ? "bg-white/10 text-white"
+                    : "bg-white/85 text-red-800 shadow-[0_5px_14px_rgba(15,23,42,0.05)]"
                 }`}
               >
                 <HamburgerButton

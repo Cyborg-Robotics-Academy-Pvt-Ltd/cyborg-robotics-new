@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarClock, Clock3, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { dateToYMD, ymdToDate } from "@/app/enquire-form/utils";
+import {
+  dateToYMD,
+  formatTrialTime,
+  ymdToDate,
+} from "@/app/enquire-form/utils";
 import { TrialRegistration } from "@/app/enquire-form/types";
 import {
+  DEFAULT_OFFLINE_TRIAL_SLOTS,
+  DEFAULT_ONLINE_TRIAL_SLOTS,
   getDefaultTrialSlots,
   type TrialAvailabilityOverrides,
 } from "@/lib/trial-availability";
 
 type Props = {
   target: TrialRegistration | null;
+  allowAllDayAddSlot?: boolean;
   onClose: () => void;
-  onSave: (id: string, date: string, time: string) => Promise<boolean>;
+  onSave: (
+    id: string,
+    date: string,
+    time: string,
+    trialMode?: "online" | "offline",
+  ) => Promise<boolean>;
 };
 
 function getMinBookableDate() {
@@ -32,29 +44,83 @@ function getMinBookableDate() {
   return date;
 }
 
-export function RescheduleDialog({ target, onClose, onSave }: Props) {
+function getTodayDate() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+export function RescheduleDialog({
+  target,
+  allowAllDayAddSlot = false,
+  onClose,
+  onSave,
+}: Props) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [selectedTrialMode, setSelectedTrialMode] = useState<"online" | "offline">("online");
   const [saving, setSaving] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(getMinBookableDate);
   const [availabilityOverrides, setAvailabilityOverrides] =
     useState<TrialAvailabilityOverrides>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
+  const today = getTodayDate();
   const minBookableDate = getMinBookableDate();
+  const isAddingSlot = Boolean(
+    target && (!target.trialDate || !target.trialTime),
+  );
+  const useAllDayAddSlotAvailability = allowAllDayAddSlot && isAddingSlot;
   const targetMode = target?.trialMode === "offline" ? "offline" : "online";
-  const selectedSlots = useMemo(() => {
-    if (!date) return [];
-    return availabilityOverrides[date] ?? getDefaultTrialSlots(targetMode, date);
-  }, [availabilityOverrides, date, targetMode]);
+  const availabilityMode =
+    useAllDayAddSlotAvailability ? selectedTrialMode : targetMode;
+  const getSlotsForDate = (dateKey: string) => {
+    if (useAllDayAddSlotAvailability) {
+      const dayOfWeek = new Date(`${dateKey}T00:00:00.000Z`).getUTCDay();
+      if (dayOfWeek === 2) return [];
+      const configuredSlots = availabilityOverrides[dateKey];
+      return (
+        (configuredSlots?.length ? configuredSlots : undefined) ??
+        (availabilityMode === "offline"
+          ? DEFAULT_OFFLINE_TRIAL_SLOTS
+          : DEFAULT_ONLINE_TRIAL_SLOTS)
+      );
+    }
+    return availabilityOverrides[dateKey] ?? getDefaultTrialSlots(availabilityMode, dateKey);
+  };
+  const selectedSlots = date ? getSlotsForDate(date) : [];
+  const isDateAvailable = (calendarDate: Date) => {
+    const dateKey = dateToYMD(calendarDate);
+    const slots = getSlotsForDate(dateKey);
+    return (
+      !availabilityLoading &&
+      !availabilityError &&
+      calendarDate >=
+        (useAllDayAddSlotAvailability ? today : minBookableDate) &&
+      slots.length > 0
+    );
+  };
 
   useEffect(() => {
     setDate(target?.trialDate || "");
     setTime(target?.trialTime || "");
-  }, [target]);
+    setSelectedTrialMode(target?.trialMode === "offline" ? "offline" : "online");
+    if (target) {
+      setVisibleMonth(
+        useAllDayAddSlotAvailability ? getTodayDate() : getMinBookableDate(),
+      );
+    }
+  }, [target, useAllDayAddSlotAvailability]);
 
   useEffect(() => {
     if (!target) return;
+    if (useAllDayAddSlotAvailability) {
+      setAvailabilityOverrides({});
+      setAvailabilityLoading(false);
+      setAvailabilityError("");
+      return;
+    }
+
     const year = visibleMonth.getFullYear();
     const month = visibleMonth.getMonth();
     const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
@@ -64,16 +130,20 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
     setAvailabilityError("");
 
     fetch(
-      `/api/free-trial/availability?mode=${targetMode}&from=${from}&to=${to}`,
+      `/api/free-trial/availability?mode=${availabilityMode}&from=${from}&to=${to}`,
     )
       .then(async (response) => {
         const result = (await response.json()) as {
           success: boolean;
           availability?: TrialAvailabilityOverrides;
           message?: string;
+          code?: string;
         };
         if (!response.ok || !result.success) {
-          throw new Error(result.message || "Unable to load trial availability.");
+          const detail = result.code ? ` (${result.code})` : "";
+          throw new Error(
+            `${result.message || "Unable to load trial availability."}${detail}`,
+          );
         }
         if (active) setAvailabilityOverrides(result.availability ?? {});
       })
@@ -94,13 +164,18 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
     return () => {
       active = false;
     };
-  }, [target, targetMode, visibleMonth]);
+  }, [target, availabilityMode, useAllDayAddSlotAvailability, visibleMonth]);
 
   const save = async () => {
     if (!target || !date || !time) return;
 
     setSaving(true);
-    const saved = await onSave(target.id, date, time);
+    const saved = await onSave(
+      target.id,
+      date,
+      time,
+      useAllDayAddSlotAvailability ? selectedTrialMode : undefined,
+    );
     setSaving(false);
 
     if (saved) onClose();
@@ -111,16 +186,40 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-orange-600" />
-            Reschedule trial
+            <CalendarClock className="h-5 w-5 text-red-600" />
+            {isAddingSlot ? "Add trial slot" : "Reschedule trial"}
           </DialogTitle>
           <DialogDescription>
-            Choose a new date and time for {target?.studentName}&apos;s trial. A
-            reschedule email will be sent after saving.
+            {isAddingSlot
+              ? `Choose an available date and time for ${target?.studentName}'s trial.`
+              : `Choose a new date and time for ${target?.studentName}'s trial. A reschedule email will be sent after saving.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-2 sm:grid-cols-[auto_1fr] sm:items-start">
+          {useAllDayAddSlotAvailability && (
+            <div className="flex gap-2 sm:col-span-2" aria-label="Trial mode">
+              {(["online", "offline"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={selectedTrialMode === mode}
+                  onClick={() => {
+                    setSelectedTrialMode(mode);
+                    setDate("");
+                    setTime("");
+                  }}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold capitalize ${
+                    selectedTrialMode === mode
+                      ? "border-red-600 bg-red-600 text-white"
+                      : "border-stone-200 bg-white text-stone-700"
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex justify-center rounded-xl border border-stone-200 p-2">
             <Calendar
               mode="single"
@@ -129,17 +228,9 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
                 setDate(selectedDate ? dateToYMD(selectedDate) : "");
                 setTime("");
               }}
-              disabled={(calendarDate) =>
-                availabilityLoading ||
-                Boolean(availabilityError) ||
-                calendarDate < minBookableDate ||
-                (availabilityOverrides[dateToYMD(calendarDate)] ??
-                  getDefaultTrialSlots(
-                    targetMode,
-                    dateToYMD(calendarDate),
-                  )).length === 0
-              }
-              defaultMonth={minBookableDate}
+              disabled={(calendarDate) => !isDateAvailable(calendarDate)}
+              modifiers={{ available: isDateAvailable }}
+              month={visibleMonth}
               onMonthChange={setVisibleMonth}
               className="rounded-md"
             />
@@ -152,7 +243,7 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
               </p>
             )}
             <span className="flex items-center gap-1.5 text-sm font-medium text-stone-700">
-              <Clock3 className="h-3.5 w-3.5 text-orange-600" />
+              <Clock3 className="h-3.5 w-3.5 text-red-600" />
               Select time
             </span>
 
@@ -165,11 +256,11 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
                     onClick={() => setTime(slot)}
                     className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
                       time === slot
-                        ? "border-orange-600 bg-orange-600 text-white"
-                        : "border-stone-200 bg-white text-stone-700 hover:border-orange-200 hover:bg-orange-50"
+                        ? "border-red-600 bg-red-600 text-white"
+                        : "border-stone-200 bg-white text-stone-700 hover:border-red-200 hover:bg-red-50"
                     }`}
                   >
-                    {slot}
+                    {formatTrialTime(slot)}
                   </button>
                 ))}
               </div>
@@ -201,10 +292,10 @@ export function RescheduleDialog({ target, onClose, onSave }: Props) {
               Boolean(availabilityError) ||
               saving
             }
-            className="bg-orange-600 hover:bg-orange-700"
+            className="bg-red-600 hover:bg-red-700"
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save reschedule
+            {isAddingSlot ? "Add trial slot" : "Save reschedule"}
           </Button>
         </div>
       </DialogContent>

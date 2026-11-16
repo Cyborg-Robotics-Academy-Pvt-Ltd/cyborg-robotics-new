@@ -127,7 +127,7 @@ const TYPE_STYLES: Record<UnifiedRegistration["registrationType"], string> = {
   new: "bg-blue-100 text-blue-800",
   renewal: "bg-purple-100 text-purple-800",
   workshop: "bg-cyan-100 text-cyan-800",
-  competition: "bg-orange-100 text-orange-800",
+  competition: "bg-red-100 text-red-800",
   other: "bg-slate-100 text-slate-800",
 };
 

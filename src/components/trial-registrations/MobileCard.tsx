@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import {
   Calendar,
   CalendarClock,
+  CalendarPlus,
   Check,
   Flag,
   Globe,
   History,
+  Loader2,
   Mail,
   MapPin,
   MessageSquare,
@@ -47,10 +49,17 @@ import {
   statusStyle,
 } from "@/app/enquire-form/utils";
 import { TrialRegistration } from "@/app/enquire-form/types";
+import { StudentTimelineStrip } from "./StudentTimelineStrip";
 
 type Props = {
   registration: TrialRegistration;
   canModify: boolean;
+  trainerView: boolean;
+  marketingView: boolean;
+  showContact: boolean;
+  canAddTrialSlot: boolean;
+  openTimelineId: string | null;
+  onTimelineToggle: (id: string) => void;
   canDelete: boolean;
   onStatusChange: (id: string, status: string) => void;
   onSalesSelectedCenterChange: (id: string, center: string | null) => void;
@@ -59,6 +68,8 @@ type Props = {
   onCounsellorRemarkSave: (id: string, value: string) => void;
   onCloseRemarkSave: (id: string, value: string) => void;
   onFollowUpClick: (registration: TrialRegistration) => void;
+  onAddTrialSlot: (registration: TrialRegistration) => void;
+  onSendTrialMeetingEmail: (id: string) => Promise<boolean>;
   onEdit: (registration: TrialRegistration) => void;
   onDelete: (registration: TrialRegistration) => void;
 };
@@ -66,6 +77,12 @@ type Props = {
 export function MobileCard({
   registration,
   canModify,
+  trainerView,
+  marketingView,
+  showContact,
+  openTimelineId,
+  onTimelineToggle,
+  canAddTrialSlot,
   canDelete,
   onStatusChange,
   onSalesSelectedCenterChange,
@@ -74,9 +91,12 @@ export function MobileCard({
   onCounsellorRemarkSave,
   onCloseRemarkSave,
   onFollowUpClick,
+  onAddTrialSlot,
+  onSendTrialMeetingEmail,
   onEdit,
   onDelete,
 }: Props) {
+  const timelineOpen = openTimelineId === registration.id;
   const [editingCounsellor, setEditingCounsellor] = useState(false);
   const [counsellorValue, setCounsellorValue] = useState(
     registration.counsellorRemark || "",
@@ -84,6 +104,7 @@ export function MobileCard({
 
   const [editingClose, setEditingClose] = useState(false);
   const [closeValue, setCloseValue] = useState(registration.closeRemark || "");
+  const [sendingTrialEmail, setSendingTrialEmail] = useState(false);
 
   const status = statusStyle(registration.status || "booked");
   const temp = leadTempStyle(registration.leadTemp);
@@ -115,6 +136,20 @@ export function MobileCard({
     setCloseValue(registration.closeRemark || "");
   };
 
+  const sendTrialEmail = async () => {
+    if (
+      !window.confirm(
+        `Send the online trial meeting link to ${registration.email}?`,
+      )
+    ) {
+      return;
+    }
+
+    setSendingTrialEmail(true);
+    await onSendTrialMeetingEmail(registration.id);
+    setSendingTrialEmail(false);
+  };
+
   return (
     <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
       {/* HEADER */}
@@ -142,17 +177,36 @@ export function MobileCard({
               )}
             </p>
             <p className="text-xs text-stone-400">Age {registration.age}</p>
+            {registration.createdAt > 0 && (
+              <p className="mt-0.5 text-xs text-stone-400">
+                {new Date(registration.createdAt).toLocaleString("en-IN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </p>
+            )}
           </div>
         </div>
 
-        {(canModify || canDelete) && (
+        {!trainerView && (canModify || canDelete) && (
           <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => onTimelineToggle(registration.id)}
+              aria-expanded={timelineOpen}
+              aria-label={`${timelineOpen ? "Hide" : "View"} ${registration.studentName}'s timeline`}
+              title="Student timeline"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-red-600"
+            >
+              <History className="h-4 w-4" />
+              Timeline
+            </button>
             {canModify && (
               <button
                 type="button"
                 onClick={() => onEdit(registration)}
                 aria-label={`Edit ${registration.studentName}`}
-                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-orange-600"
+                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-red-600"
               >
                 <Pencil className="h-4 w-4" />
               </button>
@@ -172,6 +226,21 @@ export function MobileCard({
         )}
       </div>
 
+      <div
+        aria-hidden={!timelineOpen}
+        className={`grid overflow-hidden transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out motion-reduce:transition-none ${
+          timelineOpen
+            ? "mt-3 grid-rows-[1fr] opacity-100"
+            : "mt-0 grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-2">
+            <StudentTimelineStrip registration={registration} />
+          </div>
+        </div>
+      </div>
+
       {/* TRIAL STATUS */}
 
       <div className="mt-4">
@@ -180,23 +249,27 @@ export function MobileCard({
         </p>
 
         <Select
-          value={registration.status || "booked"}
-          onValueChange={(value) => onStatusChange(registration.id, value)}
+          value={registration.status || "__blank__"}
+          onValueChange={(value) => onStatusChange(registration.id, value === "__blank__" ? "" : value)}
           disabled={!canModify}
         >
           <SelectTrigger
+            aria-label={`Trial status for ${registration.studentName}`}
             className={cn(
               "h-9 w-full border-stone-200 bg-stone-50",
               status.text,
             )}
           >
             <div className="flex items-center gap-2">
-              <span className={cn("h-2 w-2 rounded-full", status.dot)} />
-              <SelectValue />
+              {registration.status && (
+                <span className={cn("h-2 w-2 rounded-full", status.dot)} />
+              )}
+              <SelectValue>{registration.status ? undefined : ""}</SelectValue>
             </div>
           </SelectTrigger>
 
           <SelectContent>
+            <SelectItem value="__blank__">Clear status</SelectItem>
             {STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -208,7 +281,7 @@ export function MobileCard({
 
       {/* COUNSELLOR REMARK — only when status === show */}
 
-      {isShow && (
+      {!trainerView && !marketingView && isShow && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
           {editingCounsellor && canModify ? (
             <div className="space-y-2">
@@ -233,12 +306,13 @@ export function MobileCard({
                 <button
                   type="button"
                   onClick={saveCounsellor}
-                  className="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1.5 text-xs text-white"
+                  className="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs text-white"
                 >
                   <Check className="h-3.5 w-3.5" />
                   Save
                 </button>
               </div>
+
             </div>
           ) : canModify ? (
             <button
@@ -247,7 +321,7 @@ export function MobileCard({
               className="flex w-full items-start justify-between gap-3 text-left"
             >
               <div className="flex gap-2">
-                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
 
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
@@ -271,7 +345,7 @@ export function MobileCard({
             </button>
           ) : (
             <div className="flex items-start gap-2 text-left">
-              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
                   Counsellor Remark
@@ -294,7 +368,7 @@ export function MobileCard({
 
       {/* LEAD TEMP + LEAD OUTCOME */}
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      {!trainerView && !marketingView && <div className="mt-3 grid grid-cols-2 gap-2">
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">
             Lead Temp
@@ -360,11 +434,11 @@ export function MobileCard({
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </div>}
 
       {/* CLOSE REMARK — only when leadOutcome === closed */}
 
-      {isClosed && (
+      {!trainerView && !marketingView && isClosed && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
           {editingClose && canModify ? (
             <div className="space-y-2">
@@ -389,7 +463,7 @@ export function MobileCard({
                 <button
                   type="button"
                   onClick={saveClose}
-                  className="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1.5 text-xs text-white"
+                  className="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs text-white"
                 >
                   <Check className="h-3.5 w-3.5" />
                   Save
@@ -403,7 +477,7 @@ export function MobileCard({
               className="flex w-full items-start justify-between gap-3 text-left"
             >
               <div className="flex gap-2">
-                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
 
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
@@ -427,7 +501,7 @@ export function MobileCard({
             </button>
           ) : (
             <div className="flex items-start gap-2 text-left">
-              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">
                   Close Remark
@@ -451,41 +525,74 @@ export function MobileCard({
       {/* DETAILS */}
 
       <div className="mt-4 space-y-2 text-sm text-stone-500">
-        <a
-          href={`mailto:${registration.email}`}
-          className="flex items-center gap-2 hover:text-orange-600"
-        >
-          <Mail className="h-4 w-4 shrink-0" />
-          <span className="truncate">{registration.email}</span>
-        </a>
+        {showContact && !trainerView && (
+          <>
+            <a
+              href={`mailto:${registration.email}`}
+              className="flex items-center gap-2 hover:text-red-600"
+            >
+              <Mail className="h-4 w-4 shrink-0" />
+              <span className="truncate">{registration.email}</span>
+            </a>
 
-        <a
-          href={`tel:${registration.contactNumber}`}
-          className="flex items-center gap-2 hover:text-orange-600"
-        >
-          <Phone className="h-4 w-4 shrink-0" />
-          {registration.contactNumber}
-        </a>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-md border border-orange-100 bg-orange-50 px-2 py-1 text-orange-900">
-            <Calendar className="h-4 w-4 shrink-0 text-orange-600" />
-            <span className="font-medium">
-              {formatYMDDisplay(registration.trialDate)} · {formatTrialTime(registration.trialTime)}
-            </span>
-          </span>
-        </div>
+            <a
+              href={`tel:${registration.contactNumber}`}
+              className="flex items-center gap-2 hover:text-red-600"
+            >
+              <Phone className="h-4 w-4 shrink-0" />
+              {registration.contactNumber}
+            </a>
+          </>
+        )}
 
         <div className="flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 shrink-0" />
-          <span>
-            Enquired: {registration.createdAt
-              ? new Date(registration.createdAt).toLocaleString("en-IN", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })
-              : "Date unavailable"}
-          </span>
+          {registration.trialDate && registration.trialTime ? (
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="inline-flex items-center gap-2 rounded-md border border-red-100 bg-red-50 px-2 py-1 text-red-900">
+                <Calendar className="h-4 w-4 shrink-0 text-red-600" />
+                <span className="font-medium">
+                  {formatYMDDisplay(registration.trialDate)} · {formatTrialTime(registration.trialTime)}
+                </span>
+              </span>
+              {!trainerView &&
+                canAddTrialSlot &&
+                registration.trialMode === "online" &&
+                (registration.status === "booked" ||
+                  registration.status === "reschedule") && (
+                registration.trialConfirmationEmailSentAt ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                    <Check aria-hidden className="h-3.5 w-3.5" />
+                    Meeting link sent
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void sendTrialEmail()}
+                    disabled={sendingTrialEmail || !registration.email}
+                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {sendingTrialEmail ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Mail className="h-3.5 w-3.5" />
+                    )}
+                    {sendingTrialEmail ? "Sending..." : "Send meeting link"}
+                  </button>
+                )
+              )}
+            </div>
+          ) : canAddTrialSlot && !trainerView ? (
+            <button
+              type="button"
+              onClick={() => onAddTrialSlot(registration)}
+              className="inline-flex items-center gap-2 rounded-md border border-dashed border-red-300 px-2 py-1 font-medium text-red-700 hover:bg-red-50"
+            >
+              <CalendarPlus className="h-4 w-4 shrink-0" />
+              Add trial slot
+            </button>
+          ) : (
+            <span className="text-stone-400">No trial slot</span>
+          )}
         </div>
 
         <div>
@@ -493,12 +600,12 @@ export function MobileCard({
           {registration.programInterest || "Not provided"}
         </div>
 
-        <div>
+        {!trainerView && <div>
           <span className="font-medium text-stone-700">Heard about us: </span>
           {registration.referralSource || "Not provided"}
-        </div>
+        </div>}
 
-        {registration.remark && (
+        {!trainerView && !marketingView && registration.remark && (
           <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">
               Enquiry Remark
@@ -511,26 +618,39 @@ export function MobileCard({
 
         {/* LOCATION */}
 
-        <div className="flex items-center gap-2">
-          {locationType === "online" ? (
-            <Globe className="h-4 w-4 shrink-0 text-blue-500" />
-          ) : (
-            <MapPin className="h-4 w-4 shrink-0 text-orange-500" />
-          )}
-
-          <div>
-            <span className="font-medium text-stone-700">
-              {displayLocation}
-            </span>
-            <span className="ml-2 text-xs capitalize text-stone-400">
-              ({locationType})
+        {trainerView ? (
+          <div className="flex items-center gap-2">
+            {locationType === "online" ? (
+              <Globe className="h-4 w-4 shrink-0 text-blue-500" />
+            ) : (
+              <MapPin className="h-4 w-4 shrink-0 text-red-500" />
+            )}
+            <span className="font-medium capitalize text-stone-700">
+              {locationType}
             </span>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {locationType === "online" ? (
+              <Globe className="h-4 w-4 shrink-0 text-blue-500" />
+            ) : (
+              <MapPin className="h-4 w-4 shrink-0 text-red-500" />
+            )}
 
-        {registration.preferredCenter && (
+            <div>
+              <span className="font-medium text-stone-700">
+                {displayLocation}
+              </span>
+              <span className="ml-2 text-xs capitalize text-stone-400">
+                ({locationType})
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!trainerView && !marketingView && registration.preferredCenter && (
           <div className="flex flex-wrap items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-orange-500" />
+            <MapPin className="h-4 w-4 shrink-0 text-red-500" />
             <span>
               {registration.preferredCenter === "kalyani-nagar"
                 ? "Kalyani Nagar HQ trial"
@@ -567,13 +687,13 @@ export function MobileCard({
         )}
 
         {/* NEXT FOLLOW-UP */}
-        <button
+        {!trainerView && !marketingView && <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
           disabled={!canModify}
           className={cn(
             "flex items-center gap-2",
-            canModify && "hover:text-orange-600",
+            canModify && "hover:text-red-600",
             !canModify && "cursor-default",
           )}
         >
@@ -589,7 +709,7 @@ export function MobileCard({
               {registration.followUpHistory.length}
             </span>
           )}
-        </button>
+        </button>}
       </div>
     </div>
   );

@@ -77,6 +77,70 @@ interface TrialBookingEmailData {
   trialTime: string;
 }
 
+export interface TrialMeetingEmailData {
+  studentName: string;
+  ageGroup: string;
+  email: string;
+  trialDate: string;
+  trialTime: string;
+  meetingLink: string;
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+}
+
+export async function sendTrialMeetingLinkEmail(data: TrialMeetingEmailData) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error("Email is not configured. Set EMAIL_USER and EMAIL_PASS.");
+  }
+
+  const studentName = escapeHtml(data.studentName);
+  const ageGroup = escapeHtml(data.ageGroup);
+  const trialDate = escapeHtml(formatDate(data.trialDate));
+  const trialTime = escapeHtml(`${data.trialTime} IST`);
+  const meetingLink = escapeHtml(data.meetingLink);
+
+  await transporter.sendMail({
+    from: `"Cyborg Robotics Academy" <${process.env.EMAIL_USER}>`,
+    to: data.email,
+    subject: "Your Online Trial Class is Confirmed – Cyborg Robotics Academy",
+    text: `Hi ${data.studentName},\n\nYour online trial class is confirmed.\n\nDate: ${formatDate(data.trialDate)}\nTime: ${data.trialTime} IST\nMeeting link: ${data.meetingLink}\n\nPlease join a few minutes early. We look forward to meeting you!\n\nCyborg Robotics Academy`,
+    html: emailShell(`
+      <tr>
+        <td style="background:linear-gradient(135deg,${BRAND_RED_DARK},${BRAND_RED});padding:32px;text-align:center;">
+          <h1 style="margin:0;color:#fff;font-size:24px;">Online Trial Class Confirmed</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:32px;color:#444;font-size:15px;line-height:1.6;">
+          <p>Hi <strong>${studentName}</strong>,</p>
+          <p>Your online trial class is confirmed. Here are the details:</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${infoRow("Age group", ageGroup)}
+            ${infoRow("Date", trialDate)}
+            ${infoRow("Time", trialTime)}
+          </table>
+          <p style="margin:24px 0;">
+            <a href="${meetingLink}" style="display:inline-block;background:${BRAND_RED};color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:8px;">Join online trial</a>
+          </p>
+          <p style="font-size:13px;word-break:break-all;">${meetingLink}</p>
+          <p>Please join a few minutes early. We look forward to meeting you!</p>
+        </td>
+      </tr>
+    `),
+  });
+}
+
 function parentEmailHtml(data: TrialBookingEmailData) {
   const { studentName, age, contactNumber, trialMode, locationName, trialDate, trialTime } = data;
 

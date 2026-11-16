@@ -178,7 +178,7 @@ function getLevelColor(level: string) {
       return "bg-purple-50 text-purple-700 border-purple-200";
     case "4":
     case "expert":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-red-50 text-red-700 border-red-200";
     default:
       return "bg-gray-50 text-gray-700 border-gray-200";
   }

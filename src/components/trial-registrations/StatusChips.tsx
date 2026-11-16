@@ -61,7 +61,7 @@ function StatChip({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active
-          ? "border-orange-300 bg-orange-50 text-orange-700"
+          ? "border-red-300 bg-red-50 text-red-700"
           : "border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700",
       )}
     >

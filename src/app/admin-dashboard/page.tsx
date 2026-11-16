@@ -14,7 +14,8 @@ import {
   getDoc,
   collection,
   getDocs,
-  onSnapshot,
+  type DocumentData,
+  type QuerySnapshot,
 } from "firebase/firestore";
 import { getAdminUserData } from "@/lib/admin-utils";
 import Link from "next/link";
@@ -153,14 +154,14 @@ const themes: Record<
   },
   sunset: {
     name: "Sunset",
-    background: "bg-gradient-to-br from-orange-50 via-red-50 to-pink-100",
+    background: "bg-gradient-to-br from-red-50 via-red-50 to-pink-100",
     cardBg: "bg-white/60 backdrop-blur-sm",
-    cardBorder: "border-orange-200/30",
+    cardBorder: "border-red-200/30",
     textPrimary: "text-gray-900",
     textSecondary: "text-gray-700",
     textMuted: "text-gray-500",
-    shadow: "shadow-lg shadow-orange-500/10",
-    hoverShadow: "hover:shadow-2xl hover:shadow-orange-500/20",
+    shadow: "shadow-lg shadow-red-500/10",
+    hoverShadow: "hover:shadow-2xl hover:shadow-red-500/20",
   },
   forest: {
     name: "Forest",
@@ -650,6 +651,10 @@ const AdminDashboard = () => {
     username?: string;
   } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCooldownSeconds, setRefreshCooldownSeconds] = useState(0);
+  const studentsSnapshotPromiseRef = useRef<
+    Promise<QuerySnapshot<DocumentData>> | null
+  >(null);
   const { user, userRole, loading: authLoading } = useAuth();
 
   // State for current date and time
@@ -1436,68 +1441,34 @@ const AdminDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Function to refresh admin data
-  const refreshAdminData = useCallback(async () => {
-    if (isRefreshing) return; // Prevent multiple simultaneous refreshes
-
-    setIsRefreshing(true);
-    try {
-      if (!user) return;
-
-      const adminDocRef = doc(db, "admins", user.uid);
-      const adminDoc = await getDoc(adminDocRef);
-
-      if (adminDoc.exists()) {
-        const adminData = adminDoc.data();
-        setAdminData(adminData);
-        setUserProfileData(adminData);
-
-        // Update profile image
-        if (adminData.profileimage) {
-          setProfileImage(adminData.profileimage);
-        } else if (adminData.imageUrls && adminData.imageUrls[0]) {
-          setProfileImage(adminData.imageUrls[0]);
-        } else if (adminData.imageUrl) {
-          setProfileImage(adminData.imageUrl);
-        } else if (user?.photoURL) {
-          setProfileImage(user.photoURL);
-        } else {
-          setProfileImage(null);
-        }
-
-        // Update name if it has changed
-        if (adminData?.username && adminData.username.trim() !== adminName) {
-          setAdminName(adminData.username.trim());
-        }
-      }
-    } catch (error) {
-      console.error("Error refreshing admin data:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [isRefreshing, user, adminName]);
-
-  // Auto-refresh admin data every 5 minutes
   useEffect(() => {
-    const interval = setInterval(
-      () => {
-        if (!isLoading) {
-          refreshAdminData();
-        }
-      },
-      5 * 60 * 1000,
-    ); // 5 minutes
-
-    return () => clearInterval(interval);
-  }, [isLoading, refreshAdminData]);
+    if (refreshCooldownSeconds <= 0) return;
+    const timeout = setTimeout(() => {
+      setRefreshCooldownSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [refreshCooldownSeconds]);
 
   // Function to fetch overview data
+  const getStudentsSnapshot = useCallback(() => {
+    if (!studentsSnapshotPromiseRef.current) {
+      studentsSnapshotPromiseRef.current = getDocs(
+        collection(db, "students"),
+      ).catch((error) => {
+        studentsSnapshotPromiseRef.current = null;
+        throw error;
+      });
+    }
+
+    return studentsSnapshotPromiseRef.current;
+  }, []);
+
   const fetchOverviewData = useCallback(async () => {
     try {
       setLoadingOverview(true);
 
       // Fetch actual data from Firebase using your collections
-      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsSnapshot = await getStudentsSnapshot();
       setDayPredictionStudents(
         studentsSnapshot.docs.map((studentDoc) => {
           const student = studentDoc.data();
@@ -1754,7 +1725,7 @@ const AdminDashboard = () => {
     } finally {
       setLoadingOverview(false);
     }
-  }, []);
+  }, [getStudentsSnapshot]);
 
   // Function to fetch recent activities
   const fetchRecentActivities = useCallback(async () => {
@@ -1765,7 +1736,7 @@ const AdminDashboard = () => {
       const now = new Date();
 
       // Fetch recent student registrations
-      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsSnapshot = await getStudentsSnapshot();
       const recentStudents = studentsSnapshot.docs
         .filter((doc) => {
           const data = doc.data();
@@ -1990,7 +1961,7 @@ const AdminDashboard = () => {
     } finally {
       setLoadingActivities(false);
     }
-  }, []);
+  }, [getStudentsSnapshot]);
 
   // Function to fetch enrollment trends
   const fetchEnrollmentTrends = useCallback(async () => {
@@ -1998,7 +1969,7 @@ const AdminDashboard = () => {
       setLoadingTrends(true);
 
       // Get students and group by month
-      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsSnapshot = await getStudentsSnapshot();
       const students: any[] = studentsSnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
@@ -2049,7 +2020,7 @@ const AdminDashboard = () => {
     } finally {
       setLoadingTrends(false);
     }
-  }, []);
+  }, [getStudentsSnapshot]);
 
   // Function to fetch course enrollment distribution based on unique students
   const fetchCourseCategories = useCallback(async () => {
@@ -2057,7 +2028,7 @@ const AdminDashboard = () => {
       setLoadingCategories(true);
 
       // Get all students and their courses
-      const studentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsSnapshot = await getStudentsSnapshot();
       const students = studentsSnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
@@ -2178,7 +2149,7 @@ const AdminDashboard = () => {
     } finally {
       setLoadingCategories(false);
     }
-  }, []);
+  }, [getStudentsSnapshot]);
 
   // Load all dynamic data on component mount
   useEffect(() => {
@@ -2196,42 +2167,6 @@ const AdminDashboard = () => {
     fetchEnrollmentTrends,
     fetchCourseCategories,
   ]);
-
-  useEffect(() => {
-    if (authLoading || isLoading) return;
-
-    const watchActivityCollection = (collectionName: string) => {
-      let isInitialSnapshot = true;
-
-      return onSnapshot(
-        collection(db, collectionName),
-        () => {
-          if (isInitialSnapshot) {
-            isInitialSnapshot = false;
-            return;
-          }
-
-          void fetchRecentActivities();
-        },
-        (error) => {
-          console.error(
-            `Error monitoring ${collectionName} activity changes:`,
-            error,
-          );
-        },
-      );
-    };
-
-    const unsubscribeStudents = watchActivityCollection("students");
-    const unsubscribePayments = watchActivityCollection("payments");
-    const unsubscribeTrainers = watchActivityCollection("trainers");
-
-    return () => {
-      unsubscribeStudents();
-      unsubscribePayments();
-      unsubscribeTrainers();
-    };
-  }, [authLoading, isLoading, fetchRecentActivities]);
 
   // Overview cards data
   const overviewCards = [
@@ -2285,7 +2220,7 @@ const AdminDashboard = () => {
         overviewData.pendingPayments > 0 ? "Needs follow-up" : "All clear",
       icon: CreditCard,
       color: "yellow",
-      gradient: "from-yellow-500 to-orange-500",
+      gradient: "from-yellow-500 to-red-500",
       bgColor: "bg-yellow-50",
       iconBg: "bg-gradient-to-br from-yellow-100 to-yellow-200",
       textColor: "text-yellow-600",
@@ -2676,7 +2611,10 @@ const AdminDashboard = () => {
                 <Button
                   size="sm"
                   onClick={async () => {
+                    if (isRefreshing || refreshCooldownSeconds > 0) return;
                     setIsRefreshing(true);
+                    setRefreshCooldownSeconds(30);
+                    studentsSnapshotPromiseRef.current = null;
                     try {
                       await Promise.all([
                         fetchOverviewData(),
@@ -2688,12 +2626,21 @@ const AdminDashboard = () => {
                       setIsRefreshing(false);
                     }
                   }}
-                  disabled={isRefreshing}
+                  disabled={isRefreshing || refreshCooldownSeconds > 0}
+                  aria-label={
+                    refreshCooldownSeconds > 0
+                      ? `Refresh dashboard, available in ${refreshCooldownSeconds} seconds`
+                      : "Refresh dashboard"
+                  }
                 >
                   <RefreshCw
                     className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
                   />
-                  Refresh
+                  <span aria-live="polite">
+                    {refreshCooldownSeconds > 0
+                      ? `Refresh (${refreshCooldownSeconds}s)`
+                      : "Refresh"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -2721,7 +2668,7 @@ const AdminDashboard = () => {
                         />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center border border-white group-hover:shadow-md transition-shadow duration-200">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center border border-white group-hover:shadow-md transition-shadow duration-200">
                         <User className="w-4 h-4 text-white" />
                       </div>
                     )}
@@ -4233,7 +4180,7 @@ const AdminDashboard = () => {
                       label: "Registration records",
                       value: drilldownDetails.registrations.length,
                       helper: "Registrations created during this period",
-                      tone: "border-orange-200 bg-gradient-to-br from-orange-50 to-white text-orange-700",
+                      tone: "border-red-200 bg-gradient-to-br from-red-50 to-white text-red-700",
                     },
                     {
                       label: "Pending payments",
@@ -4648,6 +4595,16 @@ function AdminLeadTimelineSection({
     currentPage * pageSize,
   );
   const todayCount = registrations.filter(isEnquiredToday).length;
+  const timelineSummary = [
+    {
+      label: "Total enquiries",
+      value: registrations.length,
+      icon: Users,
+      iconClass: "bg-red-50 text-[#A81B1E]",
+    },
+   
+   
+  ];
 
   return (
     <section aria-labelledby="admin-lead-timeline-title" className="mb-8">
@@ -4671,6 +4628,29 @@ function AdminLeadTimelineSection({
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {timelineSummary.map(({ label, value, icon: Icon, iconClass }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
+              >
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconClass}`}
+                  aria-hidden="true"
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xl font-bold leading-none tabular-nums text-slate-900">
+                    {loading ? "—" : value}
+                  </p>
+                  <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                    {label}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3" aria-live="polite">
             <span className="text-xs text-slate-500">
               {search.trim() ||
@@ -4839,7 +4819,7 @@ function AdminLeadTimelineSection({
                             <section aria-label={`Follow-up history for ${registration.studentName || "student"}`} className="rounded-lg border border-slate-200 bg-white p-4">
                               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                                 <h3 className="text-sm font-semibold text-slate-900">Follow-up history</h3>
-                                <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-800">
+                                <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-800">
                                   {followUpCount} {followUpCount === 1 ? "entry" : "entries"}
                                 </span>
                               </div>

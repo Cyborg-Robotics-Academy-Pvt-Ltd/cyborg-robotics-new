@@ -12,7 +12,6 @@ import {
 import { db } from "@/lib/firebase";
 
 import {
-  MAX_BOOKINGS_PER_SLOT,
   getTrimmedString,
   slotIdFor,
   validateCoreFields,
@@ -41,6 +40,7 @@ type RegistrationData = {
   status?: string;
   trialDate?: string | null;
   trialTime?: string | null;
+  followUpHistory?: unknown[];
 };
 
 /* =========================================================
@@ -459,15 +459,6 @@ export async function PATCH(
           newSlotCount,
         );
 
-        if (
-          newSlotCount >=
-          MAX_BOOKINGS_PER_SLOT
-        ) {
-          throw new Error(
-            "SLOT_FULL",
-          );
-        }
-
         /* -----------------------------------------------
            FREE PREVIOUS SLOT
         ------------------------------------------------ */
@@ -557,6 +548,16 @@ export async function PATCH(
 
             trialDate: date,
 
+            ...(existing.trialDate
+              ? {}
+              : {
+                  bookingOrigin:
+                    Array.isArray(existing.followUpHistory) &&
+                    existing.followUpHistory.length > 0
+                      ? "follow-up"
+                      : "direct",
+                }),
+
             trialTime: time,
 
             status: "booked",
@@ -636,27 +637,6 @@ export async function PATCH(
       },
     );
   } catch (error) {
-    /* =====================================================
-       SLOT FULL
-    ===================================================== */
-
-    if (
-      error instanceof Error &&
-      error.message === "SLOT_FULL"
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "This slot is fully booked. Please pick another time.",
-        },
-        {
-          status: 409,
-        },
-      );
-    }
-
     /* =====================================================
        LEAD NOT FOUND
     ===================================================== */

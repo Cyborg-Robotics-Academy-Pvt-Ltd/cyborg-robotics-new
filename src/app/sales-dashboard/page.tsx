@@ -81,7 +81,7 @@ const PAGE_SIZES = [10, 25, 50];
 const TRIALS_PER_PAGE = 5;
 
 /* ---------- Presentation constants ---------- */
-/* Brand: red #A81B1E (primary), neutrals for structure, amber/emerald/orange for status only */
+/* Brand: red #A81B1E (primary), neutrals for structure, amber/emerald/red for status only */
 
 const HEADING_STYLE = {
   fontFamily: "Syne, ui-sans-serif, system-ui, sans-serif",
@@ -963,7 +963,7 @@ export default function SalesDashboardPage() {
                       stage.count > 0 &&
                       !registrationsLoading && (
                         <Flame
-                          className="h-4 w-4 text-orange-500"
+                          className="h-4 w-4 text-red-500"
                           aria-hidden="true"
                         />
                       )}
@@ -1173,7 +1173,7 @@ export default function SalesDashboardPage() {
                 }}
                 className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${FOCUS_RING} ${
                   hotOnly
-                    ? "border-orange-300 bg-orange-50 text-orange-700"
+                    ? "border-red-300 bg-red-50 text-red-700"
                     : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
                 }`}
               >
@@ -1650,7 +1650,7 @@ function LeadRow({
               {name}
             </p>
             {registration.leadTemp === "hot" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-200">
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-200">
                 <Flame className="h-3 w-3" aria-hidden="true" /> Hot
               </span>
             )}

@@ -74,7 +74,7 @@ const PILLARS: readonly Pillar[] = [
     label: "Creativity & Confidence",
     description: "Turning ideas into things they can show off.",
     icon: Rocket,
-    tone: "orange",
+    tone: "amber",
   },
 ];
 
