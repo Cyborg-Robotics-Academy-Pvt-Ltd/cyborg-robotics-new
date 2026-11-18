@@ -41,24 +41,33 @@ export async function getTrialAvailabilityOverride(
 
 const getCachedTrialAvailabilityOverrides = unstable_cache(
   async (mode: TrialMode, from: string, to: string) => {
-    const snapshots = await adminDb
-      .collection(availabilityCollection)
-      .where("mode", "==", mode)
-      .where("date", ">=", from)
-      .where("date", "<=", to)
-      .get();
+    const dates: string[] = [];
+    for (
+      let timestamp = Date.parse(`${from}T00:00:00.000Z`);
+      timestamp <= Date.parse(`${to}T00:00:00.000Z`);
+      timestamp += 86_400_000
+    ) {
+      dates.push(new Date(timestamp).toISOString().slice(0, 10));
+    }
+
+    const collection = adminDb.collection(availabilityCollection);
+    const snapshots = await adminDb.getAll(
+      ...dates.map((date) => collection.doc(availabilityDocId(mode, date))),
+    );
 
     return Object.fromEntries(
-      snapshots.docs.flatMap((snapshot) => {
+      snapshots.flatMap((snapshot, index) => {
+        if (!snapshot.exists) return [];
         const data = snapshot.data();
         if (
-          !isValidTrialDate(data.date) ||
+          data?.mode !== mode ||
+          data.date !== dates[index] ||
           !Array.isArray(data.slots) ||
-          !data.slots.every(isValidTrialTime)
+          !data.slots.every((slot) => isValidTrialTime(slot))
         ) {
           throw new Error(`Invalid availability configuration in ${snapshot.id}.`);
         }
-        return [[data.date, data.slots as string[]]];
+        return [[dates[index], data.slots as string[]]];
       }),
     );
   },

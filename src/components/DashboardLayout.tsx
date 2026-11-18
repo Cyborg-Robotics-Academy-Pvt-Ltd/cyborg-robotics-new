@@ -26,6 +26,8 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  UserCheck,
+  UserCog,
   UserLock,
   UserPlus,
 } from "lucide-react";
@@ -135,9 +137,46 @@ const roleLinksMap: Record<
     },
 
     {
-      label: "Access Control",
-      href: "/admin-dashboard/access-control",
+      label: "Users",
       icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
+      children: [
+        {
+          label: "Admins",
+          href: "/admin-dashboard/access-control?role=admin",
+          icon: <UserLock className="h-5 w-5 shrink-0 text-gray-700" />,
+          activeWhen: (pathname) =>
+            pathname === "/admin-dashboard/access-control" &&
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("role") === "admin",
+        },
+        {
+          label: "Students",
+          href: "/admin-dashboard/access-control?role=student",
+          icon: <IconUsers className="h-5 w-5 shrink-0 text-gray-700" />,
+          activeWhen: (pathname) =>
+            pathname === "/admin-dashboard/access-control" &&
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("role") === "student",
+        },
+        {
+          label: "Sales",
+          href: "/admin-dashboard/access-control?role=sales",
+          icon: <UserCheck className="h-5 w-5 shrink-0 text-gray-700" />,
+          activeWhen: (pathname) =>
+            pathname === "/admin-dashboard/access-control" &&
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("role") === "sales",
+        },
+        {
+          label: "Marketing",
+          href: "/admin-dashboard/access-control?role=marketing",
+          icon: <UserCog className="h-5 w-5 shrink-0 text-gray-700" />,
+          activeWhen: (pathname) =>
+            pathname === "/admin-dashboard/access-control" &&
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("role") === "marketing",
+        },
+      ],
     },
     {
       label: "Logout",

@@ -87,6 +87,7 @@ interface Student {
   phone?: string;
   phoneNumber?: string;
   mobile?: string;
+  primaryParentContact?: string;
   email?: string;
   joined?: unknown;
   joinedOn?: unknown;
@@ -115,20 +116,49 @@ async function getStudentData(prn: string) {
     );
     if (!lowercasePrnSnapshot.empty) {
       const d = lowercasePrnSnapshot.docs[0].data();
-      return {
+      const student = {
         ...d,
         PrnNumber: d.PrnNumber || d.prnNumber || prn,
         profileimage:
           d.profileimage || d.imageUrl || d.imageUrls?.[0] || undefined,
       } as Student;
+      return await addRegistrationContact(student);
     }
   }
   if (querySnapshot.empty) return null;
   const d = querySnapshot.docs[0].data();
-  return {
+  const student = {
     ...d,
     profileimage: d.profileimage || d.imageUrl || d.imageUrls?.[0] || undefined,
   } as Student;
+  return await addRegistrationContact(student);
+}
+
+async function addRegistrationContact(student: Student): Promise<Student> {
+  if (!student.email) return student;
+  try {
+    const registrationsSnapshot = await getDocs(
+      query(
+        collection(db, "registrations"),
+        where("primaryParentEmail", "==", student.email),
+      ),
+    );
+    const registration = registrationsSnapshot.docs.find(
+      (item) => item.data().primaryParentContact,
+    );
+    if (!registration) return student;
+    const data = registration.data();
+    return {
+      ...student,
+      primaryParentContact:
+        data.primaryParentContact || student.primaryParentContact,
+      phone:
+        data.primaryParentContact || student.phone || student.phoneNumber,
+    };
+  } catch (error) {
+    console.error("Error loading student registration contact:", error);
+    return student;
+  }
 }
 
 function getStudentDisplayName(student: Student) {
@@ -447,6 +477,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [showAddClassModal, setShowAddClassModal] = React.useState(false);
   const [showAddCourseModal, setShowAddCourseModal] = React.useState(false);
   const [showRemarkModal, setShowRemarkModal] = React.useState(false);
+  const [showParentContactModal, setShowParentContactModal] = React.useState(false);
   const [task, setTask] = React.useState("");
   const [taskDateTime, setTaskDateTime] = React.useState(formatInputDateTime());
   const [taskStatus, setTaskStatus] = React.useState<"ongoing" | "complete">(
@@ -465,6 +496,8 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [actionSaving, setActionSaving] = React.useState(false);
+  const [parentContactDraft, setParentContactDraft] = React.useState("");
+  const [savingParentContact, setSavingParentContact] = React.useState(false);
   const [taskDate = "", taskTime = "00:00"] = taskDateTime.split("T");
   const [taskHour24 = "00", taskMinute = "00"] = taskTime.split(":");
   const taskHour12 = String(Number(taskHour24) % 12 || 12).padStart(2, "0");
@@ -528,6 +561,45 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
   const refreshStudent = async () => {
     const freshStudent = await getStudentData(prn);
     setStudent(freshStudent);
+  };
+
+  const handleSaveParentContact = async () => {
+    const contact = parentContactDraft.trim();
+    const digitCount = contact.replace(/\D/g, "").length;
+    if (!isAdmin || !student || digitCount < 10 || digitCount > 15) {
+      setActionNotice("Enter a valid contact number", "error");
+      return;
+    }
+    try {
+      setSavingParentContact(true);
+      let studentSnapshot = await getDocs(
+        query(collection(db, "students"), where("PrnNumber", "==", prn)),
+      );
+      if (studentSnapshot.empty) {
+        studentSnapshot = await getDocs(
+          query(collection(db, "students"), where("prnNumber", "==", prn)),
+        );
+      }
+      if (studentSnapshot.empty) throw new Error("Student record not found.");
+      await updateDoc(studentSnapshot.docs[0].ref, {
+        primaryParentContact: contact,
+        parentPhone: contact,
+        updatedAt: new Date(),
+      });
+      setStudent((current) =>
+        current
+          ? { ...current, primaryParentContact: contact, phone: contact }
+          : current,
+      );
+      setParentContactDraft("");
+      setShowParentContactModal(false);
+      setActionNotice("Parent contact number saved", "success");
+    } catch (error) {
+      console.error("Error saving parent contact:", error);
+      setActionNotice("Could not save the contact number", "error");
+    } finally {
+      setSavingParentContact(false);
+    }
   };
 
   const resetAddClassForm = () => {
@@ -891,7 +963,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
       )
     : 0;
   const contactPhone =
-    student.phone || student.phoneNumber || student.mobile || "+91 98765 43210";
+    student.primaryParentContact || student.phone || student.phoneNumber || student.mobile;
   const contactEmail = student.email || "shrikant@example.com";
   const studentDisplayName = getStudentDisplayName(student);
   const studentInitial = studentDisplayName.charAt(0).toUpperCase();
@@ -966,9 +1038,9 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
             </Link>
           </div>
 
-          <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_1px_2px_rgba(6,19,65,0.04),0_8px_24px_-12px_rgba(6,19,65,0.08)] sm:p-5">
-            <div className="grid gap-5 xl:grid-cols-[1fr_660px]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-3 shadow-[0_1px_2px_rgba(6,19,65,0.04),0_8px_24px_-12px_rgba(6,19,65,0.08)] sm:p-5">
+            <div className="grid min-w-0 items-center gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative mx-auto h-24 w-24 shrink-0 rounded-full bg-gradient-to-br from-[#D71920] via-[#A81B1E] to-[#062341] p-[3px] sm:mx-0">
                   <div className="h-full w-full overflow-hidden rounded-full bg-white">
                     {student.profileimage ? (
@@ -1012,7 +1084,25 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                       <Mail className="h-4 w-4 shrink-0 text-slate-500" />
                       <span className="truncate">{contactEmail}</span>
                     </span>
+                    {contactPhone && (
+                      <span className="inline-flex items-center justify-center gap-2 sm:justify-start">
+                        <Phone className="h-4 w-4 shrink-0 text-slate-500" />
+                        <span className="truncate">{contactPhone}</span>
+                      </span>
+                    )}
                   </div>
+                  {!contactPhone && userChecked && isAdmin && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowParentContactModal(true)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[#A81B1E]/20 bg-white px-3.5 py-2 text-sm font-semibold text-[#A81B1E] shadow-sm transition-colors hover:bg-red-50"
+                      >
+                        <Phone className="h-4 w-4" />
+                        Add contact number
+                      </button>
+                    </div>
+                  )}
                   <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-slate-500 sm:justify-start">
                     <span>Joined: {joinedDate}</span>
                     <span className="hidden h-4 w-px bg-slate-300 sm:block" />
@@ -1022,7 +1112,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-100 bg-gray-50/40 p-3 sm:gap-3 sm:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-2 gap-2 rounded-2xl border border-gray-100 bg-gray-50/40 p-2 sm:grid-cols-3 sm:gap-3 sm:p-3">
                 {[
                   {
                     icon: GraduationCap,
@@ -1051,7 +1141,7 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="group rounded-xl border border-gray-200 bg-white p-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md sm:p-4"
+                    className="group flex min-h-[132px] min-w-0 flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md sm:min-h-[148px] sm:p-4"
                   >
                     <div
                       className={`mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110 sm:h-9 sm:w-9 ${item.bg}`}
@@ -1077,25 +1167,25 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
               </div>
             </div>
 
-            <div className="mt-5 rounded-xl border border-gray-100 bg-gray-50/60 p-2">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="mt-5 min-w-0 rounded-xl border border-gray-100 bg-gray-50/60 p-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                 <button
                   onClick={openAddClassModal}
-                  className="flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-11 min-w-0 w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-4 w-4 shrink-0 text-[#D71920] sm:h-5 sm:w-5" />
                   <span className="truncate">Add Class</span>
                 </button>
                 <button
                   onClick={openRemarkModal}
-                  className="flex h-11 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-11 min-w-0 w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
                 >
                   <MessageSquarePlus className="h-4 w-4 shrink-0 text-red-500 sm:h-5 sm:w-5" />
                   <span className="truncate">Add Remark</span>
                 </button>
                 <button
                   onClick={() => setShowAddCourseModal(true)}
-                  className="flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-11 min-w-0 w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 text-xs font-semibold text-[#061341] shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:shadow active:translate-y-0 active:scale-[0.98] sm:gap-2 sm:px-3 sm:text-sm"
                 >
                   <BookOpen className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
                   <span className="truncate">Add Course</span>
@@ -1774,6 +1864,57 @@ export default function Page({ params }: { params: Promise<{ prn: string }> }) {
                   <option value="complete">Complete</option>
                 </select>
               </div>
+            </div>
+          </div>
+        </DashboardModal>
+
+        <DashboardModal
+          open={showParentContactModal}
+          title="Add Parent Contact Number"
+          onClose={() => {
+            if (savingParentContact) return;
+            setShowParentContactModal(false);
+            setParentContactDraft("");
+          }}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowParentContactModal(false);
+                  setParentContactDraft("");
+                }}
+                disabled={savingParentContact}
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 sm:w-auto"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSaveParentContact()}
+                disabled={savingParentContact || !parentContactDraft.trim()}
+                className="w-full rounded-lg bg-[#A81B1E] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#861619] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                {savingParentContact ? "Saving…" : "Save contact"}
+              </button>
+            </>
+          }
+        >
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Add a parent or guardian contact number for {studentDisplayName}.
+            </p>
+            <div>
+              <label className={labelCls}>Contact Number</label>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoFocus
+                value={parentContactDraft}
+                onChange={(event) => setParentContactDraft(event.target.value)}
+                placeholder="Enter phone number"
+                className={inputCls}
+              />
             </div>
           </div>
         </DashboardModal>

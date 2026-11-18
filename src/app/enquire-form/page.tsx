@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   Inbox,
   Loader2,
+  Plus,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -41,7 +42,7 @@ type CachedTrainerAccess = {
   savedAt: number;
 };
 
-const TRAINER_ACCESS_CACHE_TTL_MS = 5 * 60 * 1000;
+const TRAINER_ACCESS_CACHE_TTL_MS = 30 * 60 * 1000;
 
 function trainerAccessCacheKey(uid: string, role: string) {
   return `enquire-form-access:v1:${uid}:${role}`;
@@ -95,13 +96,13 @@ const Page = () => {
   const [accessRefreshKey, setAccessRefreshKey] = useState(0);
   const canModify =
     userRole !== null &&
-    userRole !== "marketing" &&
     (userRole !== "trainer" || selectedTrainerId === user?.uid);
   const trainerView = userRole === "trainer";
   const marketingView = userRole === "marketing";
   const canAddTrialSlot =
     userRole === "admin" ||
-    userRole === "sales";
+    userRole === "sales" ||
+    marketingView;
   const selectedTrainer = trainerOptions.find(
     (trainer) => trainer.id === selectedTrainerId,
   );
@@ -300,6 +301,19 @@ const Page = () => {
     }
   };
 
+  const retryTrainerAccess = () => {
+    if (user) {
+      try {
+        window.localStorage.removeItem(
+          trainerAccessCacheKey(user.uid, userRole || "unknown"),
+        );
+      } catch (cacheError) {
+        console.warn("Unable to clear saved trainer access:", cacheError);
+      }
+    }
+    setAccessRefreshKey((value) => value + 1);
+  };
+
   const {
     searchTerm,
     setSearchTerm,
@@ -478,15 +492,14 @@ const Page = () => {
 
       <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {canAddTrialSlot && (
-          <div className="mb-4 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setManualEnquiryOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-800"
-            >
-              New Enquiry
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setManualEnquiryOpen(true)}
+            className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-red-700 px-4 py-4 text-sm font-medium text-white shadow-lg transition hover:bg-red-800"
+          >
+            <Plus className="h-6 w-6" />
+           
+          </button>
         )}
         <div className="mb-1 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <FilterBar
@@ -617,7 +630,7 @@ const Page = () => {
                     </p>
                     <button
                       type="button"
-                      onClick={() => setAccessRefreshKey((value) => value + 1)}
+                      onClick={retryTrainerAccess}
                       className="shrink-0 text-xs font-semibold text-red-700 underline"
                     >
                       Retry
@@ -649,7 +662,7 @@ const Page = () => {
             <p role="alert">{accessError}</p>
             <button
               type="button"
-              onClick={() => setAccessRefreshKey((value) => value + 1)}
+              onClick={retryTrainerAccess}
               className="shrink-0 font-semibold text-red-700 underline"
             >
               Retry
@@ -701,7 +714,7 @@ const Page = () => {
               canModify={canModify}
               trainerView={trainerView}
               marketingView={marketingView}
-              showContact={!trainerView && canModify}
+              showContact={!trainerView && (canModify || marketingView)}
               canAddTrialSlot={canAddTrialSlot}
               openTimelineId={openTimelineId}
               onTimelineToggle={(id) =>
@@ -729,7 +742,7 @@ const Page = () => {
               canModify={canModify}
               trainerView={trainerView}
               marketingView={marketingView}
-              showContact={!trainerView && canModify}
+              showContact={!trainerView && (canModify || marketingView)}
               canAddTrialSlot={canAddTrialSlot}
               openTimelineId={openTimelineId}
               onTimelineToggle={(id) =>

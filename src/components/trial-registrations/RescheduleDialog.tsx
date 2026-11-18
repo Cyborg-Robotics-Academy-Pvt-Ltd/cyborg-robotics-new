@@ -58,7 +58,6 @@ export function RescheduleDialog({
 }: Props) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [selectedTrialMode, setSelectedTrialMode] = useState<"online" | "offline">("online");
   const [saving, setSaving] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(getMinBookableDate);
   const [availabilityOverrides, setAvailabilityOverrides] =
@@ -72,11 +71,16 @@ export function RescheduleDialog({
   );
   const useAllDayAddSlotAvailability = allowAllDayAddSlot && isAddingSlot;
   const targetMode = target?.trialMode === "offline" ? "offline" : "online";
-  const availabilityMode =
-    useAllDayAddSlotAvailability ? selectedTrialMode : targetMode;
+  const availabilityMode = targetMode;
   const getSlotsForDate = (dateKey: string) => {
     if (useAllDayAddSlotAvailability) {
       const dayOfWeek = new Date(`${dateKey}T00:00:00.000Z`).getUTCDay();
+      if (
+        availabilityMode === "online" &&
+        (dayOfWeek === 0 || dayOfWeek === 6)
+      ) {
+        return [];
+      }
       if (dayOfWeek === 2) return [];
       const configuredSlots = availabilityOverrides[dateKey];
       return (
@@ -104,7 +108,6 @@ export function RescheduleDialog({
   useEffect(() => {
     setDate(target?.trialDate || "");
     setTime(target?.trialTime || "");
-    setSelectedTrialMode(target?.trialMode === "offline" ? "offline" : "online");
     if (target) {
       setVisibleMonth(
         useAllDayAddSlotAvailability ? getTodayDate() : getMinBookableDate(),
@@ -174,7 +177,7 @@ export function RescheduleDialog({
       target.id,
       date,
       time,
-      useAllDayAddSlotAvailability ? selectedTrialMode : undefined,
+      useAllDayAddSlotAvailability ? targetMode : undefined,
     );
     setSaving(false);
 
@@ -197,29 +200,6 @@ export function RescheduleDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-2 sm:grid-cols-[auto_1fr] sm:items-start">
-          {useAllDayAddSlotAvailability && (
-            <div className="flex gap-2 sm:col-span-2" aria-label="Trial mode">
-              {(["online", "offline"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  aria-pressed={selectedTrialMode === mode}
-                  onClick={() => {
-                    setSelectedTrialMode(mode);
-                    setDate("");
-                    setTime("");
-                  }}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold capitalize ${
-                    selectedTrialMode === mode
-                      ? "border-red-600 bg-red-600 text-white"
-                      : "border-stone-200 bg-white text-stone-700"
-                  }`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-          )}
           <div className="flex justify-center rounded-xl border border-stone-200 p-2">
             <Calendar
               mode="single"

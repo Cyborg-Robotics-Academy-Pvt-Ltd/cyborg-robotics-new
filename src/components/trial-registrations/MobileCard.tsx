@@ -188,8 +188,7 @@ export function MobileCard({
           </div>
         </div>
 
-        {!trainerView && (canModify || canDelete) && (
-          <div className="flex gap-1">
+        <div className="flex gap-1">
             <button
               type="button"
               onClick={() => onTimelineToggle(registration.id)}
@@ -201,7 +200,7 @@ export function MobileCard({
               <History className="h-4 w-4" />
               Timeline
             </button>
-            {canModify && (
+            {canModify && !marketingView && (
               <button
                 type="button"
                 onClick={() => onEdit(registration)}
@@ -212,7 +211,7 @@ export function MobileCard({
               </button>
             )}
 
-            {canDelete && (
+            {canDelete && !trainerView && (
               <button
                 type="button"
                 onClick={() => onDelete(registration)}
@@ -222,8 +221,7 @@ export function MobileCard({
                 <Trash2 className="h-4 w-4" />
               </button>
             )}
-          </div>
-        )}
+        </div>
       </div>
 
       <div
@@ -281,7 +279,7 @@ export function MobileCard({
 
       {/* COUNSELLOR REMARK — only when status === show */}
 
-      {!trainerView && !marketingView && isShow && (
+      {!trainerView && isShow && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
           {editingCounsellor && canModify ? (
             <div className="space-y-2">
@@ -368,7 +366,7 @@ export function MobileCard({
 
       {/* LEAD TEMP + LEAD OUTCOME */}
 
-      {!trainerView && !marketingView && <div className="mt-3 grid grid-cols-2 gap-2">
+      {!trainerView && <div className="mt-3 grid grid-cols-2 gap-2">
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">
             Lead Temp
@@ -438,7 +436,7 @@ export function MobileCard({
 
       {/* CLOSE REMARK — only when leadOutcome === closed */}
 
-      {!trainerView && !marketingView && isClosed && (
+      {!trainerView && isClosed && (
         <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3">
           {editingClose && canModify ? (
             <div className="space-y-2">
@@ -605,7 +603,7 @@ export function MobileCard({
           {registration.referralSource || "Not provided"}
         </div>}
 
-        {!trainerView && !marketingView && registration.remark && (
+        {!trainerView && registration.remark && (
           <div className="rounded-lg border border-stone-200 bg-stone-50 p-3">
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">
               Enquiry Remark
@@ -648,7 +646,7 @@ export function MobileCard({
           </div>
         )}
 
-        {!trainerView && !marketingView && registration.preferredCenter && (
+        {!trainerView && registration.preferredCenter && (
           <div className="flex flex-wrap items-center gap-2">
             <MapPin className="h-4 w-4 shrink-0 text-red-500" />
             <span>
@@ -687,7 +685,7 @@ export function MobileCard({
         )}
 
         {/* NEXT FOLLOW-UP */}
-        {!trainerView && !marketingView && <button
+        {!trainerView && <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
           disabled={!canModify}

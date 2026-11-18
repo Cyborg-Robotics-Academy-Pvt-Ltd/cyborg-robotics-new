@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, type ChangeEvent } from "react";
+import { Suspense, useState, useEffect, useRef, type ChangeEvent } from "react";
 import { DocumentData } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, authReady } from "@/lib/firebase";
 import Image from "next/image";
 import {
   collection,
@@ -13,10 +13,12 @@ import {
   deleteDoc,
   setDoc,
   deleteField,
+  query,
+  where,
 } from "firebase/firestore";
 import { getAdminUserData } from "@/lib/admin-utils";
 import { autoGenerateAndAssignPrn } from "@/lib/prn-utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import {
   User,
@@ -39,6 +41,9 @@ import {
   Search,
   ArrowLeft,
   AlertTriangle,
+  KeyRound,
+  GraduationCap,
+  Info,
 } from "lucide-react";
 import AuthLoadingSpinner from "@/components/AuthLoadingSpinner";
 
@@ -52,7 +57,36 @@ interface UserData {
   profileimage?: string;
   superAdmin?: boolean;
   authOnly?: boolean;
+  schoolName?: string;
+  grade?: string;
+  parentName?: string;
+  parentPhone?: string;
+  studentPhone?: string;
+  PrnNumber?: string;
+  dateOfBirth?: string;
+  currentAddress?: string;
 }
+
+const getMissingUserDetails = (user: UserData) => {
+  const requiredDetails: Array<[keyof UserData, string]> = [
+    ["name", "Name"],
+    ["email", "Email"],
+  ];
+  if (user.role === "student") {
+    requiredDetails.push(
+      ["schoolName", "School"],
+      ["grade", "Grade / class"],
+      ["parentName", "Parent / guardian name"],
+      ["parentPhone", "Parent / guardian phone"],
+      ["dateOfBirth", "Date of birth"],
+      ["currentAddress", "Current address"],
+      ["PrnNumber", "Student ID / PRN"],
+    );
+  }
+  return requiredDetails
+    .filter(([field]) => !String(user[field] ?? "").trim())
+    .map(([, label]) => label);
+};
 
 const CROP_PREVIEW_SIZE = 256;
 const CROPPED_IMAGE_SIZE = 512;
@@ -96,6 +130,26 @@ const getSafeCreatedAt = (value: unknown): Date => {
   }
   const parsed = new Date(String(value));
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+};
+
+const getAgeFromDateOfBirth = (value?: string) => {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const [, year, month, day] = match.map(Number);
+  const birthDate = new Date(year, month - 1, day);
+  if (
+    birthDate.getFullYear() !== year ||
+    birthDate.getMonth() !== month - 1 ||
+    birthDate.getDate() !== day
+  ) return null;
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  if (
+    today.getMonth() < month - 1 ||
+    (today.getMonth() === month - 1 && today.getDate() < day)
+  ) age -= 1;
+  return age >= 0 ? age : null;
 };
 
 const RoleBadge = ({
@@ -322,8 +376,9 @@ const SkeletonRows = ({ rows = 6 }: { rows?: number }) => (
   </>
 );
 
-const AccessControlPage = () => {
+const AccessControlPageContent = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, userRole, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
@@ -331,14 +386,27 @@ const AccessControlPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [ageFilter, setAgeFilter] = useState("all");
+  const [dataFilter, setDataFilter] = useState("all");
   const [fetchError, setFetchError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const requestedRole = searchParams.get("role");
+    const supportedRoles = ["admin", "student", "sales", "marketing"];
+    setRoleFilter(
+      requestedRole && supportedRoles.includes(requestedRole)
+        ? requestedRole
+        : "all",
+    );
+  }, [searchParams]);
 
   // Edit is now a modal instead of an inline table row — keeps the table
   // compact and avoids layout shift when a row is being edited.
   const [editModalUser, setEditModalUser] = useState<UserData | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<UserData>>({});
   const [savingEdit, setSavingEdit] = useState(false);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
 
   // Delete confirmation, replacing window.confirm with an in-app dialog.
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -445,11 +513,56 @@ const AccessControlPage = () => {
                 data.imageUrls?.[0] ||
                 undefined,
               superAdmin: data.superAdmin || false,
+              schoolName: data.schoolName || data.school || "",
+              grade: data.grade || data.gradeClass || data.className || "",
+              parentName:
+                data.parentName || data.parentGuardianName || data.primaryParentName || "",
+              parentPhone:
+                data.parentPhone || data.parentGuardianPhone || data.primaryParentPhone || "",
+              PrnNumber: data.PrnNumber || data.prnNumber || "",
+              dateOfBirth: data.dateOfBirth || data.birthDate || "",
+              currentAddress: data.currentAddress || data.address || "",
             });
           });
         } catch (collectionError) {
           console.error(`Error fetching ${collectionName}:`, collectionError);
         }
+      }
+      try {
+        const registrationsSnapshot = await getDocs(collection(db, "registrations"));
+        const registrationByParentEmail = new Map<string, DocumentData>();
+        registrationsSnapshot.forEach((registrationDoc) => {
+          const registrationData = registrationDoc.data();
+          const parentEmail = String(registrationData.primaryParentEmail || "")
+            .trim()
+            .toLowerCase();
+          if (parentEmail && !registrationByParentEmail.has(parentEmail)) {
+            registrationByParentEmail.set(parentEmail, registrationData);
+          }
+        });
+        allUsers = allUsers.map((account) => {
+          if (account.role !== "student") return account;
+          const registrationData = registrationByParentEmail.get(
+            account.email.trim().toLowerCase(),
+          );
+          if (!registrationData) return account;
+          return {
+            ...account,
+            schoolName: account.schoolName || registrationData.schoolName || "",
+            grade:
+              account.grade || registrationData.class || registrationData.grade || "",
+            parentName:
+              account.parentName || registrationData.primaryParentName || "",
+            parentPhone:
+              account.parentPhone || registrationData.primaryParentContact || "",
+            dateOfBirth:
+              account.dateOfBirth || registrationData.dateOfBirth || "",
+            currentAddress:
+              account.currentAddress || registrationData.currentAddress || registrationData.address || "",
+          };
+        });
+      } catch (registrationError) {
+        console.error("Error fetching student registration details:", registrationError);
       }
       if (user) {
         try {
@@ -540,6 +653,21 @@ const AccessControlPage = () => {
       result = result.filter((user) => user.role === roleFilter);
     if (statusFilter !== "all")
       result = result.filter((user) => user.status === statusFilter);
+    if (ageFilter !== "all") {
+      result = result.filter((user) => {
+        if (user.role !== "student") return false;
+        const age = getAgeFromDateOfBirth(user.dateOfBirth);
+        if (age === null) return false;
+        if (ageFilter === "4-6") return age >= 4 && age < 6;
+        if (ageFilter === "6-9") return age >= 6 && age < 9;
+        if (ageFilter === "9-12") return age >= 9 && age < 12;
+        return age >= 12;
+      });
+    }
+    if (dataFilter === "missing")
+      result = result.filter((user) => getMissingUserDetails(user).length > 0);
+    else if (dataFilter === "complete")
+      result = result.filter((user) => getMissingUserDetails(user).length === 0);
     result.sort((a, b) => {
       if (sortConfig.key === "createdAt") {
         const dateA = a.createdAt.getTime();
@@ -576,7 +704,7 @@ const AccessControlPage = () => {
     // Any change to the underlying result set can invalidate the current
     // page (e.g. searching down to 2 results while on page 3).
     setCurrentPage(1);
-  }, [searchTerm, roleFilter, statusFilter, users, sortConfig]);
+  }, [searchTerm, roleFilter, statusFilter, ageFilter, dataFilter, users, sortConfig]);
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const paginatedUsers = filteredUsers.slice(
@@ -584,7 +712,7 @@ const AccessControlPage = () => {
     currentPage * PAGE_SIZE,
   );
 
-  const handleEditClick = (user: UserData) => {
+  const handleEditClick = async (user: UserData) => {
     if (user.authOnly) {
       alert(
         "This account has no Firestore profile. Create its profile before editing access details.",
@@ -595,8 +723,50 @@ const AccessControlPage = () => {
       alert("You cannot edit super admin users.");
       return;
     }
+    const collectionName = ROLE_COLLECTIONS[user.role];
+    let studentDetails: Partial<UserData> = {};
+    if (user.role === "student" && collectionName) {
+      try {
+        const snapshot = await getDoc(doc(db, collectionName, user.id));
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          studentDetails = {
+            schoolName: data.schoolName || data.school || "",
+            grade: data.grade || data.gradeClass || data.className || "",
+            parentName: data.parentName || data.parentGuardianName || data.primaryParentName || "",
+            parentPhone: data.parentPhone || data.parentGuardianPhone || data.primaryParentPhone || "",
+            studentPhone: data.studentPhone || data.phone || data.phoneNumber || "",
+            PrnNumber: data.PrnNumber || data.prnNumber || "",
+            dateOfBirth: data.dateOfBirth || data.birthDate || "",
+            currentAddress: data.currentAddress || data.address || "",
+          };
+        }
+        if (user.email) {
+          const registrationsQuery = query(
+            collection(db, "registrations"),
+            where("primaryParentEmail", "==", user.email),
+          );
+          const registrationsSnapshot = await getDocs(registrationsQuery);
+          const matchingRegistration = registrationsSnapshot.docs[0];
+          if (matchingRegistration) {
+            const registrationData = matchingRegistration.data();
+            studentDetails = {
+              ...studentDetails,
+              schoolName: registrationData.schoolName || studentDetails.schoolName || "",
+              grade: registrationData.class || registrationData.grade || studentDetails.grade || "",
+              parentName: registrationData.primaryParentName || studentDetails.parentName || "",
+              parentPhone: registrationData.primaryParentContact || studentDetails.parentPhone || "",
+              dateOfBirth: registrationData.dateOfBirth || studentDetails.dateOfBirth || "",
+              currentAddress: registrationData.currentAddress || registrationData.address || studentDetails.currentAddress || "",
+            };
+          }
+        }
+      } catch (error) {
+        console.error("Error loading student details:", error);
+      }
+    }
     setEditModalUser(user);
-    setEditFormData({ ...user });
+    setEditFormData({ ...user, ...studentDetails });
   };
 
   const handleCancelEdit = () => {
@@ -670,6 +840,15 @@ const AccessControlPage = () => {
           updateData.profileimage = originalUser.profileimage;
         if (editFormData.role !== undefined)
           updateData.role = editFormData.role;
+        if (originalUser.role === "student") {
+          updateData.schoolName = editFormData.schoolName || "";
+          updateData.grade = editFormData.grade || "";
+          updateData.parentName = editFormData.parentName || "";
+          updateData.parentPhone = editFormData.parentPhone || "";
+          updateData.studentPhone = editFormData.studentPhone || "";
+          updateData.dateOfBirth = editFormData.dateOfBirth || "";
+          updateData.currentAddress = editFormData.currentAddress || "";
+        }
         await updateDoc(userDocRef, updateData);
         if (updateData.needsPrnGeneration) {
           try {
@@ -741,6 +920,27 @@ const AccessControlPage = () => {
     setEditFormData({ ...editFormData, role });
   const handleStatusChange = (status: string) =>
     setEditFormData({ ...editFormData, status });
+
+  const handleSendPasswordReset = async () => {
+    const email = editFormData.email?.trim();
+    if (!email) {
+      alert("Add an email address before sending a password reset link.");
+      return;
+    }
+    try {
+      setSendingPasswordReset(true);
+      const authInstance = await authReady;
+      if (!authInstance) throw new Error("Firebase Authentication is unavailable.");
+      const { sendPasswordResetEmail } = await import("firebase/auth");
+      await sendPasswordResetEmail(authInstance, email);
+      alert(`Password reset link sent to ${email}.`);
+    } catch (error) {
+      console.error("Error sending password reset link:", error);
+      alert("Could not send the password reset link. Please check the email and try again.");
+    } finally {
+      setSendingPasswordReset(false);
+    }
+  };
 
   const stopCameraStream = () => {
     if (cameraStreamRef.current) {
@@ -1155,7 +1355,7 @@ const AccessControlPage = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
@@ -1187,6 +1387,28 @@ const AccessControlPage = () => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="pending">Pending</option>
+            </select>
+            <select
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all text-gray-700"
+              value={ageFilter}
+              onChange={(e) => setAgeFilter(e.target.value)}
+              aria-label="Filter students by age"
+            >
+              <option value="all">All Ages</option>
+              <option value="4-6">Age 4–5</option>
+              <option value="6-9">Age 6–8</option>
+              <option value="9-12">Age 9–11</option>
+              <option value="12+">Age 12 and above</option>
+            </select>
+            <select
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 bg-gray-50/50 outline-none transition-all text-gray-700"
+              value={dataFilter}
+              onChange={(e) => setDataFilter(e.target.value)}
+              aria-label="Filter by profile completeness"
+            >
+              <option value="all">All Profiles</option>
+              <option value="missing">Incomplete Profiles</option>
+              <option value="complete">Complete Profiles</option>
             </select>
           </div>
         </div>
@@ -1286,9 +1508,22 @@ const AccessControlPage = () => {
                         <div className="flex items-center gap-3">
                           <Avatar src={user.profileimage} name={user.name} />
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {user.name}
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {user.name}
+                              </p>
+                              {(() => {
+                                const missingDetails = getMissingUserDetails(user);
+                                return missingDetails.length > 0 ? (
+                                  <span className="relative inline-flex flex-shrink-0 group/info" tabIndex={0} aria-label={`Missing details: ${missingDetails.join(", ")}`}>
+                                    <Info className="w-4 h-4 text-red-700" />
+                                    <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-52 -translate-x-1/2 rounded-lg bg-gray-900 px-3 py-2 text-xs font-normal text-white shadow-lg group-hover/info:block group-focus/info:block">
+                                      Missing: {missingDetails.join(", ")}
+                                    </span>
+                                  </span>
+                                ) : null;
+                              })()}
+                            </div>
                             <p className="text-xs text-gray-400 truncate">
                               {user.email}
                             </p>
@@ -1305,7 +1540,11 @@ const AccessControlPage = () => {
                         <StatusBadge status={user.status} />
                       </td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">
-                        {user.createdAt.toLocaleDateString()}
+                        {user.createdAt.toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </td>
                       <td className="px-5 py-3.5">
                         {/* Always visible — the previous opacity-0/group-hover
@@ -1390,15 +1629,20 @@ const AccessControlPage = () => {
           from receiving clicks) by this modal's own overlay. */}
       {editModalUser && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <div>
-                <h2 className="text-base font-semibold text-gray-900">
-                  Edit User
-                </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Update role, status, and profile details
-                </p>
+          <div className="w-full max-w-2xl max-h-[min(92vh,850px)] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-white to-red-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center">
+                  <UserCog className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Edit User
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Manage account access and profile details
+                  </p>
+                </div>
               </div>
               <button
                 onClick={handleCancelEdit}
@@ -1409,7 +1653,7 @@ const AccessControlPage = () => {
               </button>
             </div>
 
-            <div className="px-5 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-5 overflow-y-auto">
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden ring-2 ring-white shadow-sm bg-gradient-to-br from-red-100 to-rose-200 flex items-center justify-center">
                   {editFormData.profileimage || editModalUser.profileimage ? (
@@ -1530,6 +1774,51 @@ const AccessControlPage = () => {
                       className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none bg-white"
                     />
                   </div>
+                  {editFormData.role === "student" && (
+                    <div className="space-y-4 rounded-2xl border border-red-100 bg-gradient-to-br from-red-50/70 via-white to-white p-4 sm:p-5">
+                      <div className="flex items-center gap-3 border-b border-red-100 pb-3">
+                        <div className="w-9 h-9 rounded-xl bg-white border border-red-100 text-red-700 flex items-center justify-center shadow-sm"><GraduationCap className="w-5 h-5" /></div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900">Student details</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">School and contact information</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">School</label>
+                          <input type="text" value={editFormData.schoolName || ""} placeholder="Enter school" onChange={(e) => setEditFormData((prev) => ({ ...prev, schoolName: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Grade / class</label>
+                          <input type="text" value={editFormData.grade || ""} placeholder="Enter grade or class" onChange={(e) => setEditFormData((prev) => ({ ...prev, grade: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Date of birth</label>
+                          <input type="date" value={editFormData.dateOfBirth || ""} onChange={(e) => setEditFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Current address</label>
+                          <textarea value={editFormData.currentAddress || ""} placeholder="Enter current address" onChange={(e) => setEditFormData((prev) => ({ ...prev, currentAddress: e.target.value }))} rows={3} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white resize-y" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Parent / guardian name</label>
+                          <input type="text" value={editFormData.parentName || ""} placeholder="Enter parent or guardian name" onChange={(e) => setEditFormData((prev) => ({ ...prev, parentName: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Parent / guardian phone</label>
+                          <input type="tel" value={editFormData.parentPhone || ""} placeholder="Enter phone number" onChange={(e) => setEditFormData((prev) => ({ ...prev, parentPhone: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Student phone <span className="font-normal text-gray-400">(optional)</span></label>
+                          <input type="tel" value={editFormData.studentPhone || ""} placeholder="Enter phone number" onChange={(e) => setEditFormData((prev) => ({ ...prev, studentPhone: e.target.value }))} className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/10 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Student ID / PRN</label>
+                          <input type="text" value={editFormData.PrnNumber || ""} readOnly placeholder="Not assigned" className="block w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-100 text-gray-500" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -1562,11 +1851,15 @@ const AccessControlPage = () => {
                       </select>
                     </div>
                   </div>
+                  <button type="button" onClick={() => void handleSendPasswordReset()} disabled={sendingPasswordReset || !editFormData.email?.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">
+                    {sendingPasswordReset ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                    {sendingPasswordReset ? "Sending reset link…" : "Send password reset link"}
+                  </button>
                 </>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50/80">
               <button
                 onClick={handleCancelEdit}
                 disabled={savingEdit}
@@ -1815,5 +2108,11 @@ const AccessControlPage = () => {
     </div>
   );
 };
+
+const AccessControlPage = () => (
+  <Suspense fallback={<AuthLoadingSpinner />}>
+    <AccessControlPageContent />
+  </Suspense>
+);
 
 export default AccessControlPage;

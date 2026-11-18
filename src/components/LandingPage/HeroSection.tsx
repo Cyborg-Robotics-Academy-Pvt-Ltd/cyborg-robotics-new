@@ -370,6 +370,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     useState<TrialAvailabilityOverrides>({});
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const reelVideoRef = useRef<HTMLVideoElement>(null);
   const reelTimeRemainingRef = useRef<HTMLSpanElement>(null);
   const reelProgressRef = useRef<HTMLDivElement>(null);
@@ -575,8 +576,27 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     if (!selectedDate) return [];
     const dateKey = toLocalISODate(selectedDate);
     const configuredSlots = availabilityOverrides[dateKey];
-    return configuredSlots ?? getDefaultTrialSlots(trial, dateKey);
-  }, [trial, selectedDate, availabilityOverrides]);
+    const isToday = toLocalISODate(selectedDate) === toLocalISODate(currentTime);
+    const slots =
+      configuredSlots ??
+      (isToday && trial === "offline"
+        ? (selectedLocation?.offlineSlots ?? ["10:00", "18:00"])
+        : getDefaultTrialSlots(trial, dateKey));
+
+    if (!isToday) return slots;
+
+    return slots.filter((slot) => {
+      const [hours, minutes] = slot.split(":").map(Number);
+      const slotDate = new Date(selectedDate);
+      slotDate.setHours(hours, minutes, 0, 0);
+      return currentTime.getTime() <= slotDate.getTime() + 60 * 60 * 1000;
+    });
+  }, [trial, selectedDate, selectedLocation, availabilityOverrides, currentTime]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setCurrentTime(new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   const activeDaysClosed = useMemo(() => {
     if (trial === "online") {
@@ -676,19 +696,31 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
     const normalized = new Date(date);
     normalized.setHours(0, 0, 0, 0);
 
-    if (normalized < calendarMinBookableDate) {
+    const earliestBookableDate = new Date();
+    earliestBookableDate.setHours(0, 0, 0, 0);
+    const isToday = normalized.getTime() === earliestBookableDate.getTime();
+
+    if (normalized < earliestBookableDate) {
       return true;
     }
 
     const dateKey = toLocalISODate(normalized);
+    const dayOfWeek = normalized.getDay();
+    if (trial === "online" && (dayOfWeek === 0 || dayOfWeek === 6)) {
+      return true;
+    }
+
     const configuredSlots = availabilityOverrides[dateKey];
     if (configuredSlots !== undefined) {
       return configuredSlots.length === 0;
     }
 
-    const dayOfWeek = normalized.getDay();
-
-    if (trial === "offline" && dayOfWeek !== 0 && dayOfWeek !== 6) {
+    if (
+      trial === "offline" &&
+      !isToday &&
+      dayOfWeek !== 0 &&
+      dayOfWeek !== 6
+    ) {
       return true;
     }
 
@@ -2575,7 +2607,7 @@ const HeroSection = ({ openRequest = 0 }: { openRequest?: number }) => {
                         Boolean(availabilityError) ||
                         isDateDisabledForMode(date)
                       }
-                      defaultMonth={calendarMinBookableDate}
+                      defaultMonth={new Date()}
                       onMonthChange={setVisibleMonth}
                       className="rounded-md"
                     />

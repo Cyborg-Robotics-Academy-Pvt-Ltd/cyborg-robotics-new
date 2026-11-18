@@ -172,36 +172,6 @@ export function DesktopTable({
                     <TableHead className={TH}>Mode</TableHead>
                     <TableHead className={TH}>Trial status</TableHead>
                   </>
-                ) : marketingView ? (
-                  <>
-                    <SortableHead
-                      label="Student"
-                      field="studentName"
-                      active={sortField}
-                      dir={sortDir}
-                      onClick={onToggleSort}
-                      className={STICKY_TH}
-                    />
-                    <TableHead className={TH}>Program of interest</TableHead>
-                    <SortableHead
-                      label="Trial Slot"
-                      field="trialDate"
-                      active={sortField}
-                      dir={sortDir}
-                      onClick={onToggleSort}
-                      className={TH}
-                    />
-                    <TableHead
-                      className={`${TH} !w-8 !min-w-8 !max-w-8 !px-1 text-center`}
-                      aria-label="Heard About Us"
-                      title="Heard About Us"
-                      style={{ width: 32, minWidth: 32, maxWidth: 32 }}
-                    >
-                      <Megaphone aria-hidden className="mx-auto h-4 w-4" />
-                    </TableHead>
-                    <TableHead className={TH}>Location &amp; Mode</TableHead>
-                    <TableHead className={TH}>Trial status</TableHead>
-                  </>
                 ) : (
                   <>
                     <SortableHead
@@ -255,7 +225,7 @@ export function DesktopTable({
                   <TableHead className={TH}>Close Remark</TableHead>
                 )}
 
-                    {(canModify || canDelete) && (
+                    {!marketingView && (canModify || canDelete) && (
                       <TableHead className={`${TH} text-right`}>Actions</TableHead>
                     )}
                   </>

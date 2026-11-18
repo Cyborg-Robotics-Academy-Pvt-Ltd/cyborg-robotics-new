@@ -411,9 +411,7 @@ function DesktopRowImpl({
 
   const timelineColSpan = trainerView
     ? 5
-    : marketingView
-      ? 6
-      : 12 + Number(showContact) + Number(hasShowRows) + Number(hasClosedRows) + Number(canModify || canDelete);
+    : 12 + Number(showContact) + Number(hasShowRows) + Number(hasClosedRows) + Number(!marketingView && (canModify || canDelete));
 
   return (
     <>
@@ -465,7 +463,7 @@ function DesktopRowImpl({
                 {createdAt.toLocaleTimeString("en-IN", { timeStyle: "short" })}
               </p>
             )}
-            {!trainerView && !marketingView && <button
+            <button
               type="button"
               onClick={() => onTimelineToggle(id)}
               aria-expanded={timelineOpen}
@@ -474,14 +472,14 @@ function DesktopRowImpl({
             >
               <History aria-hidden className="h-3.5 w-3.5" />
               {timelineOpen ? "Hide timeline" : "Timeline"}
-            </button>}
+            </button>
           </div>
         </div>
       </TableCell>
 
       {/* CONTACT */}
 
-      {showContact && !trainerView && !marketingView && (
+      {showContact && !trainerView && (
         <TableCell className="w-[300px] min-w-[300px] max-w-[300px]">
           <div className="flex flex-col gap-1.5 text-sm">
             <a
@@ -595,7 +593,7 @@ function DesktopRowImpl({
 
       {/* ENQUIRY REMARK */}
 
-      {!trainerView && !marketingView && <TableCell className="min-w-[220px] max-w-[320px]">
+      {!trainerView && <TableCell className="min-w-[220px] max-w-[320px]">
         <p
           className={cn(
             "line-clamp-2 whitespace-normal text-sm",
@@ -691,7 +689,7 @@ function DesktopRowImpl({
 
       {/* VISIT OPTION */}
 
-      {!trainerView && !marketingView && <TableCell>
+      {!trainerView && <TableCell>
         {registration.preferredCenter === "unable-to-visit-hq" ? (
           <div className="space-y-1.5">
             <p className="whitespace-nowrap text-sm font-medium text-red-700">
@@ -734,7 +732,7 @@ function DesktopRowImpl({
 
       {/* MODE */}
 
-      {!marketingView && <TableCell>
+      <TableCell>
         <div
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset",
@@ -750,7 +748,7 @@ function DesktopRowImpl({
           )}
           {locationType === "online" ? "Online" : "Offline"}
         </div>
-      </TableCell>}
+      </TableCell>
 
       {/* TRIAL STATUS */}
 
@@ -789,7 +787,7 @@ function DesktopRowImpl({
       {/* COUNSELLOR REMARK — column only when at least one visible row
           is "show"; cell content only when THIS row is "show" */}
 
-      {!trainerView && !marketingView && hasShowRows && (
+      {!trainerView && hasShowRows && (
         <TableCell className="min-w-[200px]">
           {isShow ? (
             <InlineRemark
@@ -810,7 +808,7 @@ function DesktopRowImpl({
 
       {/* LEAD TEMP */}
 
-      {!trainerView && !marketingView && <TableCell>
+      {!trainerView && <TableCell>
         <Select
           value={registration.leadTemp ?? ""}
           onValueChange={(value) => onLeadTempChange(id, value)}
@@ -838,7 +836,7 @@ function DesktopRowImpl({
 
       {/* NEXT FOLLOW-UP */} 
 
-      {!trainerView && !marketingView && <TableCell>
+      {!trainerView && <TableCell>
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
@@ -888,7 +886,7 @@ function DesktopRowImpl({
 
       {/* LEAD OUTCOME */}
 
-      {!trainerView && !marketingView && <TableCell>
+      {!trainerView && <TableCell>
         <Select
           value={registration.leadOutcome ?? ""}
           onValueChange={(value) => onLeadOutcomeChange(id, value)}
@@ -917,7 +915,7 @@ function DesktopRowImpl({
       {/* CLOSE REMARK — column only when at least one visible row is
           "closed"; cell content only when THIS row is "closed" */}
 
-      {!trainerView && !marketingView && hasClosedRows && (
+      {!trainerView && hasClosedRows && (
         <TableCell className="min-w-[200px]">
           {isClosed ? (
             <InlineRemark
