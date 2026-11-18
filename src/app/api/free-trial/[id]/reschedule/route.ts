@@ -10,13 +10,8 @@ import {
   slotIdFor,
   validateSlotFields,
 } from "@/lib/free-trial-validation";
-import {
-  DEFAULT_OFFLINE_TRIAL_SLOTS,
-  DEFAULT_ONLINE_TRIAL_SLOTS,
-} from "@/lib/trial-availability";
 import { getTrialModeFromLocation } from "@/app/enquire-form/utils";
 import { OFFLINE_CENTERS } from "@/app/enquire-form/constants";
-import { getTrialAvailabilityOverride } from "@/lib/trial-availability-server";
 import {
   sendTrialBookingEmails,
   sendTrialRescheduleEmails,
@@ -90,25 +85,9 @@ export async function PATCH(
         : unrestrictedAddSlot
           ? offlineCenter.name
           : registration.locationName || "Online trial";
-    const configuredSlots = unrestrictedAddSlot
-      ? undefined
-      : await getTrialAvailabilityOverride(
-          trialMode,
-          typeof body.trialDate === "string" ? body.trialDate.trim() : "",
-        );
-    const salesDefaultSlots =
-      trialMode === "offline"
-        ? DEFAULT_OFFLINE_TRIAL_SLOTS
-        : DEFAULT_ONLINE_TRIAL_SLOTS;
-    const slotResult = validateSlotFields(
-      body,
-      trialMode,
-      unrestrictedAddSlot
-        ? configuredSlots?.length
-          ? configuredSlots
-          : salesDefaultSlots
-        : configuredSlots,
-    );
+    const manuallyEnteredTime =
+      typeof body.trialTime === "string" ? body.trialTime.trim() : "";
+    const slotResult = validateSlotFields(body, trialMode, [manuallyEnteredTime]);
 
     if (!slotResult.ok) {
       return NextResponse.json(

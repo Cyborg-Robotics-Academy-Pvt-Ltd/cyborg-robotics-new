@@ -14,7 +14,6 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import {
   dateToYMD,
-  formatTrialTime,
   ymdToDate,
 } from "@/app/enquire-form/utils";
 import { TrialRegistration } from "@/app/enquire-form/types";
@@ -94,6 +93,12 @@ export function RescheduleDialog({
   };
   const selectedSlots = date ? getSlotsForDate(date) : [];
   const isDateAvailable = (calendarDate: Date) => {
+    if (!isAddingSlot) {
+      return (
+        calendarDate >= minBookableDate &&
+        calendarDate.getDay() !== 2
+      );
+    }
     const dateKey = dateToYMD(calendarDate);
     const slots = getSlotsForDate(dateKey);
     return (
@@ -194,8 +199,8 @@ export function RescheduleDialog({
           </DialogTitle>
           <DialogDescription>
             {isAddingSlot
-              ? `Choose an available date and time for ${target?.studentName}'s trial.`
-              : `Choose a new date and time for ${target?.studentName}'s trial. A reschedule email will be sent after saving.`}
+              ? `Choose a date and manually enter a time for ${target?.studentName}'s trial.`
+              : `Choose a new date and manually enter a time for ${target?.studentName}'s trial. A reschedule email will be sent after saving.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -208,7 +213,11 @@ export function RescheduleDialog({
                 setDate(selectedDate ? dateToYMD(selectedDate) : "");
                 setTime("");
               }}
-              disabled={(calendarDate) => !isDateAvailable(calendarDate)}
+              disabled={(calendarDate) =>
+                isAddingSlot
+                  ? calendarDate < (useAllDayAddSlotAvailability ? today : minBookableDate)
+                  : !isDateAvailable(calendarDate)
+              }
               modifiers={{ available: isDateAvailable }}
               month={visibleMonth}
               onMonthChange={setVisibleMonth}
@@ -217,38 +226,18 @@ export function RescheduleDialog({
           </div>
 
           <div className="grid gap-2">
-            {availabilityError && (
-              <p role="alert" className="text-sm text-red-700">
-                {availabilityError}
-              </p>
-            )}
             <span className="flex items-center gap-1.5 text-sm font-medium text-stone-700">
               <Clock3 className="h-3.5 w-3.5 text-red-600" />
               Select time
             </span>
 
-            {date ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setTime(slot)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                      time === slot
-                        ? "border-red-600 bg-red-600 text-white"
-                        : "border-stone-200 bg-white text-stone-700 hover:border-red-200 hover:bg-red-50"
-                    }`}
-                  >
-                    {formatTrialTime(slot)}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-stone-400">
-                Pick a date to see available time slots.
-              </p>
-            )}
+            <input
+              type="time"
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+              className="h-10 rounded-md border border-stone-200 px-3 text-sm text-stone-700"
+              aria-label="Enter trial time"
+            />
           </div>
         </div>
 
@@ -267,9 +256,6 @@ export function RescheduleDialog({
             disabled={
               !date ||
               !time ||
-              !selectedSlots.includes(time) ||
-              availabilityLoading ||
-              Boolean(availabilityError) ||
               saving
             }
             className="bg-red-600 hover:bg-red-700"
