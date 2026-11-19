@@ -158,11 +158,11 @@ export function FilterBar({
     <div
       role="search"
       aria-label="Filter enquiries"
-      className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-stone-200/80 bg-stone-50/60 p-3"
+      className="flex flex-nowrap items-center gap-2 overflow-x-auto rounded-xl border border-stone-200/80 bg-stone-50/60 p-2"
     >
       {/* SEARCH */}
 
-      <div className="relative w-full sm:w-80">
+      <div className="relative w-56 shrink-0">
         <Search
           aria-hidden
           className={cn(

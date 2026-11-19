@@ -475,7 +475,7 @@ const Page = () => {
       {/* HEADER */}
 
       <div className="relative">
-        <h1 className="text-[1.75rem] font-bold tracking-tight text-stone-900 text-center py-3">
+        <h1 className="text-xl font-bold tracking-tight text-stone-900 text-center py-2">
           Free Trial Enquiries
         </h1>
 
@@ -490,7 +490,7 @@ const Page = () => {
         </button>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <div className="container mx-auto max-w-7xl px-4 py-3 sm:px-6">
         {canAddTrialSlot && (
           <button
             type="button"
@@ -501,7 +501,7 @@ const Page = () => {
            
           </button>
         )}
-        <div className="mb-1 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-2 flex min-w-0">
           <FilterBar
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -526,12 +526,13 @@ const Page = () => {
           />
         </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-3 sm:max-w-lg">
-          <div className="rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+        <div className="mb-2 flex flex-wrap items-stretch gap-2">
+          <div className="flex flex-wrap items-stretch gap-2">
+          <div className="flex min-w-[170px] items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm">
+            <p className="text-xs font-medium text-stone-500">
               Direct trial bookings
             </p>
-            <p className="mt-1 text-2xl font-semibold text-stone-900">
+            <p className="text-lg font-semibold leading-none text-stone-900">
               {registrations.filter(
                 (registration) =>
                   registration.trialDate &&
@@ -540,11 +541,11 @@ const Page = () => {
               ).length}
             </p>
           </div>
-          <div className="rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+          <div className="flex min-w-[170px] items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm">
+            <p className="text-xs font-medium text-stone-500">
               Booked after follow-up
             </p>
-            <p className="mt-1 text-2xl font-semibold text-stone-900">
+            <p className="text-lg font-semibold leading-none text-stone-900">
               {registrations.filter(
                 (registration) =>
                   registration.trialDate &&
@@ -553,14 +554,14 @@ const Page = () => {
               ).length}
             </p>
           </div>
-        </div>
+          </div>
 
         {(userRole === "admin" || userRole === "superAdmin") && (
-          <div className="mb-5 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-l-4 border-red-500 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-700">
-                  <ShieldCheck className="h-5 w-5" aria-hidden />
+          <div className="min-w-[320px] flex-1 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
+            <div className="flex h-full flex-col justify-center gap-2 border-l-4 border-red-500 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-50 text-red-700">
+                  <ShieldCheck className="h-4 w-4" aria-hidden />
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -585,17 +586,17 @@ const Page = () => {
                               : "No trainer selected"}
                     </span>
                   </div>
-                  <p className="mt-1 max-w-xl text-sm text-stone-500">
+                  <p className="hidden text-xs text-stone-500 lg:block">
                     Only the selected trainer can update trial status. All
                     other trainers have read-only access.
                   </p>
                 </div>
               </div>
 
-              <div className="w-full shrink-0 sm:w-72">
+              <div className="flex shrink-0 items-center gap-2">
                 <label
                   htmlFor="enquiry-trainer-access"
-                  className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-stone-500"
+                  className="sr-only"
                 >
                   Trainer allowed to edit
                 </label>
@@ -608,7 +609,7 @@ const Page = () => {
                   disabled={
                     accessLoading || savingTrainerSelection || Boolean(accessError)
                   }
-                  className="h-10 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-800 shadow-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
+                  className="h-8 w-48 rounded-lg border border-stone-300 bg-white px-2 text-xs text-stone-800 shadow-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
                 >
                   <option value="">
                     {accessLoading
@@ -641,6 +642,7 @@ const Page = () => {
             </div>
           </div>
         )}
+        </div>
 
         {accessWarning && (
           <p
