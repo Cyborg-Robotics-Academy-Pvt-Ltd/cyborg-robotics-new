@@ -23,6 +23,7 @@ interface StaticImage {
 const HeroImage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<WorkshopRegistrationFormErrors>(
     {},
@@ -117,6 +118,7 @@ const HeroImage = () => {
           age: normalizedFormData.age,
           city: normalizedFormData.city,
           area: normalizedFormData.area,
+          paymentGateway,
         }),
       });
 

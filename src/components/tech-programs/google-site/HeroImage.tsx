@@ -19,6 +19,7 @@ const GoogleSitesHero = () => {
   const isWorkshopClosed = true;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<WorkshopRegistrationFormErrors>(
     {},
@@ -110,6 +111,7 @@ const GoogleSitesHero = () => {
           age: normalizedFormData.age,
           city: normalizedFormData.city,
           area: normalizedFormData.area,
+          paymentGateway,
         }),
       });
 

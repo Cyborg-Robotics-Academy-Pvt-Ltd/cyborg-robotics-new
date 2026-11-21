@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { getActivePaymentGateway } from "@/lib/payment-gateway-settings";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { createRazorpayOrder } from "@/lib/razorpay-order";
 import { generateOrderId } from "@/lib/order-id-utils";
 import { generateCustomerId } from "@/lib/customer-id-utils";
 import { buildPaymentUrlFromRequest } from "@/lib/payment-url-validation";
@@ -106,22 +108,39 @@ export async function POST(req: Request) {
       );
     }
 
+    const orderId = generateOrderId();
+    const customerSeed = userId || email;
+    const customerId = generateCustomerId(customerSeed);
+    const paymentOwnerSeed = derivePaymentOwnerSeed(userId, email);
+    const paymentSessionBinding = createPaymentSessionBinding(orderId, customerId, paymentOwnerSeed);
+    if ((await getActivePaymentGateway()) === "razorpay") {
+      const checkout = await createRazorpayOrder({
+        orderId, amount: workshop.amount, customerId, customerEmail: email, customerPhone: contactNumber,
+        paymentData: {
+          ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+          sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+          sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+          sessionBindingSource: userId ? "userId" : "email",
+          status: "PENDING", paymentType: "full", paymentFlow: "workshop",
+          workshopKey, workshopName: workshop.title, studentName: childName,
+          workshopDraft: { workshopKey, workshopName: workshop.title, email: email.trim(), contactNumber: contactNumber.trim(), childName: childName.trim(), age: String(age).trim(), city: city.trim(), area: area.trim() },
+          studentEmail: email.trim(),
+        },
+      });
+      const response = NextResponse.json({ success: true, ...checkout });
+      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+      if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
+      return response;
+    }
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
     const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
     const API_KEY = process.env.HDFC_API_KEY;
-
     if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
       return NextResponse.json(
         { success: false, message: "Server configuration error" },
         { status: 500 },
       );
     }
-
-    const orderId = generateOrderId();
-    const customerSeed = userId || email;
-    const customerId = generateCustomerId(customerSeed);
-    const paymentOwnerSeed = derivePaymentOwnerSeed(userId, email);
-    const paymentSessionBinding = createPaymentSessionBinding(orderId, customerId, paymentOwnerSeed);
     const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
 
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
@@ -177,6 +196,8 @@ export async function POST(req: Request) {
 
     await addDoc(collection(db, "payments"), {
       orderId,
+      gateway: "hdfc",
+      paymentGateway: "hdfc",
       customerId,
       ownerSeedHash: paymentSessionBinding.ownerSeedHash,
       sessionBindingKey: paymentSessionBinding.sessionBindingKey,

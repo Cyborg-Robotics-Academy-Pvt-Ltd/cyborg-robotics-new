@@ -35,6 +35,15 @@ function normalizeAmount(value: unknown): number | null {
   return Number.isFinite(amount) ? amount : null;
 }
 
+function isChargedJuspayResponse(rawResponse: unknown): boolean {
+  return (
+    typeof rawResponse === "object" &&
+    rawResponse !== null &&
+    "status" in rawResponse &&
+    (rawResponse as { status?: unknown }).status === "CHARGED"
+  );
+}
+
 function getResponseKey(): string | null {
   return process.env.HDFC_RESPONSE_KEY || process.env.JUSPAY_RESPONSE_KEY || null;
 }
@@ -80,7 +89,8 @@ async function updatePaymentStatus(
   status: string,
   txnId: string,
   bankRef?: string | null,
-  gatewayResponse?: unknown
+  gatewayResponse?: unknown,
+  forceVerifiedUpdate = false,
 ): Promise<boolean> {
   try {
     const paymentsRef = collection(db, "payments");
@@ -95,18 +105,19 @@ async function updatePaymentStatus(
     const paymentDoc = snapshot.docs[0];
     const existing = paymentDoc.data();
 
-    if (existing.status === "SUCCESS") {
+    if (existing.status === "SUCCESS" && !forceVerifiedUpdate) {
       console.warn(`Payment ${orderId} already marked SUCCESS - skipping update`);
       return true;
     }
 
-    await updateDoc(doc(db, "payments", paymentDoc.id), {
+    const updatePayload: Record<string, unknown> = {
       status,
-      transactionReference: txnId,
-      bankRef: bankRef || null,
+      ...(bankRef ? { bankRef } : {}),
       gatewayResponse: gatewayResponse || undefined,
       updatedAt: serverTimestamp(),
-    });
+    };
+    if (txnId) updatePayload.transactionReference = txnId;
+    await updateDoc(doc(db, "payments", paymentDoc.id), updatePayload);
 
     console.log(`Firestore updated: ${orderId} -> ${status}`);
     return true;
@@ -114,6 +125,22 @@ async function updatePaymentStatus(
     console.error("Firestore update error:", error);
     return false;
   }
+}
+
+async function updateCodefestRegistrationPaymentStatus(
+  orderId: string,
+  status: string,
+  txnId: string,
+) {
+  const registrations = await getDocs(
+    query(collection(db, "competitionRegistrations"), where("orderId", "==", orderId)),
+  );
+  if (registrations.empty) return;
+  await updateDoc(doc(db, "competitionRegistrations", registrations.docs[0].id), {
+    paymentStatus: status,
+    ...(txnId ? { paymentId: txnId } : {}),
+    updatedAt: serverTimestamp(),
+  });
 }
 
 function extractOrderData(
@@ -162,6 +189,7 @@ async function verifyWithGateway(
   status: string;
   txnId: string;
   amount: number | null;
+  currency: string | null;
   bankRef: string | null;
   rawResponse: unknown;
 } | null> {
@@ -192,12 +220,25 @@ async function verifyWithGateway(
       verifyData.status === "CHARGED" || verifyData.status === "SUCCESS"
         ? "SUCCESS"
         : verifyData.status || "PENDING";
+    const txnDetail = verifyData.txn_detail || {};
+    const gatewayResponse = verifyData.payment_gateway_response || {};
 
     return {
       status,
-      txnId: verifyData.txn_id || "",
+      txnId:
+        verifyData.txn_id ||
+        txnDetail.txn_id ||
+        gatewayResponse.epg_txn_id ||
+        gatewayResponse.txn_id ||
+        verifyData.txn_uuid ||
+        "",
       amount: normalizeAmount(verifyData.amount),
-      bankRef: extractBankRef(verifyData),
+      currency: typeof verifyData.currency === "string" ? verifyData.currency.toUpperCase() : null,
+      bankRef:
+        extractBankRef(verifyData) ||
+        gatewayResponse.rrn ||
+        txnDetail.payment_gateway_response?.rrn ||
+        null,
       rawResponse: verifyData,
     };
   } catch (error) {
@@ -324,6 +365,8 @@ export async function GET(req: Request) {
 
   const paymentDoc = snapshot.docs[0];
   const existingData = paymentDoc.data();
+  const isCodefestHdfcPayment =
+    existingData.paymentFlow === "competition" && existingData.gateway !== "razorpay";
   const expectedAmount = normalizeAmount(existingData.amount);
 
   if (expectedAmount === null) {
@@ -345,7 +388,7 @@ export async function GET(req: Request) {
     return redirectToFailedStatus(trustedBaseUrl, orderIdParam, "stored_amount_invalid");
   }
 
-  if (existingData.status === "SUCCESS") {
+  if (existingData.status === "SUCCESS" && !isCodefestHdfcPayment) {
     await finalizeRegistrationForPayment(
       orderIdParam,
       existingData.transactionReference
@@ -360,20 +403,49 @@ export async function GET(req: Request) {
   const ownershipCheck = verifyPaymentOwnership(req, orderIdParam, existingData);
   if (!ownershipCheck.ok) {
     const verified = await verifyWithGateway(orderIdParam);
-    if (verified?.status === "SUCCESS" && verified.amount === expectedAmount) {
+    if (
+      verified?.status === "SUCCESS" &&
+      verified.amount === expectedAmount &&
+      (!isCodefestHdfcPayment || verified.currency === String(existingData.currency || "INR").toUpperCase()) &&
+      (!isCodefestHdfcPayment || isChargedJuspayResponse(verified.rawResponse))
+    ) {
       await updatePaymentStatus(
         orderIdParam,
         "SUCCESS",
         verified.txnId,
         verified.bankRef,
-        verified.rawResponse
+        verified.rawResponse,
+        isCodefestHdfcPayment,
       );
+      if (isCodefestHdfcPayment) {
+        await updateCodefestRegistrationPaymentStatus(orderIdParam, "SUCCESS", verified.txnId);
+      }
       await finalizeRegistrationForPayment(orderIdParam, verified.txnId);
 
       const successUrl = buildRedirectUrl(trustedBaseUrl, "/registration-success", {
         orderId: orderIdParam,
       });
       return NextResponse.redirect(successUrl.toString(), { status: 302 });
+    }
+
+    if (isCodefestHdfcPayment) {
+      const verificationStatus =
+        verified?.status === "SUCCESS" && !isChargedJuspayResponse(verified.rawResponse)
+          ? "PENDING"
+          : verified?.status || "PENDING";
+      await updatePaymentStatus(
+        orderIdParam,
+        verificationStatus,
+        verified?.txnId || "",
+        verified?.bankRef,
+        verified?.rawResponse,
+        true,
+      );
+      await updateCodefestRegistrationPaymentStatus(
+        orderIdParam,
+        verificationStatus,
+        verified?.txnId || "",
+      );
     }
 
     await safeWritePaymentAuditLog({
@@ -401,10 +473,19 @@ export async function GET(req: Request) {
   }
 
   const verified = await verifyWithGateway(orderIdParam);
-  const finalStatus = verified?.status || "PENDING";
+  const finalStatus =
+    isCodefestHdfcPayment &&
+    verified?.status === "SUCCESS" &&
+    !isChargedJuspayResponse(verified.rawResponse)
+      ? "PENDING"
+      : verified?.status || "PENDING";
   const confirmedAmount = verified?.amount;
 
   if (confirmedAmount === null || confirmedAmount === undefined) {
+    if (isCodefestHdfcPayment) {
+      await updatePaymentStatus(orderIdParam, "PENDING", "", null, undefined, true);
+      await updateCodefestRegistrationPaymentStatus(orderIdParam, "PENDING", "");
+    }
     console.error("Gateway did not return amount for order:", orderIdParam);
     await safeWritePaymentAuditLog({
       eventType: "return_amount_check",
@@ -425,6 +506,10 @@ export async function GET(req: Request) {
   }
 
   if (confirmedAmount !== expectedAmount) {
+    if (isCodefestHdfcPayment) {
+      await updatePaymentStatus(orderIdParam, "FAILED", "", null, verified?.rawResponse, true);
+      await updateCodefestRegistrationPaymentStatus(orderIdParam, "FAILED", "");
+    }
     console.error(
       `Amount mismatch for ${orderIdParam}: expected ${expectedAmount}, got ${confirmedAmount}`
     );
@@ -450,8 +535,38 @@ export async function GET(req: Request) {
     return redirectToFailedStatus(trustedBaseUrl, orderIdParam, "amount_mismatch");
   }
 
-  if (verified?.status === "SUCCESS") {
-    await updatePaymentStatus(orderIdParam, "SUCCESS", verified.txnId, verified.bankRef, verified.rawResponse);
+  if (
+    isCodefestHdfcPayment &&
+    verified?.currency !== String(existingData.currency || "INR").toUpperCase()
+  ) {
+    await updatePaymentStatus(orderIdParam, "PENDING", verified?.txnId || "", verified?.bankRef, verified?.rawResponse, true);
+    await updateCodefestRegistrationPaymentStatus(orderIdParam, "PENDING", verified?.txnId || "");
+    await safeWritePaymentAuditLog({
+      eventType: "return_amount_check",
+      source: "payment_return_get",
+      orderId: orderIdParam,
+      status: verified?.status || "PENDING",
+      amount: confirmedAmount,
+      txnId: verified?.txnId || null,
+      bankRef: verified?.bankRef || null,
+      success: false,
+      reason: "gateway_currency_missing_or_mismatch",
+      requestMethod: req.method,
+      requestPath,
+      rawResponse: verified?.rawResponse,
+      metadata: { expectedCurrency: existingData.currency || "INR", confirmedCurrency: verified?.currency },
+    });
+    return redirectToFailedStatus(trustedBaseUrl, orderIdParam, "gateway_currency_mismatch");
+  }
+
+  if (
+    verified?.status === "SUCCESS" &&
+    (!isCodefestHdfcPayment || isChargedJuspayResponse(verified.rawResponse))
+  ) {
+    await updatePaymentStatus(orderIdParam, "SUCCESS", verified.txnId, verified.bankRef, verified.rawResponse, isCodefestHdfcPayment);
+    if (isCodefestHdfcPayment) {
+      await updateCodefestRegistrationPaymentStatus(orderIdParam, "SUCCESS", verified.txnId);
+    }
     await finalizeRegistrationForPayment(orderIdParam, verified.txnId);
 
     await safeWritePaymentAuditLog({
@@ -473,6 +588,22 @@ export async function GET(req: Request) {
       orderId: orderIdParam,
     });
     return NextResponse.redirect(successUrl.toString(), { status: 302 });
+  }
+
+  if (isCodefestHdfcPayment) {
+    await updatePaymentStatus(
+      orderIdParam,
+      finalStatus || "PENDING",
+      verified?.txnId || "",
+      verified?.bankRef,
+      verified?.rawResponse,
+      true,
+    );
+    await updateCodefestRegistrationPaymentStatus(
+      orderIdParam,
+      finalStatus || "PENDING",
+      verified?.txnId || "",
+    );
   }
 
   await safeWritePaymentAuditLog({
@@ -669,9 +800,19 @@ export async function POST(req: Request) {
 
     const paymentDoc = snapshot.docs[0];
     const existingData = paymentDoc.data();
+    const isCodefestHdfcPayment =
+    existingData.paymentFlow === "competition" && existingData.gateway !== "razorpay";
     const expectedAmount = normalizeAmount(existingData.amount);
+    if (isCodefestHdfcPayment) {
+      finalStatus = "PENDING";
+      finalTxnId = existingData.transactionReference || "";
+    }
 
-    if (isBrowserReturn && existingData.status === "SUCCESS") {
+    if (
+      isBrowserReturn &&
+      existingData.status === "SUCCESS" &&
+      !isCodefestHdfcPayment
+    ) {
       await finalizeRegistrationForPayment(
         orderId,
         existingData.transactionReference
@@ -687,14 +828,23 @@ export async function POST(req: Request) {
       const ownershipCheck = verifyPaymentOwnership(req, orderId, existingData);
       if (!ownershipCheck.ok) {
         const verified = await verifyWithGateway(orderId);
-        if (verified?.status === "SUCCESS" && verified.amount === expectedAmount) {
+        if (
+          verified?.status === "SUCCESS" &&
+          verified.amount === expectedAmount &&
+          (!isCodefestHdfcPayment || verified.currency === String(existingData.currency || "INR").toUpperCase()) &&
+          (!isCodefestHdfcPayment || isChargedJuspayResponse(verified.rawResponse))
+        ) {
           await updatePaymentStatus(
             orderId,
             "SUCCESS",
             verified.txnId,
             verified.bankRef,
-            verified.rawResponse
+            verified.rawResponse,
+            isCodefestHdfcPayment,
           );
+          if (isCodefestHdfcPayment) {
+            await updateCodefestRegistrationPaymentStatus(orderId, "SUCCESS", verified.txnId);
+          }
           await finalizeRegistrationForPayment(orderId, verified.txnId);
 
           const successUrl = buildRedirectUrl(
@@ -705,6 +855,24 @@ export async function POST(req: Request) {
             }
           );
           return NextResponse.redirect(successUrl.toString(), { status: 302 });
+        }
+
+        if (isCodefestHdfcPayment) {
+          const verificationStatus =
+            verified?.status === "SUCCESS" ? "PENDING" : verified?.status || "PENDING";
+          await updatePaymentStatus(
+            orderId,
+            verificationStatus,
+            verified?.txnId || "",
+            verified?.bankRef,
+            verified?.rawResponse,
+            true,
+          );
+          await updateCodefestRegistrationPaymentStatus(
+            orderId,
+            verificationStatus,
+            verified?.txnId || "",
+          );
         }
 
         await safeWritePaymentAuditLog({
@@ -758,9 +926,17 @@ export async function POST(req: Request) {
     if (verified) {
       finalStatus = verified.status;
       finalTxnId = verified.txnId || finalTxnId;
+      if (isCodefestHdfcPayment && !isChargedJuspayResponse(verified.rawResponse)) {
+        finalStatus = verified.status === "SUCCESS" ? "PENDING" : verified.status;
+      }
       console.log(`Gateway confirmed status for ${orderId}:`, finalStatus);
 
       if (verified.amount === null || verified.amount === undefined) {
+        if (isCodefestHdfcPayment) {
+          finalStatus = "PENDING";
+          await updatePaymentStatus(orderId, finalStatus, finalTxnId, null, verified.rawResponse, true);
+          await updateCodefestRegistrationPaymentStatus(orderId, finalStatus, finalTxnId);
+        }
         console.error("Gateway did not return amount for order:", orderId);
         await safeWritePaymentAuditLog({
           eventType: "webhook_status_update",
@@ -784,6 +960,11 @@ export async function POST(req: Request) {
       }
 
       if (verified.amount !== expectedAmount) {
+        if (isCodefestHdfcPayment) {
+          finalStatus = "FAILED";
+          await updatePaymentStatus(orderId, finalStatus, finalTxnId, verified.bankRef, verified.rawResponse, true);
+          await updateCodefestRegistrationPaymentStatus(orderId, finalStatus, finalTxnId);
+        }
         console.error(
           `Amount mismatch for ${orderId}: expected ${expectedAmount}, got ${verified.amount}`
         );
@@ -811,9 +992,45 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+
+      if (
+        isCodefestHdfcPayment &&
+        verified.currency !== String(existingData.currency || "INR").toUpperCase()
+      ) {
+        finalStatus = "PENDING";
+        await updatePaymentStatus(orderId, finalStatus, finalTxnId, verified.bankRef, verified.rawResponse, true);
+        await updateCodefestRegistrationPaymentStatus(orderId, finalStatus, finalTxnId);
+        await safeWritePaymentAuditLog({
+          eventType: "return_amount_check",
+          source: "payment_return_post",
+          orderId,
+          status: verified.status,
+          amount: verified.amount,
+          txnId: finalTxnId || null,
+          bankRef: verified.bankRef,
+          success: false,
+          reason: "gateway_currency_missing_or_mismatch",
+          requestMethod: req.method,
+          requestPath,
+          rawRequest: body || params?.toString() || rawText,
+          rawResponse: verified.rawResponse,
+          metadata: { expectedCurrency: existingData.currency || "INR", confirmedCurrency: verified.currency },
+        });
+        return NextResponse.json({ success: false, message: "Could not confirm payment currency" }, { status: 502 });
+      }
     }
 
-    await updatePaymentStatus(orderId, finalStatus, finalTxnId, verified?.bankRef, verified?.rawResponse);
+    await updatePaymentStatus(
+      orderId,
+      finalStatus,
+      finalTxnId,
+      verified?.bankRef,
+      verified?.rawResponse,
+      isCodefestHdfcPayment,
+    );
+    if (isCodefestHdfcPayment) {
+      await updateCodefestRegistrationPaymentStatus(orderId, finalStatus, finalTxnId);
+    }
 
     if (finalStatus === "SUCCESS") {
       await finalizeRegistrationForPayment(orderId, finalTxnId);

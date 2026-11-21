@@ -76,6 +76,7 @@ const Page: React.FC = () => {
   >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -296,6 +297,7 @@ const Page: React.FC = () => {
           ...submissionData,
           paymentFlow: "renewal",
           paidAmount: Number(formData.paidAmount),
+          paymentGateway,
         }),
       });
 

@@ -147,6 +147,7 @@ export default function RegistrationForm({
     registrationClosed ? false : initiallyOpen,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(
     {},
@@ -220,7 +221,7 @@ export default function RegistrationForm({
       const response = await fetch("/api/payment/initiate-competition", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(normalizedFormData),
+        body: JSON.stringify({ ...normalizedFormData, paymentGateway }),
       });
 
       const data = await response.json();

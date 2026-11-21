@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getActivePaymentGateway } from "@/lib/payment-gateway-settings";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 import {
@@ -8,6 +9,7 @@ import {
   getPaymentSessionCookieName,
 } from "@/lib/payment-session-binding";
 import { buildPaymentUrlFromRequest } from "@/lib/payment-url-validation";
+import { createRazorpayOrder } from "@/lib/razorpay-order";
 import {
   CODEFEST_COMPETITION,
   normalizeCodefestRegistrationForm,
@@ -30,6 +32,7 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Partial<CodefestRegistrationFormData> & {
       userId?: string;
+      paymentGateway?: string;
     };
 
     const missingFields = [
@@ -80,17 +83,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
-    const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
-    const API_KEY = process.env.HDFC_API_KEY;
-
-    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
-      return NextResponse.json(
-        { success: false, message: "Server configuration error" },
-        { status: 500 },
-      );
-    }
-
     const orderId = generateOrderId();
     const customerSeed = body.userId || normalizedFormData.emailAddress;
     const customerId = generateCustomerId(customerSeed);
@@ -103,6 +95,37 @@ export async function POST(req: Request) {
       customerId,
       paymentOwnerSeed,
     );
+    if ((await getActivePaymentGateway()) === "razorpay") {
+      const checkout = await createRazorpayOrder({
+        orderId, amount: CODEFEST_COMPETITION.amount, customerId, customerEmail: normalizedFormData.emailAddress,
+        paymentData: {
+          ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+          sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+          sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+          sessionBindingSource: body.userId ? "userId" : "email",
+          status: "PENDING", paymentType: "entry-fee", paymentFlow: "competition",
+          competitionRegistrationDraft: normalizedFormData,
+          competition: { fee: CODEFEST_COMPETITION.amount },
+          studentName: normalizedFormData.fullName,
+          courseName: "CodeFest Competition",
+          parentEmail: normalizedFormData.emailAddress,
+          studentEmail: normalizedFormData.emailAddress,
+        },
+      });
+      const response = NextResponse.json({ success: true, ...checkout });
+      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+      if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
+      return response;
+    }
+    const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+    const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+    const API_KEY = process.env.HDFC_API_KEY;
+    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
+      return NextResponse.json(
+        { success: false, message: "Server configuration error" },
+        { status: 500 },
+      );
+    }
     const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
 
     const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
@@ -156,6 +179,8 @@ export async function POST(req: Request) {
 
     await addDoc(collection(db, "payments"), {
       orderId,
+      gateway: "hdfc",
+      paymentGateway: "hdfc",
       customerId,
       ownerSeedHash: paymentSessionBinding.ownerSeedHash,
       sessionBindingKey: paymentSessionBinding.sessionBindingKey,

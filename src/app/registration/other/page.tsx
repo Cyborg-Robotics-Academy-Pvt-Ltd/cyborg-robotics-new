@@ -23,6 +23,7 @@ export default function OtherRegistrationPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
 
   const handleChange = (
     event: ChangeEvent<
@@ -66,6 +67,7 @@ export default function OtherRegistrationPage() {
           selectedCourseName: formData.selectedCourseName,
           paidAmount: Number(formData.paidAmount),
           paymentRemark: formData.paymentRemark.trim(),
+          paymentGateway,
           paymentFlow: "other", // distinguishes this flow on the API side
           dateOfRegistration: new Date().toISOString().split("T")[0],
         }),

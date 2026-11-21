@@ -78,6 +78,7 @@ const RegisterPage: React.FC = () => {
   const [isInitiatingPayment, setIsInitiatingPayment] =
     useState<boolean>(false);
   const [step, setStep] = useState(1);
+  const [paymentGateway] = useState<"razorpay">("razorpay");
   const totalSteps = 5;
 
   useEffect(() => {
@@ -232,6 +233,7 @@ const RegisterPage: React.FC = () => {
           courseKey: formData.selectedCourseKey,
           paidAmount: Number(formData.paidAmount),
           paymentRemark: formData.paymentRemark,
+          paymentGateway,
         }),
       });
 

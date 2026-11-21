@@ -338,34 +338,94 @@ const isWorkshopRecord = (record: FirestoreRecord) =>
 const isStudentRegistrationRecord = (record: FirestoreRecord) =>
   !isWorkshopRecord(record) && !isCompetitionRecord(record);
 
+const parseRegistrationDate = (value: string): Date | null => {
+  const trimmed = value.trim();
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return parsed.getFullYear() === Number(year) &&
+      parsed.getMonth() === Number(month) - 1 &&
+      parsed.getDate() === Number(day)
+      ? parsed
+      : null;
+  }
+
+  const indianDate = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(trimmed);
+  if (indianDate) {
+    const [, day, month, year] = indianDate;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return parsed.getFullYear() === Number(year) &&
+      parsed.getMonth() === Number(month) - 1 &&
+      parsed.getDate() === Number(day)
+      ? parsed
+      : null;
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatRegistrationDate = (date: Date) =>
+  new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+
+const formatStoredRegistrationDate = (value: string): string | null => {
+  const trimmed = value.trim();
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    if (!parseRegistrationDate(trimmed)) return null;
+    return formatRegistrationDate(
+      new Date(Number(year), Number(month) - 1, Number(day)),
+    );
+  }
+
+  const indianDate = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(trimmed);
+  if (indianDate) {
+    const [, day, month, year] = indianDate;
+    if (!parseRegistrationDate(trimmed)) return null;
+    return formatRegistrationDate(
+      new Date(Number(year), Number(month) - 1, Number(day)),
+    );
+  }
+
+  const parsed = parseRegistrationDate(trimmed);
+  return parsed ? formatRegistrationDate(parsed) : null;
+};
+
 const getDisplayDate = (registration: UnifiedRegistration) => {
+  if (registration.dateOfRegistration) {
+    const formattedDate = formatStoredRegistrationDate(registration.dateOfRegistration);
+    if (formattedDate) return formattedDate;
+    return registration.dateOfRegistration;
+  }
   if (isFirestoreTimestampLike(registration.createdAt)) {
-    return registration.createdAt.toDate().toLocaleDateString("en-IN");
+    return formatRegistrationDate(registration.createdAt.toDate());
   }
   if (typeof registration.createdAt === "string") {
-    const parsedDate = new Date(registration.createdAt);
-    if (!Number.isNaN(parsedDate.getTime()))
-      return parsedDate.toLocaleDateString("en-IN");
-  }
-  if (registration.dateOfRegistration) {
-    const parsedDate = new Date(registration.dateOfRegistration);
-    if (!Number.isNaN(parsedDate.getTime()))
-      return parsedDate.toLocaleDateString("en-IN");
-    return registration.dateOfRegistration;
+    const parsedDate = parseRegistrationDate(registration.createdAt);
+    if (parsedDate) return formatRegistrationDate(parsedDate);
   }
   return "-";
 };
 
 const getRegistrationDateValue = (registration: UnifiedRegistration) => {
+  if (registration.dateOfRegistration) {
+    const parsed = parseRegistrationDate(registration.dateOfRegistration);
+    if (parsed) return parsed.getTime();
+  }
   if (isFirestoreTimestampLike(registration.createdAt))
     return registration.createdAt.toDate().getTime();
   if (typeof registration.createdAt === "string") {
-    const ts = new Date(registration.createdAt).getTime();
-    if (!Number.isNaN(ts)) return ts;
+    const parsed = parseRegistrationDate(registration.createdAt);
+    if (parsed) return parsed.getTime();
   }
-  if (!registration.dateOfRegistration) return Number.NEGATIVE_INFINITY;
-  const parsed = new Date(registration.dateOfRegistration).getTime();
-  return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+  return Number.NEGATIVE_INFINITY;
 };
 
 const mergeRegistrationRecords = (
@@ -384,6 +444,10 @@ const mergeRegistrationRecords = (
     id: base.id,
     firestoreId: base.firestoreId || incoming.firestoreId,
     paymentDocId: incoming.paymentDocId || base.paymentDocId,
+    // Keep the date from the registration record; payment-attempt documents
+    // can be created earlier and must not replace the actual registration date.
+    dateOfRegistration: base.dateOfRegistration || incoming.dateOfRegistration,
+    createdAt: base.createdAt || incoming.createdAt,
   };
 
   const baseStatus = normalizeAdminPaymentStatus(base.paymentStatus);
@@ -487,7 +551,6 @@ const normalizeNewRegistration = (
       record.dateOfRegistration ||
       draft.dateOfRegistration ||
       record.registrationDate ||
-      record.createdAt?.toDate?.()?.toISOString?.().split("T")[0] ||
       "",
     createdAt: record.createdAt,
   };
@@ -614,9 +677,7 @@ const normalizeWorkshop = (
     amount: paidAmount || record.workshopFee || workshop.fee || "",
     remark: record.paymentRemark || "",
     dateOfRegistration:
-      record.dateOfRegistration ||
-      record.createdAt?.toDate?.()?.toISOString?.().split("T")[0] ||
-      "",
+      record.dateOfRegistration || "",
     createdAt: record.createdAt,
   };
 };
@@ -697,9 +758,7 @@ const normalizeCompetition = (
       .filter(Boolean)
       .join(" | "),
     dateOfRegistration:
-      record.dateOfRegistration ||
-      record.createdAt?.toDate?.()?.toISOString?.().split("T")[0] ||
-      "",
+      record.dateOfRegistration || "",
     createdAt: record.createdAt,
   };
 };
@@ -723,9 +782,7 @@ const normalizeOther = (
   amount: record.paidAmount || record.amount || "",
   remark: record.paymentRemark || record.remark || "",
   dateOfRegistration:
-    record.dateOfRegistration ||
-    record.createdAt?.toDate?.()?.toISOString?.().split("T")[0] ||
-    "",
+    record.dateOfRegistration || "",
   createdAt: record.createdAt,
 });
 

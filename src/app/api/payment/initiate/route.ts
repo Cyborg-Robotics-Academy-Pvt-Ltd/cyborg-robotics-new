@@ -1,4 +1,5 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { getActivePaymentGateway } from "@/lib/payment-gateway-settings";
 import { generateCustomerId } from "@/lib/customer-id-utils";
 import { generateOrderId } from "@/lib/order-id-utils";
 import { buildPaymentUrlFromRequest } from "@/lib/payment-url-validation";
@@ -10,8 +11,9 @@ import {
 } from "@/lib/payment-session-binding";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { createRazorpayOrder } from "@/lib/razorpay-order";
 
-// ─── HARDCODED COURSES (SYNC WITH FRONTEND) ───
+// --- HARDCODED COURSES (SYNC WITH FRONTEND) ---
 const COURSES = {
   regular: { key: "regular", title: "Regular Course", price: 5000 },
   camp: { key: "camp", title: "Summer Camp", price: 8000 },
@@ -85,16 +87,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
-      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
-      const API_KEY = process.env.HDFC_API_KEY;
-      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
-        return NextResponse.json(
-          { success: false, message: "Server configuration error" },
-          { status: 500 }
-        );
-      }
-
+      const amount = parsedAmount;
       const orderId = generateOrderId();
       const customerSeed = String(`${studentName}-${selectedCourseName}`);
       const customerId = generateCustomerId(customerSeed);
@@ -104,9 +97,29 @@ export async function POST(req: Request) {
         customerId,
         paymentOwnerSeed
       );
+      if ((await getActivePaymentGateway()) === "razorpay") {
+        const checkout = await createRazorpayOrder({
+          orderId, amount, customerId, paymentData: {
+            ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+            sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+            sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+            sessionBindingSource: "studentName", paymentFlow: "other",
+            studentName: String(studentName).trim(), selectedCourseName: String(selectedCourseName).trim(),
+            courseName: String(selectedCourseName).trim(), courseKey: "other",
+            otherDraft: { studentName: String(studentName).trim(), selectedCourseName: String(selectedCourseName).trim(), courseName: String(selectedCourseName).trim(), paymentType: "other", paidAmount: amount, paymentRemark: String(paymentRemark || "").trim() },
+            paymentType: "other",
+          },
+        });
+        const response = NextResponse.json({ success: true, ...checkout });
+        const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+        if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
+        return response;
+      }
+      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+      const API_KEY = process.env.HDFC_API_KEY;
+      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
       const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
-      const amount = parsedAmount;
-
       const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
         method: "POST",
         headers: {
@@ -158,6 +171,8 @@ export async function POST(req: Request) {
 
       await addDoc(collection(db, "payments"), {
         orderId,
+        gateway: "hdfc",
+        paymentGateway: "hdfc",
         customerId,
         ownerSeedHash: paymentSessionBinding.ownerSeedHash,
         sessionBindingKey: paymentSessionBinding.sessionBindingKey,
@@ -248,16 +263,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
-      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
-      const API_KEY = process.env.HDFC_API_KEY;
-      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
-        return NextResponse.json(
-          { success: false, message: "Server configuration error" },
-          { status: 500 }
-        );
-      }
-
+      const amount = parsedAmount;
       const orderId = generateOrderId();
       const customerSeed = String(parentEmail || studentRegistrationNo);
       const customerId = generateCustomerId(customerSeed);
@@ -267,9 +273,30 @@ export async function POST(req: Request) {
         customerId,
         paymentOwnerSeed
       );
+      if ((await getActivePaymentGateway()) === "razorpay") {
+        const checkout = await createRazorpayOrder({
+          orderId, amount, customerId, customerEmail: parentEmail, customerPhone: contactNumber,
+          paymentData: {
+            ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+            sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+            sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+            sessionBindingSource: "email", paymentFlow: "renewal",
+            studentName, courseName: selectedCourseName || "Renewal", courseKey: "renewal",
+            parentEmail, parentPhone: contactNumber,
+            renewalDraft: { studentName: String(studentName).trim(), studentRegistrationNo: String(studentRegistrationNo).trim(), contactNumber: String(contactNumber).trim(), parentEmail: String(parentEmail).trim(), preferredDay, preferredBatch: String(preferredBatch || "").trim(), preferredTime: String(preferredBatch || "").trim(), center: String(center || "").trim(), location: String(location || "").trim(), selectedCourseName: String(selectedCourseName || "").trim(), courseName: String(selectedCourseName || "").trim(), paymentType: "renewal", paidAmount: amount, paymentRemark: String(paymentRemark || "").trim() },
+            paymentType: "renewal",
+          },
+        });
+        const response = NextResponse.json({ success: true, ...checkout });
+        const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+        if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
+        return response;
+      }
+      const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+      const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+      const API_KEY = process.env.HDFC_API_KEY;
+      if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
       const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
-      const amount = parsedAmount;
-
       const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders`, {
         method: "POST",
         headers: {
@@ -324,6 +351,8 @@ export async function POST(req: Request) {
 
       await addDoc(collection(db, "payments"), {
         orderId,
+        gateway: "hdfc",
+        paymentGateway: "hdfc",
         customerId,
         ownerSeedHash: paymentSessionBinding.ownerSeedHash,
         sessionBindingKey: paymentSessionBinding.sessionBindingKey,
@@ -460,17 +489,6 @@ export async function POST(req: Request) {
     const amount = parsedAmount;
     const resolvedPaymentType = amount === coursePrice ? "full" : "partial";
 
-    // --- Environment variables ---
-    const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
-    const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
-    const API_KEY = process.env.HDFC_API_KEY;
-    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) {
-      return NextResponse.json(
-        { success: false, message: "Server configuration error" },
-        { status: 500 }
-      );
-    }
-
     // --- Generate IDs ---
     const orderId = generateOrderId();
     const customerSeed = userId || primaryParentEmail;
@@ -481,6 +499,35 @@ export async function POST(req: Request) {
       customerId,
       paymentOwnerSeed
     );
+
+    if ((await getActivePaymentGateway()) === "razorpay") {
+      const checkout = await createRazorpayOrder({
+        orderId, amount, customerId, customerEmail: primaryParentEmail, customerPhone: primaryParentContact,
+        paymentData: {
+          ownerSeedHash: paymentSessionBinding.ownerSeedHash,
+          sessionBindingKey: paymentSessionBinding.sessionBindingKey,
+          sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
+          sessionBindingSource: userId ? "userId" : "email",
+          studentName, courseName: course.title, courseKey,
+          parentEmail: primaryParentEmail, parentPhone: primaryParentContact,
+          studentData: { studentName, dateOfBirth, currentAge, schoolName, class: studentClass, board },
+          parentData: { primaryParentType, primaryParentName, primaryParentContact, primaryParentEmail },
+          addressData: { currentAddress, permanentAddress },
+          course: { key: courseKey, name: course.title, price: coursePrice },
+          registrationDraft: { studentName, dateOfBirth, currentAge, schoolName, class: studentClass, board, primaryParentType, primaryParentName, primaryParentContact, primaryParentEmail, currentAddress, permanentAddress, selectedCourseKey: courseKey, selectedCourseName: course.title, selectedCourseFee: coursePrice, paymentType: resolvedPaymentType, paidAmount: amount, paymentRemark: String(paymentRemark || "").trim() },
+          coursePrice, paymentType: resolvedPaymentType,
+        },
+      });
+      const response = NextResponse.json({ success: true, ...checkout });
+      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
+      if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
+      return response;
+    }
+
+    const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
+    const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
+    const API_KEY = process.env.HDFC_API_KEY;
+    if (!JUSPAY_BASE_URL || !MERCHANT_ID || !API_KEY) return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
 
     const returnUrl = buildPaymentUrlFromRequest(req, "/api/payment/return");
 
@@ -535,6 +582,8 @@ export async function POST(req: Request) {
     // --- Save to Firestore ---
     await addDoc(collection(db, "payments"), {
       orderId,
+      gateway: "hdfc",
+      paymentGateway: "hdfc",
       customerId,
       ownerSeedHash: paymentSessionBinding.ownerSeedHash,
       sessionBindingKey: paymentSessionBinding.sessionBindingKey,

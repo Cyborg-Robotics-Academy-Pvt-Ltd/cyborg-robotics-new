@@ -243,16 +243,34 @@ export default function RegistrationSuccessClient() {
     );
   }
 
+  const normalizedCourseName = normalizeText(payment?.courseName || "");
+  const isCodefestCompetition =
+    normalizedCourseName === normalizeText(CODEFEST_COMPETITION.name);
+  const normalizedPaymentStatus = normalizeText(payment?.status || "PENDING");
+  const isCodefestPaymentPending =
+    isCodefestCompetition &&
+    ["pending", "pendingvbv", "authorizing", "started", "new"].includes(
+      normalizedPaymentStatus,
+    );
+
   if (payment?.status !== "SUCCESS") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
         <div className="max-w-md text-center">
-          <AlertCircle className="w-10 h-10 text-amber-600 mx-auto mb-3" />
+          {isCodefestPaymentPending ? (
+            <Clock3 className="w-10 h-10 text-amber-600 mx-auto mb-3" />
+          ) : (
+            <AlertCircle className="w-10 h-10 text-amber-600 mx-auto mb-3" />
+          )}
           <h1 className="text-xl sm:text-2xl font-semibold">
-            Payment Not Confirmed
+            {isCodefestPaymentPending
+              ? "Confirming payment"
+              : "Payment Not Confirmed"}
           </h1>
           <p className="mt-2 text-gray-600 text-sm sm:text-base">
-            Status: {payment?.status || "PENDING"}
+            {isCodefestPaymentPending
+              ? "HDFC/Juspay is checking your payment. This can take a few seconds. Please wait and do not pay again for this order."
+              : `Status: ${payment?.status || "PENDING"}`}
           </p>
         </div>
       </div>
@@ -260,9 +278,6 @@ export default function RegistrationSuccessClient() {
   }
 
   const downloadUrl = `/api/payment/invoice?orderId=${orderId}`;
-  const normalizedCourseName = normalizeText(payment?.courseName || "");
-  const isCodefestCompetition =
-    normalizedCourseName === normalizeText(CODEFEST_COMPETITION.name);
   const hallTicketNumber = isCodefestCompetition
     ? `CF-${orderId
         .replace(/[^A-Z0-9]/gi, "")
