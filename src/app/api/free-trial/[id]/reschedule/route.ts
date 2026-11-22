@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebase-admin";
@@ -191,15 +191,17 @@ export async function PATCH(
       trialDate: date,
       trialTime: time,
     };
-    try {
-      if (isFirstBooking) {
-        await sendTrialBookingEmails(emailData);
-      } else {
-        await sendTrialRescheduleEmails(emailData);
+    after(async () => {
+      try {
+        if (isFirstBooking) {
+          await sendTrialBookingEmails(emailData);
+        } else {
+          await sendTrialRescheduleEmails(emailData);
+        }
+      } catch (mailError) {
+        console.error("Unable to send trial booking email:", id, mailError);
       }
-    } catch (mailError) {
-      console.error("Unable to send trial booking email:", id, mailError);
-    }
+    });
 
     return NextResponse.json({
       success: true,

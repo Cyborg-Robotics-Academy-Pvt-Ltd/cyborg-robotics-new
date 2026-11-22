@@ -12,6 +12,10 @@ import {
 } from "firebase/firestore";
 import { app, auth } from "@/lib/firebase";
 import {
+  cachedFirestoreRead,
+  invalidateFirestoreReadCache,
+} from "@/lib/firestore-read-cache";
+import {
   Table,
   TableBody,
   TableCell,
@@ -830,7 +834,7 @@ const Page = () => {
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
-  const fetchRegistrations = useCallback(async () => {
+  const fetchRegistrations = useCallback(async (force = false) => {
     try {
       setLoading(true);
       setError(null);
@@ -843,12 +847,36 @@ const Page = () => {
         competitionRegistrationsSnapshot,
         paymentsSnapshot,
       ] = await Promise.all([
-        getDocs(collection(firestore, "registrations")),
-        getDocs(collection(firestore, "renewals")),
-        getDocs(collection(firestore, "otherRegistrations")),
-        getDocs(collection(firestore, "workshopRegistrations")),
-        getDocs(collection(firestore, "competitionRegistrations")),
-        getDocs(collection(firestore, "payments")),
+        cachedFirestoreRead(
+          "admin:registrations",
+          () => getDocs(collection(firestore, "registrations")),
+          { force },
+        ),
+        cachedFirestoreRead(
+          "admin:renewals",
+          () => getDocs(collection(firestore, "renewals")),
+          { force },
+        ),
+        cachedFirestoreRead(
+          "admin:other-registrations",
+          () => getDocs(collection(firestore, "otherRegistrations")),
+          { force },
+        ),
+        cachedFirestoreRead(
+          "admin:workshop-registrations",
+          () => getDocs(collection(firestore, "workshopRegistrations")),
+          { force },
+        ),
+        cachedFirestoreRead(
+          "admin:competition-registrations",
+          () => getDocs(collection(firestore, "competitionRegistrations")),
+          { force },
+        ),
+        cachedFirestoreRead(
+          "admin:payments",
+          () => getDocs(collection(firestore, "payments")),
+          { force },
+        ),
       ]);
 
       const rows: UnifiedRegistration[] = [];
@@ -987,7 +1015,10 @@ const Page = () => {
   const fetchTrainers = useCallback(async () => {
     try {
       const firestore = getFirestore(app);
-      const trainerSnapshot = await getDocs(collection(firestore, "trainers"));
+      const trainerSnapshot = await cachedFirestoreRead(
+        "admin:trainers",
+        () => getDocs(collection(firestore, "trainers")),
+      );
       const trainerOptions = trainerSnapshot.docs
         .map((doc) => {
           const data = doc.data() as {
@@ -1219,6 +1250,7 @@ const Page = () => {
           });
         }
         await Promise.all(deletions);
+        invalidateFirestoreReadCache();
         setRegistrations((current) =>
           current.filter((item) => item.id !== registration.id),
         );
@@ -1263,6 +1295,7 @@ const Page = () => {
           throw new Error(
             data.message || "Failed to update registration status",
           );
+        invalidateFirestoreReadCache();
         setRegistrations((current) =>
           current.map((item) =>
             item.id === registration.id
@@ -1342,6 +1375,7 @@ const Page = () => {
           throw new Error(data.message || "Failed to create registration");
         }
 
+        invalidateFirestoreReadCache();
         setRegistrations((current) =>
           current.map((item) =>
             item.id === registration.id
@@ -1566,7 +1600,7 @@ const Page = () => {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <Button
-                    onClick={fetchRegistrations}
+                    onClick={() => fetchRegistrations(true)}
                     disabled={loading}
                     className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-red-800 shadow-sm transition-all hover:bg-gray-100"
                   >

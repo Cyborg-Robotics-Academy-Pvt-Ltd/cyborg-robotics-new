@@ -60,6 +60,7 @@ import { StudentTimelineStrip } from "./StudentTimelineStrip";
 
 type Props = {
   registration: TrialRegistration;
+  rowNumber: number;
   hasShowRows: boolean;
   hasClosedRows: boolean;
   canModify: boolean;
@@ -336,6 +337,7 @@ function InlineRemark({
 
 function DesktopRowImpl({
   registration,
+  rowNumber,
   hasShowRows,
   hasClosedRows,
   canModify,
@@ -410,17 +412,20 @@ function DesktopRowImpl({
   const phoneHref = `tel:${registration.contactNumber.replace(/\s+/g, "")}`;
 
   const timelineColSpan = trainerView
-    ? 5
+    ? 6
     : 12 + Number(showContact) + Number(hasShowRows) + Number(hasClosedRows) + Number(!marketingView && (canModify || canDelete));
 
   return (
     <>
     <TableRow className="group border-stone-100 transition-colors hover:bg-red-50/40 focus-within:bg-red-50/40">
+      <TableCell className="sticky left-0 z-20 w-12 min-w-12 max-w-12 bg-white bg-clip-padding text-center text-xs tabular-nums text-stone-500 shadow-[1px_0_0_0_#e7e5e4] group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]">
+        {rowNumber}
+      </TableCell>
       {/* STUDENT */}
 
       <TableCell
         className={cn(
-          "sticky left-0 z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding transition-colors group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]",
+          "sticky left-12 z-10 w-[300px] min-w-[300px] max-w-[300px] bg-white bg-clip-padding transition-colors group-hover:bg-[#fffcf8] group-focus-within:bg-[#fffcf8]",
           STICKY_DIVIDER,
         )}
       >
@@ -453,6 +458,13 @@ function DesktopRowImpl({
                 </span>
               )}
             </p>
+            {registration.isDuplicate && (
+              <p className="mt-1">
+                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 ring-1 ring-inset ring-amber-200">
+                  Duplicate
+                </span>
+              </p>
+            )}
             <p className="mt-0.5 text-xs text-stone-500">
               Age {registration.age}
             </p>

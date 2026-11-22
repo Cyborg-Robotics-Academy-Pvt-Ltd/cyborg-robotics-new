@@ -1,5 +1,4 @@
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
-import { getEnquireFormAccess } from "@/lib/enquire-form-access-cache";
 
 export class EnquireFormAccessError extends Error {
   constructor(
@@ -114,15 +113,7 @@ export async function getEnquireFormActor(request: Request) {
 }
 
 export async function requireEnquireFormEditor(request: Request) {
-  const actor = await getEnquireFormActor(request);
-  if (actor.role !== "trainer") return actor;
-
-  const access = await getEnquireFormAccess();
-  if (access.selectedTrainerId !== actor.uid) {
-    throw new EnquireFormAccessError("Forbidden", 403);
-  }
-
-  return actor;
+  return getEnquireFormActor(request);
 }
 
 export async function requireEnquireFormTrialSlotEditor(request: Request) {

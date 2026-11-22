@@ -13,50 +13,75 @@ async function getAdminIdentity(request: Request) {
 
   try {
     const decoded = await adminAuth.verifyIdToken(token);
+    const email = String(decoded.email || "").trim().toLowerCase();
+    if (email === PAYMENT_GATEWAY_ADMIN_EMAIL) {
+      return { uid: decoded.uid, email };
+    }
+
     const profile = await adminDb.collection("admins").doc(decoded.uid).get();
-    return profile.exists
-      ? { uid: decoded.uid, email: String(decoded.email || "").toLowerCase() }
-      : null;
+    return profile.exists ? { uid: decoded.uid, email } : null;
   } catch {
     return null;
   }
 }
 
 export async function GET(request: Request) {
-  const admin = await getAdminIdentity(request);
-  if (!admin) {
-    return NextResponse.json({ message: "Admin access required" }, { status: 401 });
-  }
-  if (admin.email !== PAYMENT_GATEWAY_ADMIN_EMAIL) {
-    return NextResponse.json({ message: "Not allowed to manage the payment provider" }, { status: 403 });
-  }
+  try {
+    const admin = await getAdminIdentity(request);
+    if (!admin) {
+      return NextResponse.json(
+        { message: "Unable to verify your account for payment settings. Please sign in again or contact support." },
+        { status: 401 },
+      );
+    }
+    if (admin.email !== PAYMENT_GATEWAY_ADMIN_EMAIL) {
+      return NextResponse.json({ message: "Not allowed to manage the payment provider" }, { status: 403 });
+    }
 
-  const snapshot = await adminDb.doc("settings/payment-gateway").get();
-  const activeGateway: ActivePaymentGateway =
-    snapshot.data()?.activeGateway === "hdfc" ? "hdfc" : "razorpay";
-  return NextResponse.json({ activeGateway });
+    const snapshot = await adminDb.doc("settings/payment-gateway").get();
+    const activeGateway: ActivePaymentGateway =
+      snapshot.data()?.activeGateway === "hdfc" ? "hdfc" : "razorpay";
+    return NextResponse.json({ activeGateway });
+  } catch (error) {
+    console.error("Unable to load payment gateway settings:", error);
+    return NextResponse.json(
+      { message: "Could not load payment settings. Please try again." },
+      { status: 500 },
+    );
+  }
 }
 
 export async function PATCH(request: Request) {
-  const admin = await getAdminIdentity(request);
-  if (!admin) {
-    return NextResponse.json({ message: "Admin access required" }, { status: 401 });
-  }
-  if (admin.email !== PAYMENT_GATEWAY_ADMIN_EMAIL) {
-    return NextResponse.json({ message: "Not allowed to manage the payment provider" }, { status: 403 });
-  }
+  try {
+    const admin = await getAdminIdentity(request);
+    if (!admin) {
+      return NextResponse.json(
+        { message: "Unable to verify your account for payment settings. Please sign in again or contact support." },
+        { status: 401 },
+      );
+    }
+    if (admin.email !== PAYMENT_GATEWAY_ADMIN_EMAIL) {
+      return NextResponse.json({ message: "Not allowed to manage the payment provider" }, { status: 403 });
+    }
 
-  const body = await request.json().catch(() => null);
-  const activeGateway = body?.activeGateway;
-  if (activeGateway !== "razorpay" && activeGateway !== "hdfc") {
-    return NextResponse.json({ message: "Select a valid payment provider" }, { status: 400 });
+    const body = await request.json().catch(() => null);
+    const activeGateway = body?.activeGateway;
+    if (activeGateway !== "razorpay" && activeGateway !== "hdfc") {
+      return NextResponse.json({ message: "Select a valid payment provider" }, { status: 400 });
+    }
+
+    await adminDb.doc("settings/payment-gateway").set({
+      activeGateway,
+      updatedAt: new Date().toISOString(),
+      updatedBy: admin.uid,
+    }, { merge: true });
+
+    return NextResponse.json({ success: true, activeGateway });
+  } catch (error) {
+    console.error("Unable to save payment gateway settings:", error);
+    return NextResponse.json(
+      { message: "Could not update payment settings. Please try again." },
+      { status: 500 },
+    );
   }
-
-  await adminDb.doc("settings/payment-gateway").set({
-    activeGateway,
-    updatedAt: new Date().toISOString(),
-    updatedBy: admin.uid,
-  }, { merge: true });
-
-  return NextResponse.json({ success: true, activeGateway });
 }

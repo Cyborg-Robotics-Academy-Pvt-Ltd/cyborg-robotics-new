@@ -7,7 +7,6 @@ import {
   Loader2,
   Plus,
   RefreshCw,
-  ShieldCheck,
 } from "lucide-react";
 
 import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations";
@@ -26,86 +25,19 @@ import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDia
 import { ManualEnquiryDialog } from "@/components/trial-registrations/ManualEnquiryDialog";
 import { TrialRegistration } from "./types";
 import { useAuth } from "@/lib/auth-context";
-import { authReady } from "@/lib/firebase";
-import { readApiJson } from "@/lib/read-api-json";
 
 const ENQUIRIES_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
-type TrainerOption = {
-  id: string;
-  name: string;
-};
-
-type CachedTrainerAccess = {
-  selectedTrainerId: string | null;
-  trainers: TrainerOption[];
-  savedAt: number;
-};
-
-const TRAINER_ACCESS_CACHE_TTL_MS = 30 * 60 * 1000;
-
-function trainerAccessCacheKey(uid: string, role: string) {
-  return `enquire-form-access:v1:${uid}:${role}`;
-}
-
-function parseCachedTrainerAccess(value: unknown): CachedTrainerAccess | null {
-  if (!value || typeof value !== "object") return null;
-  const record = value as Record<string, unknown>;
-  const selectedTrainerId = record.selectedTrainerId;
-  const savedAt = record.savedAt;
-  const trainersValue = record.trainers;
-
-  if (
-    !(selectedTrainerId === null || typeof selectedTrainerId === "string") ||
-    typeof savedAt !== "number" ||
-    !Number.isFinite(savedAt) ||
-    !Array.isArray(trainersValue) ||
-    !trainersValue.every(
-      (trainer) =>
-        !!trainer &&
-        typeof trainer === "object" &&
-        "id" in trainer &&
-        typeof trainer.id === "string" &&
-        "name" in trainer &&
-        typeof trainer.name === "string",
-    )
-  ) {
-    return null;
-  }
-
-  return {
-    selectedTrainerId,
-    trainers: trainersValue as TrainerOption[],
-    savedAt,
-  };
-}
-
 const Page = () => {
-  const { user, userRole } = useAuth();
+  const { userRole } = useAuth();
   const canDelete = userRole === "admin" || userRole === "superAdmin";
-  const [selectedTrainerId, setSelectedTrainerId] = useState<string | null>(
-    null,
-  );
-  const [trainerOptions, setTrainerOptions] = useState<TrainerOption[]>([]);
-  const [accessLoading, setAccessLoading] = useState(
-    userRole === "admin" || userRole === "superAdmin" || userRole === "trainer",
-  );
-  const [savingTrainerSelection, setSavingTrainerSelection] = useState(false);
-  const [accessError, setAccessError] = useState("");
-  const [accessWarning, setAccessWarning] = useState("");
-  const [accessRefreshKey, setAccessRefreshKey] = useState(0);
-  const canModify =
-    userRole !== null &&
-    (userRole !== "trainer" || selectedTrainerId === user?.uid);
+  const canModify = userRole !== null;
   const trainerView = userRole === "trainer";
   const marketingView = userRole === "marketing";
   const canAddTrialSlot =
     userRole === "admin" ||
     userRole === "sales" ||
     marketingView;
-  const selectedTrainer = trainerOptions.find(
-    (trainer) => trainer.id === selectedTrainerId,
-  );
   const {
     registrations,
     loading,
@@ -125,194 +57,21 @@ const Page = () => {
     deleteRegistration,
   } = useTrialRegistrations();
 
-  useEffect(() => {
-    if (
-      !user ||
-      !["admin", "superAdmin", "trainer"].includes(userRole || "")
-    ) {
-      setAccessLoading(false);
-      return;
-    }
-
-    let disposed = false;
-    let cachedAt = 0;
-    let hasCachedAccess = false;
-    let retryAfter = 0;
-    const cacheKey = trainerAccessCacheKey(user.uid, userRole || "unknown");
-
-    try {
-      const cachedValue = parseCachedTrainerAccess(
-        JSON.parse(window.localStorage.getItem(cacheKey) || "null"),
-      );
-      if (cachedValue) {
-        cachedAt = cachedValue.savedAt;
-        hasCachedAccess = true;
-        setSelectedTrainerId(cachedValue.selectedTrainerId);
-        setTrainerOptions(cachedValue.trainers);
-        setAccessLoading(false);
-        setAccessError("");
-        setAccessWarning(
-          Date.now() - cachedValue.savedAt > TRAINER_ACCESS_CACHE_TTL_MS
-            ? "Using saved trainer access while checking for updates."
-            : "",
-        );
-      }
-    } catch (cacheError) {
-      console.warn("Unable to read saved trainer access:", cacheError);
-    }
-
-    if (!hasCachedAccess) {
-      setAccessLoading(true);
-      setAccessWarning("");
-    }
-    const loadAccess = async () => {
-      if (hasCachedAccess && Date.now() - cachedAt < TRAINER_ACCESS_CACHE_TTL_MS) {
-        setAccessLoading(false);
-        return;
-      }
-      if (Date.now() < retryAfter) return;
-
-      try {
-        const auth = await authReady;
-        const token = await auth?.currentUser?.getIdToken();
-        if (!token) throw new Error("Please sign in again to manage access.");
-
-        const response = await fetch("/api/enquire-form/access", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await readApiJson<{
-          success?: boolean;
-          selectedTrainerId?: string | null;
-          trainers?: TrainerOption[];
-          message?: string;
-          roleClaimUpdated?: boolean;
-        }>(response);
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || "Unable to load trainer access.");
-        }
-
-        if (disposed) return;
-        const selectedId = data.selectedTrainerId ?? null;
-        const trainers = data.trainers ?? [];
-        const savedAt = Date.now();
-        setSelectedTrainerId(selectedId);
-        setTrainerOptions(trainers);
-        cachedAt = savedAt;
-        hasCachedAccess = true;
-        try {
-          window.localStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              selectedTrainerId: selectedId,
-              trainers,
-              savedAt,
-            } satisfies CachedTrainerAccess),
-          );
-        } catch (cacheError) {
-          console.warn("Unable to save trainer access locally:", cacheError);
-        }
-        if (data.roleClaimUpdated) {
-          await auth?.currentUser?.getIdToken(true);
-        }
-        setAccessError("");
-        setAccessWarning("");
-      } catch (error) {
-        if (disposed) return;
-        console.error("Unable to load Enquire form trainer access:", error);
-        retryAfter = Date.now() + 60_000;
-        if (hasCachedAccess) {
-          setAccessWarning(
-            "Firebase is unavailable. Showing the last saved trainer access; it may be out of date.",
-          );
-        } else {
-          setAccessError(
-            error instanceof Error
-              ? error.message
-              : "Unable to load trainer access.",
-          );
-        }
-      } finally {
-        if (!disposed) setAccessLoading(false);
-      }
-    };
-
-    void loadAccess();
-    const refreshAccess = () => {
-      if (document.visibilityState === "visible") void loadAccess();
-    };
-    document.addEventListener("visibilitychange", refreshAccess);
-
-    return () => {
-      disposed = true;
-      document.removeEventListener("visibilitychange", refreshAccess);
-    };
-  }, [user, userRole, accessRefreshKey]);
-
-  const handleTrainerSelection = async (trainerId: string) => {
-    setSavingTrainerSelection(true);
-    setAccessError("");
-
-    try {
-      const auth = await authReady;
-      const token = await auth?.currentUser?.getIdToken();
-      if (!token) throw new Error("Please sign in again to manage access.");
-
-      const response = await fetch("/api/enquire-form/access", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+  const bookingCounts = useMemo(
+    () =>
+      registrations.reduce(
+        (counts, registration) => {
+          if (!registration.trialDate || registration.status === "cancelled") {
+            return counts;
+          }
+          if (registration.bookingOrigin === "direct") counts.direct += 1;
+          if (registration.bookingOrigin === "follow-up") counts.followUp += 1;
+          return counts;
         },
-        body: JSON.stringify({ trainerId: trainerId || null }),
-      });
-      const data = await readApiJson<{
-        success?: boolean;
-        selectedTrainerId?: string | null;
-        message?: string;
-      }>(response);
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Unable to update trainer access.");
-      }
-
-      setSelectedTrainerId(data.selectedTrainerId ?? null);
-      const savedAt = Date.now();
-      if (user) {
-        try {
-          window.localStorage.setItem(
-            trainerAccessCacheKey(user.uid, userRole || "unknown"),
-            JSON.stringify({
-              selectedTrainerId: data.selectedTrainerId ?? null,
-              trainers: trainerOptions,
-              savedAt,
-            } satisfies CachedTrainerAccess),
-          );
-        } catch (cacheError) {
-          console.warn("Unable to save trainer access locally:", cacheError);
-        }
-      }
-      setAccessWarning("");
-    } catch (error) {
-      console.error("Unable to update Enquire form trainer access:", error);
-      setAccessError(
-        error instanceof Error ? error.message : "Unable to update trainer access.",
-      );
-    } finally {
-      setSavingTrainerSelection(false);
-    }
-  };
-
-  const retryTrainerAccess = () => {
-    if (user) {
-      try {
-        window.localStorage.removeItem(
-          trainerAccessCacheKey(user.uid, userRole || "unknown"),
-        );
-      } catch (cacheError) {
-        console.warn("Unable to clear saved trainer access:", cacheError);
-      }
-    }
-    setAccessRefreshKey((value) => value + 1);
-  };
+        { direct: 0, followUp: 0 },
+      ),
+    [registrations],
+  );
 
   const {
     searchTerm,
@@ -495,7 +254,7 @@ const Page = () => {
           <button
             type="button"
             onClick={() => setManualEnquiryOpen(true)}
-            className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-red-700 px-4 py-4 text-sm font-medium text-white shadow-lg transition hover:bg-red-800"
+            className="fixed bottom-14 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-red-700 px-4 py-4 text-sm font-medium text-white shadow-lg transition hover:bg-red-800"
           >
             <Plus className="h-6 w-6" />
            
@@ -533,12 +292,7 @@ const Page = () => {
               Direct trial bookings
             </p>
             <p className="text-lg font-semibold leading-none text-stone-900">
-              {registrations.filter(
-                (registration) =>
-                  registration.trialDate &&
-                  registration.status !== "cancelled" &&
-                  registration.bookingOrigin === "direct",
-              ).length}
+              {bookingCounts.direct}
             </p>
           </div>
           <div className="flex min-w-[170px] items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm">
@@ -546,136 +300,12 @@ const Page = () => {
               Booked after follow-up
             </p>
             <p className="text-lg font-semibold leading-none text-stone-900">
-              {registrations.filter(
-                (registration) =>
-                  registration.trialDate &&
-                  registration.status !== "cancelled" &&
-                  registration.bookingOrigin === "follow-up",
-              ).length}
+              {bookingCounts.followUp}
             </p>
           </div>
           </div>
 
-        {(userRole === "admin" || userRole === "superAdmin") && (
-          <div className="min-w-[320px] flex-1 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-            <div className="flex h-full flex-col justify-center gap-2 border-l-4 border-red-500 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-50 text-red-700">
-                  <ShieldCheck className="h-4 w-4" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-sm font-semibold text-stone-900">
-                      Trainer edit access
-                    </h2>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        selectedTrainerId
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-stone-100 text-stone-600"
-                      }`}
-                    >
-                      {accessLoading
-                        ? "Loading access"
-                        : accessError
-                          ? "Access unavailable"
-                          : selectedTrainer
-                            ? `Enabled for ${selectedTrainer.name}`
-                            : selectedTrainerId
-                              ? "Trainer assigned"
-                              : "No trainer selected"}
-                    </span>
-                  </div>
-                  <p className="hidden text-xs text-stone-500 lg:block">
-                    Only the selected trainer can update trial status. All
-                    other trainers have read-only access.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                <label
-                  htmlFor="enquiry-trainer-access"
-                  className="sr-only"
-                >
-                  Trainer allowed to edit
-                </label>
-                <select
-                  id="enquiry-trainer-access"
-                  value={selectedTrainerId ?? ""}
-                  onChange={(event) =>
-                    void handleTrainerSelection(event.target.value)
-                  }
-                  disabled={
-                    accessLoading || savingTrainerSelection || Boolean(accessError)
-                  }
-                  className="h-8 w-48 rounded-lg border border-stone-300 bg-white px-2 text-xs text-stone-800 shadow-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
-                >
-                  <option value="">
-                    {accessLoading
-                      ? "Loading trainers..."
-                      : accessError
-                        ? "Unable to load trainers"
-                        : "No trainer selected"}
-                  </option>
-                  {trainerOptions.map((trainer) => (
-                    <option key={trainer.id} value={trainer.id}>
-                      {trainer.name}
-                    </option>
-                  ))}
-                </select>
-                {accessError && (
-                  <div className="mt-1.5 flex items-start justify-between gap-2">
-                    <p role="alert" className="text-xs text-red-600">
-                      {accessError}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={retryTrainerAccess}
-                      className="shrink-0 text-xs font-semibold text-red-700 underline"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
         </div>
-
-        {accessWarning && (
-          <p
-            role="status"
-            aria-live="polite"
-            className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
-          >
-            {accessWarning}
-          </p>
-        )}
-
-        {userRole === "trainer" && accessLoading && (
-          <p className="mb-4 text-sm text-stone-500">
-            Checking edit access…
-          </p>
-        )}
-        {userRole === "trainer" && !accessLoading && accessError && (
-          <div className="mb-4 flex items-center gap-3 text-sm text-red-600">
-            <p role="alert">{accessError}</p>
-            <button
-              type="button"
-              onClick={retryTrainerAccess}
-              className="shrink-0 font-semibold text-red-700 underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-        {userRole === "trainer" && !accessLoading && !accessError && !canModify && (
-          <p className="mb-4 text-sm text-stone-500">
-            An admin must select your trainer account before you can edit enquiries.
-          </p>
-        )}
 
         <LocationTabs
           locationFilter={locationFilter}

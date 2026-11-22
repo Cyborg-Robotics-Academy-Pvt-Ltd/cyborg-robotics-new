@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
+import { cachedFirestoreRead } from "@/lib/firestore-read-cache";
 import {
   doc,
   getDoc,
@@ -1463,7 +1464,7 @@ const AdminDashboard = () => {
     return studentsSnapshotPromiseRef.current;
   }, []);
 
-  const fetchOverviewData = useCallback(async () => {
+  const fetchOverviewData = useCallback(async (force = false) => {
     try {
       setLoadingOverview(true);
 
@@ -1484,11 +1485,24 @@ const AdminDashboard = () => {
           };
         }),
       );
-      const trainersSnapshot = await getDocs(collection(db, "trainers"));
-      const paymentsSnapshot = await getDocs(collection(db, "payments"));
-      const registrationsSnapshot = await getDocs(
-        collection(db, "registrations"),
-      );
+      const [trainersSnapshot, paymentsSnapshot, registrationsSnapshot] =
+        await Promise.all([
+          cachedFirestoreRead(
+            "admin:trainers",
+            () => getDocs(collection(db, "trainers")),
+            { force },
+          ),
+          cachedFirestoreRead(
+            "admin:payments",
+            () => getDocs(collection(db, "payments")),
+            { force },
+          ),
+          cachedFirestoreRead(
+            "admin:registrations",
+            () => getDocs(collection(db, "registrations")),
+            { force },
+          ),
+        ]);
 
       setTrainerSummaries(
         trainersSnapshot.docs.map((trainerDoc) => {
@@ -1856,7 +1870,10 @@ const AdminDashboard = () => {
       });
 
       // Fetch recent successful payments
-      const paymentsSnapshot = await getDocs(collection(db, "payments"));
+      const paymentsSnapshot = await cachedFirestoreRead(
+        "admin:payments",
+        () => getDocs(collection(db, "payments")),
+      );
       const recentPayments = paymentsSnapshot.docs
         .filter((doc) => {
           const data = doc.data();
@@ -1912,7 +1929,10 @@ const AdminDashboard = () => {
       });
 
       // Fetch recent trainer additions
-      const trainersSnapshot = await getDocs(collection(db, "trainers"));
+      const trainersSnapshot = await cachedFirestoreRead(
+        "admin:trainers",
+        () => getDocs(collection(db, "trainers")),
+      );
       const recentTrainers = trainersSnapshot.docs
         .filter((doc) => {
           const data = doc.data();
@@ -2617,7 +2637,7 @@ const AdminDashboard = () => {
                     studentsSnapshotPromiseRef.current = null;
                     try {
                       await Promise.all([
-                        fetchOverviewData(),
+                        fetchOverviewData(true),
                         fetchRecentActivities(),
                         fetchEnrollmentTrends(),
                         fetchCourseCategories(),
@@ -2890,369 +2910,7 @@ const AdminDashboard = () => {
               </div>
             )}
           </section>
-
-          <section aria-labelledby="admin-day-prediction-title" className="mb-8">
-            <Card className="border border-red-100 bg-white/85 shadow-lg">
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-800">
-                    <CalendarRange className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle
-                      id="admin-day-prediction-title"
-                      className="text-lg text-gray-900"
-                    >
-                      Students who may come on {getWeekdayName(predictionWeekday)}
-                    </CardTitle>
-                    <CardDescription className="mt-1">
-                      Based on each student&apos;s last five distinct completed
-                      class days. This is an estimate.
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="mb-4 flex flex-wrap gap-2"
-                  role="group"
-                  aria-label="Filter predicted students by weekday"
-                >
-                  {PREDICTION_WEEKDAYS.map((weekday) => (
-                    <Button
-                      key={weekday}
-                      type="button"
-                      size="sm"
-                      variant={
-                        predictionWeekday === weekday ? "default" : "outline"
-                      }
-                      aria-pressed={predictionWeekday === weekday}
-                      onClick={() => {
-                        setPredictionWeekday(weekday);
-                        setPredictionStudentGroup("regular");
-                      }}
-                      className={
-                        predictionWeekday === weekday
-                          ? "rounded-full bg-red-800 text-white hover:bg-red-900"
-                          : "rounded-full border-red-200 text-red-800"
-                      }
-                    >
-                      {getWeekdayName(weekday)}{" "}
-                      <span
-                        className={`ml-1 inline-flex min-w-5 justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                          predictionWeekday === weekday
-                            ? "bg-white/20 text-white"
-                            : "bg-red-50 text-red-800"
-                        }`}
-                      >
-                        {weekdayPredictionCounts.get(weekday) || 0}
-                      </span>
-                    </Button>
-                  ))}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={
-                      predictionStudentGroup === "not_regular"
-                        ? "default"
-                        : "outline"
-                    }
-                    aria-pressed={predictionStudentGroup === "not_regular"}
-                    onClick={() => setPredictionStudentGroup("not_regular")}
-                    className={
-                      predictionStudentGroup === "not_regular"
-                        ? "ml-2 rounded-full bg-slate-700 text-white hover:bg-slate-800"
-                        : "ml-2 rounded-full border-slate-300 text-slate-700"
-                    }
-                  >
-                    Not regular{" "}
-                    <span className="ml-1 inline-flex min-w-5 justify-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
-                      {studentsWithoutSelectedWeekdayPattern.length}
-                    </span>
-                  </Button>
-                  <div className="ml-1 flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-1.5 pl-3 shadow-sm">
-                    <label
-                      htmlFor="prediction-trainer-filter"
-                      className="whitespace-nowrap text-xs font-semibold text-indigo-800"
-                    >
-                      Trainer
-                    </label>
-                    <select
-                      id="prediction-trainer-filter"
-                      value={predictionTrainerId}
-                      onChange={(event) =>
-                        setPredictionTrainerId(event.target.value)
-                      }
-                      className="h-8 min-w-40 rounded-lg border border-indigo-200 bg-white px-3 text-sm font-medium text-indigo-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
-                    >
-                      <option value="all">
-                        All trainers ({trainerPredictionCounts.get("all") || 0})
-                      </option>
-                      <option value="unassigned">
-                        Unassigned ({trainerPredictionCounts.get("unassigned") || 0})
-                      </option>
-                      {trainerSummaries.map((trainer) => (
-                        <option key={trainer.id} value={trainer.id}>
-                          {trainer.name} (
-                          {trainerPredictionCounts.get(trainer.id) || 0})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <p
-                  className="mb-3 text-sm font-semibold text-gray-700"
-                  aria-live="polite"
-                >
-                  {predictionStudentGroup === "regular"
-                    ? studentsLikelyOnSelectedWeekday.length
-                    : studentsWithoutSelectedWeekdayPattern.length}{" "}
-                  {(
-                    predictionStudentGroup === "regular"
-                      ? studentsLikelyOnSelectedWeekday.length
-                      : studentsWithoutSelectedWeekdayPattern.length
-                  ) === 1
-                    ? "student"
-                    : "students"}{" "}
-                  {predictionStudentGroup === "regular"
-                    ? `regular on ${getWeekdayName(predictionWeekday)}`
-                    : `not regular on ${getWeekdayName(predictionWeekday)}`}{" "}
-                  out of {dayPredictionStudents.length} student records
-                  {" · "}
-                  {getWeekdayName(predictionWeekday)}
-                  {predictionTrainerId !== "all"
-                    ? ` · ${
-                        predictionTrainerId === "unassigned"
-                          ? "Unassigned"
-                          : selectedPredictionTrainer?.name || "Selected trainer"
-                      }`
-                    : ""}
-                </p>
-
-                <div
-                  hidden={predictionStudentGroup !== "regular"}
-                  aria-label="Regular students"
-                >
-                {loadingOverview ? (
-                  <p className="py-6 text-center text-sm text-gray-500">
-                    Loading student class history...
-                  </p>
-                ) : studentsLikelyOnSelectedWeekday.length > 0 ? (
-                  <ul className="max-h-[26rem] divide-y divide-gray-100 overflow-y-auto pr-2">
-                    {studentsLikelyOnSelectedWeekday.map(
-                      ({ student, pattern }) => {
-                        const activeCourses = getActiveStudentCourses(
-                          student,
-                          predictionTrainerFilter,
-                        );
-                        const trainerNames = Array.from(
-                          new Set(
-                            activeCourses
-                              .map((course) =>
-                                String(course.trainerName || "").trim(),
-                              )
-                              .filter(Boolean),
-                          ),
-                        );
-                        const trainerName =
-                          (predictionTrainerFilter === "unassigned"
-                            ? "Unassigned"
-                            : predictionTrainerFilter?.name) ||
-                          trainerNames.join(", ") ||
-                          getStudentTrainer(student) ||
-                          "Unassigned";
-                        const studentDetailsHref =
-                          getStudentCourseDetailUrl(student);
-                        const studentStatus = getPredictionStudentStatus(
-                          student,
-                          currentDateTime,
-                        );
-
-                        return (
-                          <li
-                            key={student.id}
-                            className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
-                          >
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                {studentDetailsHref ? (
-                                  <Link
-                                    href={studentDetailsHref}
-                                    className="truncate text-left font-semibold text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                                    aria-label={`View course details for ${student.displayName}`}
-                                  >
-                                    {student.displayName}
-                                  </Link>
-                                ) : (
-                                  <p className="truncate font-semibold text-gray-900">
-                                    {student.displayName}
-                                  </p>
-                                )}
-                                <span
-                                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
-                                >
-                                  {studentStatus}
-                                </span>
-                              </div>
-                              {activeCourses.some(
-                                (course) => course.name || course.courseName,
-                              ) ? (
-                                <p className="truncate text-sm text-gray-600">
-                                  {activeCourses
-                                    .map(
-                                      (course) =>
-                                        course.name ||
-                                        course.courseName ||
-                                        "",
-                                    )
-                                    .filter(Boolean)
-                                    .join(", ")}
-                                </p>
-                              ) : null}
-                              <p className="mt-1 text-sm">
-                                <span className="text-gray-500">Trainer: </span>
-                                <span className="font-semibold text-red-800">
-                                  {trainerName}
-                                </span>
-                              </p>
-                            </div>
-                            <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
-                              {pattern.matchingDayCount} of {pattern.sampleSize}{" "}
-                              recent class days
-                            </span>
-                          </li>
-                        );
-                      },
-                    )}
-                  </ul>
-                ) : (
-                  <p className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
-                    No students have a regular {getWeekdayName(predictionWeekday)}{" "}
-                    pattern in their recent class history.
-                  </p>
-                )}
-                </div>
-
-                <div
-                  hidden={predictionStudentGroup !== "not_regular"}
-                  aria-label={`Students not regular on ${getWeekdayName(predictionWeekday)}`}
-                >
-                  {loadingOverview ? (
-                    <p className="py-4 text-center text-sm text-gray-500">
-                      Loading student class history...
-                    </p>
-                  ) : studentsWithoutSelectedWeekdayPattern.length > 0 ? (
-                    <ul className="max-h-[22rem] divide-y divide-gray-100 overflow-y-auto pr-2">
-                      {studentsWithoutSelectedWeekdayPattern.map(
-                        ({
-                          student,
-                          classDayCount,
-                          matchingDayCount,
-                        }) => {
-                          const activeCourses = getActiveStudentCourses(
-                            student,
-                            predictionTrainerFilter,
-                          );
-                          const trainerNames = Array.from(
-                            new Set(
-                              activeCourses
-                                .map((course) =>
-                                  String(course.trainerName || "").trim(),
-                                )
-                                .filter(Boolean),
-                            ),
-                          );
-                          const trainerName =
-                            (predictionTrainerFilter === "unassigned"
-                              ? "Unassigned"
-                              : predictionTrainerFilter?.name) ||
-                            trainerNames.join(", ") ||
-                            getStudentTrainer(student) ||
-                            "Unassigned";
-                          const studentDetailsHref =
-                            getStudentCourseDetailUrl(student);
-                          const studentStatus = getPredictionStudentStatus(
-                            student,
-                            currentDateTime,
-                          );
-
-                          return (
-                            <li
-                              key={student.id}
-                              className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
-                            >
-                              <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {studentDetailsHref ? (
-                                    <Link
-                                      href={studentDetailsHref}
-                                      className="truncate text-left font-medium text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                                      aria-label={`View course details for ${student.displayName}`}
-                                    >
-                                      {student.displayName}
-                                    </Link>
-                                  ) : (
-                                    <p className="truncate font-medium text-gray-900">
-                                      {student.displayName}
-                                    </p>
-                                  )}
-                                  <span
-                                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
-                                  >
-                                    {studentStatus}
-                                  </span>
-                                </div>
-                                {activeCourses.some(
-                                  (course) => course.name || course.courseName,
-                                ) ? (
-                                  <p className="truncate text-sm text-gray-600">
-                                    {activeCourses
-                                      .map(
-                                        (course) =>
-                                          course.name ||
-                                          course.courseName ||
-                                          "",
-                                      )
-                                      .filter(Boolean)
-                                      .join(", ")}
-                                  </p>
-                                ) : null}
-                                <p className="mt-1 text-sm">
-                                  <span className="text-gray-500">
-                                    Trainer:{" "}
-                                  </span>
-                                  <span className="font-semibold text-red-800">
-                                    {trainerName}
-                                  </span>
-                                </p>
-                              </div>
-                              <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
-                                {classDayCount < 5
-                                  ? `Not regular · ${matchingDayCount} of ${classDayCount} recent days`
-                                  : `${matchingDayCount} of 5 recent days`}
-                              </span>
-                            </li>
-                          );
-                        },
-                      )}
-                    </ul>
-                  ) : (
-                    <p className="rounded-xl border border-dashed border-gray-300 px-4 py-5 text-center text-sm text-gray-500">
-                      No students with five class days but without a regular{" "}
-                      {getWeekdayName(predictionWeekday)} pattern match this
-                      filter.
-                    </p>
-                  )}
-                </div>
-
-              </CardContent>
-            </Card>
-          </section>
-
-          <AdminLeadTimelineSection
-            registrations={leadTimelineRecords}
-            loading={loadingLeadTimeline}
-          />
+ 
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -3817,6 +3475,369 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+           <AdminLeadTimelineSection
+            registrations={leadTimelineRecords}
+            loading={loadingLeadTimeline}
+          />
+          <section aria-labelledby="admin-day-prediction-title" className="mb-8">
+            <Card className="border border-red-100 bg-white/85 shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-800">
+                    <CalendarRange className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle
+                      id="admin-day-prediction-title"
+                      className="text-lg text-gray-900"
+                    >
+                      Students who may come on {getWeekdayName(predictionWeekday)}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Based on each student&apos;s last five distinct completed
+                      class days. This is an estimate.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="mb-4 flex flex-wrap gap-2"
+                  role="group"
+                  aria-label="Filter predicted students by weekday"
+                >
+                  {PREDICTION_WEEKDAYS.map((weekday) => (
+                    <Button
+                      key={weekday}
+                      type="button"
+                      size="sm"
+                      variant={
+                        predictionWeekday === weekday ? "default" : "outline"
+                      }
+                      aria-pressed={predictionWeekday === weekday}
+                      onClick={() => {
+                        setPredictionWeekday(weekday);
+                        setPredictionStudentGroup("regular");
+                      }}
+                      className={
+                        predictionWeekday === weekday
+                          ? "rounded-full bg-red-800 text-white hover:bg-red-900"
+                          : "rounded-full border-red-200 text-red-800"
+                      }
+                    >
+                      {getWeekdayName(weekday)}{" "}
+                      <span
+                        className={`ml-1 inline-flex min-w-5 justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                          predictionWeekday === weekday
+                            ? "bg-white/20 text-white"
+                            : "bg-red-50 text-red-800"
+                        }`}
+                      >
+                        {weekdayPredictionCounts.get(weekday) || 0}
+                      </span>
+                    </Button>
+                  ))}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={
+                      predictionStudentGroup === "not_regular"
+                        ? "default"
+                        : "outline"
+                    }
+                    aria-pressed={predictionStudentGroup === "not_regular"}
+                    onClick={() => setPredictionStudentGroup("not_regular")}
+                    className={
+                      predictionStudentGroup === "not_regular"
+                        ? "ml-2 rounded-full bg-slate-700 text-white hover:bg-slate-800"
+                        : "ml-2 rounded-full border-slate-300 text-slate-700"
+                    }
+                  >
+                    Not regular{" "}
+                    <span className="ml-1 inline-flex min-w-5 justify-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                      {studentsWithoutSelectedWeekdayPattern.length}
+                    </span>
+                  </Button>
+                  <div className="ml-1 flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-1.5 pl-3 shadow-sm">
+                    <label
+                      htmlFor="prediction-trainer-filter"
+                      className="whitespace-nowrap text-xs font-semibold text-indigo-800"
+                    >
+                      Trainer
+                    </label>
+                    <select
+                      id="prediction-trainer-filter"
+                      value={predictionTrainerId}
+                      onChange={(event) =>
+                        setPredictionTrainerId(event.target.value)
+                      }
+                      className="h-8 min-w-40 rounded-lg border border-indigo-200 bg-white px-3 text-sm font-medium text-indigo-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+                    >
+                      <option value="all">
+                        All trainers ({trainerPredictionCounts.get("all") || 0})
+                      </option>
+                      <option value="unassigned">
+                        Unassigned ({trainerPredictionCounts.get("unassigned") || 0})
+                      </option>
+                      {trainerSummaries.map((trainer) => (
+                        <option key={trainer.id} value={trainer.id}>
+                          {trainer.name} (
+                          {trainerPredictionCounts.get(trainer.id) || 0})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <p
+                  className="mb-3 text-sm font-semibold text-gray-700"
+                  aria-live="polite"
+                >
+                  {predictionStudentGroup === "regular"
+                    ? studentsLikelyOnSelectedWeekday.length
+                    : studentsWithoutSelectedWeekdayPattern.length}{" "}
+                  {(
+                    predictionStudentGroup === "regular"
+                      ? studentsLikelyOnSelectedWeekday.length
+                      : studentsWithoutSelectedWeekdayPattern.length
+                  ) === 1
+                    ? "student"
+                    : "students"}{" "}
+                  {predictionStudentGroup === "regular"
+                    ? `regular on ${getWeekdayName(predictionWeekday)}`
+                    : `not regular on ${getWeekdayName(predictionWeekday)}`}{" "}
+                  out of {dayPredictionStudents.length} student records
+                  {" · "}
+                  {getWeekdayName(predictionWeekday)}
+                  {predictionTrainerId !== "all"
+                    ? ` · ${
+                        predictionTrainerId === "unassigned"
+                          ? "Unassigned"
+                          : selectedPredictionTrainer?.name || "Selected trainer"
+                      }`
+                    : ""}
+                </p>
+
+                <div
+                  hidden={predictionStudentGroup !== "regular"}
+                  aria-label="Regular students"
+                >
+                {loadingOverview ? (
+                  <p className="py-6 text-center text-sm text-gray-500">
+                    Loading student class history...
+                  </p>
+                ) : studentsLikelyOnSelectedWeekday.length > 0 ? (
+                  <ul className="max-h-[26rem] divide-y divide-gray-100 overflow-y-auto pr-2">
+                    {studentsLikelyOnSelectedWeekday.map(
+                      ({ student, pattern }) => {
+                        const activeCourses = getActiveStudentCourses(
+                          student,
+                          predictionTrainerFilter,
+                        );
+                        const trainerNames = Array.from(
+                          new Set(
+                            activeCourses
+                              .map((course) =>
+                                String(course.trainerName || "").trim(),
+                              )
+                              .filter(Boolean),
+                          ),
+                        );
+                        const trainerName =
+                          (predictionTrainerFilter === "unassigned"
+                            ? "Unassigned"
+                            : predictionTrainerFilter?.name) ||
+                          trainerNames.join(", ") ||
+                          getStudentTrainer(student) ||
+                          "Unassigned";
+                        const studentDetailsHref =
+                          getStudentCourseDetailUrl(student);
+                        const studentStatus = getPredictionStudentStatus(
+                          student,
+                          currentDateTime,
+                        );
+
+                        return (
+                          <li
+                            key={student.id}
+                            className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {studentDetailsHref ? (
+                                  <Link
+                                    href={studentDetailsHref}
+                                    className="truncate text-left font-semibold text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                    aria-label={`View course details for ${student.displayName}`}
+                                  >
+                                    {student.displayName}
+                                  </Link>
+                                ) : (
+                                  <p className="truncate font-semibold text-gray-900">
+                                    {student.displayName}
+                                  </p>
+                                )}
+                                <span
+                                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
+                                >
+                                  {studentStatus}
+                                </span>
+                              </div>
+                              {activeCourses.some(
+                                (course) => course.name || course.courseName,
+                              ) ? (
+                                <p className="truncate text-sm text-gray-600">
+                                  {activeCourses
+                                    .map(
+                                      (course) =>
+                                        course.name ||
+                                        course.courseName ||
+                                        "",
+                                    )
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </p>
+                              ) : null}
+                              <p className="mt-1 text-sm">
+                                <span className="text-gray-500">Trainer: </span>
+                                <span className="font-semibold text-red-800">
+                                  {trainerName}
+                                </span>
+                              </p>
+                            </div>
+                            <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+                              {pattern.matchingDayCount} of {pattern.sampleSize}{" "}
+                              recent class days
+                            </span>
+                          </li>
+                        );
+                      },
+                    )}
+                  </ul>
+                ) : (
+                  <p className="rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500">
+                    No students have a regular {getWeekdayName(predictionWeekday)}{" "}
+                    pattern in their recent class history.
+                  </p>
+                )}
+                </div>
+
+                <div
+                  hidden={predictionStudentGroup !== "not_regular"}
+                  aria-label={`Students not regular on ${getWeekdayName(predictionWeekday)}`}
+                >
+                  {loadingOverview ? (
+                    <p className="py-4 text-center text-sm text-gray-500">
+                      Loading student class history...
+                    </p>
+                  ) : studentsWithoutSelectedWeekdayPattern.length > 0 ? (
+                    <ul className="max-h-[22rem] divide-y divide-gray-100 overflow-y-auto pr-2">
+                      {studentsWithoutSelectedWeekdayPattern.map(
+                        ({
+                          student,
+                          classDayCount,
+                          matchingDayCount,
+                        }) => {
+                          const activeCourses = getActiveStudentCourses(
+                            student,
+                            predictionTrainerFilter,
+                          );
+                          const trainerNames = Array.from(
+                            new Set(
+                              activeCourses
+                                .map((course) =>
+                                  String(course.trainerName || "").trim(),
+                                )
+                                .filter(Boolean),
+                            ),
+                          );
+                          const trainerName =
+                            (predictionTrainerFilter === "unassigned"
+                              ? "Unassigned"
+                              : predictionTrainerFilter?.name) ||
+                            trainerNames.join(", ") ||
+                            getStudentTrainer(student) ||
+                            "Unassigned";
+                          const studentDetailsHref =
+                            getStudentCourseDetailUrl(student);
+                          const studentStatus = getPredictionStudentStatus(
+                            student,
+                            currentDateTime,
+                          );
+
+                          return (
+                            <li
+                              key={student.id}
+                              className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {studentDetailsHref ? (
+                                    <Link
+                                      href={studentDetailsHref}
+                                      className="truncate text-left font-medium text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                                      aria-label={`View course details for ${student.displayName}`}
+                                    >
+                                      {student.displayName}
+                                    </Link>
+                                  ) : (
+                                    <p className="truncate font-medium text-gray-900">
+                                      {student.displayName}
+                                    </p>
+                                  )}
+                                  <span
+                                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${PREDICTION_STUDENT_STATUS_STYLES[studentStatus]}`}
+                                  >
+                                    {studentStatus}
+                                  </span>
+                                </div>
+                                {activeCourses.some(
+                                  (course) => course.name || course.courseName,
+                                ) ? (
+                                  <p className="truncate text-sm text-gray-600">
+                                    {activeCourses
+                                      .map(
+                                        (course) =>
+                                          course.name ||
+                                          course.courseName ||
+                                          "",
+                                      )
+                                      .filter(Boolean)
+                                      .join(", ")}
+                                  </p>
+                                ) : null}
+                                <p className="mt-1 text-sm">
+                                  <span className="text-gray-500">
+                                    Trainer:{" "}
+                                  </span>
+                                  <span className="font-semibold text-red-800">
+                                    {trainerName}
+                                  </span>
+                                </p>
+                              </div>
+                              <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                {classDayCount < 5
+                                  ? `Not regular · ${matchingDayCount} of ${classDayCount} recent days`
+                                  : `${matchingDayCount} of 5 recent days`}
+                              </span>
+                            </li>
+                          );
+                        },
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-gray-300 px-4 py-5 text-center text-sm text-gray-500">
+                      No students with five class days but without a regular{" "}
+                      {getWeekdayName(predictionWeekday)} pattern match this
+                      filter.
+                    </p>
+                  )}
+                </div>
+
+              </CardContent>
+            </Card>
+          </section>
+
+        
 
           {/* Newly Enrolled Students by Month */}
           <Card className="mb-8 bg-white/50 backdrop-blur-sm shadow-lg">
@@ -4733,6 +4754,22 @@ function AdminLeadTimelineSection({
             </p>
           ) : (
             <>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+              <span>
+                Showing <strong className="tabular-nums text-slate-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredRegistrations.length)}</strong> of <strong className="tabular-nums text-slate-900">{filteredRegistrations.length}</strong>
+              </span>
+              <label className="flex items-center gap-2 text-xs">
+                Rows
+                <select
+                  value={pageSize}
+                  onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}
+                  className="h-8 rounded-md border border-slate-200 bg-white px-2 text-sm"
+                  aria-label="Rows per page"
+                >
+                  {[10, 20, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+                </select>
+              </label>
+            </div>
             <div
               aria-label="Student lead timeline records"
               className="h-[70vh] overflow-x-auto overflow-y-auto overscroll-contain rounded-xl border border-slate-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"
@@ -4862,23 +4899,7 @@ function AdminLeadTimelineSection({
               })}
               </table>
             </div>
-            <div className="mt-3 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                <span>
-                  Showing <strong className="tabular-nums text-slate-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredRegistrations.length)}</strong> of <strong className="tabular-nums text-slate-900">{filteredRegistrations.length}</strong>
-                </span>
-                <label className="flex items-center gap-2 text-xs">
-                  Rows
-                  <select
-                    value={pageSize}
-                    onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}
-                    className="h-8 rounded-md border border-slate-200 bg-white px-2 text-sm"
-                    aria-label="Rows per page"
-                  >
-                    {[10, 20, 50].map((size) => <option key={size} value={size}>{size}</option>)}
-                  </select>
-                </label>
-              </div>
+            <div className="mt-3 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Previous</button>
                 <span className="text-xs tabular-nums text-slate-500">Page {currentPage} of {totalPages}</span>

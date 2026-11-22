@@ -50,6 +50,7 @@ export type FollowUpEntry = {
 
 export type TrialRegistration = {
   id: string;
+  isDuplicate?: boolean;
   bookingOrigin?: "direct" | "follow-up";
   assignedTo?: string | null;
   assignedToName?: string | null;

@@ -135,6 +135,32 @@ function mapRegistration(
   };
 }
 
+function markDuplicateRegistrations(
+  registrations: TrialRegistration[],
+): TrialRegistration[] {
+  const keysByRegistration = registrations.map((registration) => {
+    const digits = registration.contactNumber.replace(/\D/g, "");
+    const phone = digits.length > 10 ? digits.slice(-10) : digits;
+    const email = registration.email.trim().toLowerCase();
+    return [
+      ...(phone ? [`phone:${phone}`] : []),
+      ...(email ? [`email:${email}`] : []),
+    ];
+  });
+  const keyCounts = new Map<string, number>();
+
+  keysByRegistration.flat().forEach((key) => {
+    keyCounts.set(key, (keyCounts.get(key) ?? 0) + 1);
+  });
+
+  return registrations.map((registration, index) => ({
+    ...registration,
+    isDuplicate: keysByRegistration[index].some(
+      (key) => (keyCounts.get(key) ?? 0) > 1,
+    ),
+  }));
+}
+
 /**
  * Owns the Firestore round-trip for trial registrations.
  *
@@ -158,7 +184,9 @@ export function useTrialRegistrations() {
     return onSnapshot(
       q,
       (snapshot) => {
-        setRegistrations(snapshot.docs.map(mapRegistration));
+        setRegistrations(
+          markDuplicateRegistrations(snapshot.docs.map(mapRegistration)),
+        );
         setLoading(false);
       },
       (err) => {

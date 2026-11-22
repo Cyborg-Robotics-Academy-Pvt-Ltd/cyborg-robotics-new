@@ -51,21 +51,77 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
   /* LOCATION COUNTS */
 
   const locationCounts = useMemo(() => {
-    let online = 0;
-    let offline = 0;
+    const matchingWithoutLocation = registrations.filter((registration) => {
+      if (trialDateFilter) return registration.trialDate === trialDateFilter;
 
-    registrations.forEach((registration) => {
-      const type = getLocationType(registration);
+      if (
+        todayOnly &&
+        !isEnquiryFromToday(
+          registration.createdAt,
+          registration.dateOfRegistration,
+        )
+      ) return false;
 
-      if (type === "online") {
-        online++;
-      } else {
-        offline++;
+      if (
+        centerFilter !== "all" &&
+        getRegistrationCenter(registration) !== centerFilter
+      ) return false;
+
+      if (
+        statusFilter !== "all" &&
+        (registration.status || "booked").toLowerCase() !== statusFilter.toLowerCase()
+      ) return false;
+
+      if (
+        leadTempFilter !== "all" &&
+        (registration.leadTemp || "warm").toLowerCase() !== leadTempFilter.toLowerCase()
+      ) return false;
+
+      if (
+        leadOutcomeFilter !== "all" &&
+        (registration.leadOutcome || "opened").toLowerCase() !== leadOutcomeFilter.toLowerCase()
+      ) return false;
+
+      if (
+        followUpDateFilter &&
+        registration.nextFollowUpDate !== followUpDateFilter
+      ) return false;
+
+      if (searchTerm.trim()) {
+        const term = searchTerm.trim().toLowerCase();
+        const displayLocation = getDisplayLocation(registration).toLowerCase();
+        const mode = getLocationType(registration);
+        const matchesSearch =
+          registration.studentName?.toLowerCase().includes(term) ||
+          registration.email?.toLowerCase().includes(term) ||
+          registration.contactNumber?.includes(term) ||
+          registration.remark?.toLowerCase().includes(term) ||
+          registration.location?.toLowerCase().includes(term) ||
+          displayLocation.includes(term) ||
+          mode.includes(term);
+        if (!matchesSearch) return false;
       }
+
+      return true;
     });
 
-    return { all: registrations.length, online, offline };
-  }, [registrations]);
+    const online = matchingWithoutLocation.filter(
+      (registration) => getLocationType(registration) === "online",
+    ).length;
+    const offline = matchingWithoutLocation.length - online;
+
+    return { all: matchingWithoutLocation.length, online, offline };
+  }, [
+    registrations,
+    trialDateFilter,
+    todayOnly,
+    centerFilter,
+    statusFilter,
+    leadTempFilter,
+    leadOutcomeFilter,
+    followUpDateFilter,
+    searchTerm,
+  ]);
 
   const todayCount = useMemo(
     () =>
@@ -78,117 +134,117 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     [registrations],
   );
 
+  const sortedRegistrations = useMemo(() => {
+    const rows = [...registrations];
+    rows.sort((a, b) => {
+      const cmp = String(a[sortField] ?? "").localeCompare(
+        String(b[sortField] ?? ""),
+      );
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return rows;
+  }, [registrations, sortField, sortDir]);
+
   /* FILTER + SORT */
 
   const filtered = useMemo(() => {
-    let rows = [...registrations];
+    let rows = trialDateFilter
+      ? sortedRegistrations.filter(
+          (registration) => registration.trialDate === trialDateFilter,
+        )
+      : [...sortedRegistrations];
 
-    /* ENQUIRIES SUBMITTED TODAY */
+    // A selected trial date is a direct slot lookup. Other enquiry filters
+    // must not hide registrations booked for that date (including reschedules).
+    if (!trialDateFilter) {
+      /* ENQUIRIES SUBMITTED TODAY */
 
-    if (todayOnly) {
-      rows = rows.filter((registration) =>
-        isEnquiryFromToday(
-          registration.createdAt,
-          registration.dateOfRegistration,
-        ),
-      );
-    }
-
-    /* LOCATION */
-
-    if (locationFilter !== "all") {
-      rows = rows.filter(
-        (registration) => getLocationType(registration) === locationFilter,
-      );
-    }
-
-    if (centerFilter !== "all") {
-      rows = rows.filter(
-        (registration) => getRegistrationCenter(registration) === centerFilter,
-      );
-    }
-
-    /* STATUS */
-
-    if (statusFilter !== "all") {
-      rows = rows.filter(
-        (registration) =>
-          (registration.status || "booked").toLowerCase() ===
-          statusFilter.toLowerCase(),
-      );
-    }
-
-    /* LEAD TEMP */
-
-    if (leadTempFilter !== "all") {
-      rows = rows.filter(
-        (registration) =>
-          (registration.leadTemp || "warm").toLowerCase() ===
-          leadTempFilter.toLowerCase(),
-      );
-    }
-
-    /* LEAD OUTCOME */
-
-    if (leadOutcomeFilter !== "all") {
-      rows = rows.filter(
-        (registration) =>
-          (registration.leadOutcome || "opened").toLowerCase() ===
-          leadOutcomeFilter.toLowerCase(),
-      );
-    }
-
-    /* TRIAL SLOT DATE */
-
-    if (trialDateFilter) {
-      rows = rows.filter(
-        (registration) => registration.trialDate === trialDateFilter,
-      );
-    }
-
-    /* NEXT FOLLOW-UP DATE */
-
-    if (followUpDateFilter) {
-      rows = rows.filter(
-        (registration) => registration.nextFollowUpDate === followUpDateFilter,
-      );
-    }
-
-    /* SEARCH */
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.trim().toLowerCase();
-
-      rows = rows.filter((registration) => {
-        const displayLocation = getDisplayLocation(registration).toLowerCase();
-        const mode = getLocationType(registration);
-
-        return (
-          registration.studentName?.toLowerCase().includes(term) ||
-          registration.email?.toLowerCase().includes(term) ||
-          registration.contactNumber?.includes(term) ||
-          registration.remark?.toLowerCase().includes(term) ||
-          registration.location?.toLowerCase().includes(term) ||
-          displayLocation.includes(term) ||
-          mode.includes(term)
+      if (todayOnly) {
+        rows = rows.filter((registration) =>
+          isEnquiryFromToday(
+            registration.createdAt,
+            registration.dateOfRegistration,
+          ),
         );
-      });
+      }
+
+      /* LOCATION */
+
+      if (locationFilter !== "all") {
+        rows = rows.filter(
+          (registration) => getLocationType(registration) === locationFilter,
+        );
+      }
+
+      if (centerFilter !== "all") {
+        rows = rows.filter(
+          (registration) => getRegistrationCenter(registration) === centerFilter,
+        );
+      }
+
+      /* STATUS */
+
+      if (statusFilter !== "all") {
+        rows = rows.filter(
+          (registration) =>
+            (registration.status || "booked").toLowerCase() ===
+            statusFilter.toLowerCase(),
+        );
+      }
+
+      /* LEAD TEMP */
+
+      if (leadTempFilter !== "all") {
+        rows = rows.filter(
+          (registration) =>
+            (registration.leadTemp || "warm").toLowerCase() ===
+            leadTempFilter.toLowerCase(),
+        );
+      }
+
+      /* LEAD OUTCOME */
+
+      if (leadOutcomeFilter !== "all") {
+        rows = rows.filter(
+          (registration) =>
+            (registration.leadOutcome || "opened").toLowerCase() ===
+            leadOutcomeFilter.toLowerCase(),
+        );
+      }
+
+      /* NEXT FOLLOW-UP DATE */
+
+      if (followUpDateFilter) {
+        rows = rows.filter(
+          (registration) => registration.nextFollowUpDate === followUpDateFilter,
+        );
+      }
+
+      /* SEARCH */
+
+      if (searchTerm.trim()) {
+        const term = searchTerm.trim().toLowerCase();
+
+        rows = rows.filter((registration) => {
+          const displayLocation = getDisplayLocation(registration).toLowerCase();
+          const mode = getLocationType(registration);
+
+          return (
+            registration.studentName?.toLowerCase().includes(term) ||
+            registration.email?.toLowerCase().includes(term) ||
+            registration.contactNumber?.includes(term) ||
+            registration.remark?.toLowerCase().includes(term) ||
+            registration.location?.toLowerCase().includes(term) ||
+            displayLocation.includes(term) ||
+            mode.includes(term)
+          );
+        });
+      }
     }
-
-    /* SORT */
-
-    rows.sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
-
-      const cmp = String(aVal ?? "").localeCompare(String(bVal ?? ""));
-
-      return sortDir === "asc" ? cmp : -cmp;
-    });
 
     return rows;
   }, [
-    registrations,
+    sortedRegistrations,
     todayOnly,
     searchTerm,
     statusFilter,
@@ -198,8 +254,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     leadOutcomeFilter,
     trialDateFilter,
     followUpDateFilter,
-    sortField,
-    sortDir,
   ]);
 
   const hasActiveFilters =

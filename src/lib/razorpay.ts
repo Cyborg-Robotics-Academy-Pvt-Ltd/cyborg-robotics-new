@@ -3,7 +3,6 @@ const RAZORPAY_KEY_ID = "rzp_live_U1zeDG5jiIcQrE";
 const RAZORPAY_KEY_SECRET = "EL4fIIexaZEWLj3EHH25TXJe";
 const RAZORPAY_WEBHOOK_SECRET = "Shrikant123";
 export function getRazorpayClient() {
-
   const keyId = RAZORPAY_KEY_ID;
   const keySecret = RAZORPAY_KEY_SECRET;
   if (!keyId || !keySecret) throw new Error("Razorpay is not configured");

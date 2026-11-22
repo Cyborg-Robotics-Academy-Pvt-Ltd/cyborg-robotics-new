@@ -53,6 +53,7 @@ const TH =
 /* Sticky first column: opaque bg + right divider so scrolled content doesn't bleed through */
 const STICKY_TH =
   "sticky left-0 z-30 w-[300px] min-w-[300px] max-w-[300px] bg-stone-50 shadow-[1px_0_0_0_theme(colors.stone.200)]";
+const NUMBER_TH = `${TH} w-12 min-w-12 text-center`;
 
 export function DesktopTable({
   registrations,
@@ -61,7 +62,7 @@ export function DesktopTable({
   canModify,
   trainerView,
   marketingView,
-  showContact,
+  showContact,  
   canAddTrialSlot,
   openTimelineId,
   onTimelineToggle,
@@ -150,6 +151,7 @@ export function DesktopTable({
           >
             <TableHeader className="bg-stone-50 [&_tr]:border-b [&_tr]:border-stone-200">
               <TableRow className="hover:bg-transparent">
+                <TableHead className={NUMBER_TH}>#</TableHead>
                 {trainerView ? (
                   <>
                     <SortableHead
@@ -234,10 +236,11 @@ export function DesktopTable({
             </TableHeader>
 
             <TableBody>
-              {registrations.map((registration) => (
+              {registrations.map((registration, index) => (
                 <DesktopRow
                   key={registration.id}
                   registration={registration}
+                  rowNumber={index + 1}
                   hasShowRows={hasShowRows}
                   hasClosedRows={hasClosedRows}
                   canModify={canModify}

@@ -12,6 +12,33 @@ import { Button } from "@/components/ui/button";
 
 const PAYMENT_GATEWAY_ADMIN_EMAIL = "shrikantg199@gmail.com";
 
+async function readGatewayResponse(response: Response) {
+  const body = await response.text();
+  let data: Record<string, unknown> = {};
+
+  if (body) {
+    try {
+      data = JSON.parse(body) as Record<string, unknown>;
+    } catch {
+      throw new Error(
+        `Payment settings returned an invalid response (HTTP ${response.status}).`,
+      );
+    }
+  } else if (response.ok) {
+    throw new Error("Payment settings returned an empty response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data.message === "string"
+        ? data.message
+        : `Payment settings request failed (HTTP ${response.status}).`,
+    );
+  }
+
+  return data;
+}
+
 export default function PaymentManagement() {
   const router = useRouter();
   const { user, userRole, loading: authLoading } = useAuth();
@@ -90,8 +117,7 @@ function PaymentGatewaySettings({ user }: { user: { getIdToken: () => Promise<st
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Could not load payment settings.");
+        const data = await readGatewayResponse(response);
         if (!cancelled) setActiveGateway(data.activeGateway === "hdfc" ? "hdfc" : "razorpay");
       } catch (error) {
         if (!cancelled) setGatewayError(error instanceof Error ? error.message : "Could not load payment settings.");
@@ -115,9 +141,8 @@ function PaymentGatewaySettings({ user }: { user: { getIdToken: () => Promise<st
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ activeGateway: gateway }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Could not update payment provider.");
-      setActiveGateway(data.activeGateway);
+      const data = await readGatewayResponse(response);
+      setActiveGateway(data.activeGateway === "hdfc" ? "hdfc" : "razorpay");
       setGatewaySaved(true);
     } catch (error) {
       setGatewayError(error instanceof Error ? error.message : "Could not update payment provider.");
