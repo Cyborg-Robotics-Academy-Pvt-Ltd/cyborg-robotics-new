@@ -147,7 +147,7 @@ export default function RegistrationForm({
     registrationClosed ? false : initiallyOpen,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentGateway] = useState<"razorpay">("razorpay");
+  const [paymentGateway] = useState<"hdfc">("hdfc");
   const [formError, setFormError] = useState("");
   const [formErrors, setFormErrors] = useState<CodefestRegistrationFormErrors>(
     {},

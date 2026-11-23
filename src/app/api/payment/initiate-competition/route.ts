@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getActivePaymentGateway } from "@/lib/payment-gateway-settings";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 import {
@@ -9,7 +8,6 @@ import {
   getPaymentSessionCookieName,
 } from "@/lib/payment-session-binding";
 import { buildPaymentUrlFromRequest } from "@/lib/payment-url-validation";
-import { createRazorpayOrder } from "@/lib/razorpay-order";
 import {
   CODEFEST_COMPETITION,
   normalizeCodefestRegistrationForm,
@@ -95,28 +93,6 @@ export async function POST(req: Request) {
       customerId,
       paymentOwnerSeed,
     );
-    if ((await getActivePaymentGateway()) === "razorpay") {
-      const checkout = await createRazorpayOrder({
-        orderId, amount: CODEFEST_COMPETITION.amount, customerId, customerEmail: normalizedFormData.emailAddress,
-        paymentData: {
-          ownerSeedHash: paymentSessionBinding.ownerSeedHash,
-          sessionBindingKey: paymentSessionBinding.sessionBindingKey,
-          sessionBindingExpiresAt: paymentSessionBinding.expiresAt,
-          sessionBindingSource: body.userId ? "userId" : "email",
-          status: "PENDING", paymentType: "entry-fee", paymentFlow: "competition",
-          competitionRegistrationDraft: normalizedFormData,
-          competition: { fee: CODEFEST_COMPETITION.amount },
-          studentName: normalizedFormData.fullName,
-          courseName: "CodeFest Competition",
-          parentEmail: normalizedFormData.emailAddress,
-          studentEmail: normalizedFormData.emailAddress,
-        },
-      });
-      const response = NextResponse.json({ success: true, ...checkout });
-      const cookieValue = createPaymentSessionCookieValue(paymentSessionBinding);
-      if (cookieValue) response.cookies.set(getPaymentSessionCookieName(orderId), cookieValue, { httpOnly: true, sameSite: "none", secure: true, path: "/", maxAge: 60 * 60 * 8 });
-      return response;
-    }
     const JUSPAY_BASE_URL = process.env.JUSPAY_BASE_URL;
     const MERCHANT_ID = process.env.HDFC_MERCHANT_ID;
     const API_KEY = process.env.HDFC_API_KEY;
