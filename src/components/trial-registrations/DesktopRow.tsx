@@ -414,6 +414,7 @@ function DesktopRowImpl({
   const phoneHref = `tel:${registration.contactNumber.replace(/\s+/g, "")}`;
 
   const timelineColSpan = visibleColumnCount;
+  const canEditTable = canModify && !trainerView;
 
   return (
     <>
@@ -605,7 +606,7 @@ function DesktopRowImpl({
 
       {/* ENQUIRY REMARK */}
 
-      {!trainerView && <TableCell className="min-w-[220px] max-w-[320px]">
+      <TableCell className="min-w-[220px] max-w-[320px]">
         <p
           className={cn(
             "line-clamp-2 whitespace-normal text-sm",
@@ -621,11 +622,11 @@ function DesktopRowImpl({
             ? formatTrialScheduleRemark(registration.remark)
             : "—"}
         </p>
-      </TableCell>}
+      </TableCell>
 
       {/* REFERRAL SOURCE */}
 
-      {!trainerView && <TableCell
+      <TableCell
         className="!w-8 !min-w-8 !max-w-8 !px-1 text-center text-stone-700"
         title={registration.referralSource || "Not provided"}
         style={{ width: 32, minWidth: 32, maxWidth: 32 }}
@@ -643,11 +644,11 @@ function DesktopRowImpl({
             —
           </span>
         )}
-      </TableCell>}
+      </TableCell>
 
       {/* LOCATION */}
 
-      {!trainerView && <TableCell>
+      <TableCell>
         <div className="flex items-center gap-2">
           <div
             aria-hidden
@@ -697,11 +698,11 @@ function DesktopRowImpl({
             </span>
           )}
         </div>
-      </TableCell>}
+      </TableCell>
 
       {/* VISIT OPTION */}
 
-      {!trainerView && <TableCell>
+      <TableCell>
         {registration.preferredCenter === "unable-to-visit-hq" ? (
           <div className="space-y-1.5">
             <p className="whitespace-nowrap text-sm font-medium text-red-700">
@@ -715,7 +716,7 @@ function DesktopRowImpl({
                   value === "unselected" ? null : value,
                 )
               }
-              disabled={!canModify}
+              disabled={!canEditTable}
             >
               <SelectTrigger
                 aria-label={`Center selected after sales call for ${registration.studentName}`}
@@ -740,7 +741,7 @@ function DesktopRowImpl({
               : "—"}
           </span>
         )}
-      </TableCell>}
+      </TableCell>
 
       {/* MODE */}
 
@@ -768,7 +769,7 @@ function DesktopRowImpl({
         <Select
           value={registration.status || "__blank__"}
           onValueChange={(value) => onStatusChange(id, value === "__blank__" ? "" : value)}
-          disabled={!canModify}
+          disabled={!canEditTable}
         >
           <SelectTrigger
             aria-label={`Trial status for ${registration.studentName}`}
@@ -799,7 +800,7 @@ function DesktopRowImpl({
       {/* COUNSELLOR REMARK — column only when at least one visible row
           is "show"; cell content only when THIS row is "show" */}
 
-      {!trainerView && hasShowRows && (
+      {hasShowRows && (
         <TableCell className="min-w-[200px]">
           {isShow ? (
             <InlineRemark
@@ -807,7 +808,7 @@ function DesktopRowImpl({
               label="Counsellor remark"
               placeholder="Add counsellor remark…"
               emptyLabel="Add counsellor remark"
-              canEdit={canModify}
+              canEdit={canEditTable}
               onSave={saveCounsellor}
             />
           ) : (
@@ -820,11 +821,11 @@ function DesktopRowImpl({
 
       {/* LEAD TEMP */}
 
-      {!trainerView && <TableCell>
+      <TableCell>
         <Select
           value={registration.leadTemp ?? ""}
           onValueChange={(value) => onLeadTempChange(id, value)}
-          disabled={!canModify}
+          disabled={!canEditTable}
         >
           <SelectTrigger
             aria-label={`Lead temperature for ${registration.studentName}`}
@@ -844,15 +845,15 @@ function DesktopRowImpl({
             ))}
           </SelectContent>
         </Select>
-      </TableCell>}
+      </TableCell>
 
       {/* NEXT FOLLOW-UP */} 
 
-      {!trainerView && <TableCell>
+      <TableCell>
         <button
           type="button"
           onClick={() => onFollowUpClick(registration)}
-          disabled={!canModify}
+          disabled={!canEditTable}
           title={
             followUpTone
               ? `${FOLLOW_UP_LABEL[followUpTone]} — ${formatYMDDisplay(registration.nextFollowUpDate)}`
@@ -861,7 +862,7 @@ function DesktopRowImpl({
           className={cn(
             "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-sm font-medium transition-colors",
             FOLLOW_UP_STYLES[followUpTone ?? "none"],
-            !canModify && "cursor-default opacity-80 hover:bg-transparent",
+            !canEditTable && "cursor-default opacity-80 hover:bg-transparent",
             focusRing,
           )}
         >
@@ -894,15 +895,15 @@ function DesktopRowImpl({
             </span>
           )}
         </button>
-      </TableCell>}
+      </TableCell>
 
       {/* LEAD OUTCOME */}
 
-      {!trainerView && <TableCell>
+      <TableCell>
         <Select
           value={registration.leadOutcome ?? ""}
           onValueChange={(value) => onLeadOutcomeChange(id, value)}
-          disabled={!canModify}
+          disabled={!canEditTable}
         >
           <SelectTrigger
             aria-label={`Lead outcome for ${registration.studentName}`}
@@ -922,12 +923,12 @@ function DesktopRowImpl({
             ))}
           </SelectContent>
         </Select>
-      </TableCell>}
+      </TableCell>
 
       {/* CLOSE REMARK — column only when at least one visible row is
           "closed"; cell content only when THIS row is "closed" */}
 
-      {!trainerView && hasClosedRows && (
+      {hasClosedRows && (
         <TableCell className="min-w-[200px]">
           {isClosed ? (
             <InlineRemark
@@ -935,7 +936,7 @@ function DesktopRowImpl({
               label="Close remark"
               placeholder="Reason for closing…"
               emptyLabel="Add close remark"
-              canEdit={canModify}
+              canEdit={canEditTable}
               onSave={saveClose}
             />
           ) : (

@@ -55,6 +55,7 @@ const STICKY_TH =
   "sticky left-0 z-30 w-[300px] min-w-[300px] max-w-[300px] bg-stone-50 shadow-[1px_0_0_0_theme(colors.stone.200)]";
 const NUMBER_TH = `${TH} w-12 min-w-12 text-center`;
 const COLUMN_VISIBILITY_STORAGE_KEY = "trial-registrations-hidden-columns";
+const TRAINER_COLUMN_VISIBILITY_STORAGE_KEY = "trial-registrations-trainer-hidden-columns";
 
 export function DesktopTable({
   registrations,
@@ -84,10 +85,13 @@ export function DesktopTable({
   const [tableWidth, setTableWidth] = useState(1500);
   const [hiddenColumns, setHiddenColumns] = useState<Record<string, boolean>>({});
   const columnsHydratedRef = useRef(false);
+  const columnVisibilityStorageKey = trainerView
+    ? TRAINER_COLUMN_VISIBILITY_STORAGE_KEY
+    : COLUMN_VISIBILITY_STORAGE_KEY;
 
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
+      const saved = window.localStorage.getItem(columnVisibilityStorageKey);
       if (saved) {
         const parsed = JSON.parse(saved) as Record<string, unknown>;
         setHiddenColumns(
@@ -95,11 +99,13 @@ export function DesktopTable({
             Object.entries(parsed).filter(([, isHidden]) => isHidden === true),
           ) as Record<string, boolean>,
         );
+      } else {
+        setHiddenColumns({});
       }
     } catch (error) {
       console.warn("Unable to restore trial table column choices:", error);
     }
-  }, []);
+  }, [columnVisibilityStorageKey]);
 
   useEffect(() => {
     if (!columnsHydratedRef.current) {
@@ -109,17 +115,15 @@ export function DesktopTable({
 
     try {
       window.localStorage.setItem(
-        COLUMN_VISIBILITY_STORAGE_KEY,
+        columnVisibilityStorageKey,
         JSON.stringify(hiddenColumns),
       );
     } catch (error) {
       console.warn("Unable to save trial table column choices:", error);
     }
-  }, [hiddenColumns]);
+  }, [hiddenColumns, columnVisibilityStorageKey]);
 
-  const columns = trainerView
-    ? ["number", "student", "program", "trialSlot", "mode", "trialStatus"]
-    : [
+  const columns = [
         "number",
         "student",
         ...(showContact ? ["contact"] : []),
@@ -136,7 +140,7 @@ export function DesktopTable({
         "nextFollowUp",
         "leadOutcome",
         ...(hasClosedRows ? ["closeRemark"] : []),
-        ...(!marketingView && (canModify || canDelete) ? ["actions"] : []),
+        ...(!trainerView && !marketingView && (canModify || canDelete) ? ["actions"] : []),
       ];
   const columnLabels: Record<string, string> = {
     contact: "Contact",
@@ -209,8 +213,7 @@ export function DesktopTable({
 
   return (
     <div className="hidden w-full md:block">
-      {!trainerView && (
-        <details ref={columnsMenuRef} className="relative mb-2 flex justify-end">
+      <details ref={columnsMenuRef} className="relative mb-2 flex justify-end">
           <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-xs font-medium text-stone-600 shadow-sm hover:border-stone-300 hover:text-red-700">
             <Eye aria-hidden className="h-4 w-4" />
             Columns
@@ -241,8 +244,7 @@ export function DesktopTable({
               </label>
             ))}
           </div>
-        </details>
-      )}
+      </details>
       {hiddenColumnStyles && <style>{hiddenColumnStyles}</style>}
       <div className="max-h-[70vh] overflow-y-auto overscroll-contain rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.06)]">
         {/* Top mirrored scrollbar */}
@@ -270,30 +272,7 @@ export function DesktopTable({
             <TableHeader className="bg-stone-50 [&_tr]:border-b [&_tr]:border-stone-200">
               <TableRow className="hover:bg-transparent">
                 <TableHead className={NUMBER_TH}>#</TableHead>
-                {trainerView ? (
-                  <>
-                    <SortableHead
-                      label="Student"
-                      field="studentName"
-                      active={sortField}
-                      dir={sortDir}
-                      onClick={onToggleSort}
-                      className={STICKY_TH}
-                    />
-                    <TableHead className={TH}>Program of interest</TableHead>
-                    <SortableHead
-                      label="Trial Slot"
-                      field="trialDate"
-                      active={sortField}
-                      dir={sortDir}
-                      onClick={onToggleSort}
-                      className={TH}
-                    />
-                    <TableHead className={TH}>Mode</TableHead>
-                    <TableHead className={TH}>Trial status</TableHead>
-                  </>
-                ) : (
-                  <>
+                <>
                     <SortableHead
                       label="Student"
                       field="studentName"
@@ -345,11 +324,10 @@ export function DesktopTable({
                   <TableHead className={TH}>Close Remark</TableHead>
                 )}
 
-                    {!marketingView && (canModify || canDelete) && (
+                    {!trainerView && !marketingView && (canModify || canDelete) && (
                       <TableHead className={`${TH} text-right`}>Actions</TableHead>
                     )}
-                  </>
-                )}
+                </>
               </TableRow>
             </TableHeader>
 
