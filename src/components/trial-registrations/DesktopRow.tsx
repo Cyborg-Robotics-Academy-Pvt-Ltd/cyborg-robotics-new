@@ -61,6 +61,7 @@ import { StudentTimelineStrip } from "./StudentTimelineStrip";
 type Props = {
   registration: TrialRegistration;
   rowNumber: number;
+  visibleColumnCount: number;
   hasShowRows: boolean;
   hasClosedRows: boolean;
   canModify: boolean;
@@ -338,6 +339,7 @@ function InlineRemark({
 function DesktopRowImpl({
   registration,
   rowNumber,
+  visibleColumnCount,
   hasShowRows,
   hasClosedRows,
   canModify,
@@ -411,9 +413,7 @@ function DesktopRowImpl({
 
   const phoneHref = `tel:${registration.contactNumber.replace(/\s+/g, "")}`;
 
-  const timelineColSpan = trainerView
-    ? 6
-    : 12 + Number(showContact) + Number(hasShowRows) + Number(hasClosedRows) + Number(!marketingView && (canModify || canDelete));
+  const timelineColSpan = visibleColumnCount;
 
   return (
     <>
@@ -855,7 +855,7 @@ function DesktopRowImpl({
           disabled={!canModify}
           title={
             followUpTone
-              ? `${FOLLOW_UP_LABEL[followUpTone]} — ${registration.nextFollowUpDate}`
+              ? `${FOLLOW_UP_LABEL[followUpTone]} — ${formatYMDDisplay(registration.nextFollowUpDate)}`
               : undefined
           }
           className={cn(
@@ -880,7 +880,7 @@ function DesktopRowImpl({
           )}
 
           <span className="tabular-nums">
-            {registration.nextFollowUpDate || "Set follow-up"}
+            {registration.nextFollowUpDate ? formatYMDDisplay(registration.nextFollowUpDate) : "Set follow-up"}
           </span>
 
           {followUpCount > 0 && (
@@ -984,7 +984,7 @@ function DesktopRowImpl({
         </TableCell>
       )}
     </TableRow>
-    <TableRow className={timelineOpen ? "" : "border-0"}>
+    <TableRow className={cn("timeline-row", timelineOpen ? "" : "border-0")}>
       <TableCell
         colSpan={timelineColSpan}
         className={cn("p-0", !timelineOpen && "border-0")}

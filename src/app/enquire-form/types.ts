@@ -48,6 +48,16 @@ export type FollowUpEntry = {
   closeRemark?: string;
 };
 
+export type RegistrationActivityEntry = {
+  id: string;
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+  createdAt: string;
+  updatedBy: string;
+  updatedByEmail?: string;
+};
+
 export type TrialRegistration = {
   id: string;
   isDuplicate?: boolean;
@@ -130,6 +140,7 @@ export type TrialRegistration = {
    * History of logged follow-ups.
    */
   followUpHistory: FollowUpEntry[];
+  activityHistory?: RegistrationActivityEntry[];
 
   /**
    * Opened / Closed / Nurture / Later.

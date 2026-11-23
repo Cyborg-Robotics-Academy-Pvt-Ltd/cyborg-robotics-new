@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { Globe, Inbox, MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { LocationFilter } from "@/app/enquire-form/types";
+import { cn } from "@/lib/utils";
 
 type Props = {
   locationFilter: LocationFilter;
@@ -11,78 +10,59 @@ type Props = {
   counts: { all: number; online: number; offline: number };
 };
 
+const OPTIONS: { value: LocationFilter; label: string; count: keyof Props["counts"] }[] = [
+  { value: "all", label: "All", count: "all" },
+  { value: "online", label: "Online", count: "online" },
+  { value: "offline", label: "Offline", count: "offline" },
+];
+
 export function LocationTabs({ locationFilter, onChange, counts }: Props) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = OPTIONS.findIndex((option) => option.value === locationFilter);
+    let nextIndex = currentIndex;
+    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % OPTIONS.length;
+    else if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + OPTIONS.length) % OPTIONS.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = OPTIONS.length - 1;
+    else return;
+    event.preventDefault();
+    const next = OPTIONS[nextIndex].value;
+    onChange(next);
+    document.getElementById(`enquiry-mode-${next}`)?.focus();
+  };
+
   return (
-    <div className="mt-6 border-b border-stone-200">
-      <div className="flex gap-6">
-        <LocationTab
-          label="All"
-          count={counts.all}
-          active={locationFilter === "all"}
-          onClick={() => onChange("all")}
-          icon={<Inbox className="h-4 w-4" />}
-        />
-
-        <LocationTab
-          label="Online"
-          count={counts.online}
-          active={locationFilter === "online"}
-          onClick={() => onChange("online")}
-          icon={<Globe className="h-4 w-4" />}
-        />
-
-        <LocationTab
-          label="Offline"
-          count={counts.offline}
-          active={locationFilter === "offline"}
-          onClick={() => onChange("offline")}
-          icon={<MapPin className="h-4 w-4" />}
-        />
-      </div>
-    </div>
-  );
-}
-
-function LocationTab({
-  label,
-  count,
-  active,
-  onClick,
-  icon,
-}: {
-  label: string;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-        active ? "text-red-600" : "text-stone-500 hover:text-stone-800",
-      )}
+    <div
+      role="tablist"
+      aria-label="Filter enquiries by mode"
+      className="inline-flex h-10 shrink-0 items-center rounded-lg border border-stone-200 bg-stone-100 p-1"
     >
-      {icon}
-
-      <span>{label}</span>
-
-      <span
-        className={cn(
-          "rounded-full px-2 py-0.5 text-xs",
-          active
-            ? "bg-red-50 text-red-600"
-            : "bg-stone-100 text-stone-500",
-        )}
-      >
-        {count}
-      </span>
-
-      {active && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-red-600" />
-      )}
-    </button>
+      {OPTIONS.map((option) => {
+        const selected = locationFilter === option.value;
+        return (
+          <button
+            key={option.value}
+            id={`enquiry-mode-${option.value}`}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            tabIndex={selected ? 0 : -1}
+            onClick={() => onChange(option.value)}
+            onKeyDown={handleKeyDown}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-1",
+              selected
+                ? "bg-white text-stone-900 shadow-sm"
+                : "text-stone-600 hover:text-stone-900",
+            )}
+          >
+            <span>{option.label}</span>
+            <span className={cn("tabular-nums", selected ? "text-stone-700" : "text-stone-500")}>
+              {counts[option.count]}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

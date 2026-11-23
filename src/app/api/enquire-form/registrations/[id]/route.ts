@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { adminAuth } from "@/lib/firebase-admin";
 
 import { adminDb } from "@/lib/firebase-admin";
 import {
@@ -141,6 +142,31 @@ export async function PATCH(
     ].some((field) => Object.hasOwn(updates, field));
 
     const existingData = snapshot.data();
+    const trackedFields = [
+      "trialDate",
+      "trialTime",
+      "status",
+      "counsellorRemark",
+      "leadTemp",
+      "nextFollowUpDate",
+      "leadOutcome",
+      "closeRemark",
+    ];
+    const user = await adminAuth.getUser(actor.uid).catch(() => null);
+    const actorName =
+      user?.displayName?.trim() || user?.email?.split("@")[0] || actor.uid;
+    const changedFields = trackedFields
+      .filter((field) => Object.hasOwn(updates, field))
+      .filter((field) => (existingData?.[field] ?? "") !== ((updates as Record<string, unknown>)[field] ?? ""))
+      .map((field) => ({
+        id: crypto.randomUUID(),
+        field,
+        oldValue: existingData?.[field] ?? "",
+        newValue: (updates as Record<string, unknown>)[field] ?? "",
+        createdAt: new Date().toISOString(),
+        updatedBy: actorName,
+        updatedByEmail: user?.email || "",
+      }));
     const isFirstTrialBooking =
       Object.hasOwn(updates, "trialDate") &&
       typeof updates.trialDate === "string" &&
@@ -160,6 +186,9 @@ export async function PATCH(
         : {}),
       ...(shouldResetTrialEmailSentAt
         ? { trialConfirmationEmailSentAt: null }
+        : {}),
+      ...(changedFields.length
+        ? { activityHistory: FieldValue.arrayUnion(...changedFields) }
         : {}),
       updatedAt: FieldValue.serverTimestamp(),
     });

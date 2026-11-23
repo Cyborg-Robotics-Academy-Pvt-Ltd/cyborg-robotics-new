@@ -703,7 +703,7 @@ export function MobileCard({
           <CalendarClock className="h-4 w-4 shrink-0" />
 
           <span className="tabular-nums">
-            {registration.nextFollowUpDate || "Set follow-up"}
+            {registration.nextFollowUpDate ? formatYMDDisplay(registration.nextFollowUpDate) : "Set follow-up"}
           </span>
 
           {registration.followUpHistory?.length > 0 && (

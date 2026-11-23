@@ -18,11 +18,86 @@ import {
   FollowUpEntry,
   LeadOutcome,
   LeadTemp,
+  RegistrationActivityEntry,
   TrialRegistration,
   TrialStatus,
 } from "@/app/enquire-form/types";
 
 const COLLECTION = "freeTrialRegistrations";
+const LISTENER_IDLE_GRACE_MS = 30_000;
+
+type RegistrationFeedState = {
+  registrations: TrialRegistration[];
+  loading: boolean;
+  error: string;
+};
+
+const registrationFeedSubscribers = new Set<
+  (state: RegistrationFeedState) => void
+>();
+let registrationFeedState: RegistrationFeedState = {
+  registrations: [],
+  loading: true,
+  error: "",
+};
+let stopRegistrationFeed: (() => void) | null = null;
+let registrationFeedStopTimer: ReturnType<typeof setTimeout> | null = null;
+
+function publishRegistrationFeed(state: RegistrationFeedState) {
+  registrationFeedState = state;
+  registrationFeedSubscribers.forEach((subscriber) => subscriber(state));
+}
+
+function startRegistrationFeed() {
+  if (stopRegistrationFeed) return;
+
+  const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
+  stopRegistrationFeed = onSnapshot(
+    q,
+    (snapshot) => {
+      publishRegistrationFeed({
+        registrations: markDuplicateRegistrations(
+          snapshot.docs.map(mapRegistration),
+        ),
+        loading: false,
+        error: "",
+      });
+    },
+    (err) => {
+      console.error("Error fetching registrations:", err);
+      publishRegistrationFeed({
+        ...registrationFeedState,
+        loading: false,
+        error: "Failed to load registrations.",
+      });
+    },
+  );
+}
+
+function subscribeToRegistrationFeed(
+  subscriber: (state: RegistrationFeedState) => void,
+) {
+  if (registrationFeedStopTimer) {
+    clearTimeout(registrationFeedStopTimer);
+    registrationFeedStopTimer = null;
+  }
+
+  registrationFeedSubscribers.add(subscriber);
+  subscriber(registrationFeedState);
+  startRegistrationFeed();
+
+  return () => {
+    registrationFeedSubscribers.delete(subscriber);
+    if (registrationFeedSubscribers.size || registrationFeedStopTimer) return;
+
+    registrationFeedStopTimer = setTimeout(() => {
+      registrationFeedStopTimer = null;
+      if (registrationFeedSubscribers.size) return;
+      stopRegistrationFeed?.();
+      stopRegistrationFeed = null;
+    }, LISTENER_IDLE_GRACE_MS);
+  };
+}
 
 async function getAuthToken(): Promise<string> {
   const auth = await authReady;
@@ -92,6 +167,9 @@ function mapRegistration(
   const followUpHistory: FollowUpEntry[] = Array.isArray(data.followUpHistory)
     ? data.followUpHistory
     : [];
+  const activityHistory: RegistrationActivityEntry[] = Array.isArray(data.activityHistory)
+    ? data.activityHistory
+    : [];
 
   return {
     id: docSnapshot.id,
@@ -127,6 +205,7 @@ function mapRegistration(
     leadTemp: (data.leadTemp as LeadTemp) || "",
     nextFollowUpDate: data.nextFollowUpDate || "",
     followUpHistory,
+    activityHistory,
     leadOutcome: (data.leadOutcome as LeadOutcome) || "",
     closeRemark: data.closeRemark || "",
     dateOfRegistration: data.dateOfRegistration || "",
@@ -176,25 +255,11 @@ export function useTrialRegistrations() {
   /* REAL-TIME REGISTRATIONS */
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-
-    const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
-
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        setRegistrations(
-          markDuplicateRegistrations(snapshot.docs.map(mapRegistration)),
-        );
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Error fetching registrations:", err);
-        setError("Failed to load registrations.");
-        setLoading(false);
-      },
-    );
+    return subscribeToRegistrationFeed((state) => {
+      setRegistrations(state.registrations);
+      setLoading(state.loading);
+      setError(state.error);
+    });
   }, []);
 
   /* PATCH HELPER — server write; listener updates state */

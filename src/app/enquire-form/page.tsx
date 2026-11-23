@@ -3,7 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  BarChart3,
   Inbox,
+  History,
   Loader2,
   Plus,
   RefreshCw,
@@ -13,8 +15,6 @@ import { useTrialRegistrations } from "@/components/hooks/useTrialRegistrations"
 import { useRegistrationFilters } from "@/components/hooks/useRegistrationFilters";
 
 import { FilterBar } from "@/components/trial-registrations/FilterBar";
-import { LocationTabs } from "@/components/trial-registrations/LocationTabs";
-import { StatusChips } from "@/components/trial-registrations/StatusChips";
 import { DesktopTable } from "@/components/trial-registrations/DesktopTable";
 import { MobileList } from "@/components/trial-registrations/MobileList";
 import { EditDialog } from "@/components/trial-registrations/EditDialog";
@@ -23,12 +23,42 @@ import { ActivityDialog } from "@/components/trial-registrations/ActivityDialog"
 import { DeleteAlertDialog } from "@/components/trial-registrations/DeleteAlertDialog";
 import { RescheduleDialog } from "@/components/trial-registrations/RescheduleDialog";
 import { ManualEnquiryDialog } from "@/components/trial-registrations/ManualEnquiryDialog";
-import { TrialRegistration } from "./types";
+import { LocationFilter, TrialRegistration } from "./types";
 import { useAuth } from "@/lib/auth-context";
+import { SalesAnalytics } from "@/components/trial-registrations/SalesAnalytics";
+
+const istYmd = (date: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+const shiftYmd = (ymd: string, days: number) => {
+  const [year, month, day] = ymd.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
+};
 
 const ENQUIRIES_PER_PAGE_OPTIONS = [10, 25, 50, 100];
+type EnquiryView = "enquiries" | "analytics";
+
+function writeViewAndModeToUrl(view: EnquiryView, mode: LocationFilter, replace = false) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("view", view);
+  url.searchParams.set("mode", mode);
+  window.history[replace ? "replaceState" : "pushState"]({}, "", url);
+}
 
 const Page = () => {
+  const [datePreset, setDatePreset] = useState("30d");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [activeView, setActiveView] = useState<EnquiryView>("analytics");
+  const dateRange = useMemo(() => {
+    const today = istYmd(new Date());
+    if (datePreset === "today") return { start: today, end: today };
+    if (datePreset === "7d" || datePreset === "30d") {
+      return { start: shiftYmd(today, -(datePreset === "7d" ? 6 : 29)), end: today };
+    }
+    if (datePreset === "month") return { start: `${today.slice(0, 7)}-01`, end: today };
+    if (datePreset === "custom") return { start: customStart, end: customEnd };
+    return { start: "", end: "" };
+  }, [datePreset, customStart, customEnd]);
   const { userRole } = useAuth();
   const canDelete = userRole === "admin" || userRole === "superAdmin";
   const canModify = userRole !== null;
@@ -57,22 +87,6 @@ const Page = () => {
     deleteRegistration,
   } = useTrialRegistrations();
 
-  const bookingCounts = useMemo(
-    () =>
-      registrations.reduce(
-        (counts, registration) => {
-          if (!registration.trialDate || registration.status === "cancelled") {
-            return counts;
-          }
-          if (registration.bookingOrigin === "direct") counts.direct += 1;
-          if (registration.bookingOrigin === "follow-up") counts.followUp += 1;
-          return counts;
-        },
-        { direct: 0, followUp: 0 },
-      ),
-    [registrations],
-  );
-
   const {
     searchTerm,
     setSearchTerm,
@@ -86,9 +100,6 @@ const Page = () => {
     setLeadTempFilter,
     leadOutcomeFilter,
     setLeadOutcomeFilter,
-    todayOnly,
-    setTodayOnly,
-    todayCount,
     trialDateFilter,
     setTrialDateFilter,
     followUpDateFilter,
@@ -97,11 +108,62 @@ const Page = () => {
     sortDir,
     toggleSort,
     filtered,
-    statusCounts,
     locationCounts,
     hasActiveFilters,
     clearFilters,
-  } = useRegistrationFilters(registrations);
+  } = useRegistrationFilters(registrations, dateRange);
+
+  useEffect(() => {
+    const readUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const requestedView = params.get("view");
+      const requestedMode = params.get("mode");
+      const view: EnquiryView = requestedView === "enquiries" ? "enquiries" : "analytics";
+      const mode: LocationFilter = requestedMode === "online" || requestedMode === "offline"
+        ? requestedMode
+        : "all";
+      setActiveView(view);
+      setLocationFilter(mode);
+      if (params.get("view") !== view || params.get("mode") !== mode) {
+        writeViewAndModeToUrl(view, mode, true);
+      }
+    };
+    readUrlState();
+    window.addEventListener("popstate", readUrlState);
+    return () => window.removeEventListener("popstate", readUrlState);
+  }, [setLocationFilter]);
+
+  const changeView = (view: EnquiryView) => {
+    setActiveView(view);
+    writeViewAndModeToUrl(view, locationFilter);
+  };
+  const changeMode = (mode: LocationFilter) => {
+    setLocationFilter(mode);
+    writeViewAndModeToUrl(activeView, mode);
+  };
+  const handleViewKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    const next: EnquiryView = event.key === "Home"
+      ? "enquiries"
+      : event.key === "End"
+        ? "analytics"
+        : activeView === "enquiries"
+          ? "analytics"
+          : "enquiries";
+    changeView(next);
+    document.getElementById(`enquiry-view-${next}`)?.focus();
+  };
+
+  const bookingCounts = useMemo(
+    () => filtered.reduce((counts, registration) => {
+      if (!registration.trialDate || registration.status === "cancelled") return counts;
+      if (registration.bookingOrigin === "direct") counts.direct++;
+      if (registration.bookingOrigin === "follow-up") counts.followUp++;
+      return counts;
+    }, { direct: 0, followUp: 0 }),
+    [filtered],
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [enquiriesPerPage, setEnquiriesPerPage] = useState(10);
@@ -120,12 +182,14 @@ const Page = () => {
     setCurrentPage(1);
   }, [
     searchTerm,
+    datePreset,
+    customStart,
+    customEnd,
     statusFilter,
     locationFilter,
     centerFilter,
     leadTempFilter,
     leadOutcomeFilter,
-    todayOnly,
     trialDateFilter,
     followUpDateFilter,
     sortField,
@@ -250,18 +314,39 @@ const Page = () => {
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 py-3 sm:px-6">
-        {canAddTrialSlot && (
-          <button
-            type="button"
-            onClick={() => setManualEnquiryOpen(true)}
-            className="fixed bottom-14 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-red-700 px-4 py-4 text-sm font-medium text-white shadow-lg transition hover:bg-red-800"
-          >
-            <Plus className="h-6 w-6" />
-           
-          </button>
-        )}
+        <div role="tablist" aria-label="Enquiry page views" className="mb-4 flex gap-5 border-b border-stone-200">
+          {([
+            { view: "enquiries", label: "Enquiries", Icon: Inbox },
+            { view: "analytics", label: "Analytics", Icon: BarChart3 },
+          ] as const).map(({ view, label, Icon }) => (
+            <button
+              key={view}
+              id={`enquiry-view-${view}`}
+              type="button"
+              role="tab"
+              aria-selected={activeView === view}
+              tabIndex={activeView === view ? 0 : -1}
+              onClick={() => changeView(view)}
+              onKeyDown={handleViewKeyDown}
+              className={`relative inline-flex items-center gap-2 pb-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 ${activeView === view ? "text-red-700" : "text-foreground/70 hover:text-foreground"}`}
+            >
+              <Icon aria-hidden className="h-4 w-4" />
+              {label}
+              {activeView === view && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-red-700" />}
+            </button>
+          ))}
+        </div>
         <div className="mb-2 flex min-w-0">
           <FilterBar
+            locationFilter={locationFilter}
+            onLocationChange={changeMode}
+            locationCounts={locationCounts}
+            datePreset={datePreset}
+            onDatePresetChange={setDatePreset}
+            dateStart={customStart}
+            onDateStartChange={setCustomStart}
+            dateEnd={customEnd}
+            onDateEndChange={setCustomEnd}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             statusFilter={statusFilter}
@@ -272,16 +357,12 @@ const Page = () => {
             onLeadTempChange={setLeadTempFilter}
             leadOutcomeFilter={leadOutcomeFilter}
             onLeadOutcomeChange={setLeadOutcomeFilter}
-            todayOnly={todayOnly}
-            todayCount={todayCount}
-            onTodayToggle={() => setTodayOnly((current) => !current)}
             trialDateFilter={trialDateFilter}
             onTrialDateChange={setTrialDateFilter}
             followUpDateFilter={followUpDateFilter}
             onFollowUpDateChange={setFollowUpDateFilter}
-            hasActiveFilters={hasActiveFilters}
-            onClearFilters={clearFilters}
-            onActivityClick={() => setActivityOpen(true)}
+            hasActiveFilters={hasActiveFilters || datePreset !== "all"}
+            onClearFilters={() => { clearFilters(); setDatePreset("all"); setCustomStart(""); setCustomEnd(""); }}
           />
         </div>
 
@@ -295,6 +376,16 @@ const Page = () => {
               {bookingCounts.direct}
             </p>
           </div>
+          {canAddTrialSlot && (
+            <button
+              type="button"
+              onClick={() => setManualEnquiryOpen(true)}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-red-700 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+            >
+              <Plus aria-hidden className="h-4 w-4" />
+              New enquiry
+            </button>
+          )}
           <div className="flex min-w-[170px] items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-sm">
             <p className="text-xs font-medium text-stone-500">
               Booked after follow-up
@@ -304,20 +395,24 @@ const Page = () => {
             </p>
           </div>
           </div>
-
+          <button
+            type="button"
+            onClick={() => setActivityOpen(true)}
+            className="ml-auto inline-flex h-10 items-center justify-center gap-2 self-center rounded-lg border border-stone-200 bg-white px-3.5 text-sm font-medium text-stone-600 shadow-sm transition-colors hover:border-stone-300 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+          >
+            <History aria-hidden className="h-4 w-4" />
+            Activity
+          </button>
         </div>
 
-        <LocationTabs
-          locationFilter={locationFilter}
-          onChange={setLocationFilter}
-          counts={locationCounts}
-        />
-
-       
 
         {/* EMPTY */}
 
-        {filtered.length === 0 ? (
+        {activeView === "analytics" ? (
+          <div className="mt-4 w-full min-w-0">
+            <SalesAnalytics registrations={filtered} />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-stone-300 bg-white py-20 text-center">
             <Inbox className="h-7 w-7 text-stone-300" />
 
@@ -330,7 +425,7 @@ const Page = () => {
             {registrations.length > 0 && hasActiveFilters && (
               <button
                 type="button"
-                onClick={clearFilters}
+                onClick={() => { clearFilters(); setDatePreset("all"); setCustomStart(""); setCustomEnd(""); }}
                 className="text-sm font-medium text-red-600 hover:text-red-700"
               >
                 Clear filters

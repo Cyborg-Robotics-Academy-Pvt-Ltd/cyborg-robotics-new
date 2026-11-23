@@ -3,7 +3,6 @@ import {
   getDisplayLocation,
   getRegistrationCenter,
   getLocationType,
-  isEnquiryFromToday,
 } from "@/app/enquire-form/utils";
 import {
   CenterFilter,
@@ -16,7 +15,32 @@ import {
 } from "@/app/enquire-form/types";
 import { STATUS_OPTIONS } from "@/app/enquire-form/constants";
 
-export function useRegistrationFilters(registrations: TrialRegistration[]) {
+type DateRange = { start: string; end: string };
+
+const registrationDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Kolkata",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function getRegistrationDate(registration: TrialRegistration) {
+  if (registration.createdAt) {
+    const createdAt = new Date(registration.createdAt);
+    if (!Number.isNaN(createdAt.getTime())) return registrationDateFormatter.format(createdAt);
+  }
+  return registration.dateOfRegistration || "";
+}
+
+function matchesDateRange(registration: TrialRegistration, range: DateRange) {
+  const date = getRegistrationDate(registration);
+  return (!range.start || date >= range.start) && (!range.end || date <= range.end);
+}
+
+export function useRegistrationFilters(
+  registrations: TrialRegistration[],
+  dateRange: DateRange = { start: "", end: "" },
+) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
@@ -24,7 +48,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
   const [leadTempFilter, setLeadTempFilter] = useState<LeadTempFilter>("all");
   const [leadOutcomeFilter, setLeadOutcomeFilter] =
     useState<LeadOutcomeFilter>("all");
-  const [todayOnly, setTodayOnly] = useState(false);
 
   /** Trial Slot date filter (YYYY-MM-DD). Empty string = no filter. */
   const [trialDateFilter, setTrialDateFilter] = useState("");
@@ -52,15 +75,8 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
 
   const locationCounts = useMemo(() => {
     const matchingWithoutLocation = registrations.filter((registration) => {
+      if (!matchesDateRange(registration, dateRange)) return false;
       if (trialDateFilter) return registration.trialDate === trialDateFilter;
-
-      if (
-        todayOnly &&
-        !isEnquiryFromToday(
-          registration.createdAt,
-          registration.dateOfRegistration,
-        )
-      ) return false;
 
       if (
         centerFilter !== "all" &&
@@ -113,8 +129,8 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     return { all: matchingWithoutLocation.length, online, offline };
   }, [
     registrations,
+    dateRange,
     trialDateFilter,
-    todayOnly,
     centerFilter,
     statusFilter,
     leadTempFilter,
@@ -122,17 +138,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     followUpDateFilter,
     searchTerm,
   ]);
-
-  const todayCount = useMemo(
-    () =>
-      registrations.filter((registration) =>
-        isEnquiryFromToday(
-          registration.createdAt,
-          registration.dateOfRegistration,
-        ),
-      ).length,
-    [registrations],
-  );
 
   const sortedRegistrations = useMemo(() => {
     const rows = [...registrations];
@@ -154,20 +159,11 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
         )
       : [...sortedRegistrations];
 
+    rows = rows.filter((registration) => matchesDateRange(registration, dateRange));
+
     // A selected trial date is a direct slot lookup. Other enquiry filters
     // must not hide registrations booked for that date (including reschedules).
     if (!trialDateFilter) {
-      /* ENQUIRIES SUBMITTED TODAY */
-
-      if (todayOnly) {
-        rows = rows.filter((registration) =>
-          isEnquiryFromToday(
-            registration.createdAt,
-            registration.dateOfRegistration,
-          ),
-        );
-      }
-
       /* LOCATION */
 
       if (locationFilter !== "all") {
@@ -245,7 +241,7 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     return rows;
   }, [
     sortedRegistrations,
-    todayOnly,
+    dateRange,
     searchTerm,
     statusFilter,
     locationFilter,
@@ -263,7 +259,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     centerFilter !== "all" ||
     leadTempFilter !== "all" ||
     leadOutcomeFilter !== "all" ||
-    todayOnly ||
     trialDateFilter !== "" ||
     followUpDateFilter !== "";
 
@@ -274,7 +269,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setCenterFilter("all");
     setLeadTempFilter("all");
     setLeadOutcomeFilter("all");
-    setTodayOnly(false);
     setTrialDateFilter("");
     setFollowUpDateFilter("");
   };
@@ -302,9 +296,6 @@ export function useRegistrationFilters(registrations: TrialRegistration[]) {
     setLeadTempFilter,
     leadOutcomeFilter,
     setLeadOutcomeFilter,
-    todayOnly,
-    setTodayOnly,
-    todayCount,
     trialDateFilter,
     setTrialDateFilter,
     followUpDateFilter,

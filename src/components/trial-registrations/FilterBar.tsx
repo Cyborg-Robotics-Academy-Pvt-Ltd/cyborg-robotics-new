@@ -4,9 +4,7 @@ import React from "react";
 import {
   Calendar,
   CalendarClock,
-  CalendarDays,
   CircleDot,
-  History,
   MapPin,
   Search,
   Target,
@@ -30,6 +28,8 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { LocationFilter } from "@/app/enquire-form/types";
+import { LocationTabs } from "@/components/trial-registrations/LocationTabs";
 import {
   OFFLINE_CENTERS,
   LEAD_OUTCOME_OPTIONS,
@@ -48,6 +48,15 @@ import {
 } from "@/app/enquire-form/types";
 
 type Props = {
+  locationFilter: LocationFilter;
+  onLocationChange: (value: LocationFilter) => void;
+  locationCounts: { all: number; online: number; offline: number };
+  datePreset: string;
+  onDatePresetChange: (value: string) => void;
+  dateStart: string;
+  onDateStartChange: (value: string) => void;
+  dateEnd: string;
+  onDateEndChange: (value: string) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
 
@@ -63,10 +72,6 @@ type Props = {
   leadOutcomeFilter: LeadOutcomeFilter;
   onLeadOutcomeChange: (value: LeadOutcomeFilter) => void;
 
-  todayOnly: boolean;
-  todayCount: number;
-  onTodayToggle: () => void;
-
   trialDateFilter: string;
   onTrialDateChange: (value: string) => void;
 
@@ -76,7 +81,6 @@ type Props = {
   hasActiveFilters: boolean;
   onClearFilters: () => void;
 
-  onActivityClick: () => void;
 };
 
 /* Shared control look: uniform height, radius, hover and keyboard focus */
@@ -133,6 +137,8 @@ function FilterTrigger({
 }
 
 export function FilterBar({
+  locationFilter, onLocationChange, locationCounts,
+  datePreset, onDatePresetChange, dateStart, onDateStartChange, dateEnd, onDateEndChange,
   searchTerm,
   onSearchChange,
   statusFilter,
@@ -143,16 +149,12 @@ export function FilterBar({
   onLeadTempChange,
   leadOutcomeFilter,
   onLeadOutcomeChange,
-  todayOnly,
-  todayCount,
-  onTodayToggle,
   trialDateFilter,
   onTrialDateChange,
   followUpDateFilter,
   onFollowUpDateChange,
   hasActiveFilters,
   onClearFilters,
-  onActivityClick,
 }: Props) {
   return (
     <div
@@ -160,6 +162,23 @@ export function FilterBar({
       aria-label="Filter enquiries"
       className="flex flex-nowrap items-center gap-2 overflow-x-auto rounded-xl border border-stone-200/80 bg-stone-50/60 p-2"
     >
+      <LocationTabs locationFilter={locationFilter} onChange={onLocationChange} counts={locationCounts} />
+      <Select value={datePreset} onValueChange={onDatePresetChange}>
+        <FilterTrigger icon={Calendar} label="Date range" placeholder="Date range" active={datePreset !== "all"} className="sm:w-40" />
+        <SelectContent>
+          <SelectItem value="all">All dates</SelectItem>
+          <SelectItem value="today">Today</SelectItem>
+          <SelectItem value="7d">Last 7 days</SelectItem>
+          <SelectItem value="30d">Last 30 days</SelectItem>
+          <SelectItem value="month">This month</SelectItem>
+          <SelectItem value="custom">Custom range</SelectItem>
+        </SelectContent>
+      </Select>
+      {datePreset === "custom" && <div className="flex shrink-0 items-center gap-1">
+        <Input aria-label="Start date" type="date" value={dateStart} onChange={e => onDateStartChange(e.target.value)} className={cn(CONTROL, "w-36 px-2")} />
+        <span className="text-xs text-stone-400">to</span>
+        <Input aria-label="End date" type="date" value={dateEnd} onChange={e => onDateEndChange(e.target.value)} className={cn(CONTROL, "w-36 px-2")} />
+      </div>}
       {/* SEARCH */}
 
       <div className="relative w-56 shrink-0">
@@ -207,34 +226,6 @@ export function FilterBar({
           ))}
         </SelectContent>
       </Select>
-
-      {/* TODAY'S ENQUIRIES */}
-
-      <button
-        type="button"
-        onClick={onTodayToggle}
-        aria-pressed={todayOnly}
-        className={cn(
-          BUTTON,
-          "w-full sm:w-auto",
-          todayOnly
-            ? CONTROL_ACTIVE
-            : "text-stone-600 hover:text-red-600",
-        )}
-      >
-        <CalendarDays aria-hidden className="h-4 w-4" />
-        Today
-        <span
-          className={cn(
-            "min-w-5 rounded-full px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
-            todayOnly
-              ? "bg-red-500 text-white"
-              : "bg-stone-100 text-stone-600",
-          )}
-        >
-          {todayCount}
-        </span>
-      </button>
 
       {/* STATUS */}
 
@@ -445,19 +436,6 @@ export function FilterBar({
           </button>
         )}
 
-        {/* ACTIVITY */}
-
-        <button
-          type="button"
-          onClick={onActivityClick}
-          className={cn(
-            BUTTON,
-            "flex-1 text-stone-600 hover:text-red-600 sm:flex-none",
-          )}
-        >
-          <History aria-hidden className="h-4 w-4" />
-          Activity
-        </button>
       </div>
     </div>
   );

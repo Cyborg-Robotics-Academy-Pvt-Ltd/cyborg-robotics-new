@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { TrialRegistration } from "@/app/enquire-form/types";
+import { RegistrationActivityEntry, TrialRegistration } from "@/app/enquire-form/types";
 import {
   leadOutcomeLabel,
   leadOutcomeStyle,
@@ -63,6 +63,46 @@ function formatActivityTimestamp(value?: string) {
   })}`;
 }
 
+type ActivityItem = {
+  key: string;
+  kind: "follow-up" | "change";
+  studentName: string;
+  date: string;
+  createdAt?: string;
+  updatedBy?: string;
+  updatedByEmail?: string;
+  remark?: string;
+  status?: TrialRegistration["status"];
+  leadTemp?: TrialRegistration["leadTemp"];
+  leadOutcome?: TrialRegistration["leadOutcome"];
+  counsellorRemark?: string;
+  closeRemark?: string;
+  field?: string;
+  oldValue?: unknown;
+  newValue?: unknown;
+};
+
+const ACTIVITY_FIELD_LABELS: Record<string, string> = {
+  trialDate: "Trial date",
+  trialTime: "Trial time",
+  status: "Trial status",
+  trialSlotAdded: "Trial slot added",
+  trialSlot: "Trial slot changed",
+  counsellorRemark: "Counsellor remark",
+  leadTemp: "Lead temperature",
+  nextFollowUpDate: "Next follow-up",
+  leadOutcome: "Lead outcome",
+  closeRemark: "Close remark",
+};
+
+function displayActivityValue(field: string, value: unknown) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (field === "status") return statusLabel(String(value));
+  if (field === "leadTemp") return leadTempLabel(String(value) as TrialRegistration["leadTemp"]);
+  if (field === "leadOutcome") return leadOutcomeLabel(String(value) as TrialRegistration["leadOutcome"]);
+  return String(value);
+}
+
 /**
  * Flattened follow-up activity across every student, newest first.
  *
@@ -82,25 +122,35 @@ export function ActivityDialog({ open, onOpenChange, registrations }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const activityFeed = useMemo(() => {
-    const entries = registrations.flatMap((registration) =>
-      (registration.followUpHistory || []).map((entry, index) => ({
-        key: `${registration.id}-${index}-${entry.date}`,
+    const entries: ActivityItem[] = registrations.flatMap((registration) => [
+      ...(registration.followUpHistory || []).map((entry, index) => ({
+        kind: "follow-up" as const,
+        key: `${registration.id}-follow-up-${index}-${entry.date}`,
         studentName: registration.studentName,
         date: entry.date,
         createdAt: entry.createdAt,
         updatedBy: entry.updatedBy,
         updatedByEmail: entry.updatedByEmail,
         remark: entry.remark,
-
-        // Live values from the current registration —
-        // NOT from the frozen follow-up entry.
         status: registration.status,
         leadTemp: registration.leadTemp,
         leadOutcome: registration.leadOutcome,
         counsellorRemark: registration.counsellorRemark,
         closeRemark: registration.closeRemark,
       })),
-    );
+      ...((registration.activityHistory || []) as RegistrationActivityEntry[]).map((entry) => ({
+        kind: "change" as const,
+        key: `${registration.id}-change-${entry.id}`,
+        studentName: registration.studentName,
+        date: entry.createdAt,
+        createdAt: entry.createdAt,
+        updatedBy: entry.updatedBy,
+        updatedByEmail: entry.updatedByEmail,
+        field: entry.field,
+        oldValue: entry.oldValue,
+        newValue: entry.newValue,
+      })),
+    ]);
 
     return entries.sort((a, b) =>
       (b.createdAt || b.date).localeCompare(a.createdAt || a.date),
@@ -119,6 +169,9 @@ export function ActivityDialog({ open, onOpenChange, registrations }: Props) {
         entry.remark?.toLowerCase().includes(term) ||
         entry.updatedBy?.toLowerCase().includes(term) ||
         entry.updatedByEmail?.toLowerCase().includes(term) ||
+        (entry.field ? ACTIVITY_FIELD_LABELS[entry.field]?.toLowerCase().includes(term) : false) ||
+        displayActivityValue(entry.field || "", entry.oldValue).toLowerCase().includes(term) ||
+        displayActivityValue(entry.field || "", entry.newValue).toLowerCase().includes(term) ||
         entry.counsellorRemark?.toLowerCase().includes(term) ||
         entry.closeRemark?.toLowerCase().includes(term) ||
         statusLabel(entry.status).toLowerCase().includes(term) ||
@@ -175,6 +228,28 @@ export function ActivityDialog({ open, onOpenChange, registrations }: Props) {
             </div>
           ) : (
             filteredFeed.map((entry) => {
+              if (entry.kind === "change") {
+                const label = ACTIVITY_FIELD_LABELS[entry.field || ""] || entry.field || "Record updated";
+                return (
+                  <div key={entry.key} className="relative pl-5">
+                    <div className="absolute left-[6px] top-1.5 h-full w-px bg-stone-200" />
+                    <div className="absolute left-0 top-2 h-3 w-3 rounded-full border-2 border-white bg-amber-600 shadow-sm" />
+                    <div className="rounded-2xl border border-stone-200 bg-white p-3 shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-stone-800">{entry.studentName}</p>
+                          <p className="mt-1 text-xs font-medium text-stone-600">{label}</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-stone-100 px-2 py-1 text-[10px] font-medium text-stone-500">{formatActivityTimestamp(entry.createdAt)}</span>
+                      </div>
+                      <p className="mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5 text-sm text-stone-700">
+                        {displayActivityValue(entry.field || "", entry.oldValue)} → {displayActivityValue(entry.field || "", entry.newValue)}
+                      </p>
+                      {entry.updatedBy && <p className="mt-2 flex items-center gap-1.5 text-xs text-stone-500"><User className="h-3.5 w-3.5" />Updated by: {entry.updatedBy}{entry.updatedByEmail ? ` (${entry.updatedByEmail})` : ""}</p>}
+                    </div>
+                  </div>
+                );
+              }
               const status = statusStyle(entry.status || "booked");
               const temp = leadTempStyle(entry.leadTemp || "warm");
               const outcome = leadOutcomeStyle(entry.leadOutcome || "opened");

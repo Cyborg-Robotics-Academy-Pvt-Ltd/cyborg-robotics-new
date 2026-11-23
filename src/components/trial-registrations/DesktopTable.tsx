@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Megaphone } from "lucide-react";
+import { Eye, Megaphone, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -54,6 +54,7 @@ const TH =
 const STICKY_TH =
   "sticky left-0 z-30 w-[300px] min-w-[300px] max-w-[300px] bg-stone-50 shadow-[1px_0_0_0_theme(colors.stone.200)]";
 const NUMBER_TH = `${TH} w-12 min-w-12 text-center`;
+const COLUMN_VISIBILITY_STORAGE_KEY = "trial-registrations-hidden-columns";
 
 export function DesktopTable({
   registrations,
@@ -75,11 +76,93 @@ export function DesktopTable({
   const topScrollRef = useRef<HTMLDivElement>(null);
   const tableScrollRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
+  const columnsMenuRef = useRef<HTMLDetailsElement>(null);
   const pendingSyncRef = useRef<{
     target: "top" | "table";
     scrollLeft: number;
   } | null>(null);
   const [tableWidth, setTableWidth] = useState(1500);
+  const [hiddenColumns, setHiddenColumns] = useState<Record<string, boolean>>({});
+  const columnsHydratedRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Record<string, unknown>;
+        setHiddenColumns(
+          Object.fromEntries(
+            Object.entries(parsed).filter(([, isHidden]) => isHidden === true),
+          ) as Record<string, boolean>,
+        );
+      }
+    } catch (error) {
+      console.warn("Unable to restore trial table column choices:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!columnsHydratedRef.current) {
+      columnsHydratedRef.current = true;
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        COLUMN_VISIBILITY_STORAGE_KEY,
+        JSON.stringify(hiddenColumns),
+      );
+    } catch (error) {
+      console.warn("Unable to save trial table column choices:", error);
+    }
+  }, [hiddenColumns]);
+
+  const columns = trainerView
+    ? ["number", "student", "program", "trialSlot", "mode", "trialStatus"]
+    : [
+        "number",
+        "student",
+        ...(showContact ? ["contact"] : []),
+        "program",
+        "trialSlot",
+        "enquiryRemark",
+        "referralSource",
+        "location",
+        "visitOption",
+        "mode",
+        "trialStatus",
+        ...(hasShowRows ? ["counsellorRemark"] : []),
+        "leadTemp",
+        "nextFollowUp",
+        "leadOutcome",
+        ...(hasClosedRows ? ["closeRemark"] : []),
+        ...(!marketingView && (canModify || canDelete) ? ["actions"] : []),
+      ];
+  const columnLabels: Record<string, string> = {
+    contact: "Contact",
+    program: "Program of interest",
+    trialSlot: "Trial Slot",
+    enquiryRemark: "Enquiry Remark",
+    referralSource: "Heard About Us",
+    location: "Location",
+    visitOption: "Visit Option",
+    mode: "Mode",
+    trialStatus: "Trial Status",
+    counsellorRemark: "Counsellor Remark",
+    leadTemp: "Lead Temp",
+    nextFollowUp: "Next Follow-up",
+    leadOutcome: "Lead Outcome",
+    closeRemark: "Close Remark",
+  };
+  const fixedColumns = new Set(["number", "student", "actions"]);
+  const visibleColumnCount = columns.filter((column) => !hiddenColumns[column]).length;
+  const hiddenColumnStyles = columns
+    .map((column, index) =>
+      hiddenColumns[column]
+        ? `.trial-registrations-table > thead > tr > :nth-child(${index + 1}), .trial-registrations-table > tbody > tr:not(.timeline-row) > :nth-child(${index + 1}) { display: none !important; }`
+        : "",
+    )
+    .join("\n");
 
   useEffect(() => {
     const table = tableRef.current;
@@ -91,7 +174,7 @@ export function DesktopTable({
     const observer = new ResizeObserver(updateWidth);
     observer.observe(table);
     return () => observer.disconnect();
-  }, [registrations.length, hasShowRows, hasClosedRows]);
+  }, [registrations.length, hasShowRows, hasClosedRows, hiddenColumns]);
 
   const syncScroll = (source: "top" | "table") => {
     const top = topScrollRef.current;
@@ -126,6 +209,41 @@ export function DesktopTable({
 
   return (
     <div className="hidden w-full md:block">
+      {!trainerView && (
+        <details ref={columnsMenuRef} className="relative mb-2 flex justify-end">
+          <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-xs font-medium text-stone-600 shadow-sm hover:border-stone-300 hover:text-red-700">
+            <Eye aria-hidden className="h-4 w-4" />
+            Columns
+          </summary>
+          <div className="absolute right-0 top-10 z-40 max-h-80 w-60 overflow-y-auto rounded-xl border border-stone-200 bg-white p-2 shadow-xl">
+            <div className="mb-1 flex items-center justify-between border-b border-stone-100 px-2 pb-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">Show columns</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (columnsMenuRef.current) columnsMenuRef.current.open = false;
+                }}
+                aria-label="Close columns menu"
+                className="rounded-md p-1 text-stone-500 hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+              >
+                <X aria-hidden className="h-4 w-4" />
+              </button>
+            </div>
+            {columns.filter((column) => !fixedColumns.has(column)).map((column) => (
+              <label key={column} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-stone-700 hover:bg-stone-50">
+                <input
+                  type="checkbox"
+                  checked={!hiddenColumns[column]}
+                  onChange={() => setHiddenColumns((current) => ({ ...current, [column]: !current[column] }))}
+                  className="accent-red-700"
+                />
+                {columnLabels[column] || column}
+              </label>
+            ))}
+          </div>
+        </details>
+      )}
+      {hiddenColumnStyles && <style>{hiddenColumnStyles}</style>}
       <div className="max-h-[70vh] overflow-y-auto overscroll-contain rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_-4px_rgba(0,0,0,0.06)]">
         {/* Top mirrored scrollbar */}
         <div
@@ -147,7 +265,7 @@ export function DesktopTable({
           <Table
             ref={tableRef}
             containerClassName="!overflow-visible"
-            className={`${trainerView ? "min-w-[780px]" : marketingView ? "min-w-[1050px]" : "min-w-[1380px]"} text-sm [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_td]:text-sm [&_td_*]:text-sm [&_th]:h-11 [&_th]:px-3 [&_tbody_tr]:border-stone-100 [&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-stone-50/80`}
+            className={`trial-registrations-table ${trainerView ? "min-w-[780px]" : marketingView ? "min-w-[1050px]" : "min-w-[1380px]"} text-sm [&_td]:px-3 [&_td]:py-3 [&_td]:align-middle [&_td]:text-sm [&_td_*]:text-sm [&_th]:h-11 [&_th]:px-3 [&_tbody_tr]:border-stone-100 [&_tbody_tr]:transition-colors [&_tbody_tr:hover]:bg-stone-50/80`}
           >
             <TableHeader className="bg-stone-50 [&_tr]:border-b [&_tr]:border-stone-200">
               <TableRow className="hover:bg-transparent">
@@ -251,6 +369,7 @@ export function DesktopTable({
                   openTimelineId={openTimelineId}
                   onTimelineToggle={onTimelineToggle}
                   canDelete={canDelete}
+                  visibleColumnCount={visibleColumnCount}
                   {...rowHandlers}
                 />
               ))}

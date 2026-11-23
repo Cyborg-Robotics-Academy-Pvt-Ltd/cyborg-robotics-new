@@ -1,5 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { adminAuth } from "@/lib/firebase-admin";
 
 import { adminDb } from "@/lib/firebase-admin";
 import {
@@ -117,6 +118,31 @@ export async function PATCH(
             .collection("trialSlotCounters")
             .doc(slotIdFor(registration.trialDate, registration.trialTime))
         : null;
+    const user = await adminAuth.getUser(actor.uid).catch(() => null);
+    const actorName =
+      user?.displayName?.trim() || user?.email?.split("@")[0] || actor.uid;
+    const activityEntries = [
+      {
+        id: crypto.randomUUID(),
+        field: body.action === "add-slot" ? "trialSlotAdded" : "trialSlot",
+        oldValue: `${registration.trialDate || ""} ${registration.trialTime || ""}`.trim(),
+        newValue: `${date} ${time}`,
+        createdAt: new Date().toISOString(),
+        updatedBy: actorName,
+        updatedByEmail: user?.email || "",
+      },
+      ...(registration.status !== (isFirstBooking ? "booked" : "reschedule")
+        ? [{
+            id: crypto.randomUUID(),
+            field: "status",
+            oldValue: registration.status || "",
+            newValue: isFirstBooking ? "booked" : "reschedule",
+            createdAt: new Date().toISOString(),
+            updatedBy: actorName,
+            updatedByEmail: user?.email || "",
+          }]
+        : []),
+    ];
 
     await adminDb.runTransaction(async (transaction) => {
       const nextSlotSnapshot = await transaction.get(nextSlotRef);
@@ -173,6 +199,7 @@ export async function PATCH(
             }
           : {}),
         status: isFirstBooking ? "booked" : "reschedule",
+        activityHistory: FieldValue.arrayUnion(...activityEntries),
         trialConfirmationEmailSentAt: null,
         reminderSent: false,
         reminderSentAt: null,
