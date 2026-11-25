@@ -3666,6 +3666,7 @@ const AdminDashboard = () => {
                                 {studentDetailsHref ? (
                                   <Link
                                     href={studentDetailsHref}
+                                    prefetch={false}
                                     className="truncate text-left font-semibold text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                                     aria-label={`View course details for ${student.displayName}`}
                                   >
@@ -3774,6 +3775,7 @@ const AdminDashboard = () => {
                                   {studentDetailsHref ? (
                                     <Link
                                       href={studentDetailsHref}
+                                      prefetch={false}
                                       className="truncate text-left font-medium text-red-800 hover:text-red-950 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                                       aria-label={`View course details for ${student.displayName}`}
                                     >

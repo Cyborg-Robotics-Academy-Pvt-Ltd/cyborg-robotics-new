@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { finalizeRegistrationForPayment } from "@/lib/payment-finalize";
 import { fetchOrCaptureRazorpayPayment, getRazorpayClient } from "@/lib/razorpay";
+import { getPaymentGatewayResult } from "@/lib/payment-gateway-cache";
 
 function normalizeAmount(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -370,7 +371,23 @@ export async function PUT(req: Request) {
 
     if (existingData.gateway === "razorpay") {
       const { client } = getRazorpayClient();
-      const gatewayPayments = await client.orders.fetchPayments(existingData.razorpayOrderId);
+      const gatewayLookup = await getPaymentGatewayResult(
+        orderId,
+        () => client.orders.fetchPayments(existingData.razorpayOrderId),
+        () => true,
+      );
+      if (gatewayLookup.inFlight || !gatewayLookup.value) {
+        return NextResponse.json({
+          success: true,
+          payment: {
+            orderId: existingData.orderId,
+            amount: existingData.amount,
+            status: existingData.status === "PENDING_VBV" ? "PENDING_VBV" : "PENDING",
+            invoiceNumber: existingData.invoiceNumber,
+          },
+        });
+      }
+      const gatewayPayments = gatewayLookup.value;
       const candidate = gatewayPayments.items?.find((payment) =>
         (payment.status === "captured" || payment.status === "authorized") &&
         payment.amount === Math.round(Number(existingData.amount) * 100) &&
@@ -403,15 +420,39 @@ export async function PUT(req: Request) {
     }
 
     // --- Server-to-server verification with Juspay ---
-    const juspayResponse = await fetch(`${JUSPAY_BASE_URL}/orders/${orderId}`, {
-      method: "GET",
-      headers: {
-        "x-merchantid": MERCHANT_ID,
-        Authorization: `Basic ${Buffer.from(API_KEY + ":").toString("base64")}`,
-      },
-    });
+    const gatewayLookup = await getPaymentGatewayResult(
+      orderId,
+      async () => {
+        const response = await fetch(`${JUSPAY_BASE_URL}/orders/${orderId}`, {
+          method: "GET",
+          headers: {
+            "x-merchantid": MERCHANT_ID,
+            Authorization: `Basic ${Buffer.from(API_KEY + ":").toString("base64")}`,
+          },
+        });
 
-    if (!juspayResponse.ok) {
+        return {
+          ok: response.ok,
+          httpStatus: response.status,
+          data: response.ok ? await response.json() : null,
+        };
+      },
+      (result) => result.ok,
+    );
+
+    if (gatewayLookup.inFlight || !gatewayLookup.value) {
+      return NextResponse.json({
+        success: true,
+        payment: {
+          orderId: existingData.orderId,
+          amount: existingData.amount,
+          status: existingData.status === "PENDING_VBV" ? "PENDING_VBV" : "PENDING",
+          invoiceNumber: existingData.invoiceNumber,
+        },
+      });
+    }
+
+    if (!gatewayLookup.value.ok) {
       // Log internally, never expose Juspay error to client
       console.error("Juspay status check failed for order:", orderId);
       await safeWritePaymentAuditLog({
@@ -432,7 +473,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    const juspayData = await juspayResponse.json();
+    const juspayData = gatewayLookup.value.data;
 
     // --- Amount verification - confirmed amount must match what we stored ---
     const confirmedAmount = normalizeAmount(juspayData.amount);

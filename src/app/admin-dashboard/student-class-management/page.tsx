@@ -157,6 +157,7 @@ const StudentClassManagement = () => {
                     >
                       <Link
                         href={`/admin-dashboard/student-class-management/${student.prn}`}
+                        prefetch={false}
                       >
                         <Button
                           variant="outline"

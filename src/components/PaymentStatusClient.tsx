@@ -14,7 +14,8 @@ import {
 } from "@/lib/payment-status";
 
 const FAILURE_SETTLE_DELAY_MS = 5000;
-const PAYMENT_STATUS_POLL_INTERVAL_MS = 2500;
+const PAYMENT_STATUS_POLL_INTERVALS_MS = [3000, 5000, 10000, 20000, 30000];
+const MAX_PAYMENT_STATUS_ATTEMPTS = 20;
 
 interface PaymentData {
   orderId?: string;
@@ -46,6 +47,8 @@ export default function PaymentStatusClient() {
 
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [canShowFailure, setCanShowFailure] = useState(false);
+  const [pollingExhausted, setPollingExhausted] = useState(false);
+  const [pollGeneration, setPollGeneration] = useState(0);
   const syncInFlightRef = useRef(false);
 
   useEffect(() => {
@@ -88,31 +91,7 @@ export default function PaymentStatusClient() {
     setPaymentData(null);
   }, [orderId, params]);
 
-  const fetchCurrentStatus = async () => {
-    if (!orderId) return;
-
-    try {
-      const res = await fetch(`/api/payment/status?order_id=${orderId}`);
-      const data = await res.json();
-
-      if (data.success) {
-        const payment = data.payment as PaymentData;
-        setPaymentData((current) =>
-          isFailedPaymentStatus(current?.status) &&
-          !isTerminalPaymentStatus(payment?.status)
-            ? current
-            : payment,
-        );
-        return payment;
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-
-    return null;
-  };
-
-  const syncPaymentStatus = async () => {
+  const syncPaymentStatus = async (signal: AbortSignal) => {
     if (!orderId || syncInFlightRef.current) return false;
 
     syncInFlightRef.current = true;
@@ -121,6 +100,7 @@ export default function PaymentStatusClient() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
+        signal,
       });
 
       const data = await res.json();
@@ -136,7 +116,9 @@ export default function PaymentStatusClient() {
         return isTerminalPaymentStatus(payment?.status);
       }
     } catch (err) {
-      console.error("Payment sync error:", err);
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        console.error("Payment sync error:", err);
+      }
     } finally {
       syncInFlightRef.current = false;
     }
@@ -151,29 +133,67 @@ export default function PaymentStatusClient() {
       return;
     }
 
-    const bootstrap = async () => {
-      const currentPayment = await fetchCurrentStatus();
+    let timeout: number | undefined;
+    let attempts = 0;
+    let stopped = false;
+    let pendingDelay: number | undefined;
+    const controller = new AbortController();
 
-      if (isSuccessfulPaymentStatus(currentPayment?.status)) {
-        router.replace(
-          `/registration-success?orderId=${encodeURIComponent(orderId)}`,
-        );
+    const poll = async () => {
+      if (stopped) return;
+      if (document.visibilityState === "hidden") return;
+      if (attempts >= MAX_PAYMENT_STATUS_ATTEMPTS) {
+        setPollingExhausted(true);
         return;
       }
 
-      await syncPaymentStatus();
+      attempts += 1;
+      const terminal = await syncPaymentStatus(controller.signal);
+      if (terminal || stopped) return;
+      if (attempts >= MAX_PAYMENT_STATUS_ATTEMPTS) {
+        setPollingExhausted(true);
+        return;
+      }
+
+      const delay = PAYMENT_STATUS_POLL_INTERVALS_MS[
+        Math.min(attempts - 1, PAYMENT_STATUS_POLL_INTERVALS_MS.length - 1)
+      ];
+      schedule(delay);
     };
 
-    bootstrap();
+    const schedule = (delay: number) => {
+      pendingDelay = delay;
+      if (stopped || document.visibilityState === "hidden") return;
+      timeout = window.setTimeout(() => {
+        timeout = undefined;
+        pendingDelay = undefined;
+        void poll();
+      }, delay);
+    };
 
-    const interval = setInterval(async () => {
-      await syncPaymentStatus();
-    }, PAYMENT_STATUS_POLL_INTERVAL_MS);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        if (timeout) window.clearTimeout(timeout);
+        timeout = undefined;
+        return;
+      }
+
+      if (pendingDelay !== undefined && timeout === undefined) {
+        schedule(pendingDelay);
+      }
+    };
+
+    setPollingExhausted(false);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    schedule(0);
 
     return () => {
-      clearInterval(interval);
+      stopped = true;
+      if (timeout) window.clearTimeout(timeout);
+      controller.abort();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [orderId, orderIdResolved, router]);
+  }, [orderId, orderIdResolved, pollGeneration]);
 
   useEffect(() => {
     if (!orderId || !isSuccessfulPaymentStatus(paymentData?.status)) return;
@@ -193,6 +213,22 @@ export default function PaymentStatusClient() {
   const isFailed = isFailedPaymentStatus(currentStatus);
   const shouldShowFailed = isFailed && canShowFailure;
   const failureMessage = getFailureMessage(params.get("reason"));
+  const retryPaymentCheck = pollingExhausted ? (
+    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left" role="status">
+      <p className="text-sm text-amber-900">
+        Automatic checks have paused. If you completed payment, check again; please do not pay again for this order.
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-3"
+        onClick={() => setPollGeneration((generation) => generation + 1)}
+      >
+        Check again
+      </Button>
+    </div>
+  ) : null;
 
   if (!orderIdResolved) {
     return (
@@ -244,6 +280,7 @@ export default function PaymentStatusClient() {
             confirmed once the payment is successful; please do not pay again
             for this order.
           </p>
+          {retryPaymentCheck}
           <p className="mt-4 break-all font-mono text-xs text-slate-500">
             {orderId}
           </p>
@@ -263,6 +300,7 @@ export default function PaymentStatusClient() {
           <p className="mt-2 text-sm text-slate-600">
             Please wait while we confirm your payment securely.
           </p>
+          {retryPaymentCheck}
           <p className="mt-4 break-all font-mono text-xs text-slate-500">
             {orderId}
           </p>

@@ -514,6 +514,7 @@ function TrainerStudentsContent() {
                       {student.prn ? (
                         <Link
                           href={`/${encodeURIComponent(student.prn)}`}
+                          prefetch={false}
                           className="inline-flex items-center gap-1 self-start text-sm font-semibold text-red-800 hover:text-red-900 sm:self-auto"
                         >
                           View student details
